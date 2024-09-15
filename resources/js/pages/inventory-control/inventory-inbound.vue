@@ -13,26 +13,16 @@ const data = await $api("/invControl", {
   },
 });
 
-const deleteDialog = ref(false);
+// Data table options
+const itemsPerPage = ref(10);
+const page = ref(1);
+// const sortBy = ref();
+// const orderBy = ref();
 
-const defaultItem = ref({
-  responsiveId: "",
-  id: -1,
-  avatar: "",
-  fullName: "",
-  post: "",
-  email: "",
-  city: "",
-  startDate: "",
-  salary: -1,
-  age: "",
-  experience: "",
-  status: -1,
-});
-
-const editedItem = ref(defaultItem.value);
-const editedIndex = ref(-1);
-const userList = ref([]);
+// const updateOptions = (options) => {
+//   sortBy.value = options.sortBy[0]?.key;
+//   orderBy.value = options.sortBy[0]?.order;
+// };
 
 // headers
 const headers = [
@@ -63,88 +53,124 @@ const headers = [
   {
     title: "ACTIONS",
     key: "actions",
+    sortable: false,
   },
 ];
 
-const deleteItem = (item) => {
-  editedIndex.value = userList.value.indexOf(item);
-  editedItem.value = { ...item };
-  deleteDialog.value = true;
-};
-
-const close = () => {
-  editedIndex.value = -1;
-  editedItem.value = { ...defaultItem.value };
-};
-
-const closeDelete = () => {
-  deleteDialog.value = false;
-  editedIndex.value = -1;
-  editedItem.value = { ...defaultItem.value };
-};
-
-const save = () => {
-  if (editedIndex.value > -1)
-    Object.assign(userList.value[editedIndex.value], editedItem.value);
-  else userList.value.push(editedItem.value);
-  close();
-};
-
-const deleteItemConfirm = () => {
-  userList.value.splice(editedIndex.value, 1);
-  closeDelete();
-};
-
 onMounted(() => {
-  userList.value = JSON.parse(JSON.stringify(data));
+  // userList.value = JSON.parse(JSON.stringify(data));
 });
 </script>
 
 <template>
-  <VCard title="Search Filter">
-    <div
-      class="d-flex justify-space-between align-center ms-3"
-      style="gap: 10px; padding-right: 16px"
-    >
-      <div class="d-flex align-center" style="gap: 10px">
-        <!-- Dropdown (10 dropdown) -->
-        <v-select
-          :items="[10, 20, 30, 40]"
-          v-model="selected"
-          dense
-          outlined
-          class="pa-0"
-          style="max-width: 80px"
+  <div>
+    <VBreadcrumbs
+      class="px-0 pb-2 pt-0 inventory-control-inventory-inbound"
+      :items="[
+        {
+          title: 'Inventory Control',
+          class: 'text-h4',
+        },
+        {
+          title: 'Inventory In-Bound',
+          class: 'text-h4',
+        },
+      ]"
+    />
+  </div>
+
+  <!-- 👉 products -->
+  <VCard class="mb-6">
+    <VCardItem class="pb-4">
+      <VCardTitle>Filters</VCardTitle>
+    </VCardItem>
+
+    <VCardText>
+      <VRow>
+        <!-- 👉 Select Role -->
+        <VCol cols="12" sm="4">
+          <AppSelect
+            v-model="selectedRole"
+            placeholder="Select Date"
+            :items="roles"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+        <!-- 👉 Select Plan -->
+        <VCol cols="12" sm="4">
+          <AppSelect
+            v-model="selectedPlan"
+            placeholder="Select Vendor"
+            :items="plans"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+        <!-- 👉 Select Status -->
+        <VCol cols="12" sm="4">
+          <AppSelect
+            v-model="selectedStatus"
+            placeholder="Select Currency"
+            :items="status"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+
+    <VDivider />
+
+    <VCardText class="d-flex flex-wrap gap-4">
+      <div class="me-3 d-flex gap-3">
+        <AppSelect
+          :model-value="itemsPerPage"
+          :items="[
+            { value: 10, title: '10' },
+            { value: 25, title: '25' },
+            { value: 50, title: '50' },
+            { value: 100, title: '100' },
+            { value: -1, title: 'All' },
+          ]"
+          style="inline-size: 6.25rem"
+          @update:model-value="itemsPerPage = parseInt($event, 10)"
         />
       </div>
+      <VSpacer />
 
-      <div class="d-flex align-center" style="gap: 10px">
-        <!-- Search Input -->
-        <AppTextField
-          placeholder="Search"
-          label=""
-          clearable
-          class="pa-0"
-          style="min-width: 200px"
-        />
+      <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <!-- 👉 Search  -->
+        <div style="inline-size: 15.625rem">
+          <AppTextField v-model="searchQuery" placeholder="Search User" />
+        </div>
 
-        <VBtn outlined color="error" class="d-flex align-center">
-          <i class="tabler-export"></i>
-          <span>Export</span>
+        <!-- 👉 Export button -->
+        <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+          Export
         </VBtn>
 
+        <!-- 👉 Add button -->
         <VBtn
-          color="primary"
-          class="d-flex flex-column align-center justify-center"
+          prepend-icon="tabler-plus"
+          to="create-inbound"
         >
-          <i class="tabler-plus" />
-          <span>Create In-Bound</span>
+          Create In-Bound
         </VBtn>
       </div>
-    </div>
+    </VCardText>
+
+    <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable :headers="headers" :items="data" :items-per-page="10">
+    <VDataTable
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="page"
+      :items="data"
+      :headers="headers"
+      class="text-no-wrap"
+      @update:options="updateOptions"
+    >
       <!-- part name -->
       <template #item.partcode="{ item }">
         <div class="d-flex align-center">
@@ -236,36 +262,3 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
-
-<!-- <script>
-export default {
-    name:"invControl",
-    data(){
-        return {
-            invControl:[]
-        }
-    },
-    // mounted(){
-    //     this.getCategories()
-    // },
-    methods:{
-        async getCategories(){
-            await this.$axios.get('/api/invControl').then(response=>{
-                this.categories = response.data
-            }).catch(error=>{
-                console.log(error)
-                this.invControl = []
-            })
-        },
-        deleteCategory(id){
-            if(confirm("Are you sure to delete this category ?")){
-                this.axios.delete(`/api/category/${id}`).then(response=>{
-                    this.getCategories()
-                }).catch(error=>{
-                    console.log(error)
-                })
-            }
-        }
-    }
-}
-</script> -->
