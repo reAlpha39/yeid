@@ -79,4 +79,8 @@ const handleItemSelected = (item) => {
       @submit="handleItemSelected"
     />
   </VCard>
+
+  <VCard class="mb-6 pa-6">
+    <VCardTitle>List Part</VCardTitle>
+  </VCard>
 </template>

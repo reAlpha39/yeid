@@ -119,6 +119,7 @@ declare module 'vue-router/auto/routes' {
     'front-pages-payment': RouteRecordInfo<'front-pages-payment', '/front-pages/payment', Record<never, never>, Record<never, never>>,
     'front-pages-pricing': RouteRecordInfo<'front-pages-pricing', '/front-pages/pricing', Record<never, never>, Record<never, never>>,
     'inventory-control-create-inbound': RouteRecordInfo<'inventory-control-create-inbound', '/inventory-control/create-inbound', Record<never, never>, Record<never, never>>,
+    'inventory-control-create-outbound': RouteRecordInfo<'inventory-control-create-outbound', '/inventory-control/create-outbound', Record<never, never>, Record<never, never>>,
     'inventory-control-inventory-inbound': RouteRecordInfo<'inventory-control-inventory-inbound', '/inventory-control/inventory-inbound', Record<never, never>, Record<never, never>>,
     'inventory-control-inventory-outbound': RouteRecordInfo<'inventory-control-inventory-outbound', '/inventory-control/inventory-outbound', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
