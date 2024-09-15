@@ -14,7 +14,7 @@ export default [
     ...dashboard,
     ...master,
     ...inventoryControl,
-    ...dashboards,
+    // ...dashboards,
     ...appsAndPages,
     ...charts,
     ...forms,
