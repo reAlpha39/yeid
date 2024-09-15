@@ -8,3 +8,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('/invControl', [App\Http\Controllers\InventoryControlController::class, 'getRecords']);
+Route::get('/getVendor', [App\Http\Controllers\InventoryControlController::class, 'getVendor']);

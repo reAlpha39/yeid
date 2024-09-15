@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\InvRecord;
-use App\Models\MasMachine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -53,5 +51,20 @@ class InventoryControlController extends Controller
             ->get();
 
         return response()->json($records);
+    }
+
+    public function getVendor(Request $request)
+    {
+        // Get the query parameter from the request
+        $query = $request->input('query', '');
+
+        // Perform the query on the mas_inventory table
+        $results = DB::table('HOZENADMIN.mas_inventory')
+            ->where('PARTCODE', 'like', $query . '%')
+            ->orWhere('PARTNAME', 'like', $query . '%')
+            ->get();
+
+        // Return the results as JSON
+        return response()->json(['data' => $results]);
     }
 }
