@@ -1,11 +1,6 @@
 <script setup>
-const data = await $api("/getVendor", {
-  params: {
-    query: "",
-  },
-});
-
-// console.log(data.data);
+const vendorQuery = ref("");
+const data = ref({});
 
 const props = defineProps({
   isDialogVisible: {
@@ -13,6 +8,19 @@ const props = defineProps({
     required: true,
   },
 });
+
+async function fetchVendor() {
+  try {
+    let response = await $api("/getVendor", {
+      params: {
+        query: vendorQuery.value,
+      },
+    });
+    data.value = response;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 const emit = defineEmits(["update:isDialogVisible", "submit"]);
 
@@ -27,6 +35,10 @@ const handleItemClick = (item) => {
   emit("update:isDialogVisible", false);
   emit("submit", item);
 };
+
+onMounted(() => {
+  fetchVendor();
+});
 </script>
 
 <template>
@@ -45,6 +57,15 @@ const handleItemClick = (item) => {
           You can only select one vendor
         </p>
       </VCardText>
+
+      <AppTextField
+        v-model="vendorQuery"
+        placeholder="Search vendor"
+        variant="outlined"
+        v-on:input="fetchVendor()"
+      />
+
+      <Divider />
 
       <div class="table-container">
         <VTable class="text-no-wrap v-table">
