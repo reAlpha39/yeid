@@ -1,5 +1,9 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
+
+const toast = useToast();
+const router = useRouter();
 
 const isSelectInventoryVendorDialogVisible = ref(false);
 const isSelectInventoryPartDialogVisible = ref(false);
@@ -7,8 +11,6 @@ const selectedVendor = ref({}); // Store the selected item
 const parts = ref([]);
 
 const saveInbound = async () => {
-  const toast = useToast();
-
   try {
     const result = await $api("/storeInvRecord", {
       method: "POST",
