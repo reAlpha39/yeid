@@ -1,39 +1,17 @@
 <script setup>
-// import data from '@/views/demos/forms/tables/data-table/datatable';
+import { useToast } from "vue-toastification";
+
+const toast = useToast();
+
+const isDeleteDialogVisible = ref(false);
+const recordIdToDelete = ref(0);
 
 // No need to repeat `https://localhost/api` now
 const now = new Date();
 
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  console.log(`${year}${month}${day}`);
-  return `${year}${month}${day}`;
-};
-
-const data = await $api("/invControl", {
-  params: {
-    startDate: "20240417",
-    endDate: formatDate(now),
-    jobCode: "I",
-    limit: 0,
-    orderBy: "jobdate",
-    direction: "desc",
-  },
-});
-
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
-// const sortBy = ref();
-// const orderBy = ref();
-
-// const updateOptions = (options) => {
-//   sortBy.value = options.sortBy[0]?.key;
-//   orderBy.value = options.sortBy[0]?.order;
-// };
 
 // headers
 const headers = [
@@ -68,8 +46,75 @@ const headers = [
   },
 ];
 
+// data table
+const data = ref([]);
+
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  console.log(`${year}${month}${day}`);
+  return `${year}${month}${day}`;
+};
+
+async function fetchData() {
+  try {
+    const response = await $api("/invControl", {
+      params: {
+        startDate: "20240417",
+        endDate: formatDate(now),
+        jobCode: "I",
+        limit: 0,
+        orderBy: "jobdate",
+        direction: "desc",
+      },
+      onResponseError({ response }) {
+        toast.error("Failed to fetch data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    data.value = response;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function deleteRecord() {
+  try {
+    console.log(recordIdToDelete.value);
+    const result = await $api("/deleteRecord", {
+      method: "DELETE",
+      body: {
+        record_id: parseInt(recordIdToDelete.value),
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to delete data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    console.log(result);
+
+    isDeleteDialogVisible.value = false;
+    toast.success("Delete success");
+    fetchData();
+  } catch (err) {
+    isDeleteDialogVisible.value = true;
+    console.log(err);
+  }
+}
+
+function openDeleteDialog(recordId) {
+  isDeleteDialogVisible.value = true;
+  recordIdToDelete.value = recordId.recordid;
+}
+
 onMounted(() => {
-  // userList.value = JSON.parse(JSON.stringify(data));
+  fetchData();
 });
 </script>
 
@@ -241,7 +286,7 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="deleteItem(item)">
+          <IconBtn @click="openDeleteDialog(item)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>
@@ -250,18 +295,22 @@ onMounted(() => {
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
-  <VDialog v-model="deleteDialog" max-width="500px">
+  <VDialog v-model="isDeleteDialogVisible" max-width="500px">
     <VCard>
       <VCardTitle> Are you sure you want to delete this item? </VCardTitle>
 
       <VCardActions>
         <VSpacer />
 
-        <VBtn color="error" variant="outlined" @click="closeDelete">
+        <VBtn
+          color="error"
+          variant="outlined"
+          @click="isDeleteDialogVisible = !isDeleteDialogVisible"
+        >
           Cancel
         </VBtn>
 
-        <VBtn color="success" variant="elevated" @click="deleteItemConfirm">
+        <VBtn color="success" variant="elevated" @click="deleteRecord()">
           OK
         </VBtn>
 

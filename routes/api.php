@@ -12,3 +12,4 @@ Route::get('/getVendor', [App\Http\Controllers\InventoryControlController::class
 Route::get('/getStaff', [App\Http\Controllers\InventoryControlController::class, 'getStaff']);
 Route::get('/getMachines', [App\Http\Controllers\InventoryControlController::class, 'getMachines']);
 Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController::class, 'storeInvRecord']);
+Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);

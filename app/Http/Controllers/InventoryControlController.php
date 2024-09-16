@@ -240,4 +240,44 @@ class InventoryControlController extends Controller
             ], 500); // Internal server error
         }
     }
+
+    public function deleteRecord(Request $request)
+    {
+        // Validate incoming data (RECORDID is required and must be an integer)
+        $request->validate([
+            'record_id' => 'required|integer'
+        ]);
+
+        try {
+            // Get the target RECORDID from the request
+            $recordId = $request->input('record_id');
+
+            // Perform the delete operation
+            $affectedRows = DB::table('HOZENADMIN.TBL_INVRECORD')
+                ->where('RECORDID', $recordId)
+                ->delete();
+
+            // Check if any rows were affected (i.e., if the delete was successful)
+            if ($affectedRows > 0) {
+                // Return success response if deletion was successful
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Record deleted successfully.'
+                ], 200);
+            } else {
+                // Return failure response if no record was found
+                return response()->json([
+                    'status' => 'failure',
+                    'message' => 'Record not found or already deleted.'
+                ], 404);
+            }
+        } catch (Exception $e) {
+            // Handle any potential errors
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while deleting the record.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
