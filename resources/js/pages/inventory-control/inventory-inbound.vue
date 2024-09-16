@@ -151,10 +151,7 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn
-          prepend-icon="tabler-plus"
-          to="create-inbound"
-        >
+        <VBtn prepend-icon="tabler-plus" to="create-inbound">
           Create In-Bound
         </VBtn>
       </div>
@@ -215,7 +212,7 @@ onMounted(() => {
         <div class="d-flex align-center">
           <div class="d-flex flex-row ms-3">
             {{ item.currency }}
-            {{ item.unitprice }}
+            {{ item.unitprice.toLocaleString() }}
           </div>
         </div>
       </template>
@@ -225,7 +222,7 @@ onMounted(() => {
         <div class="d-flex align-center">
           <div class="d-flex flex-row ms-3">
             {{ item.currency }}
-            {{ item.total }}
+            {{ item.total.toLocaleString() }}
           </div>
         </div>
       </template>
