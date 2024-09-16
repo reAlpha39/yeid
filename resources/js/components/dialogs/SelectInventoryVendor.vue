@@ -1,11 +1,11 @@
 <script setup>
 const data = await $api("/getVendor", {
   params: {
-    query: "a",
+    query: "",
   },
 });
 
-console.log(data.data);
+// console.log(data.data);
 
 const props = defineProps({
   isDialogVisible: {

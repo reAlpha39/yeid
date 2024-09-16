@@ -1,7 +1,7 @@
 <script setup>
 const data = await $api("/getVendor", {
   params: {
-    query: "a",
+    query: "",
   },
 });
 

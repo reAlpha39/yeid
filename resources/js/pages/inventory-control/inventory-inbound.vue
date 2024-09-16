@@ -54,7 +54,6 @@ const formatDate = (date) => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
 
-  console.log(`${year}${month}${day}`);
   return `${year}${month}${day}`;
 };
 
@@ -84,7 +83,6 @@ async function fetchData() {
 
 async function deleteRecord() {
   try {
-    console.log(recordIdToDelete.value);
     const result = await $api("/deleteRecord", {
       method: "DELETE",
       body: {
@@ -96,8 +94,6 @@ async function deleteRecord() {
         errors.value = response._data.errors;
       },
     });
-
-    console.log(result);
 
     isDeleteDialogVisible.value = false;
     toast.success("Delete success");

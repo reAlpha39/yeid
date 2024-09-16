@@ -24,7 +24,7 @@ const saveInbound = async () => {
       },
     });
 
-    console.log(result);
+    // console.log(result);
     toast.success("Save inbound success");
     await router.push("/inventory-control/inventory-inbound");
   } catch (err) {
@@ -42,7 +42,6 @@ const handlePartSelected = (item) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
 
-    console.log(`${year}${month}${day}`);
     return `${year}${month}${day}`;
   };
 
@@ -51,7 +50,7 @@ const handlePartSelected = (item) => {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
-    console.log(`${hours}${minutes}${seconds}`);
+
     return `${hours}${minutes}${seconds}`;
   };
 
@@ -76,7 +75,7 @@ const handlePartSelected = (item) => {
     employeeCode: "",
   });
 
-  console.log(parts.value);
+  // console.log(parts.value);
 };
 
 const handleItemSelected = (item) => {

@@ -30,7 +30,7 @@ const getMachines = async (partCode) => {
       },
     });
 
-    console.log(result["data"]);
+    // console.log(result["data"]);
 
     machines.value.push(result["data"]);
   } catch (err) {
@@ -52,7 +52,7 @@ const saveInbound = async () => {
       },
     });
 
-    console.log(result);
+    // console.log(result);
     toast.success("Save inbound success");
     await router.push("/inventory-control/inventory-outbound");
   } catch (err) {
@@ -70,7 +70,6 @@ const handlePartSelected = (item) => {
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
 
-    console.log(`${year}${month}${day}`);
     return `${year}${month}${day}`;
   };
 
@@ -79,7 +78,7 @@ const handlePartSelected = (item) => {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
-    console.log(`${hours}${minutes}${seconds}`);
+
     return `${hours}${minutes}${seconds}`;
   };
 
@@ -111,7 +110,7 @@ const handlePartSelected = (item) => {
     lineCode: "",
   });
 
-  console.log(parts.value);
+  // console.log(parts.value);
 };
 
 const handleMachineSelected = (index) => {
@@ -119,7 +118,7 @@ const handleMachineSelected = (index) => {
   parts.value[index].machineName = selectedMachine.value[index].MACHINENAME;
   parts.value[index].shopName = selectedMachine.value[index].SHOPNAME;
   parts.value[index].lineCode = selectedMachine.value[index].LINECODE;
-  console.log(parts.value[index]);
+  // console.log(parts.value[index]);
 };
 
 const handleItemSelected = (item) => {
