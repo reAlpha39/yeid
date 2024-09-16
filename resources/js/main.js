@@ -7,8 +7,19 @@ import axios from 'axios';
 import '@core-scss/template/index.scss';
 import '@styles/styles.scss';
 
+// Toast
+import Toast from "vue-toastification";
+// Import the CSS or use your own!
+import "vue-toastification/dist/index.css";
+
 // Create Vue app
 const app = createApp(App);
+
+const options = {
+    // You can set your default options here
+};
+
+app.use(Toast, options);
 
 // Register plugins
 registerPlugins(app);

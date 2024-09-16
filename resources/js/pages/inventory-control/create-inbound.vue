@@ -1,33 +1,92 @@
 <script setup>
+import { useToast } from "vue-toastification";
+
 const isSelectInventoryVendorDialogVisible = ref(false);
 const isSelectInventoryPartDialogVisible = ref(false);
 const selectedVendor = ref({}); // Store the selected item
 const parts = ref([]);
 
+const saveInbound = async () => {
+  const toast = useToast();
+
+  try {
+    const result = await $api("/storeInvRecord", {
+      method: "POST",
+      body: {
+        records: parts.value,
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to save data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    console.log(result);
+    toast.success("Save inbound success");
+    await router.push("/inventory-control/inventory-inbound");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const handlePartSelected = (item) => {
+  // showToast('primary','top-right')
+  const now = new Date();
+
+  // Function to format date as 'YYYYMMDD'
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    console.log(`${year}${month}${day}`);
+    return `${year}${month}${day}`;
+  };
+
+  // Function to format time as 'HHMMSS'
+  const formatTime = (date) => {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    console.log(`${hours}${minutes}${seconds}`);
+    return `${hours}${minutes}${seconds}`;
+  };
+
+  parts.value.push({
+    locationId: "P",
+    jobCode: "I",
+    jobDate: formatDate(now), // Format date as 'YYYYMMDD'
+    jobTime: formatTime(now), // Format time as 'HHMMSS'
+    partCode: item.PARTCODE,
+    partName: item.PARTNAME,
+    specification: item.SPECIFICATION,
+    brand: item.BRAND,
+    usedFlag: "",
+    quantity: 1,
+    unitPrice: item.UNITPRICE,
+    price: item.UNITPRICE,
+    currency: item.CURRENCY,
+    vendorCode: selectedVendor.value.VENDORCODE,
+    machineNo: "",
+    machineName: "",
+    note: "",
+    employeeCode: "",
+  });
+
+  console.log(parts.value);
+};
+
 const handleItemSelected = (item) => {
   selectedVendor.value = item;
 };
 
-const handlePartSelected = (item) => {
-  parts.value.push({
-    partName: item.PARTNAME,
-    partCode: item.PARTCODE,
-    brand: item.BRAND,
-    specification: item.SPECIFICATION,
-    unitPrice: item.UNITPRICE,
-    currency: item.CURRENCY,
-    qty: 1,
-    totalPrice: item.UNITPRICE,
-    note: "",
-  });
-};
-
 const calculateTotalPrice = (part) => {
-  return part.qty * part.unitPrice;
+  return part.quantity * part.unitPrice;
 };
 
 const updateQuantity = (index) => {
-  let qty = parts.value[index].qty;
+  let qty = parts.value[index].quantity;
   qty = String(qty).replace(/[^\d]/g, "");
 
   qty = parseInt(qty);
@@ -36,8 +95,8 @@ const updateQuantity = (index) => {
     qty = 0;
   }
 
-  parts.value[index].qty = qty;
-  parts.value[index].totalPrice = calculateTotalPrice(parts.value[index]);
+  parts.value[index].quantity = qty;
+  parts.value[index].price = calculateTotalPrice(parts.value[index]);
 };
 
 const deleteItem = (index) => {
@@ -176,7 +235,7 @@ const deleteItem = (index) => {
             </VCol>
             <VCol cols="12" md="1" sm="4">
               <AppTextField
-                v-model.number="part.qty"
+                v-model.number="part.quantity"
                 type="number"
                 placeholder="5"
                 min="0"
@@ -188,7 +247,7 @@ const deleteItem = (index) => {
                 <span class="d-inline d-md-none">Price: </span>
                 <span class="text-high-emphasis">
                   {{ part.currency }}
-                  {{ part.totalPrice.toLocaleString() }}</span
+                  {{ part.price.toLocaleString() }}</span
                 >
               </p>
             </VCol>
@@ -236,7 +295,7 @@ const deleteItem = (index) => {
 
   <VRow class="d-flex justify-start">
     <VCol>
-      <VBtn color="success" class="me-4">Save</VBtn>
+      <VBtn color="success" class="me-4" @click="saveInbound()">Save</VBtn>
       <VBtn variant="outlined" color="error">Cancel</VBtn>
     </VCol>
   </VRow>

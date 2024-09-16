@@ -47,6 +47,7 @@
     "vue-i18n": "9.10.1",
     "vue-prism-component": "2.0.0",
     "vue-router": "4.3.0",
+    "vue-toastification": "2.0.0-rc.5",
     "vue3-apexcharts": "1.5.2",
     "vue3-perfect-scrollbar": "1.6.1",
     "vuetify": "3.5.2",
@@ -86,6 +87,7 @@
     "eslint-plugin-sonarjs": "0.23.0",
     "eslint-plugin-unicorn": "50.0.1",
     "eslint-plugin-vue": "9.22.0",
+    "laravel-vite-plugin": "1.0",
     "msw": "2.2.2",
     "postcss-html": "1.6.0",
     "postcss-scss": "4.0.9",
@@ -105,8 +107,7 @@
     "vite-plugin-vue-layouts": "0.11.0",
     "vite-plugin-vuetify": "2.0.1",
     "vite-svg-loader": "5.1.0",
-    "vue-shepherd": "3.0.0",
-    "laravel-vite-plugin": "1.0"
+    "vue-shepherd": "3.0.0"
   },
   "resolutions": {
     "postcss": "^8",
