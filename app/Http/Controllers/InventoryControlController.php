@@ -63,6 +63,7 @@ class InventoryControlController extends Controller
         $results = DB::table('HOZENADMIN.mas_inventory')
             ->where('PARTCODE', 'like', $query . '%')
             ->orWhere('PARTNAME', 'like', $query . '%')
+            ->limit(100)
             ->get();
 
         // Return the results as JSON
@@ -79,6 +80,7 @@ class InventoryControlController extends Controller
             $results = DB::table('HOZENADMIN.mas_employee')
                 ->where('EMPLOYEECODE', 'like', $query . '%')
                 ->orWhere('EMPLOYEENAME', 'like', $query . '%')
+                ->limit(100)
                 ->get();
 
             // Return the results as JSON
