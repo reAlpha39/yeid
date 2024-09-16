@@ -101,8 +101,8 @@ class InventoryControlController extends Controller
             $recordId = DB::table('HOZENADMIN.TBL_INVRECORD')->max('RECORDID') + 1; // Simulating sequence
             $locationId = $record['locationId'];
             $jobCode = $record['jobCode'];
-            $jobDate = date('Ymd', strtotime($request->input('jobDate')));
-            $jobTime = date('His', strtotime($request->input('jobTime')));
+            $jobDate = $record['jobDate'];
+            $jobTime = $record['jobTime'];
             $partCode = $record['partCode'];
             $partName = $record['partName'];
             $specification = $record['specification'] ?? ''; // Allow null values
