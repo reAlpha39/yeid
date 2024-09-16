@@ -16,7 +16,7 @@ async function fetchVendor() {
         query: vendorQuery.value,
       },
     });
-    console.log(response.data);
+    // console.log(response.data);
     data.value = response.data;
   } catch (err) {
     console.log(err);

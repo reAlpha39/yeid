@@ -1,9 +1,6 @@
 <script setup>
-const data = await $api("/getStaff", {
-  params: {
-    query: "",
-  },
-});
+const searchStaff = ref("");
+const data = ref({});
 
 console.log(data.data);
 
@@ -27,6 +24,24 @@ const handleItemClick = (item) => {
   emit("update:isDialogVisible", false);
   emit("submit", item);
 };
+
+async function fetchData() {
+  try {
+    const response = await $api("/getStaff", {
+      params: {
+        query: searchStaff.value,
+      },
+    });
+    // console.log(response.data);
+    data.value = response.data;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <template>
@@ -46,6 +61,16 @@ const handleItemClick = (item) => {
         </p>
       </VCardText>
 
+       <AppTextField
+        class="pb-4"
+        v-model="searchStaff"
+        placeholder="Search staff"
+        variant="outlined"
+        v-on:input="fetchData()"
+      />
+
+      <VDivider />
+
       <div class="pa-2 flex-grow-1">
         <VRow class="me-10 pb-2">
           <VCol cols="11" md="5">
@@ -61,9 +86,9 @@ const handleItemClick = (item) => {
         <VDivider />
       </div>
 
-      <template v-for="(item, index) in data.data" :key="index">
+      <template v-for="(item, index) in data" :key="index">
         <div class="pa-2 flex-grow-1">
-          <VRow class="me-10">
+          <VRow class="me-10 pb-3">
             <VCol cols="11" md="5">
               <text> {{ item.EMPLOYEECODE }}</text>
             </VCol>
