@@ -148,83 +148,96 @@ class InventoryControlController extends Controller
 
     public function storeInvRecord(Request $request)
     {
-        // Validate that the request contains an array of items
-        $request->validate([
-            'records' => 'required|array',
-            'records.*.locationId' => 'required',
-            'records.*.jobCode' => 'required',
-            'records.*.jobDate' => 'required|date',
-            'records.*.jobTime' => 'required',
-            'records.*.partCode' => 'required',
-            'records.*.partName' => 'required',
-            'records.*.specification' => 'nullable',
-            'records.*.brand' => 'nullable',
-            'records.*.usedFlag' => 'nullable',
-            'records.*.quantity' => 'required|numeric',
-            'records.*.unitPrice' => 'required|numeric',
-            'records.*.price' => 'required|numeric',
-            'records.*.currency' => 'required',
-            'records.*.vendorCode' => 'nullable',
-            'records.*.machineNo' => 'nullable',
-            'records.*.machineName' => 'nullable',
-            'records.*.note' => 'nullable',
-            'records.*.employeeCode' => 'nullable'
-        ]);
+        try {
+            // Validate that the request contains an array of items
+            $request->validate([
+                'records' => 'required|array',
+                'records.*.locationId' => 'required',
+                'records.*.jobCode' => 'required',
+                'records.*.jobDate' => 'required|date',
+                'records.*.jobTime' => 'required',
+                'records.*.partCode' => 'required',
+                'records.*.partName' => 'required',
+                'records.*.specification' => 'nullable',
+                'records.*.brand' => 'nullable',
+                'records.*.usedFlag' => 'nullable',
+                'records.*.quantity' => 'required|numeric',
+                'records.*.unitPrice' => 'required|numeric',
+                'records.*.price' => 'required|numeric',
+                'records.*.currency' => 'required',
+                'records.*.vendorCode' => 'nullable',
+                'records.*.machineNo' => 'nullable',
+                'records.*.machineName' => 'nullable',
+                'records.*.note' => 'nullable',
+                'records.*.employeeCode' => 'nullable'
+            ]);
 
-        $records = $request->input('records');
-        $dataToInsert = [];
+            $records = $request->input('records');
+            $dataToInsert = [];
 
-        foreach ($records as $record) {
-            // Extract values for each record
-            $recordId = DB::table('HOZENADMIN.TBL_INVRECORD')->max('RECORDID') + 1; // Simulating sequence
-            $locationId = $record['locationId'];
-            $jobCode = $record['jobCode'];
-            $jobDate = $record['jobDate'];
-            $jobTime = $record['jobTime'];
-            $partCode = $record['partCode'];
-            $partName = $record['partName'];
-            $specification = $record['specification'] ?? ''; // Allow null values
-            $brand = $record['brand'] ?? ''; // Allow null values
-            $usedFlag = $record['usedFlag'] ?? str_pad('', 1);
-            $quantity = $record['quantity'];
-            $unitPrice = str_replace(',', '', $record['unitPrice']);
-            $totalPrice = str_replace(',', '', $record['price']);
-            $currency = $record['currency'];
-            $vendorCode = $record['vendorCode'] ?? ''; // Allow null values
-            $machineNo = $record['machineNo'] ?? '';
-            $machineName = $record['machineName'] ?? ''; // Use chr(0) if null
-            $note = $record['note'] ?? str_pad('', 128); // Use chr(0) if null
-            $employeeCode = $record['employeeCode'] ?? str_pad('', 8);
-            $updateTime = now(); // Current timestamp
+            foreach ($records as $record) {
+                // Extract values for each record
+                $recordId = DB::table('HOZENADMIN.TBL_INVRECORD')->max('RECORDID') + 1; // Simulating sequence
+                $locationId = $record['locationId'];
+                $jobCode = $record['jobCode'];
+                $jobDate = $record['jobDate'];
+                $jobTime = $record['jobTime'];
+                $partCode = $record['partCode'];
+                $partName = $record['partName'];
+                $specification = $record['specification'] ?? ''; // Allow null values
+                $brand = $record['brand'] ?? ''; // Allow null values
+                $usedFlag = $record['usedFlag'] ?? str_pad('', 1);
+                $quantity = $record['quantity'];
+                $unitPrice = str_replace(',', '', $record['unitPrice']);
+                $totalPrice = str_replace(',', '', $record['price']);
+                $currency = $record['currency'];
+                $vendorCode = $record['vendorCode'] ?? ''; // Allow null values
+                $machineNo = $record['machineNo'] ?? '';
+                $machineName = $record['machineName'] ?? ''; // Use chr(0) if null
+                $note = $record['note'] ?? str_pad('', 128); // Use chr(0) if null
+                $employeeCode = $record['employeeCode'] ?? str_pad('', 8);
+                $updateTime = now(); // Current timestamp
 
-            // Prepare data for batch insert
-            $dataToInsert[] = [
-                'RECORDID' => $recordId,
-                'LOCATIONID' => $locationId,
-                'JOBCODE' => $jobCode,
-                'JOBDATE' => $jobDate,
-                'JOBTIME' => $jobTime,
-                'PARTCODE' => $partCode,
-                'PARTNAME' => $partName,
-                'SPECIFICATION' => $specification,
-                'BRAND' => $brand,
-                'USEDFLAG' => $usedFlag,
-                'QUANTITY' => $quantity,
-                'UNITPRICE' => $unitPrice,
-                'TOTAL' => $totalPrice,
-                'CURRENCY' => $currency,
-                'VENDORCODE' => $vendorCode,
-                'MACHINENO' => $machineNo,
-                'MACHINENAME' => $machineName,
-                'NOTE' => $note,
-                'EMPLOYEECODE' => $employeeCode,
-                'UPDATETIME' => $updateTime
-            ];
+                // Prepare data for batch insert
+                $dataToInsert[] = [
+                    'RECORDID' => $recordId,
+                    'LOCATIONID' => $locationId,
+                    'JOBCODE' => $jobCode,
+                    'JOBDATE' => $jobDate,
+                    'JOBTIME' => $jobTime,
+                    'PARTCODE' => $partCode,
+                    'PARTNAME' => $partName,
+                    'SPECIFICATION' => $specification,
+                    'BRAND' => $brand,
+                    'USEDFLAG' => $usedFlag,
+                    'QUANTITY' => $quantity,
+                    'UNITPRICE' => $unitPrice,
+                    'TOTAL' => $totalPrice,
+                    'CURRENCY' => $currency,
+                    'VENDORCODE' => $vendorCode,
+                    'MACHINENO' => $machineNo,
+                    'MACHINENAME' => $machineName,
+                    'NOTE' => $note,
+                    'EMPLOYEECODE' => $employeeCode,
+                    'UPDATETIME' => $updateTime
+                ];
+
+                // Perform a batch insert
+                DB::table('HOZENADMIN.TBL_INVRECORD')->insert($dataToInsert);
+                $dataToInsert = [];
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Records inserted successfully',
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
         }
-
-        // Perform a batch insert
-        DB::table('HOZENADMIN.TBL_INVRECORD')->insert($dataToInsert);
-
-        return response()->json(['message' => 'Records inserted successfully'], 201);
     }
 }
