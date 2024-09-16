@@ -11,7 +11,7 @@ const isSelectInventoryPartDialogVisible = ref(false);
 const selectedStaff = ref({}); // Store the selected item
 
 const machines = ref([]);
-const selectedMachine = ref();
+const selectedMachine = ref([]);
 
 const parts = ref([]);
 
@@ -31,7 +31,7 @@ const getMachines = async (partCode) => {
 
     console.log(result["data"]);
 
-    machines.value = result["data"];
+    machines.value.push(result["data"]);
   } catch (err) {
     console.log(err);
   }
@@ -53,7 +53,7 @@ const saveInbound = async () => {
 
     console.log(result);
     toast.success("Save inbound success");
-    await router.push("/inventory-control/inventory-inbound");
+    await router.push("/inventory-control/inventory-outbound");
   } catch (err) {
     console.log(err);
   }
@@ -84,6 +84,8 @@ const handlePartSelected = (item) => {
 
   getMachines(item.PARTCODE);
 
+  selectedMachine.value.push();
+
   parts.value.push({
     locationId: "P",
     jobCode: "O",
@@ -112,10 +114,10 @@ const handlePartSelected = (item) => {
 };
 
 const handleMachineSelected = (index) => {
-  parts.value[index].machineNo = selectedMachine.value.MACHINENO;
-  parts.value[index].machineName = selectedMachine.value.MACHINENAME;
-  parts.value[index].shopName = selectedMachine.value.SHOPNAME;
-  parts.value[index].lineCode = selectedMachine.value.LINECODE;
+  parts.value[index].machineNo = selectedMachine.value[index].MACHINENO;
+  parts.value[index].machineName = selectedMachine.value[index].MACHINENAME;
+  parts.value[index].shopName = selectedMachine.value[index].SHOPNAME;
+  parts.value[index].lineCode = selectedMachine.value[index].LINECODE;
   console.log(parts.value[index]);
 };
 
@@ -286,8 +288,8 @@ const deleteItem = (index) => {
           <VRow class="align-center px-2 pb-4">
             <VCol cols="3" class="d-flex align-center justify-center">
               <AppSelect
-                v-model="selectedMachine"
-                :items="machines"
+                v-model="selectedMachine[index]"
+                :items="machines[index]"
                 item-title="MACHINENO"
                 label="Machine"
                 placeholder="Select machine"
