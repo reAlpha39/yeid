@@ -1,48 +1,46 @@
 <script setup>
 const isSelectInventoryVendorDialogVisible = ref(false);
+const isSelectInventoryPartDialogVisible = ref(false);
 const selectedVendor = ref({}); // Store the selected item
-const parts = ref([
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-]);
+const parts = ref([]);
 
 const handleItemSelected = (item) => {
   selectedVendor.value = item;
-  console.log("Selected Vendor:", item);
+};
+
+const handlePartSelected = (item) => {
+  parts.value.push({
+    partName: item.PARTNAME,
+    partCode: item.PARTCODE,
+    brand: item.BRAND,
+    specification: item.SPECIFICATION,
+    unitPrice: item.UNITPRICE,
+    currency: item.CURRENCY,
+    qty: 1,
+    totalPrice: item.UNITPRICE,
+    note: "",
+  });
 };
 
 const calculateTotalPrice = (part) => {
   return part.qty * part.unitPrice;
 };
 
-const updateQuantity = (index, qty) => {
+const updateQuantity = (index) => {
+  let qty = parts.value[index].qty;
+  qty = String(qty).replace(/[^\d]/g, "");
+
+  qty = parseInt(qty);
+
+  if (isNaN(qty) || qty < 0) {
+    qty = 0;
+  }
+
   parts.value[index].qty = qty;
   parts.value[index].totalPrice = calculateTotalPrice(parts.value[index]);
 };
 
-const removePart = (index) => {
+const deleteItem = (index) => {
   parts.value.splice(index, 1);
 };
 </script>
@@ -111,11 +109,6 @@ const removePart = (index) => {
         >
       </template>
     </div>
-
-    <SelectInventoryVendor
-      v-model:isDialogVisible="isSelectInventoryVendorDialogVisible"
-      @submit="handleItemSelected"
-    />
   </VCard>
 
   <!-- List Part Card -->
@@ -158,7 +151,7 @@ const removePart = (index) => {
       <VCard flat border class="d-flex flex-sm-row flex-column-reverse">
         <!-- 👉 Left Form -->
 
-        <VCol class="flex-grow-1 align-center">
+        <VCol class="flex-grow-1 align-center no-gutters">
           <VRow class="pa-4">
             <VCol cols="12" md="3">
               <div class="d-flex flex-column">
@@ -176,24 +169,34 @@ const removePart = (index) => {
               <p class="my-2">{{ part.specification }}</p>
             </VCol>
             <VCol cols="12" md="2">
-              <p class="my-2">IDR {{ part.unitPrice.toLocaleString() }}</p>
+              <p class="my-2">
+                {{ part.currency }}
+                {{ part.unitPrice.toLocaleString() }}
+              </p>
             </VCol>
             <VCol cols="12" md="1" sm="4">
-              <AppTextField v-model="part.qty" type="number" placeholder="5" />
+              <AppTextField
+                v-model.number="part.qty"
+                type="number"
+                placeholder="5"
+                min="0"
+                v-on:input="updateQuantity(index)"
+              />
             </VCol>
             <VCol cols="12" md="2" sm="4">
               <p class="my-2">
                 <span class="d-inline d-md-none">Price: </span>
-                <span class="text-high-emphasis"
-                  >IDR {{ (part.totalPrice * part.qty).toLocaleString() }}</span
+                <span class="text-high-emphasis">
+                  {{ part.currency }}
+                  {{ part.totalPrice.toLocaleString() }}</span
                 >
               </p>
             </VCol>
           </VRow>
 
-          <VDivider style="width: 100%; margin: 0; padding: 0" />
+          <VDivider />
 
-          <VRow class="align-center px-2 pt-4 pb-1">
+          <VRow class="align-center px-2 pt-4">
             <VCol cols="1" class="d-flex align-center justify-center">
               <p class="mb-0">Note</p>
             </VCol>
@@ -224,17 +227,27 @@ const removePart = (index) => {
     <VBtn
       color="primary"
       @click="
-        parts.value.push({
-          partName: '',
-          brand: '',
-          specification: '',
-          unitPrice: 0,
-          qty: 1,
-          totalPrice: 0,
-        })
+        isSelectInventoryPartDialogVisible = !isSelectInventoryPartDialogVisible
       "
     >
       Add Part
     </VBtn>
   </VCard>
+
+  <VRow class="d-flex justify-start">
+    <VCol>
+      <VBtn color="success" class="me-4">Save</VBtn>
+      <VBtn variant="outlined" color="error">Cancel</VBtn>
+    </VCol>
+  </VRow>
+
+  <SelectInventoryVendor
+    v-model:isDialogVisible="isSelectInventoryVendorDialogVisible"
+    @submit="handleItemSelected"
+  />
+
+  <SelectInventoryPartDialog
+    v-model:isDialogVisible="isSelectInventoryPartDialogVisible"
+    @submit="handlePartSelected"
+  />
 </template>
