@@ -380,6 +380,7 @@ declare module 'vue' {
     ScrollToTop: typeof import('./resources/js/@core/components/ScrollToTop.vue')['default']
     SelectInventoryPartDialog: typeof import('./resources/js/components/dialogs/SelectInventoryPartDialog.vue')['default']
     SelectInventoryVendor: typeof import('./resources/js/components/dialogs/SelectInventoryVendor.vue')['default']
+    SelectStaffDialog: typeof import('./resources/js/components/dialogs/SelectStaffDialog.vue')['default']
     ShareProjectDialog: typeof import('./resources/js/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./resources/js/@core/components/Shortcuts.vue')['default']
     TablePagination: typeof import('./resources/js/@core/components/TablePagination.vue')['default']

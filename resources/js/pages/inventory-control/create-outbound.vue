@@ -1,48 +1,147 @@
 <script setup>
-const isSelectInventoryVendorDialogVisible = ref(false);
-const selectedVendor = ref({}); // Store the selected item
-const parts = ref([
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-  {
-    partName: "MAGNETIC CONTACTOR",
-    brand: "MITSUBISHI",
-    specification: "S-T 10 200V 1A",
-    unitPrice: 190000,
-    qty: 1,
-    totalPrice: 190000,
-  },
-]);
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+
+const toast = useToast();
+const router = useRouter();
+
+const isSelectInventoryStaffDialogVisible = ref(false);
+const isSelectInventoryPartDialogVisible = ref(false);
+
+const selectedStaff = ref({}); // Store the selected item
+
+const machines = ref([]);
+const selectedMachine = ref();
+
+const parts = ref([]);
+
+const getMachines = async (partCode) => {
+  try {
+    const result = await $api("/getMachines", {
+      method: "GET",
+      params: {
+        partCode: partCode,
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to save data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    console.log(result["data"]);
+
+    machines.value = result["data"];
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const saveInbound = async () => {
+  try {
+    const result = await $api("/storeInvRecord", {
+      method: "POST",
+      body: {
+        records: parts.value,
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to save data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    console.log(result);
+    toast.success("Save inbound success");
+    await router.push("/inventory-control/inventory-inbound");
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const handlePartSelected = (item) => {
+  // showToast('primary','top-right')
+  const now = new Date();
+
+  // Function to format date as 'YYYYMMDD'
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    console.log(`${year}${month}${day}`);
+    return `${year}${month}${day}`;
+  };
+
+  // Function to format time as 'HHMMSS'
+  const formatTime = (date) => {
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    console.log(`${hours}${minutes}${seconds}`);
+    return `${hours}${minutes}${seconds}`;
+  };
+
+  getMachines(item.PARTCODE);
+
+  parts.value.push({
+    locationId: "P",
+    jobCode: "O",
+    jobDate: formatDate(now), // Format date as 'YYYYMMDD'
+    jobTime: formatTime(now), // Format time as 'HHMMSS'
+    partCode: item.PARTCODE,
+    partName: item.PARTNAME,
+    specification: item.SPECIFICATION,
+    brand: item.BRAND,
+    usedFlag: "",
+    quantity: 1,
+    unitPrice: item.UNITPRICE,
+    price: item.UNITPRICE,
+    currency: item.CURRENCY,
+    vendorCode: item.VENDORCODE,
+    machineNo: "",
+    machineName: "",
+    note: "",
+    employeeCode: selectedStaff.value.EMPLOYEECODE,
+    // not used on api
+    shopName: "",
+    lineCode: "",
+  });
+
+  console.log(parts.value);
+};
+
+const handleMachineSelected = (index) => {
+  parts.value[index].machineNo = selectedMachine.value.MACHINENO;
+  parts.value[index].machineName = selectedMachine.value.MACHINENAME;
+  parts.value[index].shopName = selectedMachine.value.SHOPNAME;
+  parts.value[index].lineCode = selectedMachine.value.LINECODE;
+  console.log(parts.value[index]);
+};
 
 const handleItemSelected = (item) => {
-  selectedVendor.value = item;
-  console.log("Selected Vendor:", item);
+  selectedStaff.value = item;
 };
 
 const calculateTotalPrice = (part) => {
-  return part.qty * part.unitPrice;
+  return part.quantity * part.unitPrice;
 };
 
-const updateQuantity = (index, qty) => {
-  parts.value[index].qty = qty;
-  parts.value[index].totalPrice = calculateTotalPrice(parts.value[index]);
+const updateQuantity = (index) => {
+  let qty = parts.value[index].quantity;
+  qty = String(qty).replace(/[^\d]/g, "");
+
+  qty = parseInt(qty);
+
+  if (isNaN(qty) || qty < 0) {
+    qty = 0;
+  }
+
+  parts.value[index].quantity = qty;
+  parts.value[index].price = calculateTotalPrice(parts.value[index]);
 };
 
-const removePart = (index) => {
+const deleteItem = (index) => {
   parts.value.splice(index, 1);
 };
 </script>
@@ -71,96 +170,69 @@ const removePart = (index) => {
   <!-- Vendor Card -->
   <VCard class="mb-6 pa-6">
     <div class="d-flex justify-space-between align-center">
-      <!-- Left side: Vendor Title and Subtitle -->
+      <!-- Left side: Staff Title and Subtitle -->
       <div>
-        <VCardTitle>Vendor</VCardTitle>
+        <VCardTitle>Staff</VCardTitle>
         <VCardSubtitle class="text-subtitle-2 text-gray">
-          The vendor is required, please select an available vendor
+          Staff is required, please select an available staff
         </VCardSubtitle>
-        <template v-if="selectedVendor.PARTNAME">
+        <template v-if="selectedStaff.EMPLOYEECODE">
           <br />
           <VCardSubtitle>
             <a
               @click="
-                isSelectInventoryVendorDialogVisible =
-                  !isSelectInventoryVendorDialogVisible
+                isSelectInventoryStaffDialogVisible =
+                  !isSelectInventoryStaffDialogVisible
               "
             >
-              Change Vendor
+              Change Staff
             </a>
           </VCardSubtitle>
         </template>
       </div>
 
       <!-- Right side: Select Vendor Button -->
-      <template v-if="selectedVendor.PARTNAME">
+      <template v-if="selectedStaff.EMPLOYEECODE">
         <!-- If a vendor is selected, show the vendor info -->
         <div>
-          <p><strong>Vendor Name:</strong> {{ selectedVendor.PARTNAME }}</p>
-          <p><strong>Vendor Code:</strong> {{ selectedVendor.PARTCODE }}</p>
+          <p><strong>Staff Name:</strong> {{ selectedStaff.EMPLOYEENAME }}</p>
+          <p><strong>Staff Code:</strong> {{ selectedStaff.EMPLOYEECODE }}</p>
         </div>
       </template>
       <template v-else>
         <!-- If no vendor is selected, show the button -->
         <VBtn
           @click="
-            isSelectInventoryVendorDialogVisible =
-              !isSelectInventoryVendorDialogVisible
+            isSelectInventoryStaffDialogVisible =
+              !isSelectInventoryStaffDialogVisible
           "
-          >Select Vendor</VBtn
+          >Select Staff</VBtn
         >
       </template>
     </div>
-
-    <SelectInventoryVendor
-      v-model:isDialogVisible="isSelectInventoryVendorDialogVisible"
-      @submit="handleItemSelected"
-    />
   </VCard>
 
   <!-- List Part Card -->
   <VCard class="mb-6 pa-6">
-    <VCardTitle>List Part</VCardTitle>
+    <VRow class="d-flex pb-8 pt-4 pr-3 justify-space-between">
+      <VCardTitle>List Part</VCardTitle>
 
-    <!-- eslint-disable vue/no-mutating-props -->
-    <VCard
-      flat
-      class="d-flex flex-sm-row flex-column-reverse"
-      style="background-color: #4b3e6414"
-    >
-      <div class="pa-6 flex-grow-1">
-        <VRow class="me-10">
-          <VCol cols="12" md="3">
-            <h6 class="text-h6">Part</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6 ps-2">Brand</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6 ps-2">Specification</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6">Unit Price</h6>
-          </VCol>
-          <VCol cols="12" md="1">
-            <h6 class="text-h6">Qty</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6">Total Price</h6>
-          </VCol>
-        </VRow>
-      </div>
-    </VCard>
-
-    <br />
+      <VBtn
+        color="primary"
+        @click="
+          isSelectInventoryPartDialogVisible =
+            !isSelectInventoryPartDialogVisible
+        "
+      >
+        Add Part
+      </VBtn>
+    </VRow>
 
     <template v-for="(part, index) in parts" :key="index">
-      <VCard flat border class="d-flex flex-sm-row flex-column-reverse">
-        <!-- 👉 Left Form -->
-
-        <VCol class="flex-grow-1 align-center">
+      <VCard flat border>
+        <VCol>
           <VRow class="pa-4">
-            <VCol cols="12" md="3">
+            <VCol cols="12" md="11">
               <div class="d-flex flex-column">
                 <span
                   class="d-block font-weight-medium text-high-emphasis text-truncate"
@@ -169,72 +241,151 @@ const removePart = (index) => {
                 <small>{{ part.partCode }}</small>
               </div>
             </VCol>
+            <!-- 👉 Item Actions -->
+            <VCol cols="12" md="1" class="flex-column align-end">
+              <IconBtn @click="deleteItem(item)">
+                <VIcon icon="tabler-trash" />
+              </IconBtn>
+            </VCol>
+          </VRow>
+
+          <VDivider />
+
+          <VRow class="align-center px-2 py-4">
             <VCol cols="12" md="2" sm="4">
-              <p class="my-2">{{ part.brand }}</p>
-            </VCol>
-            <VCol cols="12" md="2">
-              <p class="my-2">{{ part.specification }}</p>
-            </VCol>
-            <VCol cols="12" md="2">
-              <p class="my-2">IDR {{ part.unitPrice.toLocaleString() }}</p>
+              <AppTextField
+                v-model.number="part.quantity"
+                type="number"
+                placeholder="5"
+                min="0"
+                v-on:input="updateQuantity(index)"
+              />
             </VCol>
             <VCol cols="12" md="1" sm="4">
-              <AppTextField v-model="part.qty" type="number" placeholder="5" />
+              <text>x</text>
             </VCol>
-            <VCol cols="12" md="2" sm="4">
+            <VCol cols="12" md="5" sm="4">
               <p class="my-2">
-                <span class="d-inline d-md-none">Price: </span>
-                <span class="text-high-emphasis"
-                  >IDR {{ (part.totalPrice * part.qty).toLocaleString() }}</span
+                <span class="text-high-emphasis">
+                  {{ part.currency }}
+                  {{ part.unitPrice.toLocaleString() }}</span
+                >
+              </p>
+            </VCol>
+            <VCol cols="12" md="4" sm="4">
+              <p class="my-2 align">
+                <span class="text-high-emphasis">
+                  Total Price
+                  {{ part.currency }}
+                  {{ part.price.toLocaleString() }}</span
                 >
               </p>
             </VCol>
           </VRow>
 
-          <VDivider style="width: 100%; margin: 0; padding: 0" />
-
-          <VRow class="align-center px-2 pt-4 pb-1">
-            <VCol cols="1" class="d-flex align-center justify-center">
-              <p class="mb-0">Note</p>
+          <VRow class="align-center px-2 pb-4">
+            <VCol cols="3" class="d-flex align-center justify-center">
+              <AppSelect
+                v-model="selectedMachine"
+                :items="machines"
+                item-title="MACHINENO"
+                label="Machine"
+                placeholder="Select machine"
+                @update:modelValue="handleMachineSelected(index)"
+                return-object
+              />
             </VCol>
-            <VCol cols="11">
-              <VTextField
+            <VCol cols="9">
+              <AppTextField
                 v-model="part.note"
+                label="Note"
                 placeholder="Input note"
-                hide-details
-                dense
               />
             </VCol>
           </VRow>
-        </VCol>
 
-        <!-- 👉 Item Actions -->
-        <div
-          class="d-flex flex-column align-end item-actions"
-          :class="$vuetify.display.smAndUp ? 'border-s' : 'border-b'"
-        >
-          <IconBtn @click="deleteItem(item)">
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
+          <VDivider />
+
+          <div style="background-color: #f9f9f9">
+            <VRow class="align-center px-2 pt-4">
+              <VCol cols="6" class="d-flex align-center">
+                <text class="align-left">
+                  <span class="text-high-emphasis">
+                    Machine No :
+                    {{ part.machineNo }}
+                  </span>
+                </text>
+              </VCol>
+              <VCol cols="6">
+                <text class="align">
+                  <span class="text-high-emphasis">
+                    Specification :
+                    {{ part.specification }}
+                  </span>
+                </text>
+              </VCol>
+            </VRow>
+
+            <VRow class="align-center px-2">
+              <VCol cols="6" class="d-flex align-center">
+                <text class="align-left">
+                  <span class="text-high-emphasis">
+                    Shop & Line :
+                    {{ part.shopName }}
+                    &
+                    {{ part.lineCode }}
+                  </span>
+                </text>
+              </VCol>
+              <VCol cols="6">
+                <text class="align">
+                  <span class="text-high-emphasis">
+                    Vendor :
+                    {{ part.vendorCode }}
+                  </span>
+                </text>
+              </VCol>
+            </VRow>
+
+            <VRow class="align-center px-2">
+              <VCol cols="6" class="d-flex align-center">
+                <text class="align-left">
+                  <span class="text-high-emphasis">
+                    Brand :
+                    {{ part.brand }}
+                  </span>
+                </text>
+              </VCol>
+              <VCol cols="6">
+                <text class="align">
+                  <span class="text-high-emphasis">
+                    Note :
+                    {{ part.note }}
+                  </span>
+                </text>
+              </VCol>
+            </VRow>
+          </div>
+        </VCol>
       </VCard>
       <br />
     </template>
-
-    <VBtn
-      color="primary"
-      @click="
-        parts.value.push({
-          partName: '',
-          brand: '',
-          specification: '',
-          unitPrice: 0,
-          qty: 1,
-          totalPrice: 0,
-        })
-      "
-    >
-      Add Part
-    </VBtn>
   </VCard>
+
+  <VRow class="d-flex justify-start">
+    <VCol>
+      <VBtn color="success" class="me-4" @click="saveInbound()">Save</VBtn>
+      <VBtn variant="outlined" color="error">Cancel</VBtn>
+    </VCol>
+  </VRow>
+
+  <SelectStaffDialog
+    v-model:isDialogVisible="isSelectInventoryStaffDialogVisible"
+    @submit="handleItemSelected"
+  />
+
+  <SelectInventoryPartDialog
+    v-model:isDialogVisible="isSelectInventoryPartDialogVisible"
+    @submit="handlePartSelected"
+  />
 </template>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class InventoryControlController extends Controller
 {
@@ -66,6 +67,83 @@ class InventoryControlController extends Controller
 
         // Return the results as JSON
         return response()->json(['data' => $results]);
+    }
+
+    public function getStaff(Request $request)
+    {
+        try {
+            // Get the query parameter from the request
+            $query = $request->input('query', '');
+
+            // Perform the query on the mas_inventory table
+            $results = DB::table('HOZENADMIN.mas_employee')
+                ->where('EMPLOYEECODE', 'like', $query . '%')
+                ->orWhere('EMPLOYEENAME', 'like', $query . '%')
+                ->get();
+
+            // Return the results as JSON
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
+        }
+    }
+
+    public function getMachines(Request $request)
+    {
+        try {
+            // Get the partCode from the request
+            $partCode = $request->input('partCode');
+
+            // Check if partCode is provided
+            if (!$partCode) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Part code is required'
+                ], 400); // Bad request
+            }
+
+            // Perform the query using the Query Builder
+            $machines = DB::table('HOZENADMIN.MAS_INVMACHINE as I')
+                ->leftJoin('HOZENADMIN.MAS_MACHINE as M', 'I.MACHINENO', '=', 'M.MACHINENO')
+                ->select(
+                    'I.MACHINENO',
+                    DB::raw("COALESCE(M.MACHINENAME, 'NO REGISTER') as MACHINENAME"),
+                    DB::raw("COALESCE(M.SHOPNAME, 'N/A') as SHOPNAME"),
+                    DB::raw("COALESCE(M.LINECODE, 'N/A') as LINECODE"),
+                    DB::raw("COALESCE(M.MODELNAME, 'N/A') as MODELNAME")
+                )
+                ->where('I.PARTCODE', '=', $partCode)
+                ->orderBy('I.MACHINENO')
+                ->get();
+
+            if ($machines->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No machines found for the given part code'
+                ], 404); // Not found
+            }
+
+            // Return the result as JSON
+            return response()->json([
+                'success' => true,
+                'data' => $machines
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
+        }
     }
 
     public function storeInvRecord(Request $request)
