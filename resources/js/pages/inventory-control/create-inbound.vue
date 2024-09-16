@@ -298,7 +298,9 @@ const deleteItem = (index) => {
   <VRow class="d-flex justify-start">
     <VCol>
       <VBtn color="success" class="me-4" @click="saveInbound()">Save</VBtn>
-      <VBtn variant="outlined" color="error">Cancel</VBtn>
+      <VBtn variant="outlined" color="error" to="inventory-inbound"
+        >Cancel</VBtn
+      >
     </VCol>
   </VRow>
 
