@@ -135,7 +135,7 @@ const deleteItem = (index) => {
         <VCardSubtitle class="text-subtitle-2 text-gray">
           The vendor is required, please select an available vendor
         </VCardSubtitle>
-        <template v-if="selectedVendor.PARTNAME">
+        <template v-if="selectedVendor.VENDORCODE">
           <br />
           <VCardSubtitle>
             <a
@@ -151,11 +151,11 @@ const deleteItem = (index) => {
       </div>
 
       <!-- Right side: Select Vendor Button -->
-      <template v-if="selectedVendor.PARTNAME">
+      <template v-if="selectedVendor.VENDORCODE">
         <!-- If a vendor is selected, show the vendor info -->
         <div>
-          <p><strong>Vendor Name:</strong> {{ selectedVendor.PARTNAME }}</p>
-          <p><strong>Vendor Code:</strong> {{ selectedVendor.PARTCODE }}</p>
+          <p><strong>Vendor Name:</strong> {{ selectedVendor.VENDORNAME }}</p>
+          <p><strong>Vendor Code:</strong> {{ selectedVendor.VENDORCODE }}</p>
         </div>
       </template>
       <template v-else>

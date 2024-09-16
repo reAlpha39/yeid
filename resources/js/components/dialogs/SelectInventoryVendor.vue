@@ -16,7 +16,8 @@ async function fetchVendor() {
         query: vendorQuery.value,
       },
     });
-    data.value = response;
+    console.log(response.data);
+    data.value = response.data;
   } catch (err) {
     console.log(err);
   }
@@ -59,16 +60,17 @@ onMounted(() => {
       </VCardText>
 
       <AppTextField
+        class="pb-4"
         v-model="vendorQuery"
         placeholder="Search vendor"
         variant="outlined"
         v-on:input="fetchVendor()"
       />
 
-      <Divider />
+      <VDivider />
 
       <div class="table-container">
-        <VTable class="text-no-wrap v-table">
+        <VTable class="v-table">
           <thead>
             <tr>
               <th>Vendor</th>
@@ -79,17 +81,17 @@ onMounted(() => {
           </thead>
 
           <tbody>
-            <tr v-for="item in data.data" :key="item.PARTCODE">
+            <tr v-for="item in data" :key="item.VENDORCODE">
               <td>
-                <div class="d-flex flex-column ms-3">
-                  <span style="font-weight: 500">{{ item.PARTNAME }}</span>
-                  <text>{{ item.PARTCODE }}</text>
+                <div class="d-flex flex-column ms-3 py-2">
+                  <span style="font-weight: 500">{{ item.VENDORNAME }}</span>
+                  <text>{{ item.VENDORCODE }}</text>
                 </div>
               </td>
               <td>
-                <div class="d-flex flex-column ms-3">
-                  <span style="font-weight: 500">{{ item.PARTNAME }}</span>
-                  <text>{{ item.PARTCODE }}</text>
+                <div class="d-flex flex-column ms-3 py-2">
+                  <span style="font-weight: 500">{{ item.VENDORNAME }}</span>
+                  <text>{{ item.VENDORCODE }}</text>
                 </div>
               </td>
               <td>

@@ -179,15 +179,15 @@ const deleteItem = (index) => {
           Staff is required, please select an available staff
         </VCardSubtitle>
       </div>
-      <!-- Right side: Select Vendor Button -->
+      <!-- Right side: Select Staff Button -->
       <template v-if="selectedStaff.EMPLOYEECODE == null">
-        <!-- If a vendor is selected, show the vendor info -->
+        <!-- If a staff is selected, show the staff info -->
         <VBtn
           @click="
             isSelectInventoryStaffDialogVisible =
               !isSelectInventoryStaffDialogVisible
           "
-          >Select Vendor</VBtn
+          >Select Staff</VBtn
         >
       </template>
     </div>

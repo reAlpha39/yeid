@@ -54,20 +54,60 @@ class InventoryControlController extends Controller
         return response()->json($records);
     }
 
+    public function getPartInfo(Request $request)
+    {
+        try {
+            // Get the query parameter from the request
+            $query = $request->input('query', '');
+
+            // Perform the query on the mas_inventory table
+            $results = DB::table('HOZENADMIN.mas_inventory')
+                ->where('PARTCODE', 'like', $query . '%')
+                ->orWhere('PARTNAME', 'like', $query . '%')
+                ->limit(100)
+                ->get();
+
+            // Return the results as JSON
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
+        }
+    }
+
     public function getVendor(Request $request)
     {
-        // Get the query parameter from the request
-        $query = $request->input('query', '');
+        try {
+            // Get the query parameter from the request
+            $query = $request->input('query', '');
 
-        // Perform the query on the mas_inventory table
-        $results = DB::table('HOZENADMIN.mas_inventory')
-            ->where('PARTCODE', 'like', $query . '%')
-            ->orWhere('PARTNAME', 'like', $query . '%')
-            ->limit(100)
-            ->get();
+            // Perform the query on the mas_inventory table
+            $results = DB::table('HOZENADMIN.mas_vendor')
+                ->where('VENDORCODE', 'like', $query . '%')
+                ->orWhere('VENDORNAME', 'like', $query . '%')
+                ->limit(100)
+                ->get();
 
-        // Return the results as JSON
-        return response()->json(['data' => $results]);
+            // Return the results as JSON
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while fetching data',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
+        }
     }
 
     public function getStaff(Request $request)
@@ -76,7 +116,7 @@ class InventoryControlController extends Controller
             // Get the query parameter from the request
             $query = $request->input('query', '');
 
-            // Perform the query on the mas_inventory table
+            // Perform the query on the mas_employee table
             $results = DB::table('HOZENADMIN.mas_employee')
                 ->where('EMPLOYEECODE', 'like', $query . '%')
                 ->orWhere('EMPLOYEENAME', 'like', $query . '%')

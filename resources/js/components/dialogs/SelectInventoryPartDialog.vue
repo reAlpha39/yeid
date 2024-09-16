@@ -1,11 +1,6 @@
 <script setup>
-const data = await $api("/getVendor", {
-  params: {
-    query: "",
-  },
-});
-
-console.log(data.data);
+const data = ref({});
+const searchPart = ref("");
 
 const props = defineProps({
   isDialogVisible: {
@@ -27,6 +22,24 @@ const handleItemClick = (item) => {
   emit("update:isDialogVisible", false);
   emit("submit", item);
 };
+
+async function fetchData() {
+  try {
+    const response = await $api("/getPartInfo", {
+      params: {
+        query: searchPart.value,
+      },
+    });
+
+    data.value = response.data;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <template>
@@ -44,7 +57,38 @@ const handleItemClick = (item) => {
         <p class="text-body-1 text-center mb-6">You can only select one part</p>
       </VCardText>
 
-      <div class="pa-2 flex-grow-1">
+      <VRow class="py-4">
+        <VCol md="4">
+          <AppTextField
+            v-model="searchPart"
+            placeholder="Search part"
+            variant="outlined"
+            v-on:input="fetchData()"
+          />
+        </VCol>
+        <VCol md="4">
+          <AppSelect
+            v-model="selectedRole"
+            placeholder="Select brand"
+            :items="roles"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+        <VCol md="4">
+          <AppSelect
+            v-model="selectedRole"
+            placeholder="Select curr"
+            :items="roles"
+            clearable
+            clear-icon="tabler-x"
+          />
+        </VCol>
+      </VRow>
+
+      <VDivider />
+
+      <div class="py-3 flex-grow-1">
         <VRow class="me-10 pb-2">
           <VCol cols="12" md="3">
             <h6 class="text-h6">Part</h6>
@@ -68,11 +112,11 @@ const handleItemClick = (item) => {
         <VDivider />
       </div>
 
-      <template v-for="(item, index) in data.data" :key="index">
-        <div class="pa-2 flex-grow-1">
+      <template v-for="(item, index) in data" :key="index">
+        <div class="py-2">
           <VRow class="me-10">
             <VCol cols="12" md="3">
-              <div class="d-flex flex-column">
+              <div class="d-flex flex-column align-items-center">
                 <span style="font-weight: 500">{{ item.PARTNAME }}</span>
                 <small>{{ item.PARTCODE }}</small>
               </div>
@@ -96,47 +140,6 @@ const handleItemClick = (item) => {
           <VDivider />
         </div>
       </template>
-
-      <div class="table-container card-list">
-        <VTable class="v-table">
-          <thead>
-            <tr>
-              <th>Part</th>
-              <th>Brand</th>
-              <th>Specification</th>
-              <th>Curr</th>
-              <th>Unit Price</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="item in data.data" :key="item.PARTCODE">
-              <td>
-                <div class="d-flex flex-column ms-3">
-                  <span style="font-weight: 500">{{ item.PARTNAME }}</span>
-                  <text>{{ item.PARTCODE }}</text>
-                </div>
-              </td>
-              <td>
-                {{ item.BRAND }}
-              </td>
-              <td>
-                {{ item.SPECIFICATION }}
-              </td>
-              <td>
-                {{ item.CURRENCY }}
-              </td>
-              <td>
-                {{ item.UNITPRICE }}
-              </td>
-              <td>
-                <a @click.prevent="handleItemClick(item)">Select</a>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
-      </div>
     </VCard>
   </VDialog>
 </template>
