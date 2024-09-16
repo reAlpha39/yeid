@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
+import { VRow } from "vuetify/lib/components/index.mjs";
 
 const toast = useToast();
 const router = useRouter();
@@ -178,40 +179,44 @@ const deleteItem = (index) => {
         <VCardSubtitle class="text-subtitle-2 text-gray">
           Staff is required, please select an available staff
         </VCardSubtitle>
-        <template v-if="selectedStaff.EMPLOYEECODE">
-          <br />
-          <VCardSubtitle>
-            <a
-              @click="
-                isSelectInventoryStaffDialogVisible =
-                  !isSelectInventoryStaffDialogVisible
-              "
-            >
-              Change Staff
-            </a>
-          </VCardSubtitle>
-        </template>
       </div>
-
       <!-- Right side: Select Vendor Button -->
-      <template v-if="selectedStaff.EMPLOYEECODE">
+      <template v-if="selectedStaff.EMPLOYEECODE == null">
         <!-- If a vendor is selected, show the vendor info -->
-        <div>
-          <p><strong>Staff Name:</strong> {{ selectedStaff.EMPLOYEENAME }}</p>
-          <p><strong>Staff Code:</strong> {{ selectedStaff.EMPLOYEECODE }}</p>
-        </div>
-      </template>
-      <template v-else>
-        <!-- If no vendor is selected, show the button -->
         <VBtn
           @click="
             isSelectInventoryStaffDialogVisible =
               !isSelectInventoryStaffDialogVisible
           "
-          >Select Staff</VBtn
+          >Select Vendor</VBtn
         >
       </template>
     </div>
+    <template v-if="selectedStaff.EMPLOYEECODE">
+      <VCard
+        flat
+        border
+        class="pa-4 ma-3"
+        style="background-color: #e8776814; border-color: #e87768"
+      >
+        <div class="d-flex justify-space-between align-center">
+          <div class="d-flex flex-column">
+            <text
+              ><strong> {{ selectedStaff.EMPLOYEENAME }}</strong></text
+            >
+            <small> {{ selectedStaff.EMPLOYEECODE }}</small>
+          </div>
+
+          <VBtn
+            @click="
+              isSelectInventoryStaffDialogVisible =
+                !isSelectInventoryStaffDialogVisible
+            "
+            >Change Staff</VBtn
+          >
+        </div>
+      </VCard>
+    </template>
   </VCard>
 
   <!-- List Part Card -->
