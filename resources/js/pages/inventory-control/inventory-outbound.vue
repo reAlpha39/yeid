@@ -1,11 +1,20 @@
 <script setup>
 // import data from '@/views/demos/forms/tables/data-table/datatable';
+const now = new Date();
 
-// No need to repeat `https://localhost/api` now
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  console.log(`${year}${month}${day}`);
+  return `${year}${month}${day}`;
+};
+
 const data = await $api("/invControl", {
   params: {
     startDate: "20240417",
-    endDate: "20241231",
+    endDate: formatDate(now),
     jobCode: "O",
     limit: 0,
     orderBy: "jobdate",
@@ -65,7 +74,7 @@ onMounted(() => {
 <template>
   <div>
     <VBreadcrumbs
-      class="px-0 pb-2 pt-0 inventory-control-inventory-outbound"
+      class="px-0 pb-2 pt-0 inventory-control-inventory-inbound"
       :items="[
         {
           title: 'Inventory Control',
@@ -151,10 +160,7 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn
-          prepend-icon="tabler-plus"
-          to="create-outbound"
-        >
+        <VBtn prepend-icon="tabler-plus" to="create-outbound">
           Create Out-Bound
         </VBtn>
       </div>
@@ -215,7 +221,7 @@ onMounted(() => {
         <div class="d-flex align-center">
           <div class="d-flex flex-row ms-3">
             {{ item.currency }}
-            {{ item.unitprice }}
+            {{ item.unitprice.toLocaleString() }}
           </div>
         </div>
       </template>
@@ -225,7 +231,7 @@ onMounted(() => {
         <div class="d-flex align-center">
           <div class="d-flex flex-row ms-3">
             {{ item.currency }}
-            {{ item.total }}
+            {{ item.total.toLocaleString() }}
           </div>
         </div>
       </template>
