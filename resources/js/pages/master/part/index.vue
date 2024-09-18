@@ -69,12 +69,12 @@ async function fetchData() {
   }
 }
 
-async function deleteRecord() {
+async function deletePart() {
   try {
-    const result = await $api("/deleteRecord", {
+    const result = await $api("/master/delete-part", {
       method: "DELETE",
       body: {
-        record_id: parseInt(selectedPartCode.value),
+        part_code: selectedPartCode.value,
       },
 
       onResponseError({ response }) {
@@ -83,6 +83,7 @@ async function deleteRecord() {
       },
     });
 
+    selectedPartCode.value = "";
     isDeleteDialogVisible.value = false;
     toast.success("Delete success");
     fetchData();
@@ -93,7 +94,7 @@ async function deleteRecord() {
 }
 
 function openDeleteDialog(partCode) {
-  selectedPartCode.value = recordId;
+  selectedPartCode.value = partCode;
   isDeleteDialogVisible.value = true;
 }
 
@@ -250,10 +251,12 @@ onMounted(() => {
 
   <!-- 👉 Delete Dialog  -->
   <VDialog v-model="isDeleteDialogVisible" max-width="500px">
-    <VCard>
-      <VCardTitle> Are you sure you want to delete this item? </VCardTitle>
+    <VCard class="pa-4">
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
 
-      <VCardActions>
+      <VCardActions class="pt-4">
         <VSpacer />
 
         <VBtn
@@ -264,7 +267,7 @@ onMounted(() => {
           Cancel
         </VBtn>
 
-        <VBtn color="success" variant="elevated" @click="deleteRecord()">
+        <VBtn color="success" variant="elevated" @click="deletePart()">
           OK
         </VBtn>
 

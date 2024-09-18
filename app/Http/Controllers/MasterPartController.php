@@ -220,4 +220,48 @@ class MasterPartController extends Controller
             ], 500);
         }
     }
+
+    public function deleteMasterPart(Request $request)
+    {
+        // Validate incoming data
+        $request->validate([
+            'part_code' => 'required|string'
+        ]);
+
+        try {
+            // Get the target PARTCODE from the request
+            $partCode = $request->input('part_code');
+
+            // Perform the delete operation
+            $affectedRows = DB::table('HOZENADMIN.MAS_INVENTORY')
+                ->where('PARTCODE', '=', $partCode)
+                ->delete();
+
+            // Delete MachineNo
+            $affectedRows = DB::table('HOZENADMIN.MAS_INVMACHINE')
+                ->where('PARTCODE', '=', $partCode)
+                ->delete();
+
+            if ($affectedRows > 0) {
+                // Return success response if deletion was successful
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Part deleted successfully.'
+                ], 200);
+            } else {
+                // Return failure response if no record was found
+                return response()->json([
+                    'status' => 'failure',
+                    'message' => 'Part not found or already deleted.'
+                ], 404);
+            }
+        } catch (Exception $e) {
+            // Handle any potential errors
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while deleting data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

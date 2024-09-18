@@ -19,6 +19,7 @@ Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController:
 // Master Part
 Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
 Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
+Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
 
 // Master Machine
 Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);
