@@ -123,6 +123,7 @@ declare module 'vue-router/auto/routes' {
     'inventory-control-inventory-inbound': RouteRecordInfo<'inventory-control-inventory-inbound', '/inventory-control/inventory-inbound', Record<never, never>, Record<never, never>>,
     'inventory-control-inventory-outbound': RouteRecordInfo<'inventory-control-inventory-outbound', '/inventory-control/inventory-outbound', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'master-part': RouteRecordInfo<'master-part', '/master/part', Record<never, never>, Record<never, never>>,
     'not-authorized': RouteRecordInfo<'not-authorized', '/not-authorized', Record<never, never>, Record<never, never>>,
     'pages-account-settings-tab': RouteRecordInfo<'pages-account-settings-tab', '/pages/account-settings/:tab', { tab: ParamValue<true> }, { tab: ParamValue<false> }>,
     'pages-authentication-forgot-password-v1': RouteRecordInfo<'pages-authentication-forgot-password-v1', '/pages/authentication/forgot-password-v1', Record<never, never>, Record<never, never>>,

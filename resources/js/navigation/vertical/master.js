@@ -13,7 +13,7 @@ export default [
       },
       {
         title: 'Part',
-        // to: 'dashboards-ecommerce',
+        to: 'master-part',
       },
       {
         title: 'Plant',
