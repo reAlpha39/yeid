@@ -170,7 +170,7 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="add-part"> Add New Part </VBtn>
+        <VBtn prepend-icon="tabler-plus" to="part/add"> Add New Part </VBtn>
       </div>
     </VCardText>
 
