@@ -2,8 +2,12 @@
 import { useToast } from "vue-toastification";
 
 const isSelectInventoryVendorDialogVisible = ref(false);
+const isSelectMachineDialogVisible = ref(false);
+const isDeleteSelectedMachineDialogVisible = ref(false);
 
 const toast = useToast();
+
+const form = ref();
 const usedPartSwitch = ref("Active");
 const orderSwitch = ref("Active");
 
@@ -27,19 +31,106 @@ const minOrderTF = ref();
 const stockQtyTF = ref();
 
 const machines = ref([]);
+const indexMachineDelete = ref();
 
 const categories = ["Machines", "Facility", "Jig", "Other"];
-const currencies = ["USD", "SGD", "JPY", "IDR"];
+const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 
 const handleVendorSelected = (item) => {
   vendorTF.value = item.VENDORCODE + " | " + item.VENDORNAME;
 };
 
+function handleMachinesSelected(items) {
+  // if (machines.value.length === 0) {
+  //   machines.value = items;
+  // } else {
+  //   machines.value.push(...items);
+  // }
+
+  machines.value = items;
+}
+
+function openDeleteDialog(index) {
+  isDeleteSelectedMachineDialogVisible.value = true;
+  indexMachineDelete.value = index;
+}
+
+function deleteSelectedMachine() {
+  machines.value.splice(indexMachineDelete.value, 1);
+  indexMachineDelete.value = undefined;
+  isDeleteSelectedMachineDialogVisible.value = false;
+}
+
+async function addMasterPart() {
+  const { valid, errors } = await form.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
+  try {
+    const result = await $api("/master/add-part", {
+      method: "POST",
+      body: {
+        part_code: partCodeTF.value,
+        part_name: partNameTF.value,
+        category: convertCategory(categoryTF.value),
+        specification: specificationTF.value,
+        ean_code: barcodeTF.value,
+        brand: brandTF.value,
+        used_flag: convertSwitch(usedPartSwitch.value),
+        address: addressTF.value,
+        vendor_code: vendorTF.value.split(" | ")[0],
+        unit_price: unitPriceTF.value,
+        currency: currencyTF.value,
+        min_stock: minStockTF.value,
+        min_order: minOrderTF.value,
+        note: noteTF.value,
+        last_stock_number: last_stock_number.value,
+        order_part_code: orderPartCodeTF.value,
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to save data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    toast.success("Save part success");
+    await router.push("/master/part");
+  } catch (err) {
+    toast.error("Failed to save part");
+    console.log(err);
+  }
+}
+
+function convertCategory(category) {
+  switch (category) {
+    case "Machine":
+      return "M";
+    case "Facility":
+      return "F";
+    case "J":
+      return "Jig";
+    case "Other":
+      return "O";
+    default:
+      return "-";
+  }
+}
+
+function convertSwitch(val) {
+  if (val === "Active") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 onMounted(() => {});
 </script>
 
 <template>
-  <VForm @submit.prevent="() => {}">
+  <VForm ref="form" lazy-validation>
     <div>
       <VBreadcrumbs
         class="px-0 pb-2 pt-0"
@@ -65,6 +156,7 @@ onMounted(() => {});
         <VCol cols="6">
           <AppTextField
             v-model="partCodeTF"
+            :rules="[requiredValidator]"
             label="Part Code"
             placeholder="Input part code"
           ></AppTextField>
@@ -72,6 +164,7 @@ onMounted(() => {});
         <VCol cols="6">
           <AppTextField
             v-model="partNameTF"
+            :rules="[requiredValidator]"
             label="Part Name"
             placeholder="Input part name"
           ></AppTextField>
@@ -82,6 +175,7 @@ onMounted(() => {});
         <VCol cols="6">
           <AppTextField
             v-model="specificationTF"
+            :rules="[requiredValidator]"
             label="Specification"
             placeholder="Input specification"
           ></AppTextField>
@@ -89,6 +183,7 @@ onMounted(() => {});
         <VCol cols="6">
           <AppTextField
             v-model="brandTF"
+            :rules="[requiredValidator]"
             label="Brand"
             placeholder="Input brand"
           ></AppTextField>
@@ -99,6 +194,7 @@ onMounted(() => {});
         <VCol cols="3">
           <AppSelect
             v-model="categoryTF"
+            :rules="[requiredValidator]"
             label="Category"
             :items="categories"
             placeholder="Select category"
@@ -115,6 +211,7 @@ onMounted(() => {});
         <VCol cols="3">
           <AppTextField
             v-model="addressTF"
+            :rules="[requiredValidator]"
             label="Address"
             placeholder="Input address"
           ></AppTextField>
@@ -123,6 +220,7 @@ onMounted(() => {});
           <VLabel style="color: #43404f; font-size: 13px">Used Parts</VLabel>
           <VSwitch
             v-model="usedPartSwitch"
+            :rules="[requiredValidator]"
             :label="usedPartSwitch"
             false-value="Inactive"
             true-value="Active"
@@ -134,6 +232,7 @@ onMounted(() => {});
         readonly
         class="py-4"
         v-model="vendorTF"
+        :rules="[requiredValidator]"
         placeholder="Select vendor"
         label="Vendor"
         @click="
@@ -147,6 +246,7 @@ onMounted(() => {});
         <VCol cols="3">
           <AppTextField
             v-model="unitPriceTF"
+            :rules="[requiredValidator]"
             label="Unit Price"
             placeholder="Input unit price"
           ></AppTextField>
@@ -154,6 +254,7 @@ onMounted(() => {});
         <VCol cols="3">
           <AppSelect
             v-model="currencyTF"
+            :rules="[requiredValidator]"
             label="Currency"
             :items="currencies"
             placeholder="Select currency"
@@ -200,6 +301,7 @@ onMounted(() => {});
         <VCol cols="2">
           <AppTextField
             v-model="stockQtyTF"
+            :rules="[requiredValidator]"
             label="Stock Quantity"
             placeholder="0"
           ></AppTextField>
@@ -223,14 +325,19 @@ onMounted(() => {});
             <h3 class="mb-0">Machine List</h3>
           </VCol>
           <VCol cols="auto">
-            <VBtn prepend-icon="tabler-plus" to="create-inbound">
+            <VBtn
+              prepend-icon="tabler-plus"
+              @click="
+                isSelectMachineDialogVisible = !isSelectMachineDialogVisible
+              "
+            >
               Add Machine
             </VBtn>
           </VCol>
         </VRow>
       </VCardTitle>
 
-      <VCard flat outlined>
+      <VCard flat outlined v-if="machines.length > 0">
         <VTable class="text-no-wrap">
           <thead>
             <tr>
@@ -244,17 +351,27 @@ onMounted(() => {});
           </thead>
           <tbody>
             <!-- First row -->
-            <tr>
+            <tr v-for="(item, index) in machines" :key="item.MACHINENO">
               <td>
-                <div>DRAWING 1</div>
-                <small>1DR-5D7</small>
+                <div class="d-flex flex-column">
+                  <span style="font-weight: 500">{{ item.MACHINENAME }}</span>
+                  <small>{{ item.MACHINENO }}</small>
+                </div>
               </td>
-              <td>5D7</td>
-              <td>SIC</td>
-              <td>3308</td>
-              <td>-</td>
               <td>
-                <IconBtn @click="openDeleteDialog(item)">
+                {{ item.MODELNAME }}
+              </td>
+              <td>
+                {{ item.MAKERNAME }}
+              </td>
+              <td>
+                {{ item.SHOPCODE }}
+              </td>
+              <td>
+                {{ item.LINECODE }}
+              </td>
+              <td>
+                <IconBtn @click="openDeleteDialog(index)">
                   <VIcon icon="tabler-trash" />
                 </IconBtn>
               </td>
@@ -265,7 +382,7 @@ onMounted(() => {});
     </VCard>
     <VRow class="d-flex justify-start py-8">
       <VCol>
-        <VBtn color="success" class="me-4" type="submit">Save</VBtn>
+        <VBtn color="success" class="me-4" @click="addMasterPart">Save</VBtn>
         <VBtn variant="outlined" color="error" type="reset">Cancel</VBtn>
       </VCol>
     </VRow>
@@ -275,4 +392,44 @@ onMounted(() => {});
     v-model:isDialogVisible="isSelectInventoryVendorDialogVisible"
     @submit="handleVendorSelected"
   />
+
+  <SelectMachinesDialog
+    v-model:isDialogVisible="isSelectMachineDialogVisible"
+    v-model:items="machines"
+    @submit="handleMachinesSelected"
+  />
+
+  <!-- 👉 Delete Dialog  -->
+  <VDialog v-model="isDeleteSelectedMachineDialogVisible" max-width="500px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="error"
+          variant="outlined"
+          @click="
+            isDeleteSelectedMachineDialogVisible =
+              !isDeleteSelectedMachineDialogVisible
+          "
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn
+          color="success"
+          variant="elevated"
+          @click="deleteSelectedMachine()"
+        >
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>

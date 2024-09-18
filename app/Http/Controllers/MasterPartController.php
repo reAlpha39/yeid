@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Carbon;
 use Exception;
 
 class MasterPartController extends Controller
@@ -120,6 +121,102 @@ class MasterPartController extends Controller
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
             ], 500); // Internal server error
+        }
+    }
+
+    public function addMasterPart(Request $request)
+    {
+        try {
+            // Retrieve data from the request
+            $partCode = $request->input('part_code');
+            $partName = $request->input('part_name');
+            $category = $request->input('category', 'O');  // Default to 'O' if not provided
+            $specification = $request->input('specification');
+            $eanCode = $request->input('ean_code', null);
+            $brand = $request->input('brand');
+            $usedFlag = $request->input('used_flag', false) ? 'O' : ' ';
+            $locationId = 'P';  // Hardcoded as 'P' as per VB code
+            $address = $request->input('address');
+            $vendorCode = $request->input('vendor_code', null);
+            $unitPrice = $request->input('unit_price', 0);
+            $currency = $request->input('currency');
+            $minStock = $request->input('min_stock', 0);
+            $minOrder = $request->input('min_order', 0);
+            $note = $request->input('note', null);
+            $lastStockNumber = $request->input('last_stock_number', 0);
+            $lastStockDate = Carbon::now()->format('Ymd');
+            $orderPartCode = $request->input('order_part_code', null);
+            $machines = $request->input('machines', []);
+            $updateTime = Carbon::now();
+
+            // Insert into MAS_INVENTORY table
+            DB::table('HOZENADMIN.MAS_INVENTORY')->insert([
+                'PARTCODE' => $partCode,
+                'PARTNAME' => $partName,
+                'CATEGORY' => $category,
+                'SPECIFICATION' => $specification,
+                'EANCODE' => $eanCode,
+                'BRAND' => $brand,
+                'USEDFLAG' => $usedFlag,
+                'LOCATIONID' => $locationId,
+                'ADDRESS' => $address,
+                'VENDORCODE' => $vendorCode,
+                'UNITPRICE' => $unitPrice,
+                'CURRENCY' => $currency,
+                'MINSTOCK' => $minStock,
+                'MINORDER' => $minOrder,
+                'NOTE' => $note,
+                'LASTSTOCKNUMBER' => $lastStockNumber,
+                'LASTSTOCKDATE' => $lastStockDate,
+                'STATUS' => ' ',  // Hardcoded as chr(0) in the VB code, using empty string for SQL Server
+                'ORDERPARTCODE' => $orderPartCode,
+                'UPDATETIME' => $updateTime,  // Current timestamp
+            ]);
+
+            // 
+            // Delete MachineNo
+            // 
+            $affectedRows = DB::table('HOZENADMIN.MAS_INVMACHINE')
+                ->where('PARTCODE', $partCode)
+                ->delete();
+
+            // Check if any rows were affected (i.e., if the delete was successful)
+            if ($affectedRows > 0) {
+                // 
+            }
+
+            // 
+            foreach ($machines as $machine) {
+                $machineNo = $machine->input('machine_no');
+
+                $rows = DB::table('HOZENADMIN.MAS_INVMACHINE')->select(
+                    'MACHINENO'
+                )
+                    ->where('PARTCODE', $partCode)
+                    ->where('MACHINENO',  $machineNo)
+                    ->limit(1)
+                    ->get();
+
+                if ($rows < 1) {
+                    DB::table('HOZENADMIN.MAS_INVMACHINE')->insert([
+                        'PARTCODE' => $partCode,
+                        'MACHINENO' => $machineNo,
+                        'UPDATETIME' => $updateTime,
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Inventory record inserted successfully!'
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); 
         }
     }
 }
