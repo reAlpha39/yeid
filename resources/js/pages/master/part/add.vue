@@ -1,4 +1,5 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const isSelectInventoryVendorDialogVisible = ref(false);
@@ -6,6 +7,7 @@ const isSelectMachineDialogVisible = ref(false);
 const isDeleteSelectedMachineDialogVisible = ref(false);
 
 const toast = useToast();
+const router = useRouter();
 
 const form = ref();
 const usedPartSwitch = ref("Active");
@@ -68,6 +70,16 @@ async function addMasterPart() {
   }
 
   try {
+    var machineData = [];
+
+    for (const e of machines.value) {
+      machineData.push({
+        machine_no: e.MACHINENO,
+      });
+    }
+
+    console.log(machineData);
+
     const result = await $api("/master/add-part", {
       method: "POST",
       body: {
@@ -85,8 +97,9 @@ async function addMasterPart() {
         min_stock: minStockTF.value,
         min_order: minOrderTF.value,
         note: noteTF.value,
-        last_stock_number: last_stock_number.value,
-        order_part_code: orderPartCodeTF.value,
+        last_stock_number: stockQtyTF.value,
+        order_part_code: initialStockTF.value,
+        machines: machineData,
       },
 
       onResponseError({ response }) {
@@ -298,16 +311,9 @@ onMounted(() => {});
             placeholder="0"
           ></AppTextField>
         </VCol>
-        <VCol cols="2">
-          <AppTextField
-            v-model="stockQtyTF"
-            :rules="[requiredValidator]"
-            label="Stock Quantity"
-            placeholder="0"
-          ></AppTextField>
-        </VCol>
-        <VCol cols="6">
-          <VLabel style="color: #43404f; font-size: 13px">Used Parts</VLabel>
+
+        <VCol cols="8">
+          <VLabel style="color: #43404f; font-size: 13px">No Order</VLabel>
           <VSwitch
             v-model="orderSwitch"
             :label="orderSwitch"

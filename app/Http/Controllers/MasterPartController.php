@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class MasterPartController extends Controller
@@ -142,11 +143,10 @@ class MasterPartController extends Controller
             $currency = $request->input('currency');
             $minStock = $request->input('min_stock', 0);
             $minOrder = $request->input('min_order', 0);
-            $note = $request->input('note', null);
+            $note = $request->input('note', '');
             $lastStockNumber = $request->input('last_stock_number', 0);
             $lastStockDate = Carbon::now()->format('Ymd');
             $orderPartCode = $request->input('order_part_code', null);
-            $machines = $request->input('machines', []);
             $updateTime = Carbon::now();
 
             // Insert into MAS_INVENTORY table
@@ -182,12 +182,13 @@ class MasterPartController extends Controller
 
             // Check if any rows were affected (i.e., if the delete was successful)
             if ($affectedRows > 0) {
-                // 
+                // console.log('')
             }
 
+            $machines = $request->input('machines', []);
             // 
             foreach ($machines as $machine) {
-                $machineNo = $machine->input('machine_no');
+                $machineNo = $machine['machine_no'];
 
                 $rows = DB::table('HOZENADMIN.MAS_INVMACHINE')->select(
                     'MACHINENO'
@@ -197,7 +198,7 @@ class MasterPartController extends Controller
                     ->limit(1)
                     ->get();
 
-                if ($rows < 1) {
+                if ($rows->isEmpty()) {
                     DB::table('HOZENADMIN.MAS_INVMACHINE')->insert([
                         'PARTCODE' => $partCode,
                         'MACHINENO' => $machineNo,
@@ -216,7 +217,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); 
+            ], 500);
         }
     }
 }
