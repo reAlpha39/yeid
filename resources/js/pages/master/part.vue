@@ -4,8 +4,10 @@ import { useToast } from "vue-toastification";
 const toast = useToast();
 
 const isDeleteDialogVisible = ref(false);
-const recordIdToDelete = ref(0);
+const isUpdateStockQtyDialogVisible = ref(false);
 
+const selectedPartCode = ref("");
+const searchQuery = ref("");
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -22,11 +24,11 @@ const headers = [
   },
   {
     title: "CATEGORY",
-    key: "CATEGORY",
+    key: "category",
   },
   {
     title: "STOCK QUANTITY",
-    key: "LASTSTOCKNUMBER",
+    key: "TOTALSTOCK",
   },
   {
     title: "MINIMUM STOCK",
@@ -48,7 +50,7 @@ const data = ref([]);
 
 async function fetchData() {
   try {
-    const response = await $api("/master-part-list", {
+    const response = await $api("/master/part-list", {
       params: {
         search: "",
         category: "",
@@ -72,7 +74,7 @@ async function deleteRecord() {
     const result = await $api("/deleteRecord", {
       method: "DELETE",
       body: {
-        record_id: parseInt(recordIdToDelete.value),
+        record_id: parseInt(selectedPartCode.value),
       },
 
       onResponseError({ response }) {
@@ -90,9 +92,29 @@ async function deleteRecord() {
   }
 }
 
-function openDeleteDialog(recordId) {
+function openDeleteDialog(partCode) {
+  selectedPartCode.value = recordId;
   isDeleteDialogVisible.value = true;
-  recordIdToDelete.value = recordId.recordid;
+}
+
+function openUpdateDialog(partCode) {
+  selectedPartCode.value = partCode;
+  isUpdateStockQtyDialogVisible.value = true;
+}
+
+function categoryType(category) {
+  switch (category) {
+    case "M":
+      return "Machine";
+    case "F":
+      return "Facility";
+    case "J":
+      return "Jig";
+    case "O":
+      return "Other";
+    default:
+      return "-";
+  }
 }
 
 onMounted(() => {
@@ -161,7 +183,6 @@ onMounted(() => {
       :items="data"
       :headers="headers"
       class="text-no-wrap"
-      @update:options="updateOptions"
     >
       <!-- part name -->
       <template #item.partcode="{ item }">
@@ -183,7 +204,7 @@ onMounted(() => {
       <!-- vendor -->
       <template #item.category="{ item }">
         <div class="d-flex align-center">
-          {{ item.category }}
+          {{ categoryType(item.CATEGORY) }}
         </div>
       </template>
 
@@ -207,19 +228,25 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDeleteDialog(item)">
+          <IconBtn @click="openDeleteDialog(item.PARTCODE)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item)">
+          <IconBtn @click="openUpdateDialog(item.PARTCODE)">
             <VIcon icon="tabler-adjustments" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item)">
+          <IconBtn @click="openDeleteDialog(item.PARTCODE)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>
       </template>
     </VDataTable>
   </VCard>
+
+  <UpdatePartStockQtyDialog
+    v-model:isDialogVisible="isUpdateStockQtyDialogVisible"
+    v-model:id="selectedPartCode"
+    @submit="fetchData"
+  />
 
   <!-- 👉 Delete Dialog  -->
   <VDialog v-model="isDeleteDialogVisible" max-width="500px">

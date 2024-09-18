@@ -391,6 +391,7 @@ declare module 'vue' {
     TimelineWithIcons: typeof import('./resources/js/views/demos/components/timeline/TimelineWithIcons.vue')['default']
     TiptapEditor: typeof import('./resources/js/@core/components/TiptapEditor.vue')['default']
     TwoFactorAuthDialog: typeof import('./resources/js/components/dialogs/TwoFactorAuthDialog.vue')['default']
+    UpdatePartStockQtyDialog: typeof import('./resources/js/components/dialogs/UpdatePartStockQtyDialog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/js/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/js/components/dialogs/UserUpgradePlanDialog.vue')['default']
     VueApexCharts: typeof import('vue3-apexcharts')['default']

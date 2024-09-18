@@ -17,4 +17,5 @@ Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController:
 Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);
 
 // Master Part
-Route::get('/master-part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
+Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
+
