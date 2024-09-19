@@ -40,7 +40,7 @@ const indexMachineDelete = ref();
 const prevData = ref();
 const isEdit = ref(false);
 
-const categories = ["Machines", "Facility", "Jig", "Other"];
+const categories = ["Machine", "Facility", "Jig", "Other"];
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 
 const handleVendorSelected = (item) => {
@@ -177,6 +177,7 @@ async function getMachines(partCode) {
 }
 
 function convertCategory(category) {
+  console.log("selected category: " + category);
   switch (category) {
     case "Machine":
       return "M";
