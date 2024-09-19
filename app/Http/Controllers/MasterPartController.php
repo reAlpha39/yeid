@@ -58,14 +58,19 @@ class MasterPartController extends Controller
                     DB::raw("ISNULL(M.POSENTDATE, ' ') as POSENTDATE"),
                     DB::raw("ISNULL(M.ETDDATE, ' ') as ETDDATE")
                 )
-                ->leftJoin(DB::raw('(select
-                T.PARTCODE,
-                sum(case when T.JOBCODE = \'O\' then -T.QUANTITY else T.QUANTITY end) as SUM_QUANTITY
-                from HOZENADMIN.TBL_INVRECORD as T
-                left join HOZENADMIN.MAS_INVENTORY as MINV on T.PARTCODE = MINV.PARTCODE
-                where T.JOBDATE > MINV.LASTSTOCKDATE
-                group by T.PARTCODE
-            ) as GI'), 'M.PARTCODE', '=', 'GI.PARTCODE')
+                ->leftJoin(DB::raw('(
+                        select
+                            T.PARTCODE,
+                            sum(case 
+                                when T.JOBCODE = \'O\' then -T.QUANTITY 
+                                when T.JOBCODE = \'I\' then T.QUANTITY
+                                when T.JOBCODE = \'A\' then T.QUANTITY
+                                else 0 end) as SUM_QUANTITY
+                        from HOZENADMIN.TBL_INVRECORD as T
+                        left join HOZENADMIN.MAS_INVENTORY as MINV on T.PARTCODE = MINV.PARTCODE
+                        where T.UPDATETIME > MINV.UPDATETIME
+                        group by T.PARTCODE
+                    ) as GI'), 'M.PARTCODE', '=', 'GI.PARTCODE')
                 ->leftJoin('HOZENADMIN.MAS_VENDOR as V', 'M.VENDORCODE', '=', 'V.VENDORCODE')
                 ->where('M.STATUS', '<>', 'D');
 

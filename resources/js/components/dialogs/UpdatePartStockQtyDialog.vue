@@ -62,6 +62,39 @@ async function saveUpdatedQty() {
   try {
     const now = new Date();
     const item = data.value;
+    const substract = await $api("/storeInvRecord", {
+      method: "POST",
+      body: {
+        records: [
+          {
+            locationId: "P",
+            jobCode: "A",
+            jobDate: formatDate(now), // Format date as 'YYYYMMDD'
+            jobTime: formatTime(now), // Format time as 'HHMMSS'
+            partCode: item.PARTCODE,
+            partName: item.PARTNAME,
+            specification: item.SPECIFICATION,
+            brand: item.BRAND,
+            usedFlag: item.USEDFLAG,
+            quantity: -parseInt(data.value.TOTALSTOCK),
+            unitPrice: item.UNITPRICE,
+            price: item.UNITPRICE,
+            currency: item.CURRENCY,
+            vendorCode: item.VENDORCODE,
+            machineNo: "",
+            machineName: "",
+            note: "",
+            employeeCode: "",
+          },
+        ],
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to update data");
+        errors.value = response._data.errors;
+      },
+    });
+
     const result = await $api("/storeInvRecord", {
       method: "POST",
       body: {
@@ -135,7 +168,7 @@ function categoryType(category) {
     default:
       return "-";
   }
-};
+}
 
 watch(
   () => props.isDialogVisible,
@@ -214,11 +247,7 @@ watch(
           <VCol>
             <div style="text-align: right">
               <strong>
-                {{
-                  data.TOTALSTOCK
-                    ? data.TOTALSTOCK.toLocaleString()
-                    : "0"
-                }}
+                {{ data.TOTALSTOCK ? data.TOTALSTOCK.toLocaleString() : "0" }}
               </strong>
             </div>
           </VCol>
