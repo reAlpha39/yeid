@@ -38,12 +38,18 @@ class MasterPartController extends Controller
                     'M.CATEGORY',
                     'M.SPECIFICATION',
                     'M.BRAND',
+                    'M.EANCODE',
                     'M.USEDFLAG',
+                    'M.VENDORCODE',
                     'M.ADDRESS',
                     'M.UNITPRICE',
                     'M.CURRENCY',
                     DB::raw('M.LASTSTOCKNUMBER + ISNULL(GI.SUM_QUANTITY, 0) as TOTALSTOCK'),
                     'M.MINSTOCK',
+                    'M.MINORDER',
+                    'M.ORDERPARTCODE',
+                    'M.NOORDERFLAG',
+                    'M.LASTSTOCKNUMBER',
                     DB::raw("ISNULL(M.STATUS, '-') as STATUS"),
                     DB::raw("ISNULL(M.NOORDERFLAG, '0') as NOORDERFLAG"),
                     DB::raw("ISNULL(M.NOTE, 'N/A') as NOTE"),
@@ -128,15 +134,36 @@ class MasterPartController extends Controller
     public function addMasterPart(Request $request)
     {
         try {
+            // Validate the input
+            $request->validate([
+                'part_code' => 'required',
+                'part_name' => 'required',
+                'category' => 'required|in:M,F,J,O',
+                'specification' => 'nullable|string',
+                'ean_code' => 'nullable|string',
+                'brand' => 'required|string',
+                'used_flag' => 'required|boolean',
+                'location_id' => 'nullable|string',
+                'address' => 'required|string',
+                'vendor_code' => 'nullable|string',
+                'unit_price' => 'required|numeric',
+                'currency' => 'required|string',
+                'min_stock' => 'required|numeric',
+                'min_order' => 'required|numeric',
+                'note' => 'nullable|string',
+                'order_part_code' => 'nullable|string',
+                'no_order_flag' => 'required|boolean',
+            ]);
+
             // Retrieve data from the request
             $partCode = $request->input('part_code');
             $partName = $request->input('part_name');
             $category = $request->input('category', 'O');  // Default to 'O' if not provided
             $specification = $request->input('specification');
-            $eanCode = $request->input('ean_code', null);
+            $eanCode = $request->input('ean_code') ?? str_pad('', 13);
             $brand = $request->input('brand');
             $usedFlag = $request->input('used_flag', false) ? 'O' : ' ';
-            $locationId = 'P';  // Hardcoded as 'P' as per VB code
+            $locationId = $request->input('location_id', 'P');
             $address = $request->input('address');
             $vendorCode = $request->input('vendor_code', null);
             $unitPrice = $request->input('unit_price', 0);
@@ -147,31 +174,69 @@ class MasterPartController extends Controller
             $lastStockNumber = $request->input('last_stock_number', 0);
             $lastStockDate = Carbon::now()->format('Ymd');
             $orderPartCode = $request->input('order_part_code', null);
+            $noOrderFlag = $request->input('no_order_flag', false) ? '1' : '0';
             $updateTime = Carbon::now();
 
-            // Insert into MAS_INVENTORY table
-            DB::table('HOZENADMIN.MAS_INVENTORY')->insert([
-                'PARTCODE' => $partCode,
-                'PARTNAME' => $partName,
-                'CATEGORY' => $category,
-                'SPECIFICATION' => $specification,
-                'EANCODE' => $eanCode,
-                'BRAND' => $brand,
-                'USEDFLAG' => $usedFlag,
-                'LOCATIONID' => $locationId,
-                'ADDRESS' => $address,
-                'VENDORCODE' => $vendorCode,
-                'UNITPRICE' => $unitPrice,
-                'CURRENCY' => $currency,
-                'MINSTOCK' => $minStock,
-                'MINORDER' => $minOrder,
-                'NOTE' => $note,
-                'LASTSTOCKNUMBER' => $lastStockNumber,
-                'LASTSTOCKDATE' => $lastStockDate,
-                'STATUS' => ' ',  // Hardcoded as chr(0) in the VB code, using empty string for SQL Server
-                'ORDERPARTCODE' => $orderPartCode,
-                'UPDATETIME' => $updateTime,  // Current timestamp
-            ]);
+
+            $queryBuilder = DB::table('HOZENADMIN.MAS_INVENTORY')->select(
+                'PARTCODE'
+            )->where(
+                'PARTCODE',
+                '=',
+                $partCode
+            );
+
+            $isEmpty = $queryBuilder->get();
+
+            if ($isEmpty->isEmpty()) {
+                // Insert into MAS_INVENTORY table
+                DB::table('HOZENADMIN.MAS_INVENTORY')->insert([
+                    'PARTCODE' => $partCode,
+                    'PARTNAME' => $partName,
+                    'CATEGORY' => $category,
+                    'SPECIFICATION' => $specification,
+                    'EANCODE' => $eanCode,
+                    'BRAND' => $brand,
+                    'USEDFLAG' => $usedFlag,
+                    'LOCATIONID' => 'P',
+                    'LOCATIONID' => $locationId,
+                    'ADDRESS' => $address,
+                    'VENDORCODE' => $vendorCode,
+                    'UNITPRICE' => $unitPrice,
+                    'CURRENCY' => $currency,
+                    'MINSTOCK' => $minStock,
+                    'MINORDER' => $minOrder,
+                    'NOTE' => $note,
+                    'LASTSTOCKNUMBER' => $lastStockNumber,
+                    'LASTSTOCKDATE' => $lastStockDate,
+                    'STATUS' => ' ',  // Hardcoded as chr(0) in the VB code, using empty string for SQL Server
+                    'ORDERPARTCODE' => $orderPartCode,
+                    'NOORDERFLAG' => $noOrderFlag,
+                    'UPDATETIME' => $updateTime,  // Current timestamp
+                ]);
+            } else {
+                DB::table('HOZENADMIN.MAS_INVENTORY')
+                    ->where('PARTCODE', $partCode)
+                    ->update([
+                        'PARTNAME' => $partName,
+                        'CATEGORY' => $category,
+                        'SPECIFICATION' => $specification,
+                        'EANCODE' => $eanCode,
+                        'BRAND' => $brand,
+                        'USEDFLAG' => $usedFlag,
+                        'LOCATIONID' => 'P',
+                        'ADDRESS' => $address,
+                        'VENDORCODE' => $vendorCode,
+                        'UNITPRICE' => $unitPrice,
+                        'CURRENCY' => $currency,
+                        'MINSTOCK' => $minStock,
+                        'MINORDER' => $minOrder,
+                        'NOTE' => $note,
+                        'ORDERPARTCODE' => $orderPartCode,
+                        'NOORDERFLAG' => $noOrderFlag,
+                        'UPDATETIME' => $updateTime,
+                    ]);
+            }
 
             // 
             // Delete MachineNo
@@ -207,8 +272,12 @@ class MasterPartController extends Controller
                 }
             }
 
+
             return response()->json([
                 'success' => true,
+                'data' => [
+                    'is_update' => $isEmpty->isNotEmpty()
+                ],
                 'message' => 'Inventory record inserted successfully!'
             ], 200);
         } catch (Exception $e) {

@@ -1,5 +1,6 @@
 <script setup>
-import { useRouter } from "vue-router";
+import { onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const isSelectInventoryVendorDialogVisible = ref(false);
@@ -8,6 +9,7 @@ const isDeleteSelectedMachineDialogVisible = ref(false);
 
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
 
 const form = ref();
 const usedPartSwitch = ref("Active");
@@ -30,10 +32,13 @@ const initialStockTF = ref();
 const noteTF = ref();
 const minStockTF = ref();
 const minOrderTF = ref();
-const stockQtyTF = ref();
 
 const machines = ref([]);
 const indexMachineDelete = ref();
+
+// previous data for edit
+const prevData = ref();
+const isEdit = ref(false);
 
 const categories = ["Machines", "Facility", "Jig", "Other"];
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
@@ -97,13 +102,14 @@ async function addMasterPart() {
         min_stock: minStockTF.value,
         min_order: minOrderTF.value,
         note: noteTF.value,
-        last_stock_number: stockQtyTF.value,
-        order_part_code: initialStockTF.value,
+        last_stock_number: initialStockTF.value,
+        order_part_code: orderPartCodeTF.value,
+        no_order_flag: convertSwitch(orderSwitch.value),
         machines: machineData,
       },
 
       onResponseError({ response }) {
-        toast.error("Failed to save data");
+        // toast.error("Failed to save data");
         errors.value = response._data.errors;
       },
     });
@@ -116,16 +122,85 @@ async function addMasterPart() {
   }
 }
 
+async function fetchDataEdit(partCode) {
+  try {
+    const response = await $api("/master/part-list", {
+      params: {
+        part_code: partCode,
+        max_rows: 1,
+      },
+    });
+    console.log(response.data);
+    prevData.value = response.data[0];
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+async function fetchVendor(vendorCode) {
+  try {
+    let response = await $api("/getVendor", {
+      params: {
+        query: vendorCode,
+      },
+    });
+
+    var vendor = response.data[0];
+
+    vendorTF.value = vendor.VENDORCODE + " | " + vendor.VENDORNAME;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+async function getMachines(partCode) {
+  try {
+    const result = await $api("/getMachines", {
+      method: "GET",
+      params: {
+        partCode: partCode,
+      },
+
+      onResponseError({ response }) {
+        toast.error("Failed to save data");
+        errors.value = response._data.errors;
+      },
+    });
+
+    console.log(result.data);
+
+    // machines.value.push(result["data"]);
+    machines.value = result.data;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 function convertCategory(category) {
   switch (category) {
     case "Machine":
       return "M";
     case "Facility":
       return "F";
-    case "J":
-      return "Jig";
+    case "Jig":
+      return "J";
     case "Other":
       return "O";
+    default:
+      return "-";
+  }
+}
+
+function categoryType(category) {
+  switch (category) {
+    case "M":
+      return "Machine";
+    case "F":
+      return "Facility";
+    case "J":
+      return "Jig";
+    case "O":
+      return "Other";
     default:
       return "-";
   }
@@ -139,7 +214,42 @@ function convertSwitch(val) {
   }
 }
 
-onMounted(() => {});
+async function initEditData(partCode) {
+  await fetchDataEdit(partCode);
+  applyData();
+  await fetchVendor(vendorTF.value);
+  await getMachines(partCodeTF.value);
+}
+
+function applyData() {
+  const data = prevData.value;
+  usedPartSwitch.value = data.USEDFLAG == "O" ? "Active" : "Inactive";
+  orderSwitch.value = data.NOORDERFLAG == "1" ? "Active" : "Inactive";
+  partCodeTF.value = data.PARTCODE;
+  partNameTF.value = data.PARTNAME;
+  specificationTF.value = data.SPECIFICATION;
+  brandTF.value = data.BRAND;
+  categoryTF.value = categoryType(data.CATEGORY);
+  barcodeTF.value = data.EANCODE;
+  addressTF.value = data.ADDRESS;
+  vendorTF.value = data.VENDORCODE;
+  unitPriceTF.value = data.UNITPRICE;
+  currencyTF.value = data.CURRENCY;
+  orderPartCodeTF.value = data.ORDERPARTCODE;
+  initialStockTF.value = data.LASTSTOCKNUMBER;
+  noteTF.value = data.NOTE;
+  minStockTF.value = data.MINSTOCK;
+  minOrderTF.value = data.MINORDER;
+}
+
+onMounted(() => {
+  const partCode = route.query.part_code;
+  console.log("Fetching data for part_code:", partCode);
+  if (partCode) {
+    isEdit.value = true;
+    initEditData(route.query.part_code);
+  }
+});
 </script>
 
 <template>
@@ -389,7 +499,7 @@ onMounted(() => {});
     <VRow class="d-flex justify-start py-8">
       <VCol>
         <VBtn color="success" class="me-4" @click="addMasterPart">Save</VBtn>
-        <VBtn variant="outlined" color="error" type="reset">Cancel</VBtn>
+        <VBtn variant="outlined" color="error" to="/master/part">Cancel</VBtn>
       </VCol>
     </VRow>
   </VForm>

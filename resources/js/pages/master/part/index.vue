@@ -1,7 +1,9 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
+const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
 const isUpdateStockQtyDialogVisible = ref(false);
@@ -101,6 +103,14 @@ function openDeleteDialog(partCode) {
 function openUpdateDialog(partCode) {
   selectedPartCode.value = partCode;
   isUpdateStockQtyDialogVisible.value = true;
+}
+
+async function openEditPartPage(partCode) {
+  // selectedPartCode.value = partCode;
+  await router.push({
+    path: "/master/part/add",
+    query: { part_code: partCode },
+  });
 }
 
 function categoryType(category) {
@@ -229,7 +239,7 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDeleteDialog(item.PARTCODE)">
+          <IconBtn @click="openEditPartPage(item.PARTCODE)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
           <IconBtn @click="openUpdateDialog(item.PARTCODE)">

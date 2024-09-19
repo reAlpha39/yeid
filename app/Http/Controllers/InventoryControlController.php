@@ -160,7 +160,9 @@ class InventoryControlController extends Controller
                     DB::raw("COALESCE(M.MACHINENAME, 'NO REGISTER') as MACHINENAME"),
                     DB::raw("COALESCE(M.SHOPNAME, 'N/A') as SHOPNAME"),
                     DB::raw("COALESCE(M.LINECODE, 'N/A') as LINECODE"),
-                    DB::raw("COALESCE(M.MODELNAME, 'N/A') as MODELNAME")
+                    DB::raw("COALESCE(M.MODELNAME, 'N/A') as MODELNAME"),
+                    DB::raw("COALESCE(M.MAKERNAME, 'N/A') as MAKERNAME"),
+                    DB::raw("COALESCE(M.SHOPCODE, 'N/A') as SHOPCODE")
                 )
                 ->where('I.PARTCODE', '=', $partCode)
                 ->orderBy('I.MACHINENO')
