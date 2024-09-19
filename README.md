@@ -19,13 +19,16 @@ See [Vite Configuration Reference](https://vitejs.dev/config/).
 ## Project Setup
 
 ```sh
-npm install
+pnpm install
 ```
 
 ### Compile and Hot-Reload for Development
 
 ```sh
 npm run dev
+```
+```sh
+php artisan serve
 ```
 
 ### Type-Check, Compile and Minify for Production
