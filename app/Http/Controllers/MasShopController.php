@@ -49,19 +49,28 @@ class MasShopController extends Controller
     // Fetch a single shop by SHOPCODE
     public function show($shopCode)
     {
-        $shop = MasShop::find($shopCode);
+        try {
+            $shop = MasShop::find($shopCode);
 
-        if ($shop) {
+            if ($shop) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $shop
+                ], 200);
+            }
+
             return response()->json([
-                'success' => true,
-                'data' => $shop
-            ], 200);
+                'success' => false,
+                'message' => 'Shop not found'
+            ], 404);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Shop not found'
-        ], 404);
     }
 
     // Create a new shop
