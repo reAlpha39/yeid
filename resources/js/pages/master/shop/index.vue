@@ -1,4 +1,5 @@
 <script setup>
+import AddShopDrawer from "@/components/drawers/AddShopDrawer.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -6,6 +7,7 @@ const toast = useToast();
 const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
+const isAddShopDrawerOpen = ref(false);
 
 const selectedShopCode = ref("");
 const searchQuery = ref("");
@@ -88,12 +90,19 @@ function openDeleteDialog(partCode) {
 }
 
 async function openEditPartPage(partCode) {
-  // selectedShopCode.value = partCode;
-  await router.push({
-    path: "/master/part/add",
-    query: { part_code: partCode },
-  });
+  selectedShopCode.value = partCode;
+  isAddShopDrawerOpen.value = true;
 }
+
+watch(
+  () => isAddShopDrawerOpen.value,
+  (newVal) => {
+    if (!newVal) {
+      // When the drawer is closed
+      selectedShopCode.value = undefined;
+    }
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -139,7 +148,11 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField v-model="searchQuery" placeholder="Search" />
+          <AppTextField
+            v-model="searchQuery"
+            placeholder="Search"
+            v-on:input="fetchData()"
+          />
         </div>
 
         <!-- 👉 Export button -->
@@ -148,7 +161,12 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="part/add"> Add New Shop </VBtn>
+        <VBtn
+          prepend-icon="tabler-plus"
+          @click="isAddShopDrawerOpen = !isAddShopDrawerOpen"
+        >
+          Add New Shop
+        </VBtn>
       </div>
     </VCardText>
 
@@ -196,10 +214,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.PARTCODE)">
+          <IconBtn @click="openEditPartPage(item.SHOPCODE)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.PARTCODE)">
+          <IconBtn @click="openDeleteDialog(item.SHOPCODE)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>
@@ -233,4 +251,11 @@ onMounted(() => {
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <!-- Add Item Drawer -->
+  <AddShopDrawer
+    v-model:isDrawerOpen="isAddShopDrawerOpen"
+    v-model:id="selectedShopCode"
+    @submit="fetchData"
+  />
 </template>

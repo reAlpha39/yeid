@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasShop;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class MasShopController extends Controller
@@ -51,58 +52,122 @@ class MasShopController extends Controller
         $shop = MasShop::find($shopCode);
 
         if ($shop) {
-            return response()->json($shop);
+            return response()->json([
+                'success' => true,
+                'data' => $shop
+            ], 200);
         }
 
-        return response()->json(['message' => 'Shop not found'], 404);
+        return response()->json([
+            'success' => false,
+            'message' => 'Shop not found'
+        ], 404);
     }
 
     // Create a new shop
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'SHOPCODE' => 'required|string|max:4|unique:SHOP',
-            'SHOPNAME' => 'required|string|max:20',
-            'PLANTTYPE' => 'required|string|max:1',
-            'COUNTFLAG' => 'required|string|max:1',
-        ]);
+        try {
+            $validated = $request->validate([
+                'SHOPCODE' => [
+                    'required',
+                    'string',
+                    'max:4',
+                    // Custom rule to check uniqueness
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_SHOP')
+                            ->where('SHOPCODE', $value)
+                            ->exists();
 
-        $shop = MasShop::create($validated);
+                        if ($exists) {
+                            $fail('The SHOPCODE has already been taken.');
+                        }
+                    }
+                ],
+                'SHOPNAME' => 'required|string|max:20',
+                'PLANTTYPE' => 'required|string|max:1',
+                'COUNTFLAG' => 'required|string|max:1',
+            ]);
 
-        return response()->json(['message' => 'Shop created successfully', 'data' => $shop], 200);
+            $shop = MasShop::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shop created successfully',
+                'data' => $shop
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
+        }
     }
 
     // Update an existing shop
     public function update(Request $request, $shopCode)
     {
-        $shop = MasShop::find($shopCode);
+        try {
+            $shop = MasShop::find($shopCode);
 
-        if (!$shop) {
-            return response()->json(['message' => 'Shop not found'], 404);
+            if (!$shop) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Shop not found'
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'SHOPNAME' => 'sometimes|required|string|max:20',
+                'PLANTTYPE' => 'sometimes|required|string|max:1',
+                'COUNTFLAG' => 'sometimes|required|string|max:1',
+            ]);
+
+            $shop->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shop updated successfully',
+                'data' => $shop
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
         }
-
-        $validated = $request->validate([
-            'SHOPNAME' => 'sometimes|required|string|max:20',
-            'PLANTTYPE' => 'sometimes|required|string|max:1',
-            'COUNTFLAG' => 'sometimes|required|string|max:1',
-        ]);
-
-        $shop->update($validated);
-
-        return response()->json(['message' => 'Shop updated successfully', 'data' => $shop]);
     }
 
     // Delete a shop
     public function destroy($shopCode)
     {
-        $shop = MasShop::find($shopCode);
+        try {
+            $shop = MasShop::find($shopCode);
 
-        if (!$shop) {
-            return response()->json(['message' => 'Shop not found'], 404);
+            if (!$shop) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Shop not found',
+                ], 404);
+            }
+
+            $shop->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shop deleted successfully',
+            ], 200);
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500); // Internal server error
         }
-
-        $shop->delete();
-
-        return response()->json(['message' => 'Shop deleted successfully']);
     }
 }

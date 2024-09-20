@@ -9,19 +9,19 @@ class MasShop extends Model
     // Define the table name
     protected $table = 'HOZENADMIN.MAS_SHOP';
 
-    // Set the primary key field
+    // Define the primary key
     protected $primaryKey = 'SHOPCODE';
 
-    // Disable auto-incrementing since SHOPCODE is not an integer
+    // If SHOPCODE is not auto-incrementing
     public $incrementing = false;
 
-    // Set the key type to string since SHOPCODE is a CHAR field
+    // Define the key type since SHOPCODE is CHAR(4)
     protected $keyType = 'string';
 
-    // Disable timestamps (created_at, updated_at)
+    // Disable timestamps if not present in the table
     public $timestamps = false;
 
-    // Define the fillable fields for mass assignment
+    // Specify the fillable fields
     protected $fillable = [
         'SHOPCODE',
         'SHOPNAME',
