@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MasShopController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -23,3 +24,10 @@ Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController:
 
 // Master Machine
 Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);
+
+// Master Shop
+Route::get('/master/shops', [MasShopController::class, 'index']);
+Route::get('/master/shops/{shopCode}', [MasShopController::class, 'show']);
+Route::post('/master/shops', [MasShopController::class, 'store']);
+Route::put('/master/shops/{shopCode}', [MasShopController::class, 'update']);
+Route::delete('/master/shops/{shopCode}', [MasShopController::class, 'destroy']);

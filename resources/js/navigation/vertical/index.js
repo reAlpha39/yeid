@@ -17,7 +17,7 @@ export default [
     // ...dashboards,
     // ...appsAndPages,
     // ...charts,
-    // ...forms,
+    ...forms,
     // ...others,
-    // ...uiElement,
+    ...uiElement,
 ]

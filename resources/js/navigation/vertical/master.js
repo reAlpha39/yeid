@@ -15,6 +15,14 @@ export default [
         title: 'Part',
         to: 'master-part',
       },
+       {
+        title: 'User',
+        // to: 'master-part',
+      },
+       {
+        title: 'Shop',
+        to: 'master-shop',
+      },
       {
         title: 'Plant',
         // to: 'dashboards-academy',
