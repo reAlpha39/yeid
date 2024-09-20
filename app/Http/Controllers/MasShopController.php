@@ -25,7 +25,7 @@ class MasShopController extends Controller
             }
 
             if ($shopName) {
-                $query->where('SHOPNAME', 'like', '%' . $shopName . '%');
+                $query->orWhere('SHOPNAME', 'like', '%' . $shopName . '%');
             }
 
             // Execute the query and get the results
@@ -69,7 +69,7 @@ class MasShopController extends Controller
 
         $shop = MasShop::create($validated);
 
-        return response()->json(['message' => 'Shop created successfully', 'data' => $shop], 201);
+        return response()->json(['message' => 'Shop created successfully', 'data' => $shop], 200);
     }
 
     // Update an existing shop
