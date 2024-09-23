@@ -12,6 +12,10 @@ export default [
         to: 'master-shop',
       },
       {
+        title: 'Maker',
+        to: 'master-maker',
+      },
+      {
         title: 'Vendor',
         to: 'master-vendor',
       },

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasShopController;
 use App\Http\Controllers\MasVendorController;
+use App\Http\Controllers\MasMakerController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -39,3 +40,10 @@ Route::get('/master/vendors/{vendorCode}', [MasVendorController::class, 'show'])
 Route::post('/master/vendors', [MasVendorController::class, 'store']);
 Route::put('/master/vendors/{vendorCode}', [MasVendorController::class, 'update']);
 Route::delete('/master/vendors/{vendorCode}', [MasVendorController::class, 'destroy']);
+
+// Master Maker
+Route::get('/master/makers', [MasMakerController::class, 'index']);
+Route::get('/master/makers/{makerCode}', [MasMakerController::class, 'show']);
+Route::post('/master/makers', [MasMakerController::class, 'store']);
+Route::put('/master/makers/{makerCode}', [MasMakerController::class, 'update']);
+Route::delete('/master/makers/{makerCode}', [MasMakerController::class, 'destroy']);
