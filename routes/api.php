@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasShopController;
+use App\Http\Controllers\MasVendorController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,3 +32,10 @@ Route::get('/master/shops/{shopCode}', [MasShopController::class, 'show']);
 Route::post('/master/shops', [MasShopController::class, 'store']);
 Route::put('/master/shops/{shopCode}', [MasShopController::class, 'update']);
 Route::delete('/master/shops/{shopCode}', [MasShopController::class, 'destroy']);
+
+// Master Vendor
+Route::get('/master/vendors', [MasVendorController::class, 'index']);
+Route::get('/master/vendors/{vendorCode}', [MasVendorController::class, 'show']);
+Route::post('/master/vendors', [MasVendorController::class, 'store']);
+Route::put('/master/vendors/{vendorCode}', [MasVendorController::class, 'update']);
+Route::delete('/master/vendors/{vendorCode}', [MasVendorController::class, 'destroy']);

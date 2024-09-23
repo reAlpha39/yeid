@@ -23,21 +23,19 @@ const handleDrawerModelValueUpdate = (val) => {
 const toast = useToast();
 
 const refVForm = ref();
-const shopCode = ref();
-const shopName = ref();
+const vendorCode = ref();
+const vendorName = ref();
 const countFlag = ref(true);
 
 const isUpdate = ref(false);
 
-async function addShop() {
+async function add() {
   try {
-    const result = await $api("/master/shops", {
+    const result = await $api("/master/vendors", {
       method: "POST",
       body: {
-        SHOPCODE: shopCode.value,
-        SHOPNAME: shopName.value,
-        PLANTTYPE: "M",
-        COUNTFLAG: countFlag.value ? "1" : "0",
+        VENDORCODE: vendorCode.value,
+        VENDORNAME: vendorName.value,
       },
 
       onResponseError({ response }) {
@@ -46,7 +44,7 @@ async function addShop() {
     });
 
     // console.log(result);
-    toast.success("Add shop success");
+    toast.success("Add vendor success");
     emit("update:isDrawerOpen", false);
     emit("submit", true);
     refVForm.value?.reset();
@@ -55,14 +53,12 @@ async function addShop() {
   }
 }
 
-async function updateShop() {
+async function update() {
   try {
-    const result = await $api("/master/shops/" + shopCode.value, {
+    const result = await $api("/master/vendors/" + vendorCode.value, {
       method: "PUT",
       body: {
-        SHOPNAME: shopName.value,
-        PLANTTYPE: "M",
-        COUNTFLAG: countFlag.value ? "1" : "0",
+        VENDORNAME: vendorName.value,
       },
 
       onResponseError({ response }) {
@@ -71,7 +67,7 @@ async function updateShop() {
     });
 
     // console.log(result);
-    toast.success("Add shop success");
+    toast.success("Add vendor success");
     emit("update:isDrawerOpen", false);
     emit("submit", true);
     refVForm.value?.reset();
@@ -82,16 +78,15 @@ async function updateShop() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/shops/" + id, {
+    const response = await $api("/master/vendors/" + id, {
       onResponseError({ response }) {
         errors.value = response._data.errors;
       },
     });
 
     const data = response.data;
-    shopCode.value = data.SHOPCODE;
-    shopName.value = data.SHOPNAME;
-    countFlag.value = data.COUNTFLAG == "1" ? true : false;
+    vendorCode.value = data.VENDORCODE;
+    vendorName.value = data.VENDORNAME;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -101,9 +96,9 @@ async function fetchData(id) {
 
 async function submitData() {
   if (isUpdate.value) {
-    await updateShop();
+    await update();
   } else {
-    await addShop();
+    await add();
   }
 }
 
@@ -155,35 +150,31 @@ watch(
               <VCol cols="12">
                 <AppTextField
                   v-if="isUpdate"
-                  v-model="shopCode"
-                  label="Shop Code"
+                  v-model="vendorCode"
+                  label="Vendor Code"
                   :rules="[requiredValidator]"
-                  placeholder="Input shop code"
-                  maxlength="4"
+                  placeholder="Input vendor code"
+                  maxlength="15"
                   readonly
                 />
                 <AppTextField
                   v-else
-                  v-model="shopCode"
-                  label="Shop Code"
+                  v-model="vendorCode"
+                  label="Vendor Code"
                   :rules="[requiredValidator]"
-                  placeholder="Input shop code"
-                  maxlength="4"
+                  placeholder="Input vendor code"
+                  maxlength="15"
                 />
               </VCol>
 
               <VCol cols="12">
                 <AppTextField
-                  v-model="shopName"
-                  label="Shop Name"
+                  v-model="vendorName"
+                  label="Vendor Name"
                   :rules="[requiredValidator]"
-                  placeholder="Input shop name"
-                  maxlength="20"
+                  placeholder="Input vendor name"
+                  maxlength="64"
                 />
-              </VCol>
-
-              <VCol cols="12">
-                <VCheckbox v-model="countFlag" label="Count Flag" />
               </VCol>
 
               <VCol cols="12">
