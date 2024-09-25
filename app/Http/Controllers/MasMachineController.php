@@ -66,44 +66,170 @@ class MasMachineController extends Controller
         }
     }
 
-    public function index()
+    // Fetch all machines
+    public function index(Request $request)
     {
-        $machines = MasMachine::all();
-        return response()->json($machines);
+        try {
+            $search = $request->query('query');
+
+            // Start building the query
+            $query = MasMachine::query();
+
+            // Apply filters based on the query parameters
+
+            $query->where('MACHINENO', 'like', '%' . $search . '%');
+            $query->orWhere('MACHINENAME', 'like', '%' . $search . '%');
+            $query->orWhere('PLANTCODE', 'like', '%' . $search . '%');
+            $query->orWhere('SHOPCODE', 'like', '%' . $search . '%');
+            $query->orWhere('SHOPNAME', 'like', '%' . $search . '%');
+
+            // Execute the query and get the results
+            $machines = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $machines
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
+        }
     }
 
+    // Store a new machine
     public function store(Request $request)
     {
-        $machine = MasMachine::create($request->all());
-        return response()->json($machine, 201);
-    }
+        try {
+            $validated = $request->validate([
+                'MACHINENO' => [
+                    'required',
+                    'string',
+                    'max:12',
+                    // Custom rule to check uniqueness
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_MACHINE')
+                            ->where('MACHINENO', $value)
+                            ->exists();
 
-    public function show($id)
-    {
-        $machine = MasMachine::find($id);
-        if ($machine) {
-            return response()->json($machine);
+                        if ($exists) {
+                            $fail('The MACHINENO has already been taken.');
+                        }
+                    }
+                ],
+                'MACHINENAME' => 'required|string|max:50',
+                'PLANTCODE' => 'required|string|max:1',
+                'SHOPCODE' => 'required|string|max:4',
+                'INSTALLDATE' => 'required|string|max:20',
+                'STATUS' => 'required|string|max:1',
+            ]);
+
+            $machine = MasMachine::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Machine created successfully!',
+                'data' => $machine
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
         }
-        return response()->json(['error' => 'Machine not found'], 404);
     }
 
-    public function update(Request $request, $id)
+    // Find a machine by MACHINENO
+    public function show($machineNo)
     {
-        $machine = MasMachine::find($id);
-        if ($machine) {
-            $machine->update($request->all());
-            return response()->json($machine);
+        try {
+            $machine = MasMachine::find($machineNo);
+
+            if (!$machine) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Machine not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $machine
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
         }
-        return response()->json(['error' => 'Machine not found'], 404);
     }
 
-    public function destroy($id)
+    // Update a machine
+    public function update(Request $request, $machineNo)
     {
-        $machine = MasMachine::find($id);
-        if ($machine) {
+        try {
+            $machine = MasMachine::find($machineNo);
+
+            if (!$machine) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Machine not found'
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'MACHINENAME' => 'required|string|max:50',
+                'PLANTCODE' => 'required|string|max:1',
+                'SHOPCODE' => 'required|string|max:4',
+                'INSTALLDATE' => 'required|string|max:20',
+                'STATUS' => 'required|string|max:1',
+            ]);
+
+            $machine->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Machine updated successfully!',
+                'data' => $machine
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
+        }
+    }
+
+    // Delete a machine
+    public function destroy($machineNo)
+    {
+        try {
+            $machine = MasMachine::find($machineNo);
+
+            if ($machine) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Machine not found'
+                ], 404);
+            }
+
             $machine->delete();
-            return response()->json(null, 204);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Machine deleted successfully!'
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
         }
-        return response()->json(['error' => 'Machine not found'], 404);
     }
 }

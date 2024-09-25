@@ -4,6 +4,10 @@ export default [
     icon: { icon: 'tabler-database' },
     children: [
       {
+        title: 'Machine',
+        to: 'master-machine',
+      },
+      {
         title: 'Part',
         to: 'master-part',
       },

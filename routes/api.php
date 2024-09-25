@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasShopController;
 use App\Http\Controllers\MasVendorController;
 use App\Http\Controllers\MasMakerController;
+use App\Http\Controllers\MasMachineController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -47,3 +48,10 @@ Route::get('/master/makers/{makerCode}', [MasMakerController::class, 'show']);
 Route::post('/master/makers', [MasMakerController::class, 'store']);
 Route::put('/master/makers/{makerCode}', [MasMakerController::class, 'update']);
 Route::delete('/master/makers/{makerCode}', [MasMakerController::class, 'destroy']);
+
+// Master Machine
+Route::get('/master/machines', [MasMachineController::class, 'index']);
+Route::get('/master/machines/{machineNo}', [MasMachineController::class, 'show']);
+Route::post('/master/machines', [MasMachineController::class, 'store']);
+Route::put('/master/machines/{machineNo}', [MasMachineController::class, 'update']);
+Route::delete('/master/machines/{machineNo}', [MasMachineController::class, 'destroy']);
