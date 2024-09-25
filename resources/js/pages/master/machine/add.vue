@@ -6,15 +6,18 @@ const toast = useToast();
 const isDeleteDialogVisible = ref(false);
 
 const plants = ["Plant 1", "Plant 2", "Plant 3"];
-const shops = ["Shop 1", "Shop 2", "Shop 3"];
 const lines = ["Line 1", "Line 2", "Line 3"];
-const makers = ["Maker 1", "Maker 2", "Maker 3"];
 const statuses = ["Active", "Inactive"];
 const ranks = ["Rank 1", "Rank 2", "Rank 3"];
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 
+const makers = ref([]);
+const shops = ref([]);
+
 const form = ref();
 
+const selectedShop = ref();
+const selectedMaker = ref();
 const currency = ref();
 const price = ref();
 const installDate = ref("");
@@ -27,8 +30,48 @@ async function addData() {
   }
 }
 
+async function fetchDataMaker() {
+  try {
+    const response = await $api("/master/makers", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    makers.value = response.data;
+
+    makers.value.forEach((maker) => {
+      maker.title = maker.MAKERCODE + " | " + maker.MAKERNAME;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch maker data");
+    console.log(err);
+  }
+}
+
+async function fetchDataShop() {
+  try {
+    const response = await $api("/master/shops", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    shops.value = response.data;
+
+    shops.value.forEach((data) => {
+      data.title = data.SHOPCODE + " | " + data.SHOPNAME;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
 onMounted(() => {
   // fetchData();
+  fetchDataMaker();
+  fetchDataShop();
 });
 </script>
 
@@ -84,11 +127,14 @@ onMounted(() => {
             />
           </VCol>
           <VCol cols="12" sm="3">
-            <AppSelect
+            <AppAutocomplete
+              v-model="selectedShop"
               label="Shop"
               :rules="[requiredValidator]"
               placeholder="Select shop"
+              item-title="title"
               :items="shops"
+              return-object
               outlined
             />
           </VCol>
@@ -108,11 +154,14 @@ onMounted(() => {
 
         <VRow>
           <VCol cols="12" sm="3">
-            <AppSelect
+            <AppAutocomplete
+              v-model="selectedMaker"
               label="Maker"
               :rules="[requiredValidator]"
               placeholder="Select maker"
+              item-title="title"
               :items="makers"
+              return-object
               outlined
             />
           </VCol>
@@ -173,6 +222,8 @@ onMounted(() => {
               :rules="[requiredValidator]"
               label="Install Date"
               placeholder="31/01/2024"
+              :config="{ dateFormat: 'd/m/Y' }"
+              append-inner-icon="tabler-calendar"
             />
           </VCol>
         </VRow>
