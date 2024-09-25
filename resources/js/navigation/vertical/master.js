@@ -7,6 +7,10 @@ export default [
         title: 'Machine',
         to: 'master-machine',
       },
+       {
+        title: 'Other Item',
+        to: 'master-other-item',
+      },
       {
         title: 'Part',
         to: 'master-part',

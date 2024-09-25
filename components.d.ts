@@ -14,6 +14,7 @@ declare module 'vue' {
     AddMakerDrawer: typeof import('./resources/js/components/drawers/AddMakerDrawer.vue')['default']
     AddPaymentMethodDialog: typeof import('./resources/js/components/dialogs/AddPaymentMethodDialog.vue')['default']
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']
+    AddSituationDrawer: typeof import('./resources/js/components/drawers/AddSituationDrawer.vue')['default']
     AddVendorDrawer: typeof import('./resources/js/components/drawers/AddVendorDrawer.vue')['default']
     AppAutocomplete: typeof import('./resources/js/@core/components/app-form-elements/AppAutocomplete.vue')['default']
     AppBarSearch: typeof import('./resources/js/@core/components/AppBarSearch.vue')['default']

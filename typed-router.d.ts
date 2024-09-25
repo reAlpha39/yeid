@@ -126,6 +126,7 @@ declare module 'vue-router/auto/routes' {
     'master-machine': RouteRecordInfo<'master-machine', '/master/machine', Record<never, never>, Record<never, never>>,
     'master-machine-add': RouteRecordInfo<'master-machine-add', '/master/machine/add', Record<never, never>, Record<never, never>>,
     'master-maker': RouteRecordInfo<'master-maker', '/master/maker', Record<never, never>, Record<never, never>>,
+    'master-other-item': RouteRecordInfo<'master-other-item', '/master/other-item', Record<never, never>, Record<never, never>>,
     'master-part': RouteRecordInfo<'master-part', '/master/part', Record<never, never>, Record<never, never>>,
     'master-part-add': RouteRecordInfo<'master-part-add', '/master/part/add', Record<never, never>, Record<never, never>>,
     'master-shop': RouteRecordInfo<'master-shop', '/master/shop', Record<never, never>, Record<never, never>>,

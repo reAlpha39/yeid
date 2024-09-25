@@ -6,6 +6,7 @@ use App\Http\Controllers\MasShopController;
 use App\Http\Controllers\MasVendorController;
 use App\Http\Controllers\MasMakerController;
 use App\Http\Controllers\MasMachineController;
+use App\Http\Controllers\MasSituationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -55,3 +56,10 @@ Route::get('/master/machines/{machineNo}', [MasMachineController::class, 'show']
 Route::post('/master/machines', [MasMachineController::class, 'store']);
 Route::put('/master/machines/{machineNo}', [MasMachineController::class, 'update']);
 Route::delete('/master/machines/{machineNo}', [MasMachineController::class, 'destroy']);
+
+// Master Situation
+Route::get('/master/situations', [MasSituationController::class, 'index']);
+Route::get('/master/situations/{situationCode}', [MasSituationController::class, 'show']);
+Route::post('/master/situations', [MasSituationController::class, 'store']);
+Route::put('/master/situations/{situationCode}', [MasSituationController::class, 'update']);
+Route::delete('/master/situations/{situationCode}', [MasSituationController::class, 'destroy']);
