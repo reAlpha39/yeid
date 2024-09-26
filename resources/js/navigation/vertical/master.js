@@ -20,6 +20,10 @@ export default [
         to: 'master-shop',
       },
       {
+        title: 'Line',
+        to: 'master-line',
+      },
+      {
         title: 'Maker',
         to: 'master-maker',
       },

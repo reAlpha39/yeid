@@ -11,6 +11,7 @@ declare module 'vue' {
     AddEditAddressDialog: typeof import('./resources/js/components/dialogs/AddEditAddressDialog.vue')['default']
     AddEditPermissionDialog: typeof import('./resources/js/components/dialogs/AddEditPermissionDialog.vue')['default']
     AddEditRoleDialog: typeof import('./resources/js/components/dialogs/AddEditRoleDialog.vue')['default']
+    AddLineDrawer: typeof import('./resources/js/components/drawers/AddLineDrawer.vue')['default']
     AddMakerDrawer: typeof import('./resources/js/components/drawers/AddMakerDrawer.vue')['default']
     AddPaymentMethodDialog: typeof import('./resources/js/components/dialogs/AddPaymentMethodDialog.vue')['default']
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']
