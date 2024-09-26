@@ -9,6 +9,7 @@ use App\Http\Controllers\MasMachineController;
 use App\Http\Controllers\MasSituationController;
 use App\Http\Controllers\MasLineController;
 use App\Http\Controllers\MasFactorController;
+use App\Http\Controllers\MasLTFactorController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -75,7 +76,14 @@ Route::delete('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 
 
 // Mas Factor
 Route::get('/master/factors', [MasFactorController::class, 'index']);
-Route::post('/master/factors', [MasFactorController::class, 'store']);
 Route::get('/master/factors/{factorCode}', [MasFactorController::class, 'show']);
+Route::post('/master/factors', [MasFactorController::class, 'store']);
 Route::put('/master/factors/{factorCode}', [MasFactorController::class, 'update']);
 Route::delete('/master/factors/{factorCode}', [MasFactorController::class, 'destroy']);
+
+// Mas LTFactor
+Route::get('/master/ltfactors', [MasLTFactorController::class, 'index']);
+Route::get('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'show']);
+Route::post('/master/ltfactors', [MasLTFactorController::class, 'store']);
+Route::put('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'update']);
+Route::delete('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'destroy']);

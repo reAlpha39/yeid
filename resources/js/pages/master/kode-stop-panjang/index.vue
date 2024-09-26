@@ -1,5 +1,5 @@
 <script setup>
-import AddFactorDrawer from "@/components/drawers/AddFactorDrawer.vue";
+import AddLTFactorDrawer from "@/components/drawers/AddLTFactorDrawer.vue";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -17,11 +17,11 @@ const page = ref(1);
 const headers = [
   {
     title: "LTFACTOR CODE",
-    key: "FACTORCODE",
+    key: "LTFACTORCODE",
   },
   {
     title: "LTFACTOR NAME",
-    key: "FACTORNAME",
+    key: "LTFACTORNAME",
   },
   {
     title: "REMARK",
@@ -39,7 +39,7 @@ const data = ref([]);
 
 async function fetchData() {
   try {
-    const response = await $api("/master/factors", {
+    const response = await $api("/master/ltfactors", {
       params: {
         search: searchQuery.value,
       },
@@ -57,7 +57,7 @@ async function fetchData() {
 
 async function deleteItem() {
   try {
-    const result = await $api("/master/factors/" + selectedId.value, {
+    const result = await $api("/master/ltfactors/" + selectedId.value, {
       method: "DELETE",
 
       onResponseError({ response }) {
@@ -170,19 +170,19 @@ onMounted(() => {
       class="text-no-wrap"
     >
       <!-- part name -->
-      <template #item.factorcode="{ item }">
+      <template #item.ltfactorcode="{ item }">
         <div class="d-flex align-center">
           <span
             class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.factorcode }}</span
+            >{{ item.ltfactorcode }}</span
           >
         </div>
       </template>
 
       <!-- date -->
-      <template #item.factorname="{ item }">
+      <template #item.ltfactorname="{ item }">
         <div class="d-flex align-center">
-          {{ item.factorname }}
+          {{ item.ltfactorname }}
         </div>
       </template>
 
@@ -196,10 +196,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.FACTORCODE)">
+          <IconBtn @click="openEditPartPage(item.LTFACTORCODE)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.FACTORCODE)">
+          <IconBtn @click="openDeleteDialog(item.LTFACTORCODE)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>
@@ -235,7 +235,7 @@ onMounted(() => {
   </VDialog>
 
   <!-- Add Item Drawer -->
-  <AddFactorDrawer
+  <AddLTFactorDrawer
     v-model:isDrawerOpen="isDrawerOpen"
     v-model:id="selectedId"
     @submit="fetchData"

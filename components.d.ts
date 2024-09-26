@@ -13,6 +13,7 @@ declare module 'vue' {
     AddEditRoleDialog: typeof import('./resources/js/components/dialogs/AddEditRoleDialog.vue')['default']
     AddFactorDrawer: typeof import('./resources/js/components/drawers/AddFactorDrawer.vue')['default']
     AddLineDrawer: typeof import('./resources/js/components/drawers/AddLineDrawer.vue')['default']
+    AddLTFactorDrawer: typeof import('./resources/js/components/drawers/AddLTFactorDrawer.vue')['default']
     AddMakerDrawer: typeof import('./resources/js/components/drawers/AddMakerDrawer.vue')['default']
     AddPaymentMethodDialog: typeof import('./resources/js/components/dialogs/AddPaymentMethodDialog.vue')['default']
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']

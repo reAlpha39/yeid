@@ -154,7 +154,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn prepend-icon="tabler-plus" @click="isDrawerOpen = !isDrawerOpen">
-          Add New LTFactor
+          Add New Factor
         </VBtn>
       </div>
     </VCardText>
