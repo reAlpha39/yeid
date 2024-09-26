@@ -8,6 +8,7 @@ use App\Http\Controllers\MasMakerController;
 use App\Http\Controllers\MasMachineController;
 use App\Http\Controllers\MasSituationController;
 use App\Http\Controllers\MasLineController;
+use App\Http\Controllers\MasFactorController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -71,3 +72,10 @@ Route::get('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'sh
 Route::post('/master/lines', [MasLineController::class, 'store']);
 Route::put('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'update']);
 Route::delete('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'destroy']);
+
+// Mas Factor
+Route::get('/master/factors', [MasFactorController::class, 'index']);
+Route::post('/master/factors', [MasFactorController::class, 'store']);
+Route::get('/master/factors/{factorCode}', [MasFactorController::class, 'show']);
+Route::put('/master/factors/{factorCode}', [MasFactorController::class, 'update']);
+Route::delete('/master/factors/{factorCode}', [MasFactorController::class, 'destroy']);

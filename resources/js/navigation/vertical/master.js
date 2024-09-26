@@ -7,7 +7,7 @@ export default [
         title: 'Machine',
         to: 'master-machine',
       },
-       {
+      {
         title: 'Other Item',
         to: 'master-other-item',
       },
@@ -30,6 +30,10 @@ export default [
       {
         title: 'Vendor',
         to: 'master-vendor',
+      },
+      {
+        title: 'Kode Stop Panjang',
+        to: 'master-kode-stop-panjang',
       },
 
     ],
