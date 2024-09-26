@@ -39,7 +39,10 @@ export default [
         title: 'Kode Stop Panjang',
         to: 'master-kode-stop-panjang',
       },
-
+      {
+        title: 'Kode Temporary',
+        to: 'master-kode-temporary',
+      },
     ],
   },
 ]

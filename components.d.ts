@@ -15,6 +15,7 @@ declare module 'vue' {
     AddLineDrawer: typeof import('./resources/js/components/drawers/AddLineDrawer.vue')['default']
     AddLTFactorDrawer: typeof import('./resources/js/components/drawers/AddLTFactorDrawer.vue')['default']
     AddMakerDrawer: typeof import('./resources/js/components/drawers/AddMakerDrawer.vue')['default']
+    AddMeasureDrawer: typeof import('./resources/js/components/drawers/AddMeasureDrawer.vue')['default']
     AddPaymentMethodDialog: typeof import('./resources/js/components/dialogs/AddPaymentMethodDialog.vue')['default']
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']
     AddSituationDrawer: typeof import('./resources/js/components/drawers/AddSituationDrawer.vue')['default']
