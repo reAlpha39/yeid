@@ -43,6 +43,10 @@ export default [
         title: 'Kode Temporary',
         to: 'master-kode-temporary',
       },
+      {
+        title: 'Kode Solution',
+        to: 'master-kode-solution',
+      },
     ],
   },
 ]

@@ -124,6 +124,7 @@ declare module 'vue-router/auto/routes' {
     'inventory-control-inventory-outbound': RouteRecordInfo<'inventory-control-inventory-outbound', '/inventory-control/inventory-outbound', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'master-factor': RouteRecordInfo<'master-factor', '/master/factor', Record<never, never>, Record<never, never>>,
+    'master-kode-solution': RouteRecordInfo<'master-kode-solution', '/master/kode-solution', Record<never, never>, Record<never, never>>,
     'master-kode-stop-panjang': RouteRecordInfo<'master-kode-stop-panjang', '/master/kode-stop-panjang', Record<never, never>, Record<never, never>>,
     'master-kode-temporary': RouteRecordInfo<'master-kode-temporary', '/master/kode-temporary', Record<never, never>, Record<never, never>>,
     'master-line': RouteRecordInfo<'master-line', '/master/line', Record<never, never>, Record<never, never>>,

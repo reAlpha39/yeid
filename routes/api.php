@@ -11,6 +11,7 @@ use App\Http\Controllers\MasLineController;
 use App\Http\Controllers\MasFactorController;
 use App\Http\Controllers\MasLTFactorController;
 use App\Http\Controllers\MasMeasureController;
+use App\Http\Controllers\MasPreventionController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -95,3 +96,10 @@ Route::get('/master/measures/{measureCode}', [MasMeasureController::class, 'show
 Route::post('/master/measures', [MasMeasureController::class, 'store']);
 Route::put('/master/measures/{measureCode}', [MasMeasureController::class, 'update']);
 Route::delete('/master/measures/{measureCode}', [MasMeasureController::class, 'destroy']);
+
+// Mas Prevention
+Route::get('/master/preventions', [MasPreventionController::class, 'index']);
+Route::get('/master/preventions/{preventionCode}', [MasPreventionController::class, 'show']);
+Route::post('/master/preventions', [MasPreventionController::class, 'store']);
+Route::put('/master/preventions/{preventionCode}', [MasPreventionController::class, 'update']);
+Route::delete('/master/preventions/{preventionCode}', [MasPreventionController::class, 'destroy']);
