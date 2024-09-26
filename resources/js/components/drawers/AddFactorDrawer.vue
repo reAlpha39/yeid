@@ -139,7 +139,7 @@ watch(
   >
     <!-- 👉 Header -->
     <AppDrawerHeaderSection
-      title="Add New LTFactor"
+      title="Add New Factor"
       @cancel="$emit('update:isDrawerOpen', false)"
     />
 
@@ -154,18 +154,18 @@ watch(
                 <AppTextField
                   v-if="isUpdate"
                   v-model="factorCode"
-                  label="LTFactor Code"
+                  label="Factor Code"
                   :rules="[requiredValidator]"
-                  placeholder="Input situation code"
+                  placeholder="Input factor code"
                   maxlength="3"
                   readonly
                 />
                 <AppTextField
                   v-else
                   v-model="factorCode"
-                  label="LTFactor Code"
+                  label="Factor Code"
                   :rules="[requiredValidator]"
-                  placeholder="Input situation code"
+                  placeholder="Input factor code"
                   maxlength="3"
                 />
               </VCol>
@@ -173,9 +173,9 @@ watch(
               <VCol cols="12">
                 <AppTextField
                   v-model="factorName"
-                  label="LTFactor Name"
+                  label="Factor Name"
                   :rules="[requiredValidator]"
-                  placeholder="Input LTFactor name"
+                  placeholder="Input factor name"
                   maxlength="64"
                 />
               </VCol>

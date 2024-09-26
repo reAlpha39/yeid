@@ -32,8 +32,8 @@ export default [
         to: 'master-vendor',
       },
       {
-        title: 'Kode Stop Panjang',
-        to: 'master-kode-stop-panjang',
+        title: 'Factor',
+        to: 'master-factor',
       },
 
     ],
