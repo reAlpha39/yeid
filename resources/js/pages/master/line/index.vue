@@ -9,6 +9,7 @@ const isDrawerOpen = ref(false);
 const selectedLineCode = ref("");
 const selectedShopCode = ref("");
 const searchQuery = ref("");
+const shopQuery = ref();
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -36,19 +37,22 @@ const headers = [
 
 // data table
 const data = ref([]);
+const shops = ref([]);
 
 async function fetchData() {
   try {
     const response = await $api("/master/lines", {
       params: {
-        search: searchQuery.value,
+        query: searchQuery.value,
+        shop_code: shopQuery.value,
       },
       onResponseError({ response }) {
-        errors.value = response._data.errors;
+        // errors.value = response._data.errors;
       },
     });
 
     data.value = response.data;
+    console.log(data.value);
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -63,7 +67,7 @@ async function deleteItem() {
         method: "DELETE",
 
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          // errors.value = response._data.errors;
         },
       }
     );
@@ -76,6 +80,21 @@ async function deleteItem() {
   } catch (err) {
     toast.error("Failed to delete data");
     isDeleteDialogVisible.value = true;
+    console.log(err);
+  }
+}
+
+async function fetchDataShop() {
+  try {
+    const response = await $api("/master/shops", {
+      onResponseError({ response }) {
+        // toast.error(response._data.error);
+      },
+    });
+
+    shops.value = response.data;
+  } catch (err) {
+    // toast.error("Failed to fetch data");
     console.log(err);
   }
 }
@@ -104,6 +123,7 @@ watch(
 );
 
 onMounted(() => {
+  fetchDataShop();
   fetchData();
 });
 </script>
@@ -142,6 +162,16 @@ onMounted(() => {
           @update:model-value="itemsPerPage = parseInt($event, 10)"
         />
       </div>
+      <AppAutocomplete
+        v-model="shopQuery"
+        placeholder="Select Shop"
+        item-title="SHOPCODE"
+        :items="shops"
+        outlined
+        clearable
+        maxlength="4"
+        @update:model-value="fetchData()"
+      />
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">

@@ -14,11 +14,22 @@ class MasLineController extends Controller
     {
         try {
             $search = $request->query('query');
+            $shopCode = $request->query('shop_code');
 
             $query = MasLine::query();
 
-            $query->where('LINECODE', 'like', '%' . $search . '%');
-            $query->orWhere('LINENAME', 'like', '%' . $search . '%');
+            // Apply the shop code filter only if it's provided
+            if ($shopCode) {
+                $query->where('SHOPCODE', $shopCode);
+            }
+
+            // Apply the search filter if a search query is provided
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('LINECODE', 'like', '%' . $search . '%')
+                        ->orWhere('LINENAME', 'like', '%' . $search . '%');
+                });
+            }
 
             $lines = $query->get();
 
