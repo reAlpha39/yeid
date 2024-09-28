@@ -47,6 +47,10 @@ export default [
         title: 'Kode Solution',
         to: 'master-kode-solution',
       },
+      {
+        title: 'Exchange Rate',
+        to: 'master-exchange-rate',
+      },
     ],
   },
 ]

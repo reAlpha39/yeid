@@ -12,6 +12,7 @@ use App\Http\Controllers\MasFactorController;
 use App\Http\Controllers\MasLTFactorController;
 use App\Http\Controllers\MasMeasureController;
 use App\Http\Controllers\MasPreventionController;
+use App\Http\Controllers\MasSystemController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -103,3 +104,10 @@ Route::get('/master/preventions/{preventionCode}', [MasPreventionController::cla
 Route::post('/master/preventions', [MasPreventionController::class, 'store']);
 Route::put('/master/preventions/{preventionCode}', [MasPreventionController::class, 'update']);
 Route::delete('/master/preventions/{preventionCode}', [MasPreventionController::class, 'destroy']);
+
+// Master System
+Route::get('/master/systems', [MasSystemController::class, 'index']);
+Route::get('/master/systems/{year}', [MasSystemController::class, 'show']);
+Route::post('/master/systems', [MasSystemController::class, 'store']);
+Route::put('/master/systems/{year}', [MasSystemController::class, 'update']);
+Route::delete('/master/systems/{year}', [MasSystemController::class, 'destroy']);
