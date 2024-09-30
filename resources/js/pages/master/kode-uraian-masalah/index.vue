@@ -111,7 +111,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Other Item',
+          title: 'Kode Uraian Masalah',
           class: 'text-h4',
         },
       ]"
@@ -154,7 +154,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn prepend-icon="tabler-plus" @click="isDrawerOpen = !isDrawerOpen">
-          Add New Situation
+          Add New Kode Uraian Masalah
         </VBtn>
       </div>
     </VCardText>

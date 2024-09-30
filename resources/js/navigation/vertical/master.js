@@ -7,10 +7,7 @@ export default [
         title: 'Machine',
         to: 'master-machine',
       },
-      {
-        title: 'Other Item',
-        to: 'master-other-item',
-      },
+      
       {
         title: 'Part',
         to: 'master-part',
@@ -34,6 +31,10 @@ export default [
       {
         title: 'Factor',
         to: 'master-factor',
+      },
+      {
+        title: 'Kode Uraian Masalah',
+        to: 'master-kode-uraian-masalah',
       },
       {
         title: 'Kode Stop Panjang',
