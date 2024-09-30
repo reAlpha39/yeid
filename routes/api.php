@@ -13,6 +13,7 @@ use App\Http\Controllers\MasLTFactorController;
 use App\Http\Controllers\MasMeasureController;
 use App\Http\Controllers\MasPreventionController;
 use App\Http\Controllers\MasSystemController;
+use App\Http\Controllers\MasEmployeeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -111,3 +112,10 @@ Route::get('/master/systems/{year}', [MasSystemController::class, 'show']);
 Route::post('/master/systems', [MasSystemController::class, 'store']);
 Route::put('/master/systems/{year}', [MasSystemController::class, 'update']);
 Route::delete('/master/systems/{year}', [MasSystemController::class, 'destroy']);
+
+// Master Employee
+Route::get('/master/employees', [MasEmployeeController::class, 'index']);
+Route::get('/master/employees/{employeeCode}', [MasEmployeeController::class, 'show']);
+Route::post('/master/employees', [MasEmployeeController::class, 'store']);
+Route::put('/master/employees/{employeeCode}', [MasEmployeeController::class, 'update']);
+Route::delete('/master/employees/{employeeCode}', [MasEmployeeController::class, 'destroy']);
