@@ -70,18 +70,18 @@ class MasMachineController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             // Start building the query
             $query = MasMachine::query();
 
             // Apply filters based on the query parameters
 
-            $query->where('MACHINENO', 'like', '%' . $search . '%');
-            $query->orWhere('MACHINENAME', 'like', '%' . $search . '%');
-            $query->orWhere('PLANTCODE', 'like', '%' . $search . '%');
-            $query->orWhere('SHOPCODE', 'like', '%' . $search . '%');
-            $query->orWhere('SHOPNAME', 'like', '%' . $search . '%');
+            $query->where('MACHINENO', 'like', $search . '%');
+            $query->orWhere('MACHINENAME', 'like', $search . '%');
+            $query->orWhere('PLANTCODE', 'like', $search . '%');
+            $query->orWhere('SHOPCODE', 'like', $search . '%');
+            $query->orWhere('SHOPNAME', 'like', $search . '%');
 
             // Execute the query and get the results
             $machines = $query->get();
@@ -119,11 +119,23 @@ class MasMachineController extends Controller
                         }
                     }
                 ],
-                'MACHINENAME' => 'required|string|max:50',
-                'PLANTCODE' => 'required|string|max:1',
-                'SHOPCODE' => 'required|string|max:4',
-                'INSTALLDATE' => 'required|string|max:20',
-                'STATUS' => 'required|string|max:1',
+                'MACHINENAME'  => 'required|string|max:50',
+                'PLANTCODE'    => 'required|string|max:1',
+                'SHOPCODE'     => 'required|string|max:4',
+                'SHOPNAME'     => 'nullable|string|max:50',
+                'LINECODE'     => 'nullable|string|max:2',
+                'MODELNAME'    => 'nullable|string|max:50',
+                'MAKERCODE'    => 'nullable|string|max:6',
+                'MAKERNAME'    => 'nullable|string|max:50',
+                'SERIALNO'     => 'nullable|string|max:30',
+                'MACHINEPRICE' => 'nullable|numeric',
+                'CURRENCY'     => 'nullable|string|max:3',
+                'PURCHASEROOT' => 'nullable|string|max:50',
+                'INSTALLDATE'  => 'required|string|max:20',
+                'NOTE'         => 'nullable|string|max:255',
+                'STATUS'       => 'required|string|max:1',
+                'RANK'         => 'nullable|string|max:1',
+                'UPDATETIME'   => 'nullable|date'
             ]);
 
             $machine = MasMachine::create($validated);
@@ -132,7 +144,7 @@ class MasMachineController extends Controller
                 'success' => true,
                 'message' => 'Machine created successfully!',
                 'data' => $machine
-            ], 200);
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -182,11 +194,23 @@ class MasMachineController extends Controller
             }
 
             $validated = $request->validate([
-                'MACHINENAME' => 'required|string|max:50',
-                'PLANTCODE' => 'required|string|max:1',
-                'SHOPCODE' => 'required|string|max:4',
-                'INSTALLDATE' => 'required|string|max:20',
-                'STATUS' => 'required|string|max:1',
+                'MACHINENAME'  => 'required|string|max:50',
+                'PLANTCODE'    => 'required|string|max:1',
+                'SHOPCODE'     => 'required|string|max:4',
+                'SHOPNAME'     => 'nullable|string|max:50',
+                'LINECODE'     => 'nullable|string|max:2',
+                'MODELNAME'    => 'nullable|string|max:50',
+                'MAKERCODE'    => 'nullable|string|max:6',
+                'MAKERNAME'    => 'nullable|string|max:50',
+                'SERIALNO'     => 'nullable|string|max:30',
+                'MACHINEPRICE' => 'nullable|numeric',
+                'CURRENCY'     => 'nullable|string|max:3',
+                'PURCHASEROOT' => 'nullable|string|max:50',
+                'INSTALLDATE'  => 'required|string|max:20',
+                'NOTE'         => 'nullable|string|max:255',
+                'STATUS'       => 'required|string|max:1',
+                'RANK'         => 'nullable|string|max:1',
+                'UPDATETIME'   => 'nullable|date'
             ]);
 
             $machine->update($validated);
@@ -211,7 +235,7 @@ class MasMachineController extends Controller
         try {
             $machine = MasMachine::find($machineNo);
 
-            if ($machine) {
+            if (!$machine) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Machine not found'
