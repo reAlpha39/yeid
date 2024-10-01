@@ -279,6 +279,15 @@ onMounted(() => {
       <VRow>
         <VCol cols="6">
           <AppTextField
+            v-if="isEdit"
+            v-model="partCodeTF"
+            :rules="[requiredValidator]"
+            label="Part Code"
+            placeholder="Input part code"
+            readonly
+          ></AppTextField>
+          <AppTextField
+            v-else
             v-model="partCodeTF"
             :rules="[requiredValidator]"
             label="Part Code"
