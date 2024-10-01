@@ -108,6 +108,21 @@ function openDeleteDialog(partCode) {
   isDeleteDialogVisible.value = true;
 }
 
+function statusType(category) {
+  switch (category) {
+    case "A":
+      return "Active";
+    case "D":
+      return "Disposed";
+    case "R":
+      return "Resting";
+    case "T":
+      return "Transfered";
+    default:
+      return "";
+  }
+}
+
 onMounted(() => {
   fetchData();
 });
@@ -199,9 +214,9 @@ onMounted(() => {
       </template>
 
       <!-- vendor -->
-      <template #item.status="{ item }">
+      <template #item.STATUS="{ item }">
         <div class="d-flex align-center">
-          {{ item.status }}
+          {{ statusType(item.STATUS) }}
         </div>
       </template>
 
