@@ -1,9 +1,10 @@
 <script setup>
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
 const router = useRouter();
+const route = useRoute();
 
 const isDeleteDialogVisible = ref(false);
 
@@ -34,6 +35,9 @@ const status = ref();
 const rank = ref();
 const installDateMenu = ref(false);
 
+const prevData = ref();
+const isEdit = ref(false);
+
 async function addData() {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
@@ -43,34 +47,64 @@ async function addData() {
   const now = new Date();
 
   try {
-    const response = await $api("/master/machines", {
-      method: "POST",
-      body: {
-        MACHINENO: machineNo.value,
-        MACHINENAME: machineName.value,
-        PLANTCODE: plantNo.value,
-        SHOPCODE: selectedShop.value.SHOPCODE,
-        SHOPNAME: selectedShop.value.SHOPNAME,
-        LINECODE: selectedLine.value.LINECODE,
-        MODELNAME: modelName.value,
-        MAKERCODE: selectedMaker.value.MAKERCODE,
-        MAKERNAME: selectedMaker.value.MAKERNAME,
-        SERIALNO: serialNo.value,
-        CURRENCY: currency.value,
-        MACHINEPRICE: price.value,
-        PURCHASEROOT: purchaseRoot.value,
-        INSTALLDATE: installDate.value,
-        NOTE: note.value,
-        STATUS: convertStatus(status.value),
-        RANK: rank.value,
-        UPDATETIME: now,
-      },
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+    if (isEdit.value) {
+      const response = await $api("/master/machines/" + machineNo.value, {
+        method: "PUT",
+        body: {
+          MACHINENAME: machineName.value,
+          PLANTCODE: plantNo.value,
+          SHOPCODE: selectedShop.value.SHOPCODE,
+          SHOPNAME: selectedShop.value.SHOPNAME,
+          LINECODE: selectedLine.value.LINECODE,
+          MODELNAME: modelName.value,
+          MAKERCODE: selectedMaker.value.MAKERCODE,
+          MAKERNAME: selectedMaker.value.MAKERNAME,
+          SERIALNO: serialNo.value,
+          CURRENCY: currency.value,
+          MACHINEPRICE: price.value,
+          PURCHASEROOT: purchaseRoot.value,
+          INSTALLDATE: installDate.value,
+          NOTE: note.value,
+          STATUS: convertStatus(status.value),
+          RANK: rank.value,
+          UPDATETIME: now,
+        },
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
 
-    toast.success("Save machine success");
+      toast.success("Edit machine success");
+    } else {
+      const response = await $api("/master/machines", {
+        method: "POST",
+        body: {
+          MACHINENO: machineNo.value,
+          MACHINENAME: machineName.value,
+          PLANTCODE: plantNo.value,
+          SHOPCODE: selectedShop.value.SHOPCODE,
+          SHOPNAME: selectedShop.value.SHOPNAME,
+          LINECODE: selectedLine.value.LINECODE,
+          MODELNAME: modelName.value,
+          MAKERCODE: selectedMaker.value.MAKERCODE,
+          MAKERNAME: selectedMaker.value.MAKERNAME,
+          SERIALNO: serialNo.value,
+          CURRENCY: currency.value,
+          MACHINEPRICE: price.value,
+          PURCHASEROOT: purchaseRoot.value,
+          INSTALLDATE: installDate.value,
+          NOTE: note.value,
+          STATUS: convertStatus(status.value),
+          RANK: rank.value,
+          UPDATETIME: now,
+        },
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
+
+      toast.success("Save machine success");
+    }
     await router.push("/master/machine");
   } catch (err) {
     toast.error("Failed to save machine data");
@@ -78,56 +112,106 @@ async function addData() {
   }
 }
 
-async function fetchDataMaker() {
+async function fetchDataEdit(id) {
   try {
-    const response = await $api("/master/makers", {
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+    const response = await $api("/master/machines/" + id);
+    console.log(response.data);
+    prevData.value = response.data;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-    makers.value = response.data;
+async function fetchDataMaker(id) {
+  try {
+    if (id) {
+      const response = await $api("/master/makers/" + id, {
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
 
-    makers.value.forEach((maker) => {
-      maker.title = maker.MAKERCODE + " | " + maker.MAKERNAME;
-    });
+      selectedMaker.value = response.data;
+      selectedMaker.value =
+        response.data.MAKERCODE + " | " + response.data.MAKERNAME;
+    } else {
+      const response = await $api("/master/makers", {
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
+
+      makers.value = response.data;
+
+      makers.value.forEach((maker) => {
+        maker.title = maker.MAKERCODE + " | " + maker.MAKERNAME;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch maker data");
     console.log(err);
   }
 }
 
-async function fetchDataShop() {
+async function fetchDataShop(id) {
   try {
-    const response = await $api("/master/shops", {
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/shops/" + id, {
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
 
-    shops.value = response.data;
+      selectedShop.value = response.data;
+      selectedShop.value.title =
+        response.data.SHOPCODE + " | " + response.data.SHOPNAME;
+    } else {
+      const response = await $api("/master/shops", {
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
 
-    shops.value.forEach((data) => {
-      data.title = data.SHOPCODE + " | " + data.SHOPNAME;
-    });
+      shops.value = response.data;
+
+      shops.value.forEach((data) => {
+        data.title = data.SHOPCODE + " | " + data.SHOPNAME;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
   }
 }
 
-async function fetchDataLine() {
+async function fetchDataLine(id) {
   try {
-    const response = await $api("/master/lines", {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/lines", {
+        params: {
+          search: id,
+        },
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      });
 
-    lines.value = response.data;
-    lines.value.forEach((data) => {
-      data.title = data.LINECODE + " | " + data.LINENAME;
-    });
+      let data = response.data[0];
+
+      selectedLine.value = data;
+      selectedLine.value.title = data.LINECODE + " | " + data.LINENAME;
+    } else {
+      const response = await $api("/master/lines", {
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      });
+
+      lines.value = response.data;
+      lines.value.forEach((data) => {
+        data.title = data.LINECODE + " | " + data.LINENAME;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -174,11 +258,51 @@ function isNumber(evt) {
   }
 }
 
+async function initEditData(id) {
+  await fetchDataEdit(id);
+  applyData();
+  // await fetchVendor(vendorTF.value);
+  // await getMachines(partCodeTF.value);
+}
+
+async function applyData() {
+  const data = prevData.value;
+
+  await fetchDataShop(data.SHOPCODE);
+  await fetchDataLine(data.LINECODE);
+  await fetchDataMaker(data.MAKERCODE);
+
+  machineNo.value = data.MACHINENO;
+  machineName.value = data.MACHINENAME;
+  plantNo.value = data.PLANTCODE;
+  // selectedShop.value.SHOPCODE = data.SHOPCODE;
+  // selectedShop.value.SHOPNAME = data.SHOPNAME;
+  selectedLine.value.LINECODE = data.LINECODE;
+  modelName.value = data.MODELNAME;
+  // selectedMaker.value.MAKERCODE = data.MAKERCODE;
+  // selectedMaker.value.MAKERNAME = data.MAKERNAME;
+  serialNo.value = data.SERIALNO;
+  currency.value = data.CURRENCY;
+  price.value = data.MACHINEPRICE;
+  purchaseRoot.value = data.PURCHASEROOT;
+  installDate.value = data.INSTALLDATE;
+  note.value = data.NOTE;
+  status.value = statusType(data.STATUS);
+  rank.value = data.RANK;
+}
+
 onMounted(() => {
   // fetchData();
   fetchDataMaker();
   fetchDataShop();
   fetchDataLine();
+
+  const id = route.query.machine_no;
+  console.log("Fetching data for machine_no:", id);
+  if (id) {
+    isEdit.value = true;
+    initEditData(route.query.machine_no);
+  }
 });
 </script>
 
@@ -207,6 +331,17 @@ onMounted(() => {
         <VRow>
           <VCol cols="12" sm="6">
             <AppTextField
+              v-if="isEdit"
+              v-model="machineNo"
+              label="Machine No"
+              :rules="[requiredValidator]"
+              placeholder="Input machine no"
+              outlined
+              readonly
+              maxlength="12"
+            />
+            <AppTextField
+              v-else
               v-model="machineNo"
               label="Machine No"
               :rules="[requiredValidator]"

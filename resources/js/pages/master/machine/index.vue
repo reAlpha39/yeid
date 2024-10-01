@@ -1,7 +1,9 @@
 <script setup>
+import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
+const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
 
