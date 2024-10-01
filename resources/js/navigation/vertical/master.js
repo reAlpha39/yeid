@@ -12,6 +12,10 @@ export default [
         to: 'master-employee',
       },
       {
+        title: 'Department',
+        to: 'master-department',
+      },
+      {
         title: 'Part',
         to: 'master-part',
       },
