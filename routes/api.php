@@ -15,6 +15,7 @@ use App\Http\Controllers\MasPreventionController;
 use App\Http\Controllers\MasSystemController;
 use App\Http\Controllers\MasEmployeeController;
 use App\Http\Controllers\MasDepartmentController;
+use App\Http\Controllers\MasUserController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -127,3 +128,10 @@ Route::get('/master/departments/{departmentCode}', [MasDepartmentController::cla
 Route::post('/master/departments', [MasDepartmentController::class, 'store']);
 Route::put('/master/departments/{departmentCode}', [MasDepartmentController::class, 'update']);
 Route::delete('/master/departments/{departmentCode}', [MasDepartmentController::class, 'destroy']);
+
+// Master User
+Route::get('/master/users', [MasUserController::class, 'index']);
+Route::get('/master/users/{id}', [MasUserController::class, 'show']);
+Route::post('/master/users', [MasUserController::class, 'store']);
+Route::put('/master/users/{id}', [MasUserController::class, 'update']);
+Route::delete('/master/users/{id}', [MasUserController::class, 'destroy']);

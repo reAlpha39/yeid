@@ -20,6 +20,10 @@ export default [
         to: 'master-part',
       },
       {
+        title: 'User',
+        to: 'master-user',
+      },
+      {
         title: 'Shop',
         to: 'master-shop',
       },
