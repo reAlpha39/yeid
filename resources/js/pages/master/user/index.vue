@@ -1,6 +1,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
+import { VCardText } from "vuetify/lib/components/index.mjs";
 
 const toast = useToast();
 const router = useRouter();
@@ -9,9 +10,17 @@ const isDeleteDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
+const selectedDepartment = ref();
+const selectedRoleAccess = ref();
+const selectedStatus = ref();
+
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
+
+const departments = ref([]);
+const roleAccesses = ["Operator", "Supervisor", "Manager"];
+const statuses = ["Active", "Inactive"];
 
 // headers
 const headers = [
@@ -50,6 +59,9 @@ async function fetchData() {
     const response = await $api("/master/users", {
       params: {
         search: searchQuery.value,
+        department: selectedDepartment.value?.DEPARTMENTCODE,
+        status: convertStatus(selectedStatus.value),
+        roleAccess: convertRoleAccess(selectedRoleAccess.value),
       },
       onResponseError({ response }) {
         errors.value = response._data.errors;
@@ -91,6 +103,49 @@ async function openEditPage(id) {
   });
 }
 
+async function fetchDataDepartment() {
+  try {
+    const response = await $api("/master/departments", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    departments.value = response.data;
+
+    departments.value.forEach((maker) => {
+      maker.title = maker.DEPARTMENTCODE + " | " + maker.DEPARTMENTNAME;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch department data");
+    console.log(err);
+  }
+}
+
+function convertStatus(category) {
+  switch (category) {
+    case "Active":
+      return "1";
+    case "Inactive":
+      return "0";
+    default:
+      return "";
+  }
+}
+
+function convertRoleAccess(id) {
+  switch (id) {
+    case "Operator":
+      return "O";
+    case "Supervisor":
+      return "S";
+    case "Manager":
+      return "M";
+    default:
+      return "";
+  }
+}
+
 function openDeleteDialog(partCode) {
   selectedItem.value = partCode;
   isDeleteDialogVisible.value = true;
@@ -107,8 +162,22 @@ function statusType(category) {
   }
 }
 
+function roleAccessType(id) {
+  switch (id) {
+    case "O":
+      return "Operator";
+    case "S":
+      return "Supervisor";
+    case "M":
+      return "Manager";
+    default:
+      return "";
+  }
+}
+
 onMounted(() => {
   fetchData();
+  fetchDataDepartment();
 });
 </script>
 
@@ -131,6 +200,42 @@ onMounted(() => {
 
   <!-- 👉 products -->
   <VCard class="mb-6">
+    <VCardText>
+      <VRow>
+        <VCol cols="3">
+          <VAutocomplete
+            v-model="selectedDepartment"
+            placeholder="Select deparment"
+            item-title="title"
+            :items="departments"
+            return-object
+            outlined
+            clearable
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+        <VCol cols="3">
+          <VSelect
+            v-model="selectedRoleAccess"
+            placeholder="Select role access"
+            :items="roleAccesses"
+            outlined
+            clearable
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+        <VCol cols="3">
+          <VSelect
+            v-model="selectedStatus"
+            placeholder="Select status"
+            :items="statuses"
+            outlined
+            clearable
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
     <VCardText class="d-flex flex-wrap gap-4">
       <div class="me-3 d-flex gap-3">
         <AppSelect
@@ -202,9 +307,9 @@ onMounted(() => {
         </div>
       </template>
 
-      <template #item.roleaccess="{ item }">
+      <template #item.ROLEACCESS="{ item }">
         <div class="d-flex align-center">
-          {{ item.roleaccess }}
+          {{ roleAccessType(item.ROLEACCESS) }}
         </div>
       </template>
 
@@ -222,6 +327,9 @@ onMounted(() => {
           </IconBtn>
           <IconBtn @click="openDeleteDialog(item.ID)">
             <VIcon icon="tabler-trash" />
+          </IconBtn>
+          <IconBtn @click="openDeleteDialog(item.ID)">
+            <VIcon icon="tabler-dots-vertical" />
           </IconBtn>
         </div>
       </template>

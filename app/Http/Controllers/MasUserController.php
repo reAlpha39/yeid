@@ -14,14 +14,28 @@ class MasUserController extends Controller
         try {
             $query = MasUser::query();
 
-            // Check for search parameters
-            if ($request->has('search')) {
-                $search = $request->input('search');
-                $query->where('FULLNAME', 'LIKE', "{$search}%")
-                    ->orWhere('EMAIL', 'LIKE', "{$search}%")
-                    ->orWhere('DEPARTMENT', 'LIKE', "{$search}%")
-                    ->orWhere('ROLEACCESS', 'LIKE', "{$search}%")
-                    ->orWhere('STATUS', 'LIKE', "{$search}%");
+            $search = $request->input('search');
+            $department = $request->input('department');
+            $roleAccess = $request->input('roleAccess');
+            $status = $request->input('status');
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('FULLNAME', 'LIKE', $search . '%')
+                        ->orWhere('EMAIL', 'LIKE', $search . '%');
+                });
+            }
+
+            if ($department) {
+                $query->where('DEPARTMENT', $department);
+            }
+
+            if ($roleAccess) {
+                $query->where('ROLEACCESS', $roleAccess);
+            }
+
+            if (isset($status)) {
+                $query->where('STATUS', $status);
             }
 
             $users = $query->get();
