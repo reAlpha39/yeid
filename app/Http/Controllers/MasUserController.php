@@ -224,6 +224,45 @@ class MasUserController extends Controller
         }
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            // Validate the input
+            $validated = $request->validate([
+                'status' => 'required|string|max:1'
+            ]);
+
+            // Find the user by ID
+            $user = MasUser::find($id);
+
+            // If user not found, return a 404 response
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Update only the status column
+            $user->status = $validated['status'];
+            $user->save();
+
+            // Return a success response
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully!',
+                'data'    => $user
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     // Delete a user record
     public function destroy($id)
     {

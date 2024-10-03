@@ -135,5 +135,6 @@ Route::get('/master/users', [MasUserController::class, 'index']);
 Route::get('/master/users/{id}', [MasUserController::class, 'show']);
 Route::post('/master/users', [MasUserController::class, 'store']);
 Route::put('/master/users/{id}', [MasUserController::class, 'update']);
+Route::put('/master/users/{id}/status', [MasUserController::class, 'updateStatus']);
 Route::delete('/master/users/{id}', [MasUserController::class, 'destroy']);
 Route::post('/master/users/{id}/restore', [MasUserController::class, 'restore']);

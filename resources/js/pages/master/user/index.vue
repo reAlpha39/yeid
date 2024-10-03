@@ -7,6 +7,7 @@ const toast = useToast();
 const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
+const menu = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
@@ -92,6 +93,27 @@ async function deletePart() {
   } catch (err) {
     toast.error("Failed to delete data");
     isDeleteDialogVisible.value = true;
+    console.log(err);
+  }
+}
+
+async function updateStatus(id, status) {
+  try {
+    const response = await $api("/master/users/" + id + "/status", {
+      method: "PUT",
+      body: {
+        status: status,
+      },
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    menu.value = false;
+    toast.success("Update status success");
+    fetchData();
+  } catch (err) {
+    toast.error("Failed to update status");
     console.log(err);
   }
 }
@@ -328,9 +350,28 @@ onMounted(() => {
           <IconBtn @click="openDeleteDialog(item.id)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.id)">
-            <VIcon icon="tabler-dots-vertical" />
-          </IconBtn>
+          <VMenu v-model="menu">
+            <template #activator="{ props }">
+              <IconBtn v-bind="props">
+                <VIcon icon="tabler-dots-vertical" />
+              </IconBtn>
+            </template>
+
+            <VCard>
+              <VList>
+                <VListItem
+                  v-if="item.status == 0"
+                  title="Activate"
+                  @click="updateStatus(item.id, '1')"
+                />
+                <VListItem
+                  v-if="item.status == 1"
+                  title="Deactivate"
+                  @click="updateStatus(item.id, '0')"
+                />
+              </VList>
+            </VCard>
+          </VMenu>
         </div>
       </template>
     </VDataTable>

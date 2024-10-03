@@ -13,11 +13,11 @@ import master from './master'
 export default [
     ...dashboard,
     ...master,
-    ...inventoryControl,
-    ...dashboards,
-    ...appsAndPages,
-    ...charts,
-    ...forms,
-    ...others,
-    ...uiElement,
+    // ...inventoryControl,
+    // ...dashboards,
+    // ...appsAndPages,
+    // ...charts,
+    // ...forms,
+    // ...others,
+    // ...uiElement,
 ]
