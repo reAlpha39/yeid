@@ -13,16 +13,19 @@ class MasMakerController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             // Start building the query
             $query = MasMaker::query();
 
             // Apply filters based on the query parameters
-
-            $query->where('MAKERCODE', 'like', '%' . $search . '%');
-            $query->orWhere('MAKERNAME', 'like', '%' . $search . '%');
-            $query->orWhere('REMARK', 'like', '%' . $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('MAKERCODE', 'LIKE', $search . '%')
+                        ->orWhere('MAKERNAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             // Execute the query and get the results
             $makers = $query->get();

@@ -13,14 +13,18 @@ class MasMeasureController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             $query = MasMeasure::query();
 
             // Check for search parameters
-            $query->where('MEASURECODE', 'like', $search . '%');
-            $query->orWhere('MEASURENAME', 'like', $search . '%');
-            $query->orWhere('REMARK', 'like', $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('MEASURECODE', 'LIKE', $search . '%')
+                        ->orWhere('MEASURENAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             $measures = $query->get();
 

@@ -13,15 +13,19 @@ class MasSystemController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             $query = MasSystem::query();
 
-            $query->where('YEAR', 'LIKE', $search . '%')
-                ->orWhere('USD2IDR', 'LIKE', $search . '%')
-                ->orWhere('JPY2IDR', 'LIKE', $search . '%')
-                ->orWhere('EUR2IDR', 'LIKE', $search . '%')
-                ->orWhere('SGD2IDR', 'LIKE', $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('YEAR', 'LIKE', $search . '%')
+                        ->orWhere('USD2IDR', 'LIKE', $search . '%')
+                        ->orWhere('JPY2IDR', 'LIKE', $search . '%')
+                        ->orWhere('EUR2IDR', 'LIKE', $search . '%')
+                        ->orWhere('SGD2IDR', 'LIKE', $search . '%');
+                });
+            }
 
             $systems = $query->get();
 

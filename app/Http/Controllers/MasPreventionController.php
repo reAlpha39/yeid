@@ -13,14 +13,18 @@ class MasPreventionController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             $query = MasPrevention::query();
 
             // Check for search parameters
-            $query->where('PREVENTIONCODE', 'like', $search . '%');
-            $query->orWhere('PREVENTIONNAME', 'like', $search . '%');
-            $query->orWhere('REMARK', 'like', $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('PREVENTIONCODE', 'LIKE', $search . '%')
+                        ->orWhere('PREVENTIONNAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             $preventions = $query->get();
 

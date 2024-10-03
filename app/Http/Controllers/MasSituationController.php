@@ -13,13 +13,17 @@ class MasSituationController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             $query = MasSituation::query();
 
-            $query->where('SITUATIONCODE', 'like', '%' . $search . '%');
-            $query->orWhere('SITUATIONNAME', 'like', '%' . $search . '%');
-            $query->orWhere('REMARK', 'like', '%' . $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('SITUATIONCODE', 'LIKE', $search . '%')
+                        ->orWhere('SITUATIONNAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             $situations = $query->get();
             return response()->json([

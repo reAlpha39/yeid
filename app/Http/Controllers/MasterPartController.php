@@ -15,6 +15,7 @@ class MasterPartController extends Controller
     {
         try {
             // Retrieve search parameters from the request
+            $search = $request->input('search', '');
             $partCode = $request->input('part_code', '');
             $partName = $request->input('part_name', '');
             $brand = $request->input('brand', '');
@@ -75,12 +76,13 @@ class MasterPartController extends Controller
                 ->where('M.STATUS', '<>', 'D');
 
             // Apply search filters
-            if (!empty($partCode)) {
-                $queryBuilder->where('M.PARTCODE', 'like', $partCode . '%');
+            if ($search) {
+                $queryBuilder->where(function ($q) use ($search) {
+                    $q->where('M.PARTCODE', 'like', $search . '%')
+                        ->orWhere(DB::raw('upper(M.PARTNAME)'), 'like',  strtoupper($search) . '%');
+                });
             }
-            if (!empty($partName)) {
-                $queryBuilder->where(DB::raw('upper(M.PARTNAME)'), 'like', '%' . strtoupper($partName) . '%');
-            }
+
             if (!empty($brand)) {
                 $queryBuilder->where(DB::raw('upper(M.BRAND)'), 'like', '%' . strtoupper($brand) . '%');
             }

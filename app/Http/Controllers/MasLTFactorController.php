@@ -14,14 +14,18 @@ class MasLTFactorController extends Controller
     {
         try {
 
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             $query = MasLTFactor::query();
 
             // Check for search parameters
-            $query->where('LTFACTORCODE', 'like', $search . '%');
-            $query->orWhere('LTFACTORNAME', 'like', $search . '%');
-            $query->orWhere('REMARK', 'like', $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('LTFACTORCODE', 'LIKE', $search . '%')
+                        ->orWhere('LTFACTORNAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             $ltFactors = $query->get();
 

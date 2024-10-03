@@ -14,16 +14,19 @@ class MasFactorController extends Controller
     {
         try {
 
-            $search = $request->query('query');
+            $search = $request->query('search');
 
             // Start building the query
             $query = MasFactor::query();
 
             // Apply filters based on the query parameters
-
-            $query->where('FACTORCODE', 'like', $search . '%');
-            $query->orWhere('FACTORNAME', 'like', $search . '%');
-            $query->orWhere('REMARK', 'like', $search . '%');
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('FACTORCODE', 'LIKE', $search . '%')
+                        ->orWhere('FACTORNAME', 'LIKE', $search . '%')
+                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                });
+            }
 
             $factors = $query->get();
 
