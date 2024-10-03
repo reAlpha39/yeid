@@ -98,6 +98,11 @@ async function fetchData(id) {
 }
 
 async function submitData() {
+  const { valid, errors } = await refVForm.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
   if (isUpdate.value) {
     await update();
   } else {
@@ -152,21 +157,12 @@ watch(
             <VRow>
               <VCol cols="12">
                 <AppTextField
-                  v-if="isUpdate"
                   v-model="preventionCode"
                   label="Prevention Code"
-                  :rules="[requiredValidator]"
+                  :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input prevention code"
                   maxlength="3"
-                  readonly
-                />
-                <AppTextField
-                  v-else
-                  v-model="preventionCode"
-                  label="Prevention Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Input prevention code"
-                  maxlength="3"
+                  :readonly="isUpdate"
                 />
               </VCol>
 
@@ -184,7 +180,6 @@ watch(
                 <AppTextField
                   v-model="remark"
                   label="Remark"
-                  :rules="[requiredValidator]"
                   placeholder="Input remark"
                   maxlength="64"
                 />

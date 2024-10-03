@@ -116,7 +116,6 @@ async function fetchDataShop() {
     });
 
     shops.value = response.data;
-
   } catch (err) {
     // toast.error("Failed to fetch data");s
     console.log(err);
@@ -124,6 +123,11 @@ async function fetchDataShop() {
 }
 
 async function submitData() {
+  const { valid, errors } = await refVForm.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
   if (isUpdate.value) {
     await update();
   } else {
@@ -180,47 +184,26 @@ watch(
             <VRow>
               <VCol cols="12">
                 <AppAutocomplete
-                  v-if="isUpdate"
                   v-model="shopCode"
                   label="Shop Code"
-                  :rules="[requiredValidator]"
+                  :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Select shop"
                   item-title="SHOPCODE"
                   :items="shops"
                   outlined
                   maxlength="4"
-                  readonly
-                />
-                <AppAutocomplete
-                  v-else
-                  v-model="shopCode"
-                  label="Shop Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Select shop"
-                  item-title="SHOPCODE"
-                  :items="shops"
-                  outlined
-                  maxlength="4"
+                  :readonly="isUpdate"
                 />
               </VCol>
 
               <VCol cols="12">
                 <AppTextField
-                  v-if="isUpdate"
                   v-model="lineCode"
                   label="Line Code"
-                  :rules="[requiredValidator]"
+                  :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input line code"
                   maxlength="2"
-                  readonly
-                />
-                <AppTextField
-                  v-else
-                  v-model="lineCode"
-                  label="Line Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Input line code"
-                  maxlength="2"
+                  :readonly="isUpdate"
                 />
               </VCol>
 

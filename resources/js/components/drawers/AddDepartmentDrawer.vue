@@ -97,6 +97,11 @@ async function fetchData(id) {
 }
 
 async function submitData() {
+  const { valid, errors } = await refVForm.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
   if (isUpdate.value) {
     await update();
   } else {

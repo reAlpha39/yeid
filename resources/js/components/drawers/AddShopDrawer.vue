@@ -100,6 +100,11 @@ async function fetchData(id) {
 }
 
 async function submitData() {
+  const { valid, errors } = await refVForm.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
   if (isUpdate.value) {
     await updateShop();
   } else {
@@ -154,21 +159,12 @@ watch(
             <VRow>
               <VCol cols="12">
                 <AppTextField
-                  v-if="isUpdate"
                   v-model="shopCode"
                   label="Shop Code"
-                  :rules="[requiredValidator]"
+                  :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input shop code"
                   maxlength="4"
-                  readonly
-                />
-                <AppTextField
-                  v-else
-                  v-model="shopCode"
-                  label="Shop Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Input shop code"
-                  maxlength="4"
+                  :readonly="isUpdate"
                 />
               </VCol>
 

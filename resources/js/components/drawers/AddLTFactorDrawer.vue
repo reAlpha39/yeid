@@ -98,6 +98,11 @@ async function fetchData(id) {
 }
 
 async function submitData() {
+  const { valid, errors } = await refVForm.value?.validate();
+  if (valid === false) {
+    return;
+  }
+
   if (isUpdate.value) {
     await update();
   } else {
@@ -139,7 +144,7 @@ watch(
   >
     <!-- 👉 Header -->
     <AppDrawerHeaderSection
-      title="Add New LTFactor"
+      title="Add New Kode Panjang"
       @cancel="$emit('update:isDrawerOpen', false)"
     />
 
@@ -152,21 +157,12 @@ watch(
             <VRow>
               <VCol cols="12">
                 <AppTextField
-                  v-if="isUpdate"
                   v-model="factorCode"
                   label="LTFactor Code"
-                  :rules="[requiredValidator]"
+                  :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input ltfactor code"
                   maxlength="3"
-                  readonly
-                />
-                <AppTextField
-                  v-else
-                  v-model="factorCode"
-                  label="LTFactor Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Input ltfactor code"
-                  maxlength="3"
+                  :readonly="isUpdate"
                 />
               </VCol>
 
@@ -184,7 +180,6 @@ watch(
                 <AppTextField
                   v-model="remark"
                   label="Remark"
-                  :rules="[requiredValidator]"
                   placeholder="Input remark"
                   maxlength="64"
                 />
