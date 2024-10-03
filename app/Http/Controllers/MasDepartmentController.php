@@ -124,9 +124,10 @@ class MasDepartmentController extends Controller
                     'string',
                     'max:64',
                     // Custom rule to check uniqueness
-                    function ($attribute, $value, $fail) {
+                    function ($attribute, $value, $fail) use ($id) {
                         $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
                             ->where('code', $value)
+                            ->where('id', '<>', $id)
                             ->exists();
 
                         if ($exists) {
