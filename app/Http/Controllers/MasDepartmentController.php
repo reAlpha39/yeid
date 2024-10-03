@@ -18,9 +18,8 @@ class MasDepartmentController extends Controller
             // Check for search parameters
             if ($request->has('search')) {
                 $search = $request->input('search');
-                $query->where('DEPARTMENTCODE', 'LIKE', "{$search}%")
-                    ->orWhere('DEPARTMENTID', 'LIKE', "{$search}%")
-                    ->orWhere('DEPARTMENTNAME', 'LIKE', "{$search}%");
+                $query->where('code', 'LIKE', "%{$search}%")
+                    ->orWhere('name', 'LIKE', "%{$search}%");
             }
 
             $departments = $query->get();
@@ -43,23 +42,22 @@ class MasDepartmentController extends Controller
     {
         try {
             $validated = $request->validate([
-                'DEPARTMENTCODE' => [
+                'code' => [
                     'required',
                     'string',
-                    'max:10',
+                    'max:64',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
                         $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
-                            ->where('DEPARTMENTCODE', $value)
+                            ->where('code', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The DEPARTMENTCODE has already been taken.');
+                            $fail('The code has already been taken.');
                         }
                     }
                 ],
-                'DEPARTMENTID'   => 'required|integer',
-                'DEPARTMENTNAME' => 'required|string|max:50',
+                'name' => 'required|string|max:128',
             ]);
 
             $department = MasDepartment::create($validated);
@@ -78,11 +76,11 @@ class MasDepartmentController extends Controller
         }
     }
 
-    // Find a department record by DEPARTMENTCODE
-    public function show($departmentCode)
+    // Find a department record by ID
+    public function show($id)
     {
         try {
-            $department = MasDepartment::find($departmentCode);
+            $department = MasDepartment::find($id);
 
             if (!$department) {
                 return response()->json([
@@ -108,10 +106,10 @@ class MasDepartmentController extends Controller
     }
 
     // Update a department record
-    public function update(Request $request, $departmentCode)
+    public function update(Request $request, $id)
     {
         try {
-            $department = MasDepartment::find($departmentCode);
+            $department = MasDepartment::find($id);
 
             if (!$department) {
                 return response()->json([
@@ -121,8 +119,22 @@ class MasDepartmentController extends Controller
             }
 
             $validated = $request->validate([
-                'DEPARTMENTID'   => 'required|integer',
-                'DEPARTMENTNAME' => 'required|string|max:50',
+                'code' => [
+                    'required',
+                    'string',
+                    'max:64',
+                    // Custom rule to check uniqueness
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                            ->where('code', $value)
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('The code has already been taken.');
+                        }
+                    }
+                ],
+                'name' => 'required|string|max:128',
             ]);
 
             $department->update($validated);
@@ -141,11 +153,11 @@ class MasDepartmentController extends Controller
         }
     }
 
-    // Delete a department record
-    public function destroy($departmentCode)
+    // Soft delete a department record
+    public function destroy($id)
     {
         try {
-            $department = MasDepartment::find($departmentCode);
+            $department = MasDepartment::find($id);
 
             if (!$department) {
                 return response()->json([
@@ -159,6 +171,33 @@ class MasDepartmentController extends Controller
                 'success' => true,
                 'message' => 'Department deleted successfully!'
             ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Restore a soft-deleted department record
+    public function restore($id)
+    {
+        try {
+            $department = MasDepartment::withTrashed()->find($id);
+
+            if ($department && $department->trashed()) {
+                $department->restore();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Department restored successfully!'
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Department not found or not deleted'
+                ], 404);
+            }
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

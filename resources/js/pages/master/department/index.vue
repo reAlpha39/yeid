@@ -17,15 +17,11 @@ const page = ref(1);
 const headers = [
   {
     title: "DEPARTMENT CODE",
-    key: "DEPARTMENTCODE",
-  },
-  {
-    title: "DEPARTMENT ID",
-    key: "DEPARTMENTID",
+    key: "code",
   },
   {
     title: "DEPARTMENT NAME",
-    key: "DEPARTMENTNAME",
+    key: "name",
   },
   {
     title: "ACTIONS",
@@ -170,36 +166,29 @@ onMounted(() => {
       class="text-no-wrap"
     >
       <!-- part name -->
-      <template #item.departmentcode="{ item }">
+      <template #item.code="{ item }">
         <div class="d-flex align-center">
           <span
             class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.departmentcode }}</span
+            >{{ item.code }}</span
           >
         </div>
       </template>
 
-      <!-- date -->
-      <template #item.departmentnid="{ item }">
-        <div class="d-flex align-center">
-          {{ item.departmentnid }}
-        </div>
-      </template>
-
       <!-- vendor -->
-      <template #item.departmentname="{ item }">
+      <template #item.name="{ item }">
         <div class="d-flex align-center">
-          {{ item.departmentname }}
+          {{ item.name }}
         </div>
       </template>
 
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.DEPARTMENTCODE)">
+          <IconBtn @click="openEditPartPage(item.id)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.DEPARTMENTCODE)">
+          <IconBtn @click="openDeleteDialog(item.id)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

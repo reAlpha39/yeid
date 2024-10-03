@@ -34,9 +34,8 @@ async function add() {
     const result = await $api("/master/departments", {
       method: "POST",
       body: {
-        DEPARTMENTCODE: departmentCode.value,
-        DEPARTMENTID: departmentId.value,
-        DEPARTMENTNAME: departmentName.value,
+        code: departmentCode.value,
+        name: departmentName.value,
       },
 
       onResponseError({ response }) {
@@ -56,11 +55,11 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/departments/" + departmentCode.value, {
+    const result = await $api("/master/departments/" + departmentId.value, {
       method: "PUT",
       body: {
-        DEPARTMENTID: departmentId.value,
-        DEPARTMENTNAME: departmentName.value,
+        code: departmentCode.value,
+        name: departmentName.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +86,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    departmentCode.value = data.DEPARTMENTCODE;
-    departmentId.value = data.DEPARTMENTID;
-    departmentName.value = data.DEPARTMENTNAME;
+    departmentCode.value = data.code;
+    departmentId.value = data.id;
+    departmentName.value = data.name;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -161,32 +160,11 @@ watch(
             <VRow>
               <VCol cols="12">
                 <AppTextField
-                  v-if="isUpdate"
-                  v-model="departmentCode"
+                  v-model.number="departmentCode"
                   label="Department Code"
                   :rules="[requiredValidator]"
                   placeholder="Input department code"
-                  maxlength="12"
-                  readonly
-                />
-                <AppTextField
-                  v-else
-                  v-model="departmentCode"
-                  label="Department Code"
-                  :rules="[requiredValidator]"
-                  placeholder="Input department code"
-                  maxlength="12"
-                />
-              </VCol>
-
-              <VCol cols="12">
-                <AppTextField
-                  v-model.number="departmentId"
-                  label="Department Id"
-                  :rules="[requiredValidator]"
-                  placeholder="Input department id"
-                  maxlength="12"
-                  @keypress="isNumber($event)"
+                  maxlength="64"
                 />
               </VCol>
 
@@ -196,7 +174,7 @@ watch(
                   label="Department Name"
                   :rules="[requiredValidator]"
                   placeholder="Input department name"
-                  maxlength="50"
+                  maxlength="128"
                 />
               </VCol>
 

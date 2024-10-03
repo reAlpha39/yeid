@@ -3,29 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MasDepartment extends Model
 {
-    // Specify the database table
+    use SoftDeletes;
+
+    // Specify the table name
     protected $table = 'HOZENADMIN.MAS_DEPARTMENT';
 
     // Specify the primary key
-    protected $primaryKey = 'DEPARTMENTCODE';
+    protected $primaryKey = 'id';
 
-    // Disable auto-incrementing as the primary key is not an integer
-    public $incrementing = false;
-
-    // Specify the key type for the primary key
-    protected $keyType = 'string';
-
-    // Define fillable properties
+    // Define fillable attributes
     protected $fillable = [
-        'DEPARTMENTCODE',
-        'DEPARTMENTID',
-        'DEPARTMENTNAME',
+        'code',
+        'name',
     ];
 
-    // Disable timestamps as the table does not use Laravel's default timestamps
-    public $timestamps = false;
+    // Enable timestamps management (created_at, updated_at)
+    public $timestamps = true;
+
+    // Set default date format for the model
+    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
 }
 

@@ -128,6 +128,7 @@ Route::get('/master/departments/{departmentCode}', [MasDepartmentController::cla
 Route::post('/master/departments', [MasDepartmentController::class, 'store']);
 Route::put('/master/departments/{departmentCode}', [MasDepartmentController::class, 'update']);
 Route::delete('/master/departments/{departmentCode}', [MasDepartmentController::class, 'destroy']);
+Route::post('/master/departments/{id}/restore', [MasDepartmentController::class, 'restore']);
 
 // Master User
 Route::get('/master/users', [MasUserController::class, 'index']);
