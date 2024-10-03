@@ -83,13 +83,13 @@ async function addData() {
       const response = await $api("/master/users/" + userId.value, {
         method: "PUT",
         body: {
-          FULLNAME: fullName.value,
-          EMAIL: email.value,
-          PHONE: phone.value,
-          ROLEACCESS: convertRoleAccess(selectedRoleAccess.value),
-          DEPARTMENT: selectedDepartment.value.DEPARTMENTCODE.trim(),
-          STATUS: convertSwitch(status.value),
-          CONTROLACCESS: controlAccessJson,
+          name: fullName.value,
+          email: email.value,
+          phone: phone.value,
+          role_access: convertRoleAccess(selectedRoleAccess.value),
+          department_id: selectedDepartment.value.id,
+          status: convertStatus(status.value),
+          control_access: controlAccessJson,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -101,13 +101,13 @@ async function addData() {
       const response = await $api("/master/users", {
         method: "POST",
         body: {
-          FULLNAME: fullName.value,
-          EMAIL: email.value,
-          PHONE: phone.value,
-          ROLEACCESS: convertRoleAccess(selectedRoleAccess.value),
-          DEPARTMENT: selectedDepartment.value.DEPARTMENTCODE.trim(),
-          STATUS: convertStatus(status.value),
-          CONTROLACCESS: controlAccessJson,
+          name: fullName.value,
+          email: email.value,
+          phone: phone.value,
+          role_access: convertRoleAccess(selectedRoleAccess.value),
+          department_id: selectedDepartment.value.id,
+          status: convertStatus(status.value),
+          control_access: controlAccessJson,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -146,7 +146,7 @@ async function fetchDataDepartment(id) {
       selectedDepartment.value = response.data;
       console.log(response.data);
       selectedDepartment.value.title =
-        response.data.DEPARTMENTCODE + " | " + response.data.DEPARTMENTNAME;
+        response.data.code + " | " + response.data.name;
     } else {
       const response = await $api("/master/departments", {
         onResponseError({ response }) {
@@ -157,7 +157,7 @@ async function fetchDataDepartment(id) {
       departments.value = response.data;
 
       departments.value.forEach((maker) => {
-        maker.title = maker.DEPARTMENTCODE + " | " + maker.DEPARTMENTNAME;
+        maker.title = maker.code + " | " + maker.name;
       });
     }
   } catch (err) {
@@ -166,25 +166,19 @@ async function fetchDataDepartment(id) {
   }
 }
 
-function convertStatus(category) {
-  switch (category) {
-    case "Active":
-      return "1";
-    case "Inactive":
-      return "0";
-    default:
-      return "";
+function convertStatus(val) {
+  if (val === "Active") {
+    return "1";
+  } else {
+    return "0";
   }
 }
 
-function statusType(category) {
-  switch (category) {
-    case "0":
-      return "Inactive";
-    case "1":
-      return "Active";
-    default:
-      return "";
+function statusType(val) {
+  if (val === "0") {
+    return "Inactive";
+  } else {
+    return "Active";
   }
 }
 
@@ -222,21 +216,14 @@ async function initEditData(id) {
 async function applyData() {
   const data = prevData.value;
 
-  await fetchDataDepartment(data.DEPARTMENT);
+  await fetchDataDepartment(data.department_id);
 
-  fullName.value = data.FULLNAME;
-  email.value = data.EMAIL;
-  phone.value = data.PHONE;
-  selectedRoleAccess.value = roleAccessType(data.ROLEACCESS);
-  controlAccess.value = JSON.parse(data.CONTROLACCESS);
-}
-
-function convertSwitch(val) {
-  if (val === "Active") {
-    return "1";
-  } else {
-    return "0";
-  }
+  fullName.value = data.name;
+  email.value = data.email;
+  phone.value = data.phone;
+  status.value = statusType(data.status);
+  selectedRoleAccess.value = roleAccessType(data.role_access);
+  controlAccess.value = JSON.parse(data.control_access);
 }
 
 onMounted(() => {
@@ -702,72 +689,8 @@ onMounted(() => {
     <VRow class="d-flex justify-start py-8">
       <VCol>
         <VBtn color="success" class="me-4" @click="addData">Save</VBtn>
-        <VBtn variant="outlined" color="error" to="/master/machine"
-          >Cancel</VBtn
-        >
+        <VBtn variant="outlined" color="error" to="/master/user">Cancel</VBtn>
       </VCol>
     </VRow>
   </VForm>
 </template>
-
-<!-- <template>
-  <vx-card title="Functional Permissions">
-    <vs-table :data="functionalItems">
-      <template slot="thead">
-        <vs-th>Item</vs-th>
-        <vs-th>View</vs-th>
-        <vs-th>Create</vs-th>
-        <vs-th>Update</vs-th>
-        <vs-th>Delete</vs-th>
-      </template>
-
-      <template slot-scope="{ data }">
-        <vs-tr v-for="(item, index) in data" :key="index">
-          <vs-td>{{ item.name }}</vs-td>
-          <vs-td>
-            <vs-checkbox v-model="item.permissions.view"></vs-checkbox>
-          </vs-td>
-          <vs-td>
-            <vs-checkbox v-model="item.permissions.create"></vs-checkbox>
-          </vs-td>
-          <vs-td>
-            <vs-checkbox v-model="item.permissions.update"></vs-checkbox>
-          </vs-td>
-          <vs-td>
-            <vs-checkbox v-model="item.permissions.delete"></vs-checkbox>
-          </vs-td>
-        </vs-tr>
-      </template>
-    </vs-table>
-  </vx-card>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      functionalItems: [
-        {
-          name: "Machine",
-          permissions: {
-            view: false,
-            create: false,
-            update: false,
-            delete: false,
-          },
-        },
-        {
-          name: "Other Item",
-          permissions: {
-            view: false,
-            create: false,
-            update: false,
-            delete: false,
-          },
-        },
-        // ... rest of functional items
-      ],
-    };
-  },
-};
-</script> -->

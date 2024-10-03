@@ -26,23 +26,23 @@ const statuses = ["Active", "Inactive"];
 const headers = [
   {
     title: "FULL NAME",
-    key: "FULLNAME",
+    key: "name",
   },
   {
     title: "EMAIL ADDRESS",
-    key: "EMAIL",
+    key: "email",
   },
   {
     title: "DEPARTMENT",
-    key: "DEPARTMENT",
+    key: "department_name",
   },
   {
     title: "ROLE ACCESS",
-    key: "ROLEACCESS",
+    key: "role_access",
   },
   {
     title: "STATUS",
-    key: "STATUS",
+    key: "status",
   },
   {
     title: "ACTIONS",
@@ -59,7 +59,7 @@ async function fetchData() {
     const response = await $api("/master/users", {
       params: {
         search: searchQuery.value,
-        department: selectedDepartment.value?.DEPARTMENTCODE,
+        department: selectedDepartment.value?.id,
         status: convertStatus(selectedStatus.value),
         roleAccess: convertRoleAccess(selectedRoleAccess.value),
       },
@@ -114,7 +114,7 @@ async function fetchDataDepartment() {
     departments.value = response.data;
 
     departments.value.forEach((maker) => {
-      maker.title = maker.DEPARTMENTCODE + " | " + maker.DEPARTMENTNAME;
+      maker.title = maker.code + " | " + maker.name;
     });
   } catch (err) {
     toast.error("Failed to fetch department data");
@@ -307,28 +307,28 @@ onMounted(() => {
         </div>
       </template>
 
-      <template #item.ROLEACCESS="{ item }">
+      <template #item.role_access="{ item }">
         <div class="d-flex align-center">
-          {{ roleAccessType(item.ROLEACCESS) }}
+          {{ roleAccessType(item.role_access) }}
         </div>
       </template>
 
-      <template #item.STATUS="{ item }">
+      <template #item.status="{ item }">
         <div class="d-flex align-center">
-          {{ statusType(item.STATUS) }}
+          {{ statusType(item.status) }}
         </div>
       </template>
 
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPage(item.ID)">
+          <IconBtn @click="openEditPage(item.id)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.ID)">
+          <IconBtn @click="openDeleteDialog(item.id)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.ID)">
+          <IconBtn @click="openDeleteDialog(item.id)">
             <VIcon icon="tabler-dots-vertical" />
           </IconBtn>
         </div>

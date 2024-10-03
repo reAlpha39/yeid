@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MasUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class MasUserController extends Controller
@@ -21,24 +22,43 @@ class MasUserController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('FULLNAME', 'LIKE', $search . '%')
-                        ->orWhere('EMAIL', 'LIKE', $search . '%');
+                    $q->where('name', 'LIKE', $search . '%')
+                        ->orWhere('email', 'LIKE', $search . '%');
                 });
             }
 
             if ($department) {
-                $query->where('DEPARTMENT', $department);
+                $query->where('department_id', $department);
             }
 
             if ($roleAccess) {
-                $query->where('ROLEACCESS', $roleAccess);
+                $query->where('role_access', $roleAccess);
             }
 
             if (isset($status)) {
-                $query->where('STATUS', $status);
+                $query->where('status', $status);
             }
 
-            $users = $query->get();
+            // Eager load the department relationship and get the results
+            $users = $query->with('department')->get();
+
+            // Format the response to include the department name
+            $users = $users->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'department_id' => $user->department_id,
+                    'department_name' => $user->department ? $user->department->name : null,
+                    'role_access' => $user->role_access,
+                    'status' => $user->status,
+                    'control_access' => $user->control_access,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                    'deleted_at' => $user->deleted_at,
+                ];
+            });
 
             return response()->json([
                 'success' => true,
@@ -58,13 +78,39 @@ class MasUserController extends Controller
     {
         try {
             $validated = $request->validate([
-                'FULLNAME'      => 'required|string|max:64',
-                'EMAIL'         => 'required|string|max:64',
-                'PHONE'         => 'required|string|max:14',
-                'DEPARTMENT'    => 'required|string|max:12',
-                'ROLEACCESS'    => 'required|string|max:1',
-                'STATUS'        => 'required|string|max:1',
-                'CONTROLACCESS' => 'required|json',
+                'name' => 'required|string|max:64',
+                'email' => [
+                    'required',
+                    'string',
+                    'max:64',
+                    // Custom rule to check uniqueness
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_USER')
+                            ->where('email', $value)
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('Email has already been taken.');
+                        }
+                    }
+                ],
+                'phone' => 'required|string|max:14',
+                'department_id' => [
+                    'required',
+                    // Custom rule to check existence in the department table
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                            ->where('id', $value)
+                            ->exists();
+
+                        if (!$exists) {
+                            $fail('The selected department is invalid.');
+                        }
+                    },
+                ],
+                'role_access' => 'required|string|max:1',
+                'status' => 'required|string|max:1',
+                'control_access' => 'required|json',
             ]);
 
             $user = MasUser::create($validated);
@@ -75,7 +121,11 @@ class MasUserController extends Controller
                 'data'    => $user
             ], 201);
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -122,13 +172,40 @@ class MasUserController extends Controller
             }
 
             $validated = $request->validate([
-                'FULLNAME'      => 'required|string|max:64',
-                'EMAIL'         => 'required|string|max:64',
-                'PHONE'         => 'required|string|max:14',
-                'DEPARTMENT'    => 'required|string|max:12',
-                'ROLEACCESS'    => 'required|string|max:1',
-                'STATUS'        => 'required|string|max:1',
-                'CONTROLACCESS' => 'required|json',
+                'name' => 'required|string|max:64',
+                'email' => [
+                    'required',
+                    'string',
+                    'max:64',
+                    // Custom rule to check uniqueness
+                    function ($attribute, $value, $fail) use ($id) {
+                        $exists = DB::table('HOZENADMIN.MAS_USER')
+                            ->where('email', $value)
+                            ->where('id', '<>', $id) // Exclude the current user's ID
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('Email has already been taken.');
+                        }
+                    }
+                ],
+                'phone' => 'required|string|max:14',
+                'department_id' => [
+                    'required',
+                    // Custom rule to check existence in the department table
+                    function ($attribute, $value, $fail) {
+                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                            ->where('id', $value)
+                            ->exists();
+
+                        if (!$exists) {
+                            $fail('The selected department is invalid.');
+                        }
+                    },
+                ],
+                'role_access' => 'required|string|max:1',
+                'status' => 'required|string|max:1',
+                'control_access' => 'required|json',
             ]);
 
             $user->update($validated);
@@ -165,6 +242,33 @@ class MasUserController extends Controller
                 'success' => true,
                 'message' => 'User deleted successfully!'
             ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // Restore a soft-deleted user record
+    public function restore($id)
+    {
+        try {
+            $user = MasUser::withTrashed()->find($id);
+
+            if ($user && $user->trashed()) {
+                $user->restore();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'User restored successfully!'
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found or not deleted'
+                ], 404);
+            }
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
