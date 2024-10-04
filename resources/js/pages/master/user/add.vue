@@ -185,11 +185,11 @@ function statusType(val) {
 function convertRoleAccess(id) {
   switch (id) {
     case "Operator":
-      return "O";
+      return "1";
     case "Supervisor":
-      return "S";
+      return "2";
     case "Manager":
-      return "M";
+      return "3";
     default:
       return "";
   }
@@ -197,11 +197,11 @@ function convertRoleAccess(id) {
 
 function roleAccessType(id) {
   switch (id) {
-    case "O":
+    case "1":
       return "Operator";
-    case "S":
+    case "2":
       return "Supervisor";
-    case "M":
+    case "3":
       return "Manager";
     default:
       return "";

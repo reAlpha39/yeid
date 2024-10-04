@@ -158,11 +158,11 @@ function convertStatus(category) {
 function convertRoleAccess(id) {
   switch (id) {
     case "Operator":
-      return "O";
+      return "1";
     case "Supervisor":
-      return "S";
+      return "2";
     case "Manager":
-      return "M";
+      return "3";
     default:
       return "";
   }
@@ -331,7 +331,7 @@ onMounted(() => {
 
       <template #item.role_access="{ item }">
         <div class="d-flex align-center">
-          {{ roleAccessType(item.role_access) }}
+          {{ item.role_access }}
         </div>
       </template>
 
