@@ -16,6 +16,7 @@ use App\Http\Controllers\MasSystemController;
 use App\Http\Controllers\MasEmployeeController;
 use App\Http\Controllers\MasDepartmentController;
 use App\Http\Controllers\MasUserController;
+use App\Http\Controllers\MaintenanceRequestController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -138,3 +139,10 @@ Route::put('/master/users/{id}', [MasUserController::class, 'update']);
 Route::put('/master/users/{id}/status', [MasUserController::class, 'updateStatus']);
 Route::delete('/master/users/{id}', [MasUserController::class, 'destroy']);
 Route::post('/master/users/{id}/restore', [MasUserController::class, 'restore']);
+
+// Department Request
+Route::get('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'index']);
+Route::get('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'show']);
+Route::post('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'store']);
+Route::put('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'update']);
+Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);

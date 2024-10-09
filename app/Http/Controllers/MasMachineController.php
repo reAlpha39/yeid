@@ -70,18 +70,29 @@ class MasMachineController extends Controller
     public function index(Request $request)
     {
         try {
-            $search = $request->query('search');
 
             // Start building the query
             $query = MasMachine::query();
 
             // Apply filters based on the query parameters
+            if ($request->has('search')) {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('MACHINENO', 'like', $search . '%')
+                        ->orWhere('MACHINENAME', 'like', $search . '%')
+                        ->orWhere('PLANTCODE', 'like', $search . '%')
+                        ->orWhere('SHOPCODE', 'like', $search . '%')
+                        ->orWhere('SHOPNAME', 'like', $search . '%');
+                });
+            }
 
-            $query->where('MACHINENO', 'like', $search . '%');
-            $query->orWhere('MACHINENAME', 'like', $search . '%');
-            $query->orWhere('PLANTCODE', 'like', $search . '%');
-            $query->orWhere('SHOPCODE', 'like', $search . '%');
-            $query->orWhere('SHOPNAME', 'like', $search . '%');
+            if ($request->query('maker')) {
+                $maker = $request->query('maker');
+                $query->where('MAKERCODE', $maker);
+            }
+
+
+            $query->limit($request->input('max_rows', 0));
 
             // Execute the query and get the results
             $machines = $query->get();
