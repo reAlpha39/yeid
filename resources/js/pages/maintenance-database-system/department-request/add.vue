@@ -59,7 +59,7 @@ async function addData() {
       ORDERDATETIME: orderDate.value,
       ORDEREMPCODE: selectedPemohon.value.EMPLOYEECODE,
       ORDEREMPNAME: selectedPemohon.value.EMPLOYEENAME,
-      ORDERSHOP: selectedShop.value.SHOPNAME,
+      ORDERSHOP: selectedShop.value.SHOPCODE,
       MACHINENO: selectedMachine.value.MACHINENO,
       MACHINENAME: selectedMachine.value.MACHINENAME,
       ORDERTITLE: orderTitle.value,
@@ -445,7 +445,7 @@ onMounted(() => {
     <VRow class="d-flex justify-start py-8">
       <VCol>
         <VBtn color="success" class="me-4" @click="addData">Save</VBtn>
-        <VBtn variant="outlined" color="error" to="/master/machine"
+        <VBtn variant="outlined" color="error" to="/maintenance-database-system/department-request"
           >Cancel</VBtn
         >
       </VCol>

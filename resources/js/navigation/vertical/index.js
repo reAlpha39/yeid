@@ -8,7 +8,7 @@ import uiElement from './ui-elements'
 
 import dashboard from './dashboard'
 import inventoryControl from './inventory-control'
-import maintenanceDatabaseSystem from '../../pages/apps/email/maintenance-database-system'
+import maintenanceDatabaseSystem from './maintenance-database-system'
 import master from './master'
 
 export default [

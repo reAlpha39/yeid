@@ -9,7 +9,7 @@ export default [
       },
       {
         title: 'Maintenance Report',
-        to: 'inventory-control-inventory-outbound',
+        to: 'maintenance-database-system-maintenance-report',
       },
       {
         title: 'Request to Workshop',
