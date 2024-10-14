@@ -24,7 +24,7 @@ async function fetchMachines() {
     let response = await $api("/master/machines", {
       params: {
         search: search.value,
-        maker: selectedMaker.value?.MAKERCODE,
+        maker: selectedMaker.value?.makercode,
         max_rows: 10,
       },
     });
@@ -45,7 +45,7 @@ async function fetchDataMaker(id) {
 
       selectedMaker.value = response.data;
       selectedMaker.value =
-        response.data.MAKERCODE + " | " + response.data.MAKERNAME;
+        response.data.makercode + " | " + response.data.makername;
     } else {
       const response = await $api("/master/makers", {
         onResponseError({ response }) {
@@ -56,7 +56,7 @@ async function fetchDataMaker(id) {
       makers.value = response.data;
 
       makers.value.forEach((maker) => {
-        maker.title = maker.MAKERCODE + " | " + maker.MAKERNAME;
+        maker.title = maker.makercode + " | " + maker.makername;
       });
     }
   } catch (err) {
@@ -153,24 +153,24 @@ onMounted(() => {
           </thead>
 
           <tbody>
-            <tr v-for="item in data" :key="item.MACHINENO">
+            <tr v-for="item in data" :key="item.machino">
               <td>
                 <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.MACHINENAME }}</span>
-                  <small>{{ item.MACHINENO }}</small>
+                  <span style="font-weight: 500">{{ item.machinename }}</span>
+                  <small>{{ item.machino }}</small>
                 </div>
               </td>
               <td>
-                {{ item.MODELNAME }}
+                {{ item.modelname }}
               </td>
               <td>
-                {{ item.MAKERNAME }}
+                {{ item.makername }}
               </td>
               <td>
-                {{ item.SHOPCODE }}
+                {{ item.shopcode }}
               </td>
               <td>
-                {{ item.LINECODE }}
+                {{ item.linecode }}
               </td>
               <td>
                 <VCol cols="11" md="1">

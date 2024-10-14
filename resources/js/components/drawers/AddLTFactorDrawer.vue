@@ -34,9 +34,9 @@ async function add() {
     const result = await $api("/master/ltfactors", {
       method: "POST",
       body: {
-        LTFACTORCODE: factorCode.value,
-        LTFACTORNAME: factorName.value,
-        REMARK: remark.value,
+        ltfactorcode: factorCode.value,
+        ltfactorname: factorName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -59,8 +59,8 @@ async function update() {
     const result = await $api("/master/ltfactors/" + factorCode.value, {
       method: "PUT",
       body: {
-        LTFACTORNAME: factorName.value,
-        REMARK: remark.value,
+        ltfactorname: factorName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +87,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    factorCode.value = data.LTFACTORCODE;
-    factorName.value = data.LTFACTORNAME;
-    remark.value = data.REMARK;
+    factorCode.value = data.ltfactorcode;
+    factorName.value = data.ltfactorname;
+    remark.value = data.remark;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

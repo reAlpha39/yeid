@@ -17,23 +17,23 @@ const page = ref(1);
 const headers = [
   {
     title: "YEAR",
-    key: "YEAR",
+    key: "year",
   },
   {
     title: "USD2IDR",
-    key: "USD2IDR",
+    key: "usd2idr",
   },
   {
     title: "JPY2IDR",
-    key: "JPY2IDR",
+    key: "jpy2idr",
   },
   {
     title: "EUR2IDR",
-    key: "EUR2IDR",
+    key: "eur2idr",
   },
   {
     title: "SGD2IDR",
-    key: "SGD2IDR",
+    key: "sgd2idr",
   },
   {
     title: "ACTIONS",
@@ -193,38 +193,38 @@ onMounted(() => {
       </template>
 
       <!-- date -->
-      <template #item.USD2IDR="{ item }">
+      <template #item.usd2idr="{ item }">
         <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.USD2IDR)) }}
+          {{ idr.format(parseFloat(item.usd2idr)) }}
         </div>
       </template>
 
       <!-- vendor -->
-      <template #item.JPY2IDR="{ item }">
+      <template #item.jpy2idr="{ item }">
         <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.JPY2IDR)) }}
+          {{ idr.format(parseFloat(item.jpy2idr)) }}
         </div>
       </template>
 
-      <template #item.EUR2IDR="{ item }">
+      <template #item.eur2idr="{ item }">
         <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.EUR2IDR)) }}
+          {{ idr.format(parseFloat(item.eur2idr)) }}
         </div>
       </template>
 
-      <template #item.SGD2IDR="{ item }">
+      <template #item.sgd2idr="{ item }">
         <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.SGD2IDR)) }}
+          {{ idr.format(parseFloat(item.sgd2idr)) }}
         </div>
       </template>
 
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.YEAR)">
+          <IconBtn @click="openEditPartPage(item.year)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.YEAR)">
+          <IconBtn @click="openDeleteDialog(item.year)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

@@ -17,15 +17,15 @@ const page = ref(1);
 const headers = [
   {
     title: "LTFACTOR CODE",
-    key: "LTFACTORCODE",
+    key: "ltfactorcode",
   },
   {
     title: "LTFACTOR NAME",
-    key: "LTFACTORNAME",
+    key: "ltfactorname",
   },
   {
     title: "REMARK",
-    key: "REMARK",
+    key: "remark",
   },
   {
     title: "ACTIONS",
@@ -196,10 +196,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.LTFACTORCODE)">
+          <IconBtn @click="openEditPartPage(item.ltfactorcode)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.LTFACTORCODE)">
+          <IconBtn @click="openDeleteDialog(item.ltfactorcode)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

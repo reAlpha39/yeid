@@ -15,10 +15,10 @@ class MasVendorController extends Controller
         try {
             $search = $request->input('search');
 
-            // Search by VENDORCODE or VENDORNAME
+            // Search by vendorcode or vendorname
             $vendors = MasVendor::when($search, function ($query, $search) {
-                return $query->where('VENDORCODE', 'like', "%$search%")
-                    ->orWhere('VENDORNAME', 'like', "%$search%");
+                return $query->where('vendorcode', 'like', "$search%")
+                    ->orWhere('vendorname', 'like', "$search%");
             })->get();
 
             return response()->json([
@@ -35,16 +35,16 @@ class MasVendorController extends Controller
         }
     }
 
-    // Fetch a single shop by VENDORCODE
+    // Fetch a single vendor by vendorcode
     public function show($vendorCode)
     {
         try {
-            $vendors = MasVendor::find($vendorCode);
+            $vendor = MasVendor::find($vendorCode);
 
-            if ($vendors) {
+            if ($vendor) {
                 return response()->json([
                     'success' => true,
-                    'data' => $vendors
+                    'data' => $vendor
                 ], 200);
             }
 
@@ -67,22 +67,22 @@ class MasVendorController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'VENDORCODE' => [
+                'vendorcode' => [
                     'required',
                     'string',
                     'max:15',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_VENDOR')
-                            ->where('VENDORCODE', $value)
+                        $exists = DB::table('mas_vendor')
+                            ->where('vendorcode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The VENDORCODE has already been taken.');
+                            $fail('The vendorcode has already been taken.');
                         }
                     }
                 ],
-                'VENDORNAME' => 'required|string|max:64',
+                'vendorname' => 'required|string|max:64',
             ]);
 
             $vendor = MasVendor::create($validatedData);
@@ -116,7 +116,7 @@ class MasVendorController extends Controller
             }
 
             $validatedData = $request->validate([
-                'VENDORNAME' => 'required|string|max:64',
+                'vendorname' => 'required|string|max:64',
             ]);
 
             $vendor->update($validatedData);

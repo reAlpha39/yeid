@@ -18,15 +18,15 @@ const page = ref(1);
 const headers = [
   {
     title: "LINE CODE",
-    key: "LINECODE",
+    key: "linecode",
   },
   {
     title: "LINE NAME",
-    key: "LINENAME",
+    key: "linename",
   },
   {
     title: "SHOP",
-    key: "SHOPCODE",
+    key: "shopcode",
   },
   {
     title: "ACTIONS",
@@ -100,14 +100,14 @@ async function fetchDataShop() {
 }
 
 function openDeleteDialog(item) {
-  selectedLineCode.value = item.LINECODE;
-  selectedShopCode.value = item.SHOPCODE;
+  selectedLineCode.value = item.linecode;
+  selectedShopCode.value = item.shopcode;
   isDeleteDialogVisible.value = true;
 }
 
 async function openEditPartPage(item) {
-  selectedLineCode.value = item.LINECODE;
-  selectedShopCode.value = item.SHOPCODE;
+  selectedLineCode.value = item.linecode;
+  selectedShopCode.value = item.shopcode;
   isDrawerOpen.value = true;
 }
 
@@ -165,7 +165,7 @@ onMounted(() => {
       <AppAutocomplete
         v-model="shopQuery"
         placeholder="Select Shop"
-        item-title="SHOPCODE"
+        item-title="shopcode"
         :items="shops"
         outlined
         clearable

@@ -6,7 +6,6 @@ const toast = useToast();
 const isDeleteDialogVisible = ref(false);
 const recordIdToDelete = ref(0);
 
-// No need to repeat `https://localhost/api` now
 const now = new Date();
 
 // Data table options
@@ -61,7 +60,7 @@ async function fetchData() {
   try {
     const response = await $api("/invControl", {
       params: {
-        startDate: "20240417",
+        startDate: "20240101",
         endDate: formatDate(now),
         jobCode: "I",
         limit: 0,
@@ -249,7 +248,7 @@ onMounted(() => {
       <!-- vendor -->
       <template #item.vendor="{ item }">
         <div class="d-flex align-center">
-          <div class="d-flex flex-column ms-3">
+          <div class="d-flex flex-column">
             <span
               class="d-block font-weight-medium text-high-emphasis text-truncate"
               >{{ item.brand }}</span
@@ -293,7 +292,9 @@ onMounted(() => {
   <!-- 👉 Delete Dialog  -->
   <VDialog v-model="isDeleteDialogVisible" max-width="500px">
     <VCard>
-      <VCardTitle> Are you sure you want to delete this item? </VCardTitle>
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
 
       <VCardActions>
         <VSpacer />

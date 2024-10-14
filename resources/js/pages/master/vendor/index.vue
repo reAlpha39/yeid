@@ -17,11 +17,11 @@ const page = ref(1);
 const headers = [
   {
     title: "VENDOR CODE",
-    key: "VENDORCODE",
+    key: "vendorcode",
   },
   {
     title: "VENDOR NAME",
-    key: "VENDORNAME",
+    key: "vendorname",
   },
   {
     title: "ACTIONS",
@@ -186,10 +186,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPage(item.VENDORCODE)">
+          <IconBtn @click="openEditPage(item.vendorcode)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.VENDORCODE)">
+          <IconBtn @click="openDeleteDialog(item.vendorcode)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

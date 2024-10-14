@@ -6,7 +6,6 @@ const toast = useToast();
 const isDeleteDialogVisible = ref(false);
 const recordIdToDelete = ref(0);
 
-// No need to repeat `https://localhost/api` now
 const now = new Date();
 
 // Data table options
@@ -293,7 +292,9 @@ onMounted(() => {
   <!-- 👉 Delete Dialog  -->
   <VDialog v-model="isDeleteDialogVisible" max-width="500px">
     <VCard>
-      <VCardTitle> Are you sure you want to delete this item? </VCardTitle>
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
 
       <VCardActions>
         <VSpacer />

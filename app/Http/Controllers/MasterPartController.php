@@ -32,93 +32,93 @@ class MasterPartController extends Controller
             $maxRows = $request->input('max_rows', 0);
 
             // Build the query
-            $queryBuilder = DB::table('HOZENADMIN.MAS_INVENTORY as M')
+            $queryBuilder = DB::table('mas_inventory as m')
                 ->select(
-                    'M.PARTCODE',
-                    'M.PARTNAME',
-                    'M.CATEGORY',
-                    'M.SPECIFICATION',
-                    'M.BRAND',
-                    'M.EANCODE',
-                    'M.USEDFLAG',
-                    'M.VENDORCODE',
-                    'M.ADDRESS',
-                    'M.UNITPRICE',
-                    'M.CURRENCY',
-                    DB::raw('M.LASTSTOCKNUMBER + ISNULL(GI.SUM_QUANTITY, 0) as TOTALSTOCK'),
-                    'M.MINSTOCK',
-                    'M.MINORDER',
-                    'M.ORDERPARTCODE',
-                    'M.NOORDERFLAG',
-                    'M.LASTSTOCKNUMBER',
-                    DB::raw("ISNULL(M.STATUS, '-') as STATUS"),
-                    DB::raw("ISNULL(M.NOORDERFLAG, '0') as NOORDERFLAG"),
-                    DB::raw("ISNULL(M.NOTE, 'N/A') as NOTE"),
-                    DB::raw("ISNULL(M.REQQUOTATIONDATE, ' ') as REQQUOTATIONDATE"),
-                    DB::raw("ISNULL(M.ORDERDATE, ' ') as ORDERDATE"),
-                    DB::raw("ISNULL(M.POSENTDATE, ' ') as POSENTDATE"),
-                    DB::raw("ISNULL(M.ETDDATE, ' ') as ETDDATE")
+                    'm.partcode',
+                    'm.partname',
+                    'm.category',
+                    'm.specification',
+                    'm.brand',
+                    'm.eancode',
+                    'm.usedflag',
+                    'm.vendorcode',
+                    'm.address',
+                    'm.unitprice',
+                    'm.currency',
+                    DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0) as totalstock'),
+                    'm.minstock',
+                    'm.minorder',
+                    'm.orderpartcode',
+                    'm.noorderflag',
+                    'm.laststocknumber',
+                    DB::raw("COALESCE(m.status, '-') as status"),
+                    DB::raw("COALESCE(m.noorderflag, '0') as noorderflag"),
+                    DB::raw("COALESCE(m.note, 'N/A') as note"),
+                    DB::raw("COALESCE(m.reqquotationdate, ' ') as reqquotationdate"),
+                    DB::raw("COALESCE(m.orderdate, ' ') as orderdate"),
+                    DB::raw("COALESCE(m.posentdate, ' ') as posentdate"),
+                    DB::raw("COALESCE(m.etddate, ' ') as etddate")
                 )
                 ->leftJoin(DB::raw('(
                         select
-                            T.PARTCODE,
-                            sum(case 
-                                when T.JOBCODE = \'O\' then -T.QUANTITY 
-                                when T.JOBCODE = \'I\' then T.QUANTITY
-                                when T.JOBCODE = \'A\' then T.QUANTITY
-                                else 0 end) as SUM_QUANTITY
-                        from HOZENADMIN.TBL_INVRECORD as T
-                        left join HOZENADMIN.MAS_INVENTORY as MINV on T.PARTCODE = MINV.PARTCODE
-                        where T.UPDATETIME > MINV.UPDATETIME
-                        group by T.PARTCODE
-                    ) as GI'), 'M.PARTCODE', '=', 'GI.PARTCODE')
-                ->leftJoin('HOZENADMIN.MAS_VENDOR as V', 'M.VENDORCODE', '=', 'V.VENDORCODE')
-                ->where('M.STATUS', '<>', 'D');
+                            t.partcode,
+                            sum(case
+                                when t.jobcode = \'O\' then -t.quantity
+                                when t.jobcode = \'I\' then t.quantity
+                                when t.jobcode = \'A\' then t.quantity
+                                else 0 end) as sum_quantity
+                        from tbl_invrecord as t
+                        left join mas_inventory as minv on t.partcode = minv.partcode
+                        where t.updatetime > minv.updatetime
+                        group by t.partcode
+                    ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
+                ->where('m.status', '<>', 'D');
 
             // Apply search filters
             if ($search) {
                 $queryBuilder->where(function ($q) use ($search) {
-                    $q->where('M.PARTCODE', 'like', $search . '%')
-                        ->orWhere(DB::raw('upper(M.PARTNAME)'), 'like',  strtoupper($search) . '%');
+                    $q->where('m.partcode', 'like', $search . '%')
+                        ->orWhere(DB::raw('upper(m.partname)'), 'like',  strtoupper($search) . '%');
                 });
             }
 
             if (!empty($brand)) {
-                $queryBuilder->where(DB::raw('upper(M.BRAND)'), 'like', '%' . strtoupper($brand) . '%');
+                $queryBuilder->where(DB::raw('upper(m.brand)'), 'like',  strtoupper($brand) . '%');
             }
             if ($usedFlag) {
-                $queryBuilder->where('M.USEDFLAG', 'O');
+                $queryBuilder->where('m.usedflag', 'O');
             }
             if (!empty($specification)) {
-                $queryBuilder->where(DB::raw('upper(M.SPECIFICATION)'), 'like', '%' . strtoupper($specification) . '%');
+                $queryBuilder->where(DB::raw('upper(m.specification)'), 'like',  strtoupper($specification) . '%');
             }
             if (!empty($address)) {
-                $queryBuilder->where(DB::raw('upper(M.ADDRESS)'), 'like', $address . '%');
+                $queryBuilder->where(DB::raw('upper(m.address)'), 'like', $address . '%');
             }
             if (!empty($vendorCode)) {
-                $queryBuilder->where(DB::raw('upper(M.VENDORCODE)'), 'like', '%' . strtoupper($vendorCode) . '%');
+                $queryBuilder->where(DB::raw('upper(m.vendorcode)'), 'like', strtoupper($vendorCode) . '%');
             }
             if (!empty($note)) {
-                $queryBuilder->where(DB::raw('upper(M.NOTE)'), 'like', '%' . strtoupper($note) . '%');
+                $queryBuilder->where(DB::raw('upper(m.note)'), 'like',  strtoupper($note) . '%');
             }
             if (in_array($category, ['M', 'F', 'J', 'O'])) {
-                $queryBuilder->where('M.CATEGORY', $category);
+                $queryBuilder->where('m.category', $category);
             }
             if (!empty($vendorNameCmb)) {
-                $queryBuilder->where('M.VENDORCODE', $vendorNameCmb);
+                $queryBuilder->where('m.vendorcode', $vendorNameCmb);
             } elseif (!empty($vendorNameText)) {
-                $queryBuilder->where(DB::raw('upper(V.VENDORNAME)'), 'like', '%' . strtoupper($vendorNameText) . '%');
+                $queryBuilder->where(DB::raw('upper(v.vendorname)'), 'like', strtoupper($vendorNameText) . '%');
             }
             if ($minusFlag) {
-                $queryBuilder->where(DB::raw('M.MINSTOCK'), '>', DB::raw('M.LASTSTOCKNUMBER + ISNULL(GI.SUM_QUANTITY, 0)'));
+                $queryBuilder->where(DB::raw('m.minstock'), '>', DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0)'));
             }
             if ($orderFlag) {
-                $queryBuilder->where(DB::raw('ISNULL(M.POSENTDATE, \' \')'), '<>', ' ');
+                $queryBuilder->where(DB::raw('COALESCE(m.posentdate, \' \')'), '<>', ' ');
             }
             if ($maxRows > 0) {
                 $queryBuilder->limit($maxRows);
             }
-            $queryBuilder->orderBy('PARTCODE');
+            $queryBuilder->orderBy('partcode');
 
             // Execute the query and get results
             $results = $queryBuilder->get();
@@ -184,11 +184,10 @@ class MasterPartController extends Controller
             $noOrderFlag = $request->input('no_order_flag', false) ? '1' : '0';
             $updateTime = Carbon::now();
 
-
-            $queryBuilder = DB::table('HOZENADMIN.MAS_INVENTORY')->select(
-                'PARTCODE'
+            $queryBuilder = DB::table('mas_inventory')->select(
+                'partcode'
             )->where(
-                'PARTCODE',
+                'partcode',
                 '=',
                 $partCode
             );
@@ -196,60 +195,57 @@ class MasterPartController extends Controller
             $isEmpty = $queryBuilder->get();
 
             if ($isEmpty->isEmpty()) {
-                // Insert into MAS_INVENTORY table
-                DB::table('HOZENADMIN.MAS_INVENTORY')->insert([
-                    'PARTCODE' => $partCode,
-                    'PARTNAME' => $partName,
-                    'CATEGORY' => $category,
-                    'SPECIFICATION' => $specification,
-                    'EANCODE' => $eanCode,
-                    'BRAND' => $brand,
-                    'USEDFLAG' => $usedFlag,
-                    'LOCATIONID' => 'P',
-                    'LOCATIONID' => $locationId,
-                    'ADDRESS' => $address,
-                    'VENDORCODE' => $vendorCode,
-                    'UNITPRICE' => $unitPrice,
-                    'CURRENCY' => $currency,
-                    'MINSTOCK' => $minStock,
-                    'MINORDER' => $minOrder,
-                    'NOTE' => $note,
-                    'LASTSTOCKNUMBER' => $lastStockNumber,
-                    'LASTSTOCKDATE' => $lastStockDate,
-                    'STATUS' => ' ',  // Hardcoded as chr(0) in the VB code, using empty string for SQL Server
-                    'ORDERPARTCODE' => $orderPartCode,
-                    'NOORDERFLAG' => $noOrderFlag,
-                    'UPDATETIME' => $updateTime,  // Current timestamp
+                // Insert into mas_inventory table
+                DB::table('mas_inventory')->insert([
+                    'partcode' => $partCode,
+                    'partname' => $partName,
+                    'category' => $category,
+                    'specification' => $specification,
+                    'eancode' => $eanCode,
+                    'brand' => $brand,
+                    'usedflag' => $usedFlag,
+                    'locationid' => $locationId,
+                    'address' => $address,
+                    'vendorcode' => $vendorCode,
+                    'unitprice' => $unitPrice,
+                    'currency' => $currency,
+                    'minstock' => $minStock,
+                    'minorder' => $minOrder,
+                    'note' => $note,
+                    'laststocknumber' => $lastStockNumber,
+                    'laststockdate' => $lastStockDate,
+                    'status' => ' ',  // Hardcoded as chr(0) in the VB code
+                    'orderpartcode' => $orderPartCode,
+                    'noorderflag' => $noOrderFlag,
+                    'updatetime' => $updateTime,  // Current timestamp
                 ]);
             } else {
-                DB::table('HOZENADMIN.MAS_INVENTORY')
-                    ->where('PARTCODE', $partCode)
+                DB::table('mas_inventory')
+                    ->where('partcode', $partCode)
                     ->update([
-                        'PARTNAME' => $partName,
-                        'CATEGORY' => $category,
-                        'SPECIFICATION' => $specification,
-                        'EANCODE' => $eanCode,
-                        'BRAND' => $brand,
-                        'USEDFLAG' => $usedFlag,
-                        'LOCATIONID' => 'P',
-                        'ADDRESS' => $address,
-                        'VENDORCODE' => $vendorCode,
-                        'UNITPRICE' => $unitPrice,
-                        'CURRENCY' => $currency,
-                        'MINSTOCK' => $minStock,
-                        'MINORDER' => $minOrder,
-                        'NOTE' => $note,
-                        'ORDERPARTCODE' => $orderPartCode,
-                        'NOORDERFLAG' => $noOrderFlag,
-                        'UPDATETIME' => $updateTime,
+                        'partname' => $partName,
+                        'category' => $category,
+                        'specification' => $specification,
+                        'eancode' => $eanCode,
+                        'brand' => $brand,
+                        'usedflag' => $usedFlag,
+                        'locationid' => $locationId,
+                        'address' => $address,
+                        'vendorcode' => $vendorCode,
+                        'unitprice' => $unitPrice,
+                        'currency' => $currency,
+                        'minstock' => $minStock,
+                        'minorder' => $minOrder,
+                        'note' => $note,
+                        'orderpartcode' => $orderPartCode,
+                        'noorderflag' => $noOrderFlag,
+                        'updatetime' => $updateTime,
                     ]);
             }
 
-            // 
             // Delete MachineNo
-            // 
-            $affectedRows = DB::table('HOZENADMIN.MAS_INVMACHINE')
-                ->where('PARTCODE', $partCode)
+            $affectedRows = DB::table('mas_invmachine')
+                ->where('partcode', $partCode)
                 ->delete();
 
             // Check if any rows were affected (i.e., if the delete was successful)
@@ -262,23 +258,22 @@ class MasterPartController extends Controller
             foreach ($machines as $machine) {
                 $machineNo = $machine['machine_no'];
 
-                $rows = DB::table('HOZENADMIN.MAS_INVMACHINE')->select(
-                    'MACHINENO'
+                $rows = DB::table('mas_invmachine')->select(
+                    'machineno'
                 )
-                    ->where('PARTCODE', $partCode)
-                    ->where('MACHINENO',  $machineNo)
+                    ->where('partcode', $partCode)
+                    ->where('machineno',  $machineNo)
                     ->limit(1)
                     ->get();
 
                 if ($rows->isEmpty()) {
-                    DB::table('HOZENADMIN.MAS_INVMACHINE')->insert([
-                        'PARTCODE' => $partCode,
-                        'MACHINENO' => $machineNo,
-                        'UPDATETIME' => $updateTime,
+                    DB::table('mas_invmachine')->insert([
+                        'partcode' => $partCode,
+                        'machineno' => $machineNo,
+                        'updatetime' => $updateTime,
                     ]);
                 }
             }
-
 
             return response()->json([
                 'success' => true,
@@ -305,37 +300,36 @@ class MasterPartController extends Controller
         ]);
 
         try {
-            // Get the target PARTCODE from the request
+            // Get the target part_code from the request
             $partCode = $request->input('part_code');
 
-            // Perform the delete operation
-            $affectedRows = DB::table('HOZENADMIN.MAS_INVENTORY')
-                ->where('PARTCODE', '=', $partCode)
+            // Perform the delete operation on mas_inventory
+            $affectedRows = DB::table('mas_inventory')
+                ->where('partcode', '=', $partCode)
                 ->delete();
 
-            // Delete MachineNo
-            $affectedRows = DB::table('HOZENADMIN.MAS_INVMACHINE')
-                ->where('PARTCODE', '=', $partCode)
+            // Delete related records from mas_invmachine
+            $affectedRows += DB::table('mas_invmachine')
+                ->where('partcode', '=', $partCode)
                 ->delete();
 
             if ($affectedRows > 0) {
                 // Return success response if deletion was successful
                 return response()->json([
-                    'status' => 'success',
+                    'success' => true,
                     'message' => 'Part deleted successfully.'
                 ], 200);
             } else {
                 // Return failure response if no record was found
                 return response()->json([
-                    'status' => 'failure',
+                    'success' => false,
                     'message' => 'Part not found or already deleted.'
                 ], 404);
             }
         } catch (Exception $e) {
-            // Handle any potential errors
             return response()->json([
-                'status' => 'error',
-                'message' => 'An error occurred while deleting data.',
+                'success' => false,
+                'message' => 'An error occurred',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -20,14 +20,14 @@ class MasLineController extends Controller
 
             // Apply the shop code filter only if it's provided
             if ($shopCode) {
-                $query->where('SHOPCODE', $shopCode);
+                $query->where('shopcode', $shopCode);
             }
 
             // Apply the search filter if a search query is provided
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('LINECODE', 'like', '%' . $search . '%')
-                        ->orWhere('LINENAME', 'like', '%' . $search . '%');
+                    $q->where('linecode', 'like',  $search . '%')
+                        ->orWhere('linename', 'like', $search . '%');
                 });
             }
 
@@ -51,12 +51,12 @@ class MasLineController extends Controller
     {
         try {
             $validated = $request->validate([
-                'SHOPCODE' => 'required|string|max:4',
-                'LINECODE' => 'required|string|max:2',
-                'LINENAME' => 'required|string|max:50',
-                'UNITPRICE' => 'nullable|numeric',
-                'TACTTIME' => 'nullable|numeric',
-                'STAFFNUM' => 'nullable|numeric'
+                'shopcode' => 'required|string|max:4',
+                'linecode' => 'required|string|max:2',
+                'linename' => 'required|string|max:50',
+                'unitprice' => 'nullable|numeric',
+                'tacttime' => 'nullable|numeric',
+                'staffnum' => 'nullable|numeric'
             ]);
 
             $line = MasLine::create($validated);
@@ -75,12 +75,12 @@ class MasLineController extends Controller
         }
     }
 
-    // Find a line by SHOPCODE and LINECODE
+    // Find a line by shopcode and linecode
     public function show($shopCode, $lineCode)
     {
         try {
-            $line = MasLine::where('SHOPCODE', $shopCode)
-                ->where('LINECODE', $lineCode)
+            $line = MasLine::where('shopcode', $shopCode)
+                ->where('linecode', $lineCode)
                 ->first();
 
             if (!$line) {
@@ -109,16 +109,16 @@ class MasLineController extends Controller
         try {
             // Validate the incoming request data
             $validated = $request->validate([
-                'LINENAME' => 'nullable|string|max:50',
-                'UNITPRICE' => 'nullable|numeric',
-                'TACTTIME' => 'nullable|numeric',
-                'STAFFNUM' => 'nullable|numeric'
+                'linename' => 'nullable|string|max:50',
+                'unitprice' => 'nullable|numeric',
+                'tacttime' => 'nullable|numeric',
+                'staffnum' => 'nullable|numeric'
             ]);
 
             // Prepare the update query
-            $query = DB::table('HOZENADMIN.MAS_LINE')
-                ->where('SHOPCODE', $shopCode)
-                ->where('LINECODE', $lineCode);
+            $query = DB::table('mas_line')
+                ->where('shopcode', $shopCode)
+                ->where('linecode', $lineCode);
 
             // Execute the update
             $updated = $query->update($validated);
@@ -141,8 +141,8 @@ class MasLineController extends Controller
     public function destroy($shopCode, $lineCode)
     {
         try {
-            $line = MasLine::where('SHOPCODE', $shopCode)
-                ->where('LINECODE', $lineCode)
+            $line = MasLine::where('shopcode', $shopCode)
+                ->where('linecode', $lineCode)
                 ->first();
 
             if (!$line) {
@@ -152,9 +152,9 @@ class MasLineController extends Controller
                 ], 404);
             }
 
-            $deleted = DB::table('HOZENADMIN.MAS_LINE')
-                ->where('SHOPCODE', $shopCode)
-                ->where('LINECODE', $lineCode)
+            $deleted = DB::table('mas_line')
+                ->where('shopcode', $shopCode)
+                ->where('linecode', $lineCode)
                 ->delete();
 
             return response()->json([

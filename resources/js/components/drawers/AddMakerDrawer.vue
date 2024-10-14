@@ -34,9 +34,9 @@ async function add() {
     const result = await $api("/master/makers", {
       method: "POST",
       body: {
-        MAKERCODE: makerCode.value,
-        MAKERNAME: makerName.value,
-        REMARK: remark.value,
+        makercode: makerCode.value,
+        makername: makerName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -59,8 +59,8 @@ async function update() {
     const result = await $api("/master/makers/" + makerCode.value, {
       method: "PUT",
       body: {
-        MAKERNAME: makerName.value,
-        REMARK: remark.value,
+        makername: makerName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +87,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    makerCode.value = data.MAKERCODE;
-    makerName.value = data.MAKERNAME;
-    remark.value = data.REMARK;
+    makerCode.value = data.makercode;
+    makerName.value = data.makername;
+    remark.value = data.remark;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

@@ -19,10 +19,10 @@ class MasEmployeeController extends Controller
             if ($request->has('search')) {
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
-                    $q->where('EMPLOYEECODE', 'LIKE', "{$search}%")
-                        ->orWhere('EMPLOYEENAME', 'LIKE', "{$search}%")
-                        ->orWhere('MLEVEL', 'LIKE', "{$search}%")
-                        ->orWhere('PASSWORD', 'LIKE', "{$search}%");
+                    $q->where('employeecode', 'LIKE', "{$search}%")
+                        ->orWhere('employeename', 'LIKE', "{$search}%")
+                        ->orWhere('mlevel', 'LIKE', "{$search}%")
+                        ->orWhere('password', 'LIKE', "{$search}%");
                 });
             }
 
@@ -46,24 +46,24 @@ class MasEmployeeController extends Controller
     {
         try {
             $validated = $request->validate([
-                'EMPLOYEECODE' => [
+                'employeecode' => [
                     'required',
                     'string',
                     'max:8',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_EMPLOYEE')
-                            ->where('EMPLOYEECODE', $value)
+                        $exists = DB::table('mas_employee')
+                            ->where('employeecode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The EMPLOYEECODE has already been taken.');
+                            $fail('The employeecode has already been taken.');
                         }
                     }
                 ],
-                'EMPLOYEENAME' => 'nullable|string|max:30',
-                'MLEVEL'       => 'nullable|string|max:1',
-                'PASSWORD'     => 'nullable|string|max:20'
+                'employeename' => 'nullable|string|max:30',
+                'mlevel'       => 'nullable|string|max:1',
+                'password'     => 'nullable|string|max:20'
             ]);
 
             $employee = MasEmployee::create($validated);
@@ -125,9 +125,9 @@ class MasEmployeeController extends Controller
             }
 
             $validated = $request->validate([
-                'EMPLOYEENAME' => 'nullable|string|max:30',
-                'MLEVEL'       => 'nullable|string|max:1',
-                'PASSWORD'     => 'nullable|string|max:20'
+                'employeename' => 'nullable|string|max:30',
+                'mlevel'       => 'nullable|string|max:1',
+                'password'     => 'nullable|string|max:20'
             ]);
 
             $employee->update($validated);

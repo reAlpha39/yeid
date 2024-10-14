@@ -158,7 +158,7 @@ onMounted(() => {
     >
       <template #item.spkNo="{ item }">
         <div class="d-flex align-center">
-          {{ item.RECORDID }}
+          {{ item.recordid }}
         </div>
       </template>
 
@@ -166,34 +166,34 @@ onMounted(() => {
         <div class="d-flex align-center">
           <div class="d-flex flex-column">
             <span class="machine-name d-block text-high-emphasis text-truncate">
-              {{ item.MACHINENAME }}
+              {{ item.machinename }}
             </span>
-            <small>{{ item.MACHINENO }}</small>
+            <small>{{ item.machineno }}</small>
           </div>
         </div>
       </template>
 
       <template #item.code="{ item }">
         <div class="d-flex align-center">
-          {{ item.MAINTENANCECODE }}
+          {{ item.maintenancecode }}
         </div>
       </template>
 
       <template #item.status="{ item }">
         <div class="d-flex align-center">
-          {{ item.STATUS }}
+          {{ item.status }}
         </div>
       </template>
 
       <template #item.shop="{ item }">
         <div class="d-flex align-center">
-          {{ item.ORDERSHOP }}
+          {{ item.ordershop }}
         </div>
       </template>
 
       <template #item.pemohon="{ item }">
         <div class="d-flex align-center">
-          {{ item.ORDEREMPNAME }}
+          {{ item.orderempname }}
         </div>
       </template>
 
@@ -203,16 +203,16 @@ onMounted(() => {
 
       <template #item.ordertitle="{ item }">
         <div class="multi-line-ellipsis">
-          {{ item.ORDERTITLE }}
+          {{ item.ordertitle }}
         </div>
       </template>
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDetailPage(item.RECORDID)">
+          <IconBtn @click="openDetailPage(item.recordid)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <IconBtn @click="openEditPage(item.RECORDID)">
+          <IconBtn @click="openEditPage(item.recordid)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
         </div>

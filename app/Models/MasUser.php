@@ -10,7 +10,7 @@ class MasUser extends Model
     use SoftDeletes;
 
     // Specify the table name
-    protected $table = 'HOZENADMIN.MAS_USER';
+    protected $table = 'mas_user';
 
     // Specify the primary key
     protected $primaryKey = 'id';
@@ -38,4 +38,3 @@ class MasUser extends Model
         return $this->belongsTo(MasDepartment::class, 'department_id');
     }
 }
-

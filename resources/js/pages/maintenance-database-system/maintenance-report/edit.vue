@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { VCardTitle } from "vuetify/lib/components/index.mjs";
 
-import emptyBoxSvg from '@images/svg/empty-box.svg'
+import emptyBoxSvg from "@images/svg/empty-box.svg";
 
 const toast = useToast();
 const router = useRouter();
@@ -87,7 +87,7 @@ async function initEditData(id) {
 
   const data = prevData.value;
 
-  await fetchDataMachine(data.MACHINENO);
+  await fetchDataMachine(data.machineno);
 }
 
 async function fetchLtfactors(id) {
@@ -101,7 +101,7 @@ async function fetchLtfactors(id) {
     ltfactor.value = response.data;
 
     ltfactor.value.forEach((data) => {
-      data.title = data.LTFACTORCODE + " | " + data.LTFACTORNAME;
+      data.title = data.ltfactorcode + " | " + data.ltfactorname;
     });
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -120,7 +120,7 @@ async function fetchSituations(id) {
     situations.value = response.data;
 
     situations.value.forEach((data) => {
-      data.title = data.SITUATIONCODE + " | " + data.SITUATIONNAME;
+      data.title = data.situationcode + " | " + data.situationname;
     });
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -139,7 +139,7 @@ async function fetchFactor() {
     factors.value = response.data;
 
     factors.value.forEach((data) => {
-      data.title = data.FACTORCODE + " | " + data.FACTORNAME;
+      data.title = data.factorcode + " | " + data.factorname;
     });
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -158,7 +158,7 @@ async function fetchMeasure() {
     measures.value = response.data;
 
     measures.value.forEach((data) => {
-      data.title = data.MEASURECODE + " | " + data.MEASURENAME;
+      data.title = data.measurecode + " | " + data.measurename;
     });
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -177,7 +177,7 @@ async function fetchPrevention() {
     preventions.value = response.data;
 
     preventions.value.forEach((data) => {
-      data.title = data.PREVENTIONCODE + " | " + data.PREVENTIONNAME;
+      data.title = data.preventioncode + " | " + data.preventionname;
     });
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -226,7 +226,7 @@ onMounted(() => {
 
     <VCard>
       <VCardTitle class="mt-2 mx-2">
-        Nomor SPK : {{ prevData?.RECORDID }}
+        Nomor SPK : {{ prevData?.recordid }}
       </VCardTitle>
       <VRow class="px-6 py-4" no-gutters>
         <VCol cols="6">
@@ -235,7 +235,7 @@ onMounted(() => {
               <text>Nomor Mesin</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ prevData?.MACHINENO }}</text>
+              <text>: {{ prevData?.machineno }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -243,7 +243,7 @@ onMounted(() => {
               <text>Nama Mesin</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ prevData?.MACHINENAME }}</text>
+              <text>: {{ prevData?.machinename }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -251,7 +251,7 @@ onMounted(() => {
               <text>Model</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.MODELNAME }}</text>
+              <text>: {{ selectedMachine?.modelname }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -259,7 +259,7 @@ onMounted(() => {
               <text>Shop</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.SHOPNAME }}</text>
+              <text>: {{ selectedMachine?.shopname }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -267,7 +267,7 @@ onMounted(() => {
               <text>Line</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.LINECODE }}</text>
+              <text>: {{ selectedMachine?.linecode }}</text>
             </VCol>
           </VRow>
         </VCol>
@@ -277,7 +277,7 @@ onMounted(() => {
               <text>Pemohon</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ prevData?.ORDEREMPNAME }}</text>
+              <text>: {{ prevData?.orderempname }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -285,7 +285,7 @@ onMounted(() => {
               <text>Mengapa</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ prevData?.ORDERTITLE }}</text>
+              <text>: {{ prevData?.ordertitle }}</text>
             </VCol>
           </VRow>
         </VCol>
@@ -717,11 +717,7 @@ onMounted(() => {
 
       <VCard variant="outlined" class="mx-4">
         <div class="d-flex justify-center mt-4">
-          <VImg
-            :src="emptyBoxSvg"
-            alt="empty"
-            style="width: 120px"
-          />
+          <VImg :src="emptyBoxSvg" alt="empty" style="width: 120px" />
         </div>
         <VCardText class="my-4 justify-center" style="text-align: center">
           Data pekerjaan maintenance masih kosong. Silakan tambah jadwal

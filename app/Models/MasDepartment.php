@@ -10,7 +10,7 @@ class MasDepartment extends Model
     use SoftDeletes;
 
     // Specify the table name
-    protected $table = 'HOZENADMIN.MAS_DEPARTMENT';
+    protected $table = 'mas_department';
 
     // Specify the primary key
     protected $primaryKey = 'id';

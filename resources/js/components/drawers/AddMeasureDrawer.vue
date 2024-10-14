@@ -34,9 +34,9 @@ async function add() {
     const result = await $api("/master/measures", {
       method: "POST",
       body: {
-        MEASURECODE: measureCode.value,
-        MEASURENAME: measureName.value,
-        REMARK: remark.value,
+        measurecode: measureCode.value,
+        measurename: measureName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -59,8 +59,8 @@ async function update() {
     const result = await $api("/master/measures/" + measureCode.value, {
       method: "PUT",
       body: {
-        MEASURENAME: measureName.value,
-        REMARK: remark.value,
+        measurename: measureName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +87,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    measureCode.value = data.MEASURECODE;
-    measureName.value = data.MEASURENAME;
-    remark.value = data.REMARK;
+    measureCode.value = data.measurecode;
+    measureName.value = data.measurename;
+    remark.value = data.remark;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

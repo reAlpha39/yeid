@@ -17,35 +17,35 @@ const page = ref(1);
 const headers = [
   {
     title: "MACHINE NO",
-    key: "MACHINENO",
+    key: "machineno",
   },
   {
     title: "MACHINE NAME",
-    key: "MACHINENAME",
+    key: "machinename",
   },
   {
     title: "STATUS",
-    key: "STATUS",
+    key: "status",
   },
   {
     title: "PLANT",
-    key: "PLANTCODE",
+    key: "plantcode",
   },
   {
     title: "SHOP",
-    key: "SHOPCODE",
+    key: "shopcode",
   },
   {
     title: "LINE",
-    key: "LINECODE",
+    key: "linecode",
   },
   {
     title: "MODEL",
-    key: "MODELNAME",
+    key: "modelname",
   },
   {
     title: "MAKER",
-    key: "MAKERNAME",
+    key: "makername",
   },
   {
     title: "ACTIONS",
@@ -216,7 +216,7 @@ onMounted(() => {
       <!-- vendor -->
       <template #item.STATUS="{ item }">
         <div class="d-flex align-center">
-          {{ statusType(item.STATUS) }}
+          {{ statusType(item.status) }}
         </div>
       </template>
 
@@ -253,10 +253,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPage(item.MACHINENO)">
+          <IconBtn @click="openEditPage(item.machineno)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.MACHINENO)">
+          <IconBtn @click="openDeleteDialog(item.machineno)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

@@ -13,15 +13,15 @@ export default [
       },
       {
         title: 'Request to Workshop',
-        to: 'inventory-control-inventory-outbound',
+        // to: 'inventory-control-inventory-outbound',
       },
       {
         title: 'Maintenance Data Analyzation',
-        to: 'inventory-control-inventory-outbound',
+        // to: 'inventory-control-inventory-outbound',
       },
       {
         title: 'Spare Part Referring',
-        to: 'inventory-control-inventory-outbound',
+        // to: 'inventory-control-inventory-outbound',
       },
     ],
   },

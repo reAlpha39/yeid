@@ -4,54 +4,68 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class InventoryControlController extends Controller
 {
     public function getRecords(Request $request)
     {
-        // Fetch parameters from the request, set default values if not provided
-        $startDate = $request->input('startDate', '20240417');
-        $endDate = $request->input('endDate', '20240516');
-        $jobCode = $request->input('jobCode', 'I');
-        $limit = $request->input('limit', 0);
+        try {
+            // Fetch parameters from the request, set default values if not provided
+            $startDate = $request->input('startDate', '20240417');
+            $endDate = $request->input('endDate', '20240516');
+            $jobCode = $request->input('jobCode', 'I');
+            $limit = $request->input('limit');
 
-        // Validate and set orderBy parameters, default to 'jobdate' and 'jobtime' descending
-        $orderByColumn = $request->input('orderBy', 'jobdate');
-        $orderByDirection = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+            // Validate and set orderBy parameters, default to 'jobdate' and 'jobtime' descending
+            $orderByColumn = $request->input('orderBy', 'jobdate');
+            $orderByDirection = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        // Perform the query with join, filters, and ordering
-        $records = DB::table('HOZENADMIN.tbl_invrecord AS I')
-            ->leftJoin('HOZENADMIN.mas_machine AS M', 'I.machineno', '=', 'M.machineno')
-            ->select(
-                'I.recordid',
-                'I.jobcode',
-                'I.jobdate',
-                'I.jobtime',
-                'I.partcode',
-                'I.partname',
-                'I.specification',
-                'I.brand',
-                'I.usedflag',
-                'I.quantity',
-                'I.unitprice',
-                'I.currency',
-                'I.total',
-                'I.machineno',
-                DB::raw("COALESCE(M.shopname, '-') AS shopname"),
-                DB::raw("COALESCE(M.linecode, '-') AS linecode"),
-                'I.employeecode',
-                'I.note',
-                'I.vendorcode'
-            )
-            ->whereBetween('I.jobdate', [$startDate, $endDate])
-            ->where('I.jobcode', $jobCode)
-            ->orderBy($orderByColumn, $orderByDirection)
-            ->orderBy('I.jobtime', $orderByDirection) // Always secondary sort by jobtime
-            ->limit($limit)
-            ->get();
+            // Perform the query with join, filters, and ordering
+            $query = DB::table('tbl_invrecord AS i')
+                ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno')
+                ->select(
+                    'i.recordid',
+                    'i.jobcode',
+                    'i.jobdate',
+                    'i.jobtime',
+                    'i.partcode',
+                    'i.partname',
+                    'i.specification',
+                    'i.brand',
+                    'i.usedflag',
+                    'i.quantity',
+                    'i.unitprice',
+                    'i.currency',
+                    'i.total',
+                    'i.machineno',
+                    DB::raw('COALESCE(m.shopname, \'-\') AS shopname'),
+                    DB::raw('COALESCE(m.linecode, \'-\') AS linecode'),
+                    'i.employeecode',
+                    'i.note',
+                    'i.vendorcode'
+                )
+                ->whereBetween('i.jobdate', [$startDate, $endDate])
+                ->where('i.jobcode', $jobCode)
+                ->orderBy($orderByColumn, $orderByDirection)
+                ->orderBy('i.jobtime', $orderByDirection); // Always secondary sort by jobtime
 
-        return response()->json($records);
+            // Apply the limit only if provided
+            if ($limit) {
+                $query->limit($limit);
+            }
+
+            $records = $query->get();
+
+            return response()->json($records);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getPartInfo(Request $request)
@@ -61,9 +75,9 @@ class InventoryControlController extends Controller
             $query = $request->input('query', '');
 
             // Perform the query on the mas_inventory table
-            $results = DB::table('HOZENADMIN.mas_inventory')
-                ->where('PARTCODE', 'like', $query . '%')
-                ->orWhere('PARTNAME', 'like', $query . '%')
+            $results = DB::table('mas_inventory')
+                ->where('partcode', 'like', $query . '%')
+                ->orWhere('partname', 'like', $query . '%')
                 ->limit(100)
                 ->get();
 
@@ -89,9 +103,9 @@ class InventoryControlController extends Controller
             $query = $request->input('query', '');
 
             // Perform the query on the mas_inventory table
-            $results = DB::table('HOZENADMIN.mas_vendor')
-                ->where('VENDORCODE', 'like', $query . '%')
-                ->orWhere('VENDORNAME', 'like', $query . '%')
+            $results = DB::table('mas_vendor')
+                ->where('vendorcode', 'like', $query . '%')
+                ->orWhere('vendorname', 'like', $query . '%')
                 ->limit(100)
                 ->get();
 
@@ -117,9 +131,9 @@ class InventoryControlController extends Controller
             $query = $request->input('query', '');
 
             // Perform the query on the mas_employee table
-            $results = DB::table('HOZENADMIN.mas_employee')
-                ->where('EMPLOYEECODE', 'like', $query . '%')
-                ->orWhere('EMPLOYEENAME', 'like', $query . '%')
+            $results = DB::table('mas_employee')
+                ->where('employeecode', 'like', $query . '%')
+                ->orWhere('employeename', 'like', $query . '%')
                 ->limit(100)
                 ->get();
 
@@ -153,20 +167,26 @@ class InventoryControlController extends Controller
             }
 
             // Perform the query using the Query Builder
-            $machines = DB::table('HOZENADMIN.MAS_INVMACHINE as I')
-                ->leftJoin('HOZENADMIN.MAS_MACHINE as M', 'I.MACHINENO', '=', 'M.MACHINENO')
-                ->select(
-                    'I.MACHINENO',
-                    DB::raw("COALESCE(M.MACHINENAME, 'NO REGISTER') as MACHINENAME"),
-                    DB::raw("COALESCE(M.SHOPNAME, 'N/A') as SHOPNAME"),
-                    DB::raw("COALESCE(M.LINECODE, 'N/A') as LINECODE"),
-                    DB::raw("COALESCE(M.MODELNAME, 'N/A') as MODELNAME"),
-                    DB::raw("COALESCE(M.MAKERNAME, 'N/A') as MAKERNAME"),
-                    DB::raw("COALESCE(M.SHOPCODE, 'N/A') as SHOPCODE")
+            $machines = DB::table('mas_invmachine as i')
+                ->leftJoin(
+                    'mas_machine as m',
+                    'i.machineno',
+                    '=',
+                    'm.machineno'
                 )
-                ->where('I.PARTCODE', '=', $partCode)
-                ->orderBy('I.MACHINENO')
+                ->select(
+                    'i.machineno',
+                    DB::raw("COALESCE(m.machinename, 'NO REGISTER') as machinename"),
+                    DB::raw("COALESCE(m.shopname, 'N/A') as shopname"),
+                    DB::raw("COALESCE(m.linecode, 'N/A') as linecode"),
+                    DB::raw("COALESCE(m.modelname, 'N/A') as modelname"),
+                    DB::raw("COALESCE(m.makername, 'N/A') as makername"),
+                    DB::raw("COALESCE(m.shopcode, 'N/A') as shopcode")
+                )
+                ->where('i.partcode', '=', $partCode)
+                ->orderBy('i.machineno')
                 ->get();
+
 
             if ($machines->isEmpty()) {
                 return response()->json([
@@ -221,7 +241,7 @@ class InventoryControlController extends Controller
 
             foreach ($records as $record) {
                 // Extract values for each record
-                $recordId = DB::table('HOZENADMIN.TBL_INVRECORD')->max('RECORDID') + 1; // Simulating sequence
+                $recordId = DB::table('tbl_invrecord')->max('recordid') + 1; // Simulating sequence
                 $locationId = $record['locationId'];
                 $jobCode = $record['jobCode'];
                 $jobDate = $record['jobDate'];
@@ -244,30 +264,30 @@ class InventoryControlController extends Controller
 
                 // Prepare data for batch insert
                 $dataToInsert[] = [
-                    'RECORDID' => $recordId,
-                    'LOCATIONID' => $locationId,
-                    'JOBCODE' => $jobCode,
-                    'JOBDATE' => $jobDate,
-                    'JOBTIME' => $jobTime,
-                    'PARTCODE' => $partCode,
-                    'PARTNAME' => $partName,
-                    'SPECIFICATION' => $specification,
-                    'BRAND' => $brand,
-                    'USEDFLAG' => $usedFlag,
-                    'QUANTITY' => $quantity,
-                    'UNITPRICE' => $unitPrice,
-                    'TOTAL' => $totalPrice,
-                    'CURRENCY' => $currency,
-                    'VENDORCODE' => $vendorCode,
-                    'MACHINENO' => $machineNo,
-                    'MACHINENAME' => $machineName,
-                    'NOTE' => $note,
-                    'EMPLOYEECODE' => $employeeCode,
-                    'UPDATETIME' => $updateTime
+                    'recordid' => $recordId,
+                    'locationid' => $locationId,
+                    'jobcode' => $jobCode,
+                    'jobdate' => $jobDate,
+                    'jobtime' => $jobTime,
+                    'partcode' => $partCode,
+                    'partname' => $partName,
+                    'specification' => $specification,
+                    'brand' => $brand,
+                    'usedflag' => $usedFlag,
+                    'quantity' => $quantity,
+                    'unitprice' => $unitPrice,
+                    'total' => $totalPrice,
+                    'currency' => $currency,
+                    'vendorcode' => $vendorCode,
+                    'machineno' => $machineNo,
+                    'machinename' => $machineName,
+                    'note' => $note,
+                    'employeecode' => $employeeCode,
+                    'updatetime' => $updateTime
                 ];
 
                 // Perform a batch insert
-                DB::table('HOZENADMIN.TBL_INVRECORD')->insert($dataToInsert);
+                DB::table('tbl_invrecord')->insert($dataToInsert);
                 $dataToInsert = [];
             }
 
@@ -297,8 +317,8 @@ class InventoryControlController extends Controller
             $recordId = $request->input('record_id');
 
             // Perform the delete operation
-            $affectedRows = DB::table('HOZENADMIN.TBL_INVRECORD')
-                ->where('RECORDID', $recordId)
+            $affectedRows = DB::table('tbl_invrecord')
+                ->where('recordid', $recordId)
                 ->delete();
 
             // Check if any rows were affected (i.e., if the delete was successful)

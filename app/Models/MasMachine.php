@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class MasMachine extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_MACHINE';
+    protected $table = 'mas_machine';
 
     // Primary key field
-    protected $primaryKey = 'MACHINENO';
+    protected $primaryKey = 'machineno';
 
-    // Disable auto-incrementing as MACHINENO is not an integer
+    // Disable auto-incrementing as machineno is not an integer
     public $incrementing = false;
 
     // Specify the key type
@@ -23,24 +23,23 @@ class MasMachine extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'MACHINENO',
-        'MACHINENAME',
-        'PLANTCODE',
-        'SHOPCODE',
-        'SHOPNAME',
-        'LINECODE',
-        'MODELNAME',
-        'MAKERCODE',
-        'MAKERNAME',
-        'SERIALNO',
-        'MACHINEPRICE',
-        'CURRENCY',
-        'PURCHASEROOT',
-        'INSTALLDATE',
-        'NOTE',
-        'STATUS',
-        'RANK',
-        'UPDATETIME'
+        'machineno',
+        'machinename',
+        'plantcode',
+        'shopcode',
+        'shopname',
+        'linecode',
+        'modelname',
+        'makercode',
+        'makername',
+        'serialno',
+        'machineprice',
+        'currency',
+        'purchaseroot',
+        'installdate',
+        'note',
+        'status',
+        'rank',
+        'updatetime'
     ];
 }
-

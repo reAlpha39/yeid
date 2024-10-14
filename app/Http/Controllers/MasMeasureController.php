@@ -20,9 +20,9 @@ class MasMeasureController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('MEASURECODE', 'LIKE', $search . '%')
-                        ->orWhere('MEASURENAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('measurecode', 'LIKE', $search . '%')
+                        ->orWhere('measurename', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -46,23 +46,23 @@ class MasMeasureController extends Controller
     {
         try {
             $validated = $request->validate([
-                'MEASURECODE' => [
+                'measurecode' => [
                     'required',
                     'string',
                     'max:3',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_MEASURE')
-                            ->where('MEASURECODE', $value)
+                        $exists = DB::table('mas_measure')
+                            ->where('measurecode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The MEASURECODE has already been taken.');
+                            $fail('The measurecode has already been taken.');
                         }
                     }
                 ],
-                'MEASURENAME' => 'required|string|max:64',
-                'REMARK'      => 'nullable|string|max:64'
+                'measurename' => 'required|string|max:64',
+                'remark'      => 'nullable|string|max:64'
             ]);
 
             $measure = MasMeasure::create($validated);
@@ -81,7 +81,7 @@ class MasMeasureController extends Controller
         }
     }
 
-    // Find a Measure by MEASURECODE
+    // Find a Measure by measurecode
     public function show($measureCode)
     {
         try {
@@ -121,8 +121,8 @@ class MasMeasureController extends Controller
             }
 
             $validated = $request->validate([
-                'MEASURENAME' => 'required|string|max:64',
-                'REMARK'      => 'nullable|string|max:64'
+                'measurename' => 'required|string|max:64',
+                'remark'      => 'nullable|string|max:64'
             ]);
 
             $measure->update($validated);

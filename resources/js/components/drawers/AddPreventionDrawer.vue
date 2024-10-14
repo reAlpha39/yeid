@@ -34,9 +34,9 @@ async function add() {
     const result = await $api("/master/preventions", {
       method: "POST",
       body: {
-        PREVENTIONCODE: preventionCode.value,
-        PREVENTIONNAME: preventionName.value,
-        REMARK: remark.value,
+        preventioncode: preventionCode.value,
+        preventionname: preventionName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -59,8 +59,8 @@ async function update() {
     const result = await $api("/master/preventions/" + preventionCode.value, {
       method: "PUT",
       body: {
-        PREVENTIONNAME: preventionName.value,
-        REMARK: remark.value,
+        preventionname: preventionName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +87,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    preventionCode.value = data.PREVENTIONCODE;
-    preventionName.value = data.PREVENTIONNAME;
-    remark.value = data.REMARK;
+    preventionCode.value = data.preventioncode;
+    preventionName.value = data.preventionname;
+    remark.value = data.remark;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

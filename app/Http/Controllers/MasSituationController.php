@@ -19,9 +19,9 @@ class MasSituationController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('SITUATIONCODE', 'LIKE', $search . '%')
-                        ->orWhere('SITUATIONNAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('situationcode', 'LIKE', $search . '%')
+                        ->orWhere('situationname', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -44,23 +44,23 @@ class MasSituationController extends Controller
     {
         try {
             $validated = $request->validate([
-                'SITUATIONCODE' => [
+                'situationcode' => [
                     'required',
                     'string',
                     'max:3',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_SITUATION')
-                            ->where('SITUATIONCODE', $value)
+                        $exists = DB::table('mas_situation')
+                            ->where('situationcode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The SITUATIONCODE has already been taken.');
+                            $fail('The situationcode has already been taken.');
                         }
                     }
                 ],
-                'SITUATIONNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64',
+                'situationname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64',
             ]);
 
             $situation = MasSituation::create($validated);
@@ -79,7 +79,7 @@ class MasSituationController extends Controller
         }
     }
 
-    // Find a situation by SITUATIONCODE
+    // Find a situation by situationcode
     public function show($situationCode)
     {
         try {
@@ -119,8 +119,8 @@ class MasSituationController extends Controller
             }
 
             $validated = $request->validate([
-                'SITUATIONNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64',
+                'situationname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64',
             ]);
 
             $situation->update($validated);

@@ -61,7 +61,7 @@ onMounted(() => {
         </p>
       </VCardText>
 
-       <AppTextField
+      <AppTextField
         class="pb-4"
         v-model="searchStaff"
         placeholder="Search staff"
@@ -90,10 +90,10 @@ onMounted(() => {
         <div class="pa-2 flex-grow-1">
           <VRow class="me-10 pb-3">
             <VCol cols="11" md="5">
-              <text> {{ item.EMPLOYEECODE }}</text>
+              <text> {{ item.employeecode }}</text>
             </VCol>
             <VCol cols="11" md="5">
-              <text> {{ item.EMPLOYEENAME }}</text>
+              <text> {{ item.employeename }}</text>
             </VCol>
             <VCol cols="11" md="1">
               <a @click.prevent="handleItemClick(item)">Select</a>

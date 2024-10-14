@@ -6,15 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class MasVendor extends Model
 {
-    protected $table = 'HOZENADMIN.MAS_VENDOR'; // Define the correct schema and table
-    protected $primaryKey = 'VENDORCODE'; // Define the primary key
-    public $incrementing = false; // VENDORCODE is not auto-incremented
-    public $timestamps = false; // Disable timestamps if the table doesn't have 'created_at' or 'updated_at'
+    // Define the correct schema and table
+    protected $table = 'mas_vendor';
+
+    // Define the primary key
+    protected $primaryKey = 'vendorcode';
+
+    // vendorcode is not auto-incremented
+    public $incrementing = false;
+
+    // Disable timestamps if the table doesn't have 'created_at' or 'updated_at'
+    public $timestamps = false;
 
     protected $fillable = [
-        'VENDORCODE',
-        'VENDORNAME',
+        'vendorcode',
+        'vendorname',
     ];
 
-    protected $keyType = 'string'; // Since VENDORCODE is a string
+    // Since vendorcode is a string
+    protected $keyType = 'string';
 }

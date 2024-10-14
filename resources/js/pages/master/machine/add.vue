@@ -51,23 +51,23 @@ async function addData() {
       const response = await $api("/master/machines/" + machineNo.value, {
         method: "PUT",
         body: {
-          MACHINENAME: machineName.value,
-          PLANTCODE: plantNo.value,
-          SHOPCODE: selectedShop.value.SHOPCODE,
-          SHOPNAME: selectedShop.value.SHOPNAME,
-          LINECODE: selectedLine.value.LINECODE,
-          MODELNAME: modelName.value,
-          MAKERCODE: selectedMaker.value.MAKERCODE,
-          MAKERNAME: selectedMaker.value.MAKERNAME,
-          SERIALNO: serialNo.value,
-          CURRENCY: currency.value,
-          MACHINEPRICE: price.value,
-          PURCHASEROOT: purchaseRoot.value,
-          INSTALLDATE: installDate.value,
-          NOTE: note.value,
-          STATUS: convertStatus(status.value),
-          RANK: rank.value,
-          UPDATETIME: now,
+          machinename: machineName.value,
+          plantcode: plantNo.value,
+          shopcode: selectedShop.value.shopcode,
+          shopname: selectedShop.value.shopname,
+          linecode: selectedLine.value.linecode,
+          modelname: modelName.value,
+          makercode: selectedMaker.value.makercode,
+          makername: selectedMaker.value.makername,
+          serialno: serialNo.value,
+          currency: currency.value,
+          machineprice: price.value,
+          purchaseroot: purchaseRoot.value,
+          installdate: installDate.value,
+          note: note.value,
+          status: convertStatus(status.value),
+          rank: rank.value,
+          updatetime: now,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -79,24 +79,24 @@ async function addData() {
       const response = await $api("/master/machines", {
         method: "POST",
         body: {
-          MACHINENO: machineNo.value,
-          MACHINENAME: machineName.value,
-          PLANTCODE: plantNo.value,
-          SHOPCODE: selectedShop.value.SHOPCODE,
-          SHOPNAME: selectedShop.value.SHOPNAME,
-          LINECODE: selectedLine.value.LINECODE,
-          MODELNAME: modelName.value,
-          MAKERCODE: selectedMaker.value.MAKERCODE,
-          MAKERNAME: selectedMaker.value.MAKERNAME,
-          SERIALNO: serialNo.value,
-          CURRENCY: currency.value,
-          MACHINEPRICE: price.value,
-          PURCHASEROOT: purchaseRoot.value,
-          INSTALLDATE: installDate.value,
-          NOTE: note.value,
-          STATUS: convertStatus(status.value),
-          RANK: rank.value,
-          UPDATETIME: now,
+          machineno: machineNo.value,
+          machinename: machineName.value,
+          plantcode: plantNo.value,
+          shopcode: selectedShop.value.shopcode,
+          shopname: selectedShop.value.shopname,
+          linecode: selectedLine.value.linecode,
+          modelname: modelName.value,
+          makercode: selectedMaker.value.makercode,
+          makername: selectedMaker.value.makername,
+          serialno: serialNo.value,
+          currency: currency.value,
+          machineprice: price.value,
+          purchaseroot: purchaseRoot.value,
+          installdate: installDate.value,
+          note: note.value,
+          status: convertStatus(status.value),
+          rank: rank.value,
+          updatetime: now,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -133,7 +133,7 @@ async function fetchDataMaker(id) {
 
       selectedMaker.value = response.data;
       selectedMaker.value =
-        response.data.MAKERCODE + " | " + response.data.MAKERNAME;
+        response.data.makercode + " | " + response.data.makername;
     } else {
       const response = await $api("/master/makers", {
         onResponseError({ response }) {
@@ -144,7 +144,7 @@ async function fetchDataMaker(id) {
       makers.value = response.data;
 
       makers.value.forEach((maker) => {
-        maker.title = maker.MAKERCODE + " | " + maker.MAKERNAME;
+        maker.title = maker.makercode + " | " + maker.makername;
       });
     }
   } catch (err) {
@@ -164,7 +164,7 @@ async function fetchDataShop(id) {
 
       selectedShop.value = response.data;
       selectedShop.value.title =
-        response.data.SHOPCODE + " | " + response.data.SHOPNAME;
+        response.data.shopcode + " | " + response.data.shopname;
     } else {
       const response = await $api("/master/shops", {
         onResponseError({ response }) {
@@ -175,7 +175,7 @@ async function fetchDataShop(id) {
       shops.value = response.data;
 
       shops.value.forEach((data) => {
-        data.title = data.SHOPCODE + " | " + data.SHOPNAME;
+        data.title = data.shopcode + " | " + data.shopname;
       });
     }
   } catch (err) {
@@ -199,7 +199,7 @@ async function fetchDataLine(id) {
       let data = response.data[0];
 
       selectedLine.value = data;
-      selectedLine.value.title = data.LINECODE + " | " + data.LINENAME;
+      selectedLine.value.title = data.linecode + " | " + data.linename;
     } else {
       const response = await $api("/master/lines", {
         onResponseError({ response }) {
@@ -209,7 +209,7 @@ async function fetchDataLine(id) {
 
       lines.value = response.data;
       lines.value.forEach((data) => {
-        data.title = data.LINECODE + " | " + data.LINENAME;
+        data.title = data.linecode + " | " + data.linename;
       });
     }
   } catch (err) {
@@ -268,27 +268,23 @@ async function initEditData(id) {
 async function applyData() {
   const data = prevData.value;
 
-  await fetchDataShop(data.SHOPCODE);
-  await fetchDataLine(data.LINECODE);
-  await fetchDataMaker(data.MAKERCODE);
+  await fetchDataShop(data.shopcode);
+  await fetchDataLine(data.linecode);
+  await fetchDataMaker(data.makercode);
 
-  machineNo.value = data.MACHINENO;
-  machineName.value = data.MACHINENAME;
-  plantNo.value = data.PLANTCODE;
-  // selectedShop.value.SHOPCODE = data.SHOPCODE;
-  // selectedShop.value.SHOPNAME = data.SHOPNAME;
-  selectedLine.value.LINECODE = data.LINECODE;
-  modelName.value = data.MODELNAME;
-  // selectedMaker.value.MAKERCODE = data.MAKERCODE;
-  // selectedMaker.value.MAKERNAME = data.MAKERNAME;
-  serialNo.value = data.SERIALNO;
-  currency.value = data.CURRENCY;
-  price.value = data.MACHINEPRICE;
-  purchaseRoot.value = data.PURCHASEROOT;
-  installDate.value = data.INSTALLDATE;
-  note.value = data.NOTE;
-  status.value = statusType(data.STATUS);
-  rank.value = data.RANK;
+  machineNo.value = data.machineno;
+  machineName.value = data.machinename;
+  plantNo.value = data.plantcode;
+  selectedLine.value.linecode = data.linecode;
+  modelName.value = data.modelname;
+  serialNo.value = data.serialno;
+  currency.value = data.currency;
+  price.value = data.machineprice;
+  purchaseRoot.value = data.purchaseroot;
+  installDate.value = data.installdate;
+  note.value = data.note;
+  status.value = statusType(data.status);
+  rank.value = data.rank;
 }
 
 onMounted(() => {

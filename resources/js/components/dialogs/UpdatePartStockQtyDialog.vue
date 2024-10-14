@@ -67,24 +67,24 @@ async function saveUpdatedQty() {
       body: {
         records: [
           {
-            locationId: "P",
-            jobCode: "A",
-            jobDate: formatDate(now), // Format date as 'YYYYMMDD'
-            jobTime: formatTime(now), // Format time as 'HHMMSS'
-            partCode: item.PARTCODE,
-            partName: item.PARTNAME,
-            specification: item.SPECIFICATION,
-            brand: item.BRAND,
-            usedFlag: item.USEDFLAG,
-            quantity: -parseInt(data.value.TOTALSTOCK),
-            unitPrice: item.UNITPRICE,
-            price: item.UNITPRICE,
-            currency: item.CURRENCY,
-            vendorCode: item.VENDORCODE,
-            machineNo: "",
-            machineName: "",
+            locationid: "P",
+            jobcode: "A",
+            jobdate: formatDate(now), // Format date as 'YYYYMMDD'
+            jobtime: formatTime(now), // Format time as 'HHMMSS'
+            partcode: item.partcode,
+            partname: item.partname,
+            specification: item.specification,
+            brand: item.brand,
+            usedflag: item.usedflag,
+            quantity: -parseInt(data.value.totalstock),
+            unitprice: item.unitprice,
+            price: item.unitprice,
+            currency: item.currency,
+            vendorcode: item.vendorcode,
+            machineno: "",
+            machinename: "",
             note: "",
-            employeeCode: "",
+            employeecode: "",
           },
         ],
       },
@@ -100,24 +100,24 @@ async function saveUpdatedQty() {
       body: {
         records: [
           {
-            locationId: "P",
-            jobCode: "A",
-            jobDate: formatDate(now), // Format date as 'YYYYMMDD'
-            jobTime: formatTime(now), // Format time as 'HHMMSS'
-            partCode: item.PARTCODE,
-            partName: item.PARTNAME,
-            specification: item.SPECIFICATION,
-            brand: item.BRAND,
-            usedFlag: item.USEDFLAG,
+            locationid: "P",
+            jobcode: "A",
+            jobdate: formatDate(now), // Format date as 'YYYYMMDD'
+            jobtime: formatTime(now), // Format time as 'HHMMSS'
+            partcode: item.partcode,
+            partname: item.partname,
+            specification: item.specification,
+            brand: item.brand,
+            usedflag: item.usedflag,
             quantity: parseInt(qtyTextField.value),
-            unitPrice: item.UNITPRICE,
-            price: item.UNITPRICE,
-            currency: item.CURRENCY,
-            vendorCode: item.VENDORCODE,
-            machineNo: "",
-            machineName: "",
+            unitprice: item.unitprice,
+            price: item.unitprice,
+            currency: item.currency,
+            vendorcode: item.vendorcode,
+            machineno: "",
+            machinename: "",
             note: "",
-            employeeCode: "",
+            employeecode: "",
           },
         ],
       },
@@ -197,40 +197,40 @@ watch(
 
       <VCard flat class="pa-4" style="background-color: #4b3e6414">
         <VCardTitle>
-          {{ data.PARTNAME }}
+          {{ data.partname }}
         </VCardTitle>
         <VCardSubtitle>
-          {{ data.PARTCODE }}
+          {{ data.partcode }}
         </VCardSubtitle>
         <br />
 
-        <VCard flat class="pa-4 mx-2 flex-grow-1" v-if="data.PARTCODE">
+        <VCard flat class="pa-4 mx-2 flex-grow-1" v-if="data.partcode">
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Category </VCol>
-            <VCol cols="12" md="8"> : {{ categoryType(data.CATEGORY) }} </VCol>
+            <VCol cols="12" md="8"> : {{ categoryType(data.category) }} </VCol>
           </VRow>
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Brand </VCol>
-            <VCol> : {{ data.BRAND.trim() ? data.BRAND : "-" }} </VCol>
+            <VCol> : {{ data.brand.trim() ? data.brand : "-" }} </VCol>
           </VRow>
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Specification </VCol>
             <VCol>
-              : {{ data.SPECIFICATION.trim() ? data.SPECIFICATION : "-" }}
+              : {{ data.specification.trim() ? data.specification : "-" }}
             </VCol>
           </VRow>
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Used </VCol>
-            <VCol> : {{ data.STATUS }} </VCol>
+            <VCol> : {{ data.status }} </VCol>
           </VRow>
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Currency </VCol>
-            <VCol> : {{ data.CURRENCY }} </VCol>
+            <VCol> : {{ data.currency }} </VCol>
           </VRow>
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Unit Price </VCol>
             <VCol>
-              : {{ data.UNITPRICE ? data.UNITPRICE.toLocaleString() : "-" }}
+              : {{ data.unitprice ? data.unitprice.toLocaleString() : "-" }}
             </VCol>
           </VRow>
         </VCard>
@@ -247,7 +247,7 @@ watch(
           <VCol>
             <div style="text-align: right">
               <strong>
-                {{ data.TOTALSTOCK ? data.TOTALSTOCK.toLocaleString() : "0" }}
+                {{ data.totalstock ? data.totalstock.toLocaleString() : "0" }}
               </strong>
             </div>
           </VCol>

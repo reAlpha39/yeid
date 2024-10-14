@@ -18,11 +18,11 @@ const page = ref(1);
 const headers = [
   {
     title: "PART CODE",
-    key: "PARTCODE",
+    key: "partcode",
   },
   {
     title: "PART NAME",
-    key: "PARTNAME",
+    key: "partname",
   },
   {
     title: "CATEGORY",
@@ -30,15 +30,15 @@ const headers = [
   },
   {
     title: "STOCK QUANTITY",
-    key: "TOTALSTOCK",
+    key: "totalstock",
   },
   {
     title: "MINIMUM STOCK",
-    key: "MINSTOCK",
+    key: "minstock",
   },
   {
     title: "UNIT PRICE",
-    key: "unitprice",
+    key: "unitprices",
   },
   {
     title: "ACTIONS",
@@ -219,7 +219,7 @@ onMounted(() => {
       <!-- vendor -->
       <template #item.category="{ item }">
         <div class="d-flex align-center">
-          {{ categoryType(item.CATEGORY) }}
+          {{ categoryType(item.category) }}
         </div>
       </template>
 
@@ -231,11 +231,11 @@ onMounted(() => {
       </template>
 
       <!-- unit price -->
-      <template #item.unitprice="{ item }">
+      <template #item.unitprices="{ item }">
         <div class="d-flex align-center">
           <div class="d-flex flex-row ms-3">
-            {{ item.CURRENCY }}
-            {{ item.UNITPRICE.toLocaleString() }}
+            {{ item.currency }}
+            {{ item.unitprice.toLocaleString() }}
           </div>
         </div>
       </template>
@@ -243,13 +243,13 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.PARTCODE)">
+          <IconBtn @click="openEditPartPage(item.partcode)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openUpdateDialog(item.PARTCODE)">
+          <IconBtn @click="openUpdateDialog(item.partcode)">
             <VIcon icon="tabler-adjustments" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.PARTCODE)">
+          <IconBtn @click="openDeleteDialog(item.partcode)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

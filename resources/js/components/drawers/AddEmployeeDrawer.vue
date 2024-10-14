@@ -35,10 +35,10 @@ async function add() {
     const result = await $api("/master/employees", {
       method: "POST",
       body: {
-        EMPLOYEECODE: employeeCode.value,
-        EMPLOYEENAME: employeeName.value,
-        MLEVEL: mlevel.value.toString(),
-        PASSWORD: password.value,
+        employeecode: employeeCode.value,
+        employeename: employeeName.value,
+        mlevel: mlevel.value.toString(),
+        password: password.value,
       },
 
       onResponseError({ response }) {
@@ -61,9 +61,9 @@ async function update() {
     const result = await $api("/master/employees/" + employeeCode.value, {
       method: "PUT",
       body: {
-        EMPLOYEENAME: employeeName.value,
-        MLEVEL: mlevel.value.toString(),
-        PASSWORD: password.value,
+        employeename: employeeName.value,
+        mlevel: mlevel.value.toString(),
+        password: password.value,
       },
 
       onResponseError({ response }) {
@@ -90,10 +90,10 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    employeeCode.value = data.EMPLOYEECODE;
-    employeeName.value = data.EMPLOYEENAME;
-    mlevel.value = data.MLEVEL;
-    password.value = data.PASSWORD;
+    employeeCode.value = data.employeecode;
+    employeeName.value = data.employeename;
+    mlevel.value = data.mlevel;
+    password.value = data.password;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

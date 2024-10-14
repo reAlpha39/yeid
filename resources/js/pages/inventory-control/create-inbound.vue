@@ -59,16 +59,16 @@ const handlePartSelected = (item) => {
     jobCode: "I",
     jobDate: formatDate(now), // Format date as 'YYYYMMDD'
     jobTime: formatTime(now), // Format time as 'HHMMSS'
-    partCode: item.PARTCODE,
-    partName: item.PARTNAME,
-    specification: item.SPECIFICATION,
-    brand: item.BRAND,
+    partCode: item.partcode,
+    partName: item.partname,
+    specification: item.specification,
+    brand: item.brand,
     usedFlag: "",
     quantity: 1,
-    unitPrice: item.UNITPRICE,
-    price: item.UNITPRICE,
-    currency: item.CURRENCY,
-    vendorCode: selectedVendor.value.VENDORCODE,
+    unitPrice: item.unitprice,
+    price: item.unitprice,
+    currency: item.currency,
+    vendorCode: selectedVendor.value.vendorcode,
     machineNo: "",
     machineName: "",
     note: "",
@@ -135,7 +135,7 @@ const deleteItem = (index) => {
         <VCardSubtitle class="text-subtitle-2 text-gray">
           The vendor is required, please select an available vendor
         </VCardSubtitle>
-        <template v-if="selectedVendor.VENDORCODE">
+        <template v-if="selectedVendor.vendorcode">
           <br />
           <VCardSubtitle>
             <a
@@ -151,11 +151,11 @@ const deleteItem = (index) => {
       </div>
 
       <!-- Right side: Select Vendor Button -->
-      <template v-if="selectedVendor.VENDORCODE">
+      <template v-if="selectedVendor.vendorcode">
         <!-- If a vendor is selected, show the vendor info -->
         <div>
-          <p><strong>Vendor Name:</strong> {{ selectedVendor.VENDORNAME }}</p>
-          <p><strong>Vendor Code:</strong> {{ selectedVendor.VENDORCODE }}</p>
+          <p><strong>Vendor Name:</strong> {{ selectedVendor.vendorname }}</p>
+          <p><strong>Vendor Code:</strong> {{ selectedVendor.vendorcode }}</p>
         </div>
       </template>
       <template v-else>

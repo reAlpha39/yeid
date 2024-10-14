@@ -19,11 +19,11 @@ class MasSystemController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('YEAR', 'LIKE', $search . '%')
-                        ->orWhere('USD2IDR', 'LIKE', $search . '%')
-                        ->orWhere('JPY2IDR', 'LIKE', $search . '%')
-                        ->orWhere('EUR2IDR', 'LIKE', $search . '%')
-                        ->orWhere('SGD2IDR', 'LIKE', $search . '%');
+                    $q->where('year', 'LIKE', $search . '%')
+                        ->orWhere('usd2idr', 'LIKE', $search . '%')
+                        ->orWhere('jpy2idr', 'LIKE', $search . '%')
+                        ->orWhere('eur2idr', 'LIKE', $search . '%')
+                        ->orWhere('sgd2idr', 'LIKE', $search . '%');
                 });
             }
 
@@ -47,25 +47,25 @@ class MasSystemController extends Controller
     {
         try {
             $validated = $request->validate([
-                'YEAR' => [
+                'year' => [
                     'required',
                     'string',
                     'max:4',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_SYSTEM')
-                            ->where('YEAR', $value)
+                        $exists = DB::table('mas_system')
+                            ->where('year', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The YEAR has already been taken.');
+                            $fail('The year has already been taken.');
                         }
                     }
                 ],
-                'USD2IDR' => 'required|string|max:10',
-                'JPY2IDR' => 'required|string|max:10',
-                'EUR2IDR' => 'required|string|max:10',
-                'SGD2IDR' => 'required|string|max:10'
+                'usd2idr' => 'required|string|max:10',
+                'jpy2idr' => 'required|string|max:10',
+                'eur2idr' => 'required|string|max:10',
+                'sgd2idr' => 'required|string|max:10'
             ]);
 
             $system = MasSystem::create($validated);
@@ -84,7 +84,7 @@ class MasSystemController extends Controller
         }
     }
 
-    // Find a system record by YEAR
+    // Find a system record by year
     public function show($year)
     {
         try {
@@ -124,10 +124,10 @@ class MasSystemController extends Controller
             }
 
             $validated = $request->validate([
-                'USD2IDR' => 'required|string|max:10',
-                'JPY2IDR' => 'required|string|max:10',
-                'EUR2IDR' => 'required|string|max:10',
-                'SGD2IDR' => 'required|string|max:10'
+                'usd2idr' => 'required|string|max:10',
+                'jpy2idr' => 'required|string|max:10',
+                'eur2idr' => 'required|string|max:10',
+                'sgd2idr' => 'required|string|max:10'
             ]);
 
             $system->update($validated);

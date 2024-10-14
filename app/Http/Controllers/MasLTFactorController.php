@@ -21,9 +21,9 @@ class MasLTFactorController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('LTFACTORCODE', 'LIKE', $search . '%')
-                        ->orWhere('LTFACTORNAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('ltfactorcode', 'LIKE', $search . '%')
+                        ->orWhere('ltfactorname', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -47,23 +47,23 @@ class MasLTFactorController extends Controller
     {
         try {
             $validated = $request->validate([
-                'LTFACTORCODE' => [
+                'ltfactorcode' => [
                     'required',
                     'string',
                     'max:3',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_LTFACTOR')
-                            ->where('LTFACTORCODE', $value)
+                        $exists = DB::table('mas_ltfactor')
+                            ->where('ltfactorcode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The LTFACTORCODE has already been taken.');
+                            $fail('The ltfactorcode has already been taken.');
                         }
                     }
                 ],
-                'LTFACTORNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64'
+                'ltfactorname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64'
             ]);
 
             $ltFactor = MasLTFactor::create($validated);
@@ -122,8 +122,8 @@ class MasLTFactorController extends Controller
             }
 
             $validated = $request->validate([
-                'LTFACTORNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64'
+                'ltfactorname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64'
             ]);
 
             $ltFactor->update($validated);

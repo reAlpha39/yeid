@@ -194,9 +194,9 @@ onMounted(() => {
           <div class="d-flex flex-column">
             <span
               class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.RECORDID }}</span
+              >{{ item.recordid }}</span
             >
-            <small>{{ item.ORDERDATETIME }}</small>
+            <small>{{ item.orderdatetime }}</small>
           </div>
         </div>
       </template>
@@ -207,9 +207,9 @@ onMounted(() => {
           <div class="d-flex flex-column">
             <span
               class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.ORDEREMPNAME }}</span
+              >{{ item.orderempname }}</span
             >
-            <small>Shop: {{ item.ORDERSHOP }}</small>
+            <small>Shop: {{ item.ordershop }}</small>
           </div>
         </div>
       </template>
@@ -220,7 +220,7 @@ onMounted(() => {
       </template>
       <template #item.jenisPerbaikan="{ item }">
         <div class="d-flex align-center">
-          {{ item.MAINTENANCECODE }}
+          {{ item.maintenancecode }}
         </div>
       </template>
 
@@ -229,9 +229,9 @@ onMounted(() => {
           <div class="d-flex flex-column">
             <span
               class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.MACHINENAME }}</span
+              >{{ item.machinename }}</span
             >
-            <small>{{ item.MACHINENO }}</small>
+            <small>{{ item.machineno }}</small>
           </div>
         </div>
       </template>
@@ -241,26 +241,26 @@ onMounted(() => {
       </template>
       <template #item.jenisPekerjaan="{ item }">
         <div class="d-flex align-center">
-          {{ item.ORDERJOBTYPE }}
+          {{ item.orderjobtype }}
         </div>
       </template>
 
       <template #item.jumlah="{ item }">
         <div class="d-flex align-center">
-          {{ item.ORDERQTTY }}
+          {{ item.orderqtty }}
         </div>
       </template>
 
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDetailPage(item.RECORDID)">
+          <IconBtn @click="openDetailPage(item.recordid)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <IconBtn @click="openEditPage(item.RECORDID)">
+          <IconBtn @click="openEditPage(item.recordid)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.RECORDID)">
+          <IconBtn @click="openDeleteDialog(item.recordid)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

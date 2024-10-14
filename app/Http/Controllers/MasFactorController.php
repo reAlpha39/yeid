@@ -22,9 +22,9 @@ class MasFactorController extends Controller
             // Apply filters based on the query parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('FACTORCODE', 'LIKE', $search . '%')
-                        ->orWhere('FACTORNAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('factorcode', 'LIKE', $search . '%')
+                        ->orWhere('factorname', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -48,23 +48,23 @@ class MasFactorController extends Controller
     {
         try {
             $validated = $request->validate([
-                'FACTORCODE' => [
+                'factorcode' => [
                     'required',
                     'string',
                     'max:3',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_FACTOR')
-                            ->where('FACTORCODE', $value)
+                        $exists = DB::table('mas_factor')
+                            ->where('factorcode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The FACTORCODE has already been taken.');
+                            $fail('The factorcode has already been taken.');
                         }
                     }
                 ],
-                'FACTORNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64'
+                'factorname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64'
             ]);
 
             $factor = MasFactor::create($validated);
@@ -123,8 +123,8 @@ class MasFactorController extends Controller
             }
 
             $validated = $request->validate([
-                'FACTORNAME' => 'required|string|max:64',
-                'REMARK' => 'nullable|string|max:64'
+                'factorname' => 'required|string|max:64',
+                'remark' => 'nullable|string|max:64'
             ]);
 
             $factor->update($validated);

@@ -85,8 +85,9 @@ class MasUserController extends Controller
                     'max:64',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_USER')
+                        $exists = DB::table('mas_user')
                             ->where('email', $value)
+                            ->whereNull('deleted_at')
                             ->exists();
 
                         if ($exists) {
@@ -99,8 +100,9 @@ class MasUserController extends Controller
                     'required',
                     // Custom rule to check existence in the department table
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                        $exists = DB::table('mas_department')
                             ->where('id', $value)
+                            ->whereNull('deleted_at') 
                             ->exists();
 
                         if (!$exists) {
@@ -179,7 +181,7 @@ class MasUserController extends Controller
                     'max:64',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) use ($id) {
-                        $exists = DB::table('HOZENADMIN.MAS_USER')
+                        $exists = DB::table('mas_user')
                             ->where('email', $value)
                             ->where('id', '<>', $id) // Exclude the current user's ID
                             ->exists();
@@ -194,7 +196,7 @@ class MasUserController extends Controller
                     'required',
                     // Custom rule to check existence in the department table
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                        $exists = DB::table('mas_department')
                             ->where('id', $value)
                             ->exists();
 

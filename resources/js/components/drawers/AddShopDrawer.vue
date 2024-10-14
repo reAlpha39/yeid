@@ -34,10 +34,10 @@ async function addShop() {
     const result = await $api("/master/shops", {
       method: "POST",
       body: {
-        SHOPCODE: shopCode.value,
-        SHOPNAME: shopName.value,
-        PLANTTYPE: "M",
-        COUNTFLAG: countFlag.value ? "1" : "0",
+        shopcode: shopCode.value,
+        shopname: shopName.value,
+        planttype: "M",
+        countflag: countFlag.value ? "1" : "0",
       },
 
       onResponseError({ response }) {
@@ -60,9 +60,9 @@ async function updateShop() {
     const result = await $api("/master/shops/" + shopCode.value, {
       method: "PUT",
       body: {
-        SHOPNAME: shopName.value,
-        PLANTTYPE: "M",
-        COUNTFLAG: countFlag.value ? "1" : "0",
+        shopname: shopName.value,
+        planttype: "M",
+        countflag: countFlag.value ? "1" : "0",
       },
 
       onResponseError({ response }) {
@@ -89,9 +89,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    shopCode.value = data.SHOPCODE;
-    shopName.value = data.SHOPNAME;
-    countFlag.value = data.COUNTFLAG == "1" ? true : false;
+    shopCode.value = data.shopcode;
+    shopName.value = data.shopname;
+    countFlag.value = data.countflag == "1" ? true : false;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

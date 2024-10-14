@@ -44,7 +44,7 @@ const categories = ["Machine", "Facility", "Jig", "Other"];
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 
 const handleVendorSelected = (item) => {
-  vendorTF.value = item.VENDORCODE + " | " + item.VENDORNAME;
+  vendorTF.value = item.vendorcode + " | " + item.vendorname;
 };
 
 function handleMachinesSelected(items) {
@@ -79,7 +79,7 @@ async function addMasterPart() {
 
     for (const e of machines.value) {
       machineData.push({
-        machine_no: e.MACHINENO,
+        machine_no: e.machineno,
       });
     }
 
@@ -147,7 +147,7 @@ async function fetchVendor(vendorCode) {
 
     var vendor = response.data[0];
 
-    vendorTF.value = vendor.VENDORCODE + " | " + vendor.VENDORNAME;
+    vendorTF.value = vendor.vendorcode + " | " + vendor.vendorname;
   } catch (err) {
     console.log(err);
   }
@@ -224,23 +224,23 @@ async function initEditData(partCode) {
 
 function applyData() {
   const data = prevData.value;
-  usedPartSwitch.value = data.USEDFLAG == "O" ? "Active" : "Inactive";
-  orderSwitch.value = data.NOORDERFLAG == "1" ? "Active" : "Inactive";
-  partCodeTF.value = data.PARTCODE;
-  partNameTF.value = data.PARTNAME;
-  specificationTF.value = data.SPECIFICATION;
-  brandTF.value = data.BRAND;
-  categoryTF.value = categoryType(data.CATEGORY);
-  barcodeTF.value = data.EANCODE;
-  addressTF.value = data.ADDRESS;
-  vendorTF.value = data.VENDORCODE;
-  unitPriceTF.value = data.UNITPRICE;
-  currencyTF.value = data.CURRENCY;
-  orderPartCodeTF.value = data.ORDERPARTCODE;
-  initialStockTF.value = data.LASTSTOCKNUMBER;
-  noteTF.value = data.NOTE;
-  minStockTF.value = data.MINSTOCK;
-  minOrderTF.value = data.MINORDER;
+  usedPartSwitch.value = data.usedflag == "O" ? "Active" : "Inactive";
+  orderSwitch.value = data.noorderflag == "1" ? "Active" : "Inactive";
+  partCodeTF.value = data.partcode;
+  partNameTF.value = data.partname;
+  specificationTF.value = data.specification;
+  brandTF.value = data.brand;
+  categoryTF.value = categoryType(data.category);
+  barcodeTF.value = data.eancode;
+  addressTF.value = data.address;
+  vendorTF.value = data.vendorcode;
+  unitPriceTF.value = data.unitprice;
+  currencyTF.value = data.currency;
+  orderPartCodeTF.value = data.orderpartcode;
+  initialStockTF.value = data.laststocknumber;
+  noteTF.value = data.note;
+  minStockTF.value = data.minstock;
+  minOrderTF.value = data.minorder;
 }
 
 onMounted(() => {
@@ -477,24 +477,24 @@ onMounted(() => {
           </thead>
           <tbody>
             <!-- First row -->
-            <tr v-for="(item, index) in machines" :key="item.MACHINENO">
+            <tr v-for="(item, index) in machines" :key="item.machineno">
               <td>
                 <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.MACHINENAME }}</span>
-                  <small>{{ item.MACHINENO }}</small>
+                  <span style="font-weight: 500">{{ item.machinename }}</span>
+                  <small>{{ item.machineno }}</small>
                 </div>
               </td>
               <td>
-                {{ item.MODELNAME }}
+                {{ item.modelname }}
               </td>
               <td>
-                {{ item.MAKERNAME }}
+                {{ item.makername }}
               </td>
               <td>
-                {{ item.SHOPCODE }}
+                {{ item.shopcode }}
               </td>
               <td>
-                {{ item.LINECODE }}
+                {{ item.linecode }}
               </td>
               <td>
                 <IconBtn @click="openDeleteDialog(index)">

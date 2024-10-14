@@ -40,9 +40,9 @@ async function add() {
     const result = await $api("/master/lines", {
       method: "POST",
       body: {
-        SHOPCODE: shopCode.value,
-        LINECODE: lineCode.value,
-        LINENAME: lineName.value,
+        shopcode: shopCode.value.shopcode,
+        linecode: lineCode.value,
+        linename: lineName.value,
       },
       onResponseError({ response }) {
         toast.error(response._data.error);
@@ -62,14 +62,14 @@ async function add() {
 async function update() {
   try {
     const result = await $api(
-      "/master/lines/" + shopCode.value + "/" + lineCode.value,
+      "/master/lines/" + shopCode.value.shopcode + "/" + lineCode.value,
       {
         method: "PUT",
         body: {
-          LINENAME: lineName.value,
-          UNITPRICE: null,
-          TACTTIME: null,
-          STAFFNUM: null,
+          linename: lineName.value,
+          unitprice: null,
+          tacttime: null,
+          staffnum: null,
         },
 
         onResponseError({ response }) {
@@ -97,9 +97,10 @@ async function fetchData(lineC, shopC) {
     });
 
     const data = response.data;
-    shopCode.value = data.SHOPCODE;
-    lineCode.value = data.LINECODE;
-    lineName.value = data.LINENAME;
+    lineCode.value = data.linecode;
+    lineName.value = data.linename;
+
+    await fetchDataShop(data.shopcode);
     // console.log(response.data);
   } catch (err) {
     // toast.error("Failed to fetch data");
@@ -107,15 +108,31 @@ async function fetchData(lineC, shopC) {
   }
 }
 
-async function fetchDataShop() {
+async function fetchDataShop(id) {
   try {
-    const response = await $api("/master/shops", {
-      onResponseError({ response }) {
-        toast.error(response._data.error);
-      },
-    });
+    if (id) {
+      const response = await $api("/master/shops/" + id, {
+        onResponseError({ response }) {
+          toast.error(response._data.error);
+        },
+      });
 
-    shops.value = response.data;
+      shopCode.value = response.data;
+      shopCode.value.title =
+        response.data.shopcode + " | " + response.data.shopname;
+    } else {
+      const response = await $api("/master/shops", {
+        onResponseError({ response }) {
+          toast.error(response._data.error);
+        },
+      });
+
+      shops.value = response.data;
+
+      shops.value.forEach((data) => {
+        data.title = data.shopcode + " | " + data.shopname;
+      });
+    }
   } catch (err) {
     // toast.error("Failed to fetch data");s
     console.log(err);
@@ -144,9 +161,9 @@ watch(
   () => props.isDrawerOpen,
   (newVal) => {
     if (newVal) {
-      fetchDataShop();
-
+      shopCode.value = undefined;
       refVForm.value?.reset();
+      fetchDataShop();
 
       if (props.lineCode) {
         fetchData(props.lineCode, props.shopCode);
@@ -188,11 +205,12 @@ watch(
                   label="Shop Code"
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Select shop"
-                  item-title="SHOPCODE"
+                  item-title="title"
                   :items="shops"
                   outlined
                   maxlength="4"
                   :readonly="isUpdate"
+                  return-object
                 />
               </VCol>
 

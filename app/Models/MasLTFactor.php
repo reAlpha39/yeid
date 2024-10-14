@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasLTFactor extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_LTFACTOR';
+    protected $table = 'mas_ltfactor';
 
     // Specify the primary key
-    protected $primaryKey = 'LTFACTORCODE';
+    protected $primaryKey = 'ltfactorcode';
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,9 +23,9 @@ class MasLTFactor extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'LTFACTORCODE',
-        'LTFACTORNAME',
-        'REMARK'
+        'ltfactorcode',
+        'ltfactorname',
+        'remark'
     ];
 }
 

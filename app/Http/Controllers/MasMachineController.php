@@ -7,46 +7,51 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Exception;
 
+use function PHPUnit\Framework\isNull;
+
 class MasMachineController extends Controller
 {
 
     public function searchMachine(Request $request)
     {
         try {
-            $query = DB::table('HOZENADMIN.MAS_MACHINE')
+            $query = DB::table('mas_machine')
                 ->select([
-                    'MACHINENO',
-                    'SHOPCODE',
-                    DB::raw("COALESCE(MACHINENAME, ' ') AS MACHINENAME"),
-                    DB::raw("COALESCE(MODELNAME, ' ') AS MODELNAME"),
-                    DB::raw("COALESCE(MAKERNAME, ' ') AS MAKERNAME"),
-                    DB::raw("COALESCE(LINECODE, ' ') AS LINECODE")
+                    'machineno',
+                    'shopcode',
+                    DB::raw("COALESCE(machinename, ' ') AS machinename"),
+                    DB::raw("COALESCE(modelname, ' ') AS modelname"),
+                    DB::raw("COALESCE(makername, ' ') AS makername"),
+                    DB::raw("COALESCE(linecode, ' ') AS linecode")
                 ])
-                ->whereRaw("COALESCE(STATUS, '') <> 'D'");
+                ->whereRaw("COALESCE(status, '') <> 'd'");
 
             // Apply filters if available
             if ($request->filled('machine_name')) {
-                $query->whereRaw("UPPER(MACHINENAME) LIKE ?", ['%' . strtoupper($request->input('machine_name')) . '%']);
+                $query->whereRaw("machinename ILIKE ?", [$request->input('machine_name') . '%']);
             }
             if ($request->filled('model_name')) {
-                $query->whereRaw("UPPER(MODELNAME) LIKE ?", ['%' . strtoupper($request->input('model_name')) . '%']);
+                $query->whereRaw("modelname ILIKE ?", [$request->input('model_name') . '%']);
             }
             if ($request->filled('maker_name')) {
-                $query->whereRaw("UPPER(MAKERNAME) LIKE ?", [strtoupper($request->input('maker_name')) . '%']);
+                $query->whereRaw("makername ILIKE ?", [$request->input('maker_name') . '%']);
             }
             if ($request->filled('shop_code')) {
-                $query->whereRaw("UPPER(SHOPCODE) LIKE ?", [strtoupper($request->input('shop_code')) . '%']);
+                $query->whereRaw("shopcode ILIKE ?", [$request->input('shop_code') . '%']);
             }
             if ($request->filled('line_code')) {
-                $query->whereRaw("UPPER(LINECODE) LIKE ?", [strtoupper($request->input('line_code')) . '%']);
+                $query->whereRaw("linecode ILIKE ?", [$request->input('line_code') . '%']);
             }
 
             // Order by specific columns
-            $query->orderBy('MACHINENAME')
-                ->orderBy('MODELNAME')
-                ->orderBy('MAKERNAME')
-                ->orderBy('LINECODE')
-                ->limit($request->input('max_rows', 0));
+            $query->orderBy('machinename')
+                ->orderBy('modelname')
+                ->orderBy('makername')
+                ->orderBy('linecode');
+
+            if ($request->input('max_rows')) {
+                $query->limit($request->input('max_rows'));
+            }
 
             // Execute the query and get the results
             $machines = $query->get();
@@ -78,21 +83,22 @@ class MasMachineController extends Controller
             if ($request->has('search')) {
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
-                    $q->where('MACHINENO', 'like', $search . '%')
-                        ->orWhere('MACHINENAME', 'like', $search . '%')
-                        ->orWhere('PLANTCODE', 'like', $search . '%')
-                        ->orWhere('SHOPCODE', 'like', $search . '%')
-                        ->orWhere('SHOPNAME', 'like', $search . '%');
+                    $q->where('machineno', 'like', $search . '%')
+                        ->orWhere('machinename', 'like', $search . '%')
+                        ->orWhere('plantcode', 'like', $search . '%')
+                        ->orWhere('shopcode', 'like', $search . '%')
+                        ->orWhere('shopname', 'like', $search . '%');
                 });
             }
 
             if ($request->query('maker')) {
                 $maker = $request->query('maker');
-                $query->where('MAKERCODE', $maker);
+                $query->where('makercode', $maker);
             }
 
-
-            $query->limit($request->input('max_rows', 0));
+            if ($request->input('max_rows')) {
+                $query->limit($request->input('max_rows'));
+            }
 
             // Execute the query and get the results
             $machines = $query->get();
@@ -115,38 +121,38 @@ class MasMachineController extends Controller
     {
         try {
             $validated = $request->validate([
-                'MACHINENO' => [
+                'machineno' => [
                     'required',
                     'string',
                     'max:12',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_MACHINE')
-                            ->where('MACHINENO', $value)
+                        $exists = DB::table('mas_machine')
+                            ->where('machineno', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The MACHINENO has already been taken.');
+                            $fail('The machineno has already been taken.');
                         }
                     }
                 ],
-                'MACHINENAME'  => 'required|string|max:50',
-                'PLANTCODE'    => 'required|string|max:1',
-                'SHOPCODE'     => 'required|string|max:4',
-                'SHOPNAME'     => 'nullable|string|max:50',
-                'LINECODE'     => 'nullable|string|max:2',
-                'MODELNAME'    => 'nullable|string|max:50',
-                'MAKERCODE'    => 'nullable|string|max:6',
-                'MAKERNAME'    => 'nullable|string|max:50',
-                'SERIALNO'     => 'nullable|string|max:30',
-                'MACHINEPRICE' => 'nullable|numeric',
-                'CURRENCY'     => 'nullable|string|max:3',
-                'PURCHASEROOT' => 'nullable|string|max:50',
-                'INSTALLDATE'  => 'required|string|max:20',
-                'NOTE'         => 'nullable|string|max:255',
-                'STATUS'       => 'required|string|max:1',
-                'RANK'         => 'nullable|string|max:1',
-                'UPDATETIME'   => 'nullable|date'
+                'machinename'  => 'required|string|max:50',
+                'plantcode'    => 'required|string|max:1',
+                'shopcode'     => 'required|string|max:4',
+                'shopname'     => 'nullable|string|max:50',
+                'linecode'     => 'nullable|string|max:2',
+                'modelname'    => 'nullable|string|max:50',
+                'makercode'    => 'nullable|string|max:6',
+                'makername'    => 'nullable|string|max:50',
+                'serialno'     => 'nullable|string|max:30',
+                'machineprice' => 'nullable|numeric',
+                'currency'     => 'nullable|string|max:3',
+                'purchaseroot' => 'nullable|string|max:50',
+                'installdate'  => 'required|string|max:20',
+                'note'         => 'nullable|string|max:255',
+                'status'       => 'required|string|max:1',
+                'rank'         => 'nullable|string|max:1',
+                'updatetime'   => 'nullable|date'
             ]);
 
             $machine = MasMachine::create($validated);
@@ -165,7 +171,7 @@ class MasMachineController extends Controller
         }
     }
 
-    // Find a machine by MACHINENO
+    // Find a machine by machineno
     public function show($machineNo)
     {
         try {
@@ -205,23 +211,23 @@ class MasMachineController extends Controller
             }
 
             $validated = $request->validate([
-                'MACHINENAME'  => 'required|string|max:50',
-                'PLANTCODE'    => 'required|string|max:1',
-                'SHOPCODE'     => 'required|string|max:4',
-                'SHOPNAME'     => 'nullable|string|max:50',
-                'LINECODE'     => 'nullable|string|max:2',
-                'MODELNAME'    => 'nullable|string|max:50',
-                'MAKERCODE'    => 'nullable|string|max:6',
-                'MAKERNAME'    => 'nullable|string|max:50',
-                'SERIALNO'     => 'nullable|string|max:30',
-                'MACHINEPRICE' => 'nullable|numeric',
-                'CURRENCY'     => 'nullable|string|max:3',
-                'PURCHASEROOT' => 'nullable|string|max:50',
-                'INSTALLDATE'  => 'required|string|max:20',
-                'NOTE'         => 'nullable|string|max:255',
-                'STATUS'       => 'required|string|max:1',
-                'RANK'         => 'nullable|string|max:1',
-                'UPDATETIME'   => 'nullable|date'
+                'machinename'  => 'required|string|max:50',
+                'plantcode'    => 'required|string|max:1',
+                'shopcode'     => 'required|string|max:4',
+                'shopname'     => 'nullable|string|max:50',
+                'linecode'     => 'nullable|string|max:2',
+                'modelname'    => 'nullable|string|max:50',
+                'makercode'    => 'nullable|string|max:6',
+                'makername'    => 'nullable|string|max:50',
+                'serialno'     => 'nullable|string|max:30',
+                'machineprice' => 'nullable|numeric',
+                'currency'     => 'nullable|string|max:3',
+                'purchaseroot' => 'nullable|string|max:50',
+                'installdate'  => 'required|string|max:20',
+                'note'         => 'nullable|string|max:255',
+                'status'       => 'required|string|max:1',
+                'rank'         => 'nullable|string|max:1',
+                'updatetime'   => 'nullable|date'
             ]);
 
             $machine->update($validated);
@@ -257,7 +263,7 @@ class MasMachineController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Machine deleted successfully!'
+                'message' => 'Machine deleted successfully'
             ], 200);
         } catch (Exception $e) {
             return response()->json([

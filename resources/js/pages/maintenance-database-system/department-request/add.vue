@@ -55,24 +55,24 @@ async function addData() {
   try {
     // Prepare the data to send in the request
     const requestData = {
-      MAINTENANCECODE: selectedJenisPerbaikan.value.split("|")[0],
-      ORDERDATETIME: orderDate.value,
-      ORDEREMPCODE: selectedPemohon.value.EMPLOYEECODE,
-      ORDEREMPNAME: selectedPemohon.value.EMPLOYEENAME,
-      ORDERSHOP: selectedShop.value.SHOPCODE,
-      MACHINENO: selectedMachine.value.MACHINENO,
-      MACHINENAME: selectedMachine.value.MACHINENAME,
-      ORDERTITLE: orderTitle.value,
-      ORDERFINISHDATE: finishedDate.value,
-      ORDERJOBTYPE: jenisPekerjaanRadio.value,
-      ORDERQTTY: qty.value,
+      maintenancecode: selectedJenisPerbaikan.value.split("|")[0],
+      orderdatetime: orderDate.value,
+      orderempcode: selectedPemohon.value.employeecode,
+      orderempname: selectedPemohon.value.employeename,
+      ordershop: selectedShop.value.shopcode,
+      machineno: selectedMachine.value.machineno,
+      machinename: selectedMachine.value.machinename,
+      ordertitle: orderTitle.value,
+      orderfinishdate: finishedDate.value,
+      orderjobtype: jenisPekerjaanRadio.value,
+      orderqtty: qty.value,
     };
 
     if (isEdit.value) {
       // Update the existing maintenance record
       const response = await $api(
         "/maintenance-database-system/department-requests/" +
-          prevData.value.RECORDID,
+          prevData.value.recordid,
         {
           method: "PUT",
           body: requestData,
@@ -128,7 +128,7 @@ async function fetchDataShop(id) {
 
       selectedShop.value = response.data;
       selectedShop.value.title =
-        response.data.SHOPCODE + " | " + response.data.SHOPNAME;
+        response.data.shopcode + " | " + response.data.shopname;
     } else {
       const response = await $api("/master/shops", {
         onResponseError({ response }) {
@@ -139,7 +139,7 @@ async function fetchDataShop(id) {
       shops.value = response.data;
 
       shops.value.forEach((data) => {
-        data.title = data.SHOPCODE + " | " + data.SHOPNAME;
+        data.title = data.shopcode + " | " + data.shopname;
       });
     }
   } catch (err) {
@@ -160,7 +160,7 @@ async function fetchDataEmployee(id) {
       let data = response.data;
 
       selectedPemohon.value = data;
-      selectedPemohon.value.title = data.EMPLOYEENAME;
+      selectedPemohon.value.title = data.employeename;
     } else {
       const response = await $api("/master/employees", {
         onResponseError({ response }) {
@@ -170,7 +170,7 @@ async function fetchDataEmployee(id) {
 
       pemohons.value = response.data;
       pemohons.value.forEach((data) => {
-        data.title = data.EMPLOYEENAME;
+        data.title = data.employeename;
       });
     }
   } catch (err) {
@@ -204,18 +204,18 @@ async function initEditData(id) {
 async function applyData() {
   const data = prevData.value;
 
-  fetchDataShop(data.SHOPCODE);
-  fetchDataEmployee(data.ORDEREMPCODE);
-  fetchDataMachine(data.MACHINENO);
+  fetchDataShop(data.shopcode);
+  fetchDataEmployee(data.orderempcode);
+  fetchDataMachine(data.machineno);
 
   selectedJenisPerbaikan.value = jenisPerbaikan.find((item) =>
-    item.startsWith(data.MAINTENANCECODE)
+    item.startsWith(data.maintenancecode)
   );
-  orderDate.value = data.ORDERDATETIME;
-  orderTitle.value = data.ORDERTITLE;
-  finishedDate.value = data.ORDERFINISHDATE;
-  qty.value = data.ORDERQTTY;
-  jenisPekerjaanRadio.value = data.ORDERJOBTYPE;
+  orderDate.value = data.orderdatetime;
+  orderTitle.value = data.ordertitle;
+  finishedDate.value = data.orderfinishdate;
+  qty.value = data.orderqtty;
+  jenisPekerjaanRadio.value = data.orderjobtype;
 }
 
 function isNumber(evt) {
@@ -382,32 +382,32 @@ onMounted(() => {
           </VCol>
         </VRow>
         <VCard class="pa-4 mt-2" variant="outlined" v-if="selectedMachine">
-          <h5>{{ selectedMachine.MACHINENAME }}</h5>
+          <h5>{{ selectedMachine.machinename }}</h5>
           <br />
           <VRow>
             <VCol cols="6">
               <VRow>
                 <VCol cols="3"> <small> Machine No</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.MACHINENO }}</small>
+                  <small>: {{ selectedMachine.machineno }}</small>
                 </VCol>
               </VRow>
               <VRow>
                 <VCol cols="3"> <small> Model</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.MODELNAME }}</small>
+                  <small>: {{ selectedMachine.modelname }}</small>
                 </VCol>
               </VRow>
               <VRow>
                 <VCol cols="3"> <small> Maker</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.MAKERNAME }}</small>
+                  <small>: {{ selectedMachine.makername }}</small>
                 </VCol>
               </VRow>
               <VRow>
                 <VCol cols="3"> <small> Shop</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.SHOPNAME }}</small>
+                  <small>: {{ selectedMachine.shopname }}</small>
                 </VCol>
               </VRow>
             </VCol>
@@ -415,7 +415,7 @@ onMounted(() => {
               <VRow>
                 <VCol cols="3"> <small> Plant</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.PLANTCODE }}</small>
+                  <small>: {{ selectedMachine.plantcode }}</small>
                 </VCol>
               </VRow>
               <VRow>
@@ -427,13 +427,13 @@ onMounted(() => {
               <VRow>
                 <VCol cols="3"> <small> Line</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.LINECODE }}</small>
+                  <small>: {{ selectedMachine.linecode }}</small>
                 </VCol>
               </VRow>
               <VRow>
                 <VCol cols="3"> <small> S/N</small> </VCol>
                 <VCol cols="3">
-                  <small>: {{ selectedMachine.SERIALNO }}</small>
+                  <small>: {{ selectedMachine.serialno }}</small>
                 </VCol>
               </VRow>
             </VCol>
@@ -445,7 +445,10 @@ onMounted(() => {
     <VRow class="d-flex justify-start py-8">
       <VCol>
         <VBtn color="success" class="me-4" @click="addData">Save</VBtn>
-        <VBtn variant="outlined" color="error" to="/maintenance-database-system/department-request"
+        <VBtn
+          variant="outlined"
+          color="error"
+          to="/maintenance-database-system/department-request"
           >Cancel</VBtn
         >
       </VCol>

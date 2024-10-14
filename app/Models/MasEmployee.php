@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasEmployee extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_EMPLOYEE';
+    protected $table = 'mas_employee';
 
     // Specify the primary key
-    protected $primaryKey = 'EMPLOYEECODE';
+    protected $primaryKey = 'employeecode';
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,10 +23,10 @@ class MasEmployee extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'EMPLOYEECODE',
-        'EMPLOYEENAME',
-        'MLEVEL',
-        'PASSWORD'
+        'employeecode',
+        'employeename',
+        'mlevel',
+        'password'
     ];
 }
 

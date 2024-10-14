@@ -17,15 +17,15 @@ const page = ref(1);
 const headers = [
   {
     title: "MAKER CODE",
-    key: "MAKERCODE",
+    key: "makercode",
   },
   {
     title: "MAKER NAME",
-    key: "MAKERNAME",
+    key: "makername",
   },
   {
     title: "REMARK",
-    key: "REMARK",
+    key: "remark",
   },
   {
     title: "ACTIONS",
@@ -173,7 +173,7 @@ onMounted(() => {
       class="text-no-wrap"
     >
       <!-- part name -->
-      <template #item.partcode="{ item }">
+      <template #item.code="{ item }">
         <div class="d-flex align-center">
           <span
             class="d-block font-weight-medium text-high-emphasis text-truncate"
@@ -183,14 +183,14 @@ onMounted(() => {
       </template>
 
       <!-- date -->
-      <template #item.partname="{ item }">
+      <template #item.name="{ item }">
         <div class="d-flex align-center">
           {{ item.makername }}
         </div>
       </template>
 
       <!-- vendor -->
-      <template #item.category="{ item }">
+      <template #item.remark="{ item }">
         <div class="d-flex align-center">
           {{ item.remark }}
         </div>
@@ -199,10 +199,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.MAKERCODE)">
+          <IconBtn @click="openEditPartPage(item.makercode)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.MAKERCODE)">
+          <IconBtn @click="openDeleteDialog(item.makercode)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

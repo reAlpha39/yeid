@@ -11,48 +11,48 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            // Base SQL query
+            // Base SQL query for PostgreSQL
             $sql = "SELECT
-                        S.RECORDID,
-                        S.MAINTENANCECODE,
-                        S.ORDERDATETIME,
-                        S.ORDEREMPNAME,
-                        S.ORDERSHOP,
-                        S.MACHINENO,
-                        M.MACHINENAME,
-                        S.ORDERTITLE,
-                        S.ORDERFINISHDATE,
-                        S.ORDERJOBTYPE,
-                        S.ORDERQTTY,
-                        S.ORDERSTOPTIME,
-                        S.UPDATETIME,
-                        ISNULL(S.PLANID, 0) AS PLANID,
-                        ISNULL(S.APPROVAL, 0) AS APPROVAL,
-                        ISNULL(S.CREATEEMPCODE, '') AS CREATEEMPCODE,
-                        ISNULL(S.CREATEEMPNAME, '') AS CREATEEMPNAME
-                    FROM HOZENADMIN.TBL_SPKRECORD S
-                    LEFT JOIN HOZENADMIN.MAS_MACHINE M ON S.MACHINENO = M.MACHINENO
-                    WHERE 1=1";
+                    s.recordid,
+                    s.maintenancecode,
+                    s.orderdatetime,
+                    s.orderempname,
+                    s.ordershop,
+                    s.machineno,
+                    m.machinename,
+                    s.ordertitle,
+                    s.orderfinishdate,
+                    s.orderjobtype,
+                    s.orderqtty,
+                    s.orderstoptime,
+                    s.updatetime,
+                    COALESCE(s.planid, 0) AS planid,
+                    COALESCE(s.approval, 0) AS approval,
+                    COALESCE(s.createempcode, '') AS createempcode,
+                    COALESCE(s.createempname, '') AS createempname
+                FROM tbl_spkrecord s
+                LEFT JOIN mas_machine m ON s.machineno = m.machineno
+                WHERE 1=1";
 
             // Apply filters
             if ($request->input('only_active') == 'true') {
-                $sql .= " AND ISNULL(S.APPROVAL, 0) < 119";
+                $sql .= " AND COALESCE(s.approval, 0) < 119";
             }
 
             // Implement search across multiple fields
             if ($request->input('search')) {
                 $search = $request->input('search');
-                $sql .= " AND (S.RECORDID LIKE '$search%'
-                    OR S.MAINTENANCECODE LIKE '$search%'
-                    OR S.ORDEREMPNAME LIKE '$search%'
-                    OR S.ORDERSHOP LIKE '$search%'
-                    OR S.MACHINENO LIKE '$search%'
-                    OR M.MACHINENAME LIKE '$search%'
-                    OR S.ORDERTITLE LIKE '$search%')";
+                $sql .= " AND (s.recordid LIKE '$search%'
+                OR s.maintenancecode LIKE '$search%'
+                OR s.orderempname LIKE '$search%'
+                OR s.ordershop LIKE '$search%'
+                OR s.machineno LIKE '$search%'
+                OR m.machinename LIKE '$search%'
+                OR s.ordertitle LIKE '$search%')";
             }
 
-            // Order by RECORDID descending
-            $sql .= " ORDER BY S.RECORDID DESC";
+            // Order by recordid descending
+            $sql .= " ORDER BY s.recordid DESC";
 
             // Execute the query
             $results = DB::select($sql);
@@ -76,34 +76,34 @@ class MaintenanceRequestController extends Controller
         DB::beginTransaction();
 
         try {
-            $maxRecordId = DB::table('HOZENADMIN.TBL_SPKRECORD')
-                ->max('RECORDID');
+            $maxRecordId = DB::table('tbl_spkrecord')
+                ->max('recordid');
 
             $newRecordId = $maxRecordId ? $maxRecordId + 1 : 1;
 
-            DB::table('HOZENADMIN.TBL_SPKRECORD')->insert([
-                'RECORDID' => $newRecordId,
-                'MAINTENANCECODE' => $request->input('MAINTENANCECODE'),
-                'ORDERDATETIME' => $request->input('ORDERDATETIME'),
-                'ORDEREMPCODE' => $request->input('ORDEREMPCODE'),
-                'ORDEREMPNAME' => $request->input('ORDEREMPNAME'),
-                'ORDERSHOP' => $request->input('ORDERSHOP'),
-                'MACHINENO' => $request->input('MACHINENO'),
-                'MACHINENAME' => $request->input('MACHINENAME'),
-                'ORDERTITLE' => $request->input('ORDERTITLE'),
-                'ORDERFINISHDATE' => $request->input('ORDERFINISHDATE'),
-                'ORDERJOBTYPE' => $request->input('ORDERJOBTYPE'),
-                'ORDERQTTY' => $request->input('ORDERQTTY'),
-                'ORDERSTOPTIME' => $request->input('ORDERSTOPTIME'),
-                'PLANID' => $request->input('PLANID'),
-                'APPROVAL' => $request->input('APPROVAL'),
-                'UPDATETIME' => now(),
-                'OCCURDATE' => $request->input('OCCURDATE'),
-                'ANALYSISQUARTER' => $request->input('ANALYSISQUARTER'),
-                'ANALYSISHALF' => $request->input('ANALYSISHALF'),
-                'ANALYSISTERM' => $request->input('ANALYSISTERM'),
-                'CREATEEMPCODE' => $request->input('CREATEEMPCODE'),
-                'CREATEEMPNAME' => $request->input('CREATEEMPNAME'),
+            DB::table('tbl_spkrecord')->insert([
+                'recordid' => $newRecordId,
+                'maintenancecode' => $request->input('maintenancecode'),
+                'orderdatetime' => $request->input('orderdatetime'),
+                'orderempcode' => $request->input('orderempcode'),
+                'orderempname' => $request->input('orderempname'),
+                'ordershop' => $request->input('ordershop'),
+                'machineno' => $request->input('machineno'),
+                'machinename' => $request->input('machinename'),
+                'ordertitle' => $request->input('ordertitle'),
+                'orderfinishdate' => $request->input('orderfinishdate'),
+                'orderjobtype' => $request->input('orderjobtype'),
+                'orderqtty' => $request->input('orderqtty'),
+                'orderstoptime' => $request->input('orderstoptime'),
+                'planid' => $request->input('planid'),
+                'approval' => $request->input('approval'),
+                'updatetime' => now(),
+                'occurdate' => $request->input('occurdate'),
+                'analysisquarter' => $request->input('analysisquarter'),
+                'analysishalf' => $request->input('analysishalf'),
+                'analysisterm' => $request->input('analysisterm'),
+                'createempcode' => $request->input('createempcode'),
+                'createempname' => $request->input('createempname'),
 
             ]);
 
@@ -128,39 +128,38 @@ class MaintenanceRequestController extends Controller
     {
         try {
             // Prepare the SQL query
-            $sql = "SELECT 
-                    S.RECORDID,
-                    S.MAINTENANCECODE,
-                    S.ORDERDATETIME,
-                    S.ORDEREMPCODE,
-                    S.ORDEREMPNAME,
-                    S.ORDERSHOP,
-                    S.MACHINENO,
-                    M.MACHINENAME,
-                    M.PLANTCODE,
-                    M.SHOPCODE,
-                    M.LINECODE,
-                    M.MODELNAME,
-                    M.MAKERNAME,
-                    M.SERIALNO,
-                    M.INSTALLDATE,
-                    S.ORDERTITLE,
-                    ISNULL(S.ORDERFINISHDATE, '') AS ORDERFINISHDATE,
-                    S.ORDERJOBTYPE,
-                    S.ORDERQTTY,
-                    S.ORDERSTOPTIME,
-                    ISNULL(S.APPROVAL, 0) AS APPROVAL, 
-                    (SELECT SHOPNAME FROM HOZENADMIN.MAS_SHOP WHERE SHOPCODE = M.SHOPCODE) AS SHOPNAME,
-                    ISNULL(S.CREATEEMPCODE, '') AS CREATEEMPCODE,
-                    ISNULL(S.CREATEEMPNAME, '') AS CREATEEMPNAME,
-                    S.UPDATETIME
-                FROM
-                    HOZENADMIN.TBL_SPKRECORD S
-                LEFT JOIN
-                    HOZENADMIN.MAS_MACHINE M ON S.MACHINENO = M.MACHINENO
-                WHERE 
-                    S.RECORDID = :spkNo
-                ";
+            $sql = "SELECT
+                s.recordid,
+                s.maintenancecode,
+                s.orderdatetime,
+                s.orderempcode,
+                s.orderempname,
+                s.ordershop,
+                s.machineno,
+                m.machinename,
+                m.plantcode,
+                m.shopcode,
+                m.linecode,
+                m.modelname,
+                m.makername,
+                m.serialno,
+                m.installdate,
+                s.ordertitle,
+                COALESCE(s.orderfinishdate, '') AS orderfinishdate,
+                s.orderjobtype,
+                s.orderqtty,
+                s.orderstoptime,
+                COALESCE(s.approval, 0) AS approval,
+                (SELECT shopname FROM mas_shop WHERE shopcode = m.shopcode) AS shopname,
+                COALESCE(s.createempcode, '') AS createempcode,
+                COALESCE(s.createempname, '') AS createempname,
+                s.updatetime
+            FROM
+                tbl_spkrecord s
+            LEFT JOIN
+                mas_machine m ON s.machineno = m.machineno
+            WHERE
+                s.recordid = :spkNo";
 
             $data = DB::select($sql, ['spkNo' => $spkNo]);
 
@@ -186,48 +185,49 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+
     public function update(Request $request, $recordId)
     {
         try {
             // Get input data from request
-            $mainteCode = $request->input('MAINTENANCECODE');
-            $orderDate = $request->input('ORDERDATETIME'); // Expecting in 'Y-m-d H:i' format
-            $orderEmployeeName = $request->input('ORDEREMPNAME', '');
-            $orderShop = $request->input('ORDERSHOP', '');
-            $machineNo = $request->input('MACHINENO', '');
-            $machineName = $request->input('MACHINENAME', '');
-            $orderTitle = $request->input('ORDERTITLE', '');
-            $orderFinishDate = $request->input('ORDERFINISHDATE', null); // Nullable
-            $orderJobType = $request->input('ORDERJOBTYPE', '');
-            $orderQtty = $request->input('ORDERQTTY', 0);
-            $orderStopTime = $request->input('ORDERSTOPTIME', null); // Nullable
-            $approval = $request->input('APPROVAL', null);
-            $analysisQuarter = $request->input('ANALYSISQUARTER', '');
-            $analysisHalf = $request->input('ANALYSISHALF', '');
-            $analysisTerm = $request->input('ANALYSISTERM', '');
+            $mainteCode = $request->input('maintenancecode');
+            $orderDate = $request->input('orderdatetime'); // Expecting in 'Y-m-d H:i' format
+            $orderEmployeeName = $request->input('orderempname', '');
+            $orderShop = $request->input('ordershop', '');
+            $machineNo = $request->input('machineno', '');
+            $machineName = $request->input('machinename', '');
+            $orderTitle = $request->input('ordertitle', '');
+            $orderFinishDate = $request->input('orderfinishdate', null); // Nullable
+            $orderJobType = $request->input('orderjobtype', '');
+            $orderQtty = $request->input('orderqtty', 0);
+            $orderStopTime = $request->input('orderstoptime', null); // Nullable
+            $approval = $request->input('approval', null);
+            $analysisQuarter = $request->input('analysisquarter', '');
+            $analysisHalf = $request->input('analysishalf', '');
+            $analysisTerm = $request->input('analysisterm', '');
 
-            // Update query
-            $updateQuery = "UPDATE HOZENADMIN.TBL_SPKRECORD
-                            SET MAINTENANCECODE = ?,
-                                ORDERDATETIME = ?,
-                                ORDEREMPNAME = ?,
-                                ORDERSHOP = ?,
-                                MACHINENO = ?,
-                                MACHINENAME = ?,
-                                ORDERTITLE = ?,
-                                ORDERFINISHDATE = ?,
-                                ORDERJOBTYPE = ?,
-                                ORDERQTTY = ?,
-                                ORDERSTOPTIME = ?,
-                                APPROVAL = ?,
-                                UPDATETIME = GETDATE(),
-                                OCCURDATE = ?,
-                                ANALYSISQUARTER = ?,
-                                ANALYSISHALF = ?,
-                                ANALYSISTERM = ?
-                            WHERE RECORDID = ?";
+            // Update query for PostgreSQL
+            $updateQuery = "UPDATE tbl_spkrecord
+                        SET maintenancecode = $1,
+                            orderdatetime = $2,
+                            orderempname = $3,
+                            ordershop = $4,
+                            machineno = $5,
+                            machinename = $6,
+                            ordertitle = $7,
+                            orderfinishdate = $8,
+                            orderjobtype = $9,
+                            orderqtty = $10,
+                            orderstoptime = $11,
+                            approval = $12,
+                            updatetime = NOW(),
+                            occurdate = $13,
+                            analysisquarter = $14,
+                            analysishalf = $15,
+                            analysisterm = $16
+                        WHERE recordid = $17";
 
-            // Execute update query
+            // Execute update query with PostgreSQL syntax
             DB::update($updateQuery, [
                 $mainteCode,
                 $orderDate,
@@ -261,13 +261,14 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+
     public function destroy($recordId)
     {
         DB::beginTransaction();
 
         try {
-            $deletedRows = DB::table('HOZENADMIN.TBL_SPKRECORD')
-                ->where('RECORDID', $recordId)
+            $deletedRows = DB::table('tbl_spkrecord')
+                ->where('recordid', $recordId)
                 ->delete();
 
             if ($deletedRows === 0) {

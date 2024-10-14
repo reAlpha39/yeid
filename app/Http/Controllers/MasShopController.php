@@ -22,11 +22,11 @@ class MasShopController extends Controller
 
             // Apply filters based on the query parameters
             if ($shopCode) {
-                $query->where('SHOPCODE', 'like', '%' . $shopCode . '%');
+                $query->where('shopcode', 'like', '%' . $shopCode . '%');
             }
 
             if ($shopName) {
-                $query->orWhere('SHOPNAME', 'like', '%' . $shopName . '%');
+                $query->orWhere('shopname', 'like', '%' . $shopName . '%');
             }
 
             // Execute the query and get the results
@@ -46,7 +46,7 @@ class MasShopController extends Controller
         }
     }
 
-    // Fetch a single shop by SHOPCODE
+    // Fetch a single shop by shopcode
     public function show($shopCode)
     {
         try {
@@ -78,24 +78,24 @@ class MasShopController extends Controller
     {
         try {
             $validated = $request->validate([
-                'SHOPCODE' => [
+                'shopcode' => [
                     'required',
                     'string',
                     'max:4',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_SHOP')
-                            ->where('SHOPCODE', $value)
+                        $exists = DB::table('mas_shop')
+                            ->where('shopcode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The SHOPCODE has already been taken.');
+                            $fail('The shopcode has already been taken.');
                         }
                     }
                 ],
-                'SHOPNAME' => 'required|string|max:20',
-                'PLANTTYPE' => 'required|string|max:1',
-                'COUNTFLAG' => 'required|string|max:1',
+                'shopname' => 'required|string|max:20',
+                'planttype' => 'required|string|max:1',
+                'countflag' => 'required|string|max:1',
             ]);
 
             $shop = MasShop::create($validated);
@@ -129,9 +129,9 @@ class MasShopController extends Controller
             }
 
             $validated = $request->validate([
-                'SHOPNAME' => 'sometimes|required|string|max:20',
-                'PLANTTYPE' => 'sometimes|required|string|max:1',
-                'COUNTFLAG' => 'sometimes|required|string|max:1',
+                'shopname' => 'sometimes|required|string|max:20',
+                'planttype' => 'sometimes|required|string|max:1',
+                'countflag' => 'sometimes|required|string|max:1',
             ]);
 
             $shop->update($validated);

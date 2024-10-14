@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasSystem extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_SYSTEM';
+    protected $table = 'mas_system';
 
     // Specify the primary key
-    protected $primaryKey = 'YEAR';
+    protected $primaryKey = 'year';
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,11 +23,10 @@ class MasSystem extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'YEAR',
-        'USD2IDR',
-        'JPY2IDR',
-        'EUR2IDR',
-        'SGD2IDR'
+        'year',
+        'usd2idr',
+        'jpy2idr',
+        'eur2idr',
+        'sgd2idr'
     ];
 }
-

@@ -21,7 +21,7 @@ async function fetchData(id) {
     );
 
     data.value = response.data;
-    fetchDataMachine(data.value.MACHINENO);
+    fetchDataMachine(data.value.machineno);
   } catch (err) {
     console.log(err);
   }
@@ -79,9 +79,9 @@ watch(
         <VCardText>
           <span
             class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >SPK NO : {{ data?.RECORDID }}</span
+            >SPK NO : {{ data?.recordid }}</span
           >
-          <p>{{ data?.ORDERDATETIME }}</p>
+          <p>{{ data?.orderdatetime }}</p>
         </VCardText>
 
         <VRow class="pb-6">
@@ -90,19 +90,19 @@ watch(
               <VCardText>
                 <VRow>
                   <VCol cols="4"> Jenis Perbaikan </VCol>
-                  <VCol cols="8"> : {{ data?.MAINTENANCECODE }} </VCol>
+                  <VCol cols="8"> : {{ data?.maintenancecode }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Pemohon </VCol>
-                  <VCol cols="8"> : {{ data?.ORDEREMPNAME }} </VCol>
+                  <VCol cols="8"> : {{ data?.orderempname }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Shop yang Dituju </VCol>
-                  <VCol cols="8"> : {{ data?.SHOPCODE }} </VCol>
+                  <VCol cols="8"> : {{ data?.shopcode }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Mengapa dan Bagaimana </VCol>
-                  <VCol cols="8"> : {{ data?.ORDERTITLE }} </VCol>
+                  <VCol cols="8"> : {{ data?.ordertitle }} </VCol>
                 </VRow>
               </VCardText>
             </VCard>
@@ -112,15 +112,15 @@ watch(
               <VCardText>
                 <VRow>
                   <VCol cols="4"> Jenis Pekerjaan </VCol>
-                  <VCol cols="8"> : {{ data?.ORDERJOBTYPE }} </VCol>
+                  <VCol cols="8"> : {{ data?.orderjobtype }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Jumlah </VCol>
-                  <VCol cols="8"> : {{ data?.ORDERQTTY }} </VCol>
+                  <VCol cols="8"> : {{ data?.orderqtty }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Minta Tanggal Selesai </VCol>
-                  <VCol cols="8"> : {{ data?.ORDERFINISHDATE }} </VCol>
+                  <VCol cols="8"> : {{ data?.orderfinishdate }} </VCol>
                 </VRow>
               </VCardText>
             </VCard>
@@ -141,45 +141,45 @@ watch(
               <VCol cols="6">
                 <VRow>
                   <VCol cols="4"> Machine No </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.MACHINENO || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.machineno || "-" }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Machine Name </VCol>
                   <VCol cols="8">
-                    : {{ dataMachine?.MACHINENAME || "-" }}
+                    : {{ dataMachine?.machinename || "-" }}
                   </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Model </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.MODELNAME || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.modelname || "-" }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Maker </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.MAKERNAME || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.makername || "-" }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Shop </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.SHOPNAME || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.shopname || "-" }} </VCol>
                 </VRow>
               </VCol>
               <VCol cols="6">
                 <VRow>
                   <VCol cols="4"> Plant </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.PLANTCODE || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.plantcode || "-" }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Tanggal Instalasi </VCol>
                   <VCol cols="8">
-                    : {{ dataMachine?.INSTALLDATE || "-" }}
+                    : {{ dataMachine?.installdate || "-" }}
                   </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> Line </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.LINECODE || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.linecode || "-" }} </VCol>
                 </VRow>
                 <VRow>
                   <VCol cols="4"> S/N </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.SERIALNO || "-" }} </VCol>
+                  <VCol cols="8"> : {{ dataMachine?.serialno || "-" }} </VCol>
                 </VRow>
               </VCol>
             </VRow>

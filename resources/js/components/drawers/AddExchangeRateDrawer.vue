@@ -50,11 +50,11 @@ async function add() {
     const result = await $api("/master/systems", {
       method: "POST",
       body: {
-        YEAR: year.value,
-        USD2IDR: usd2idr.value.toString(),
-        JPY2IDR: jpy2idr.value.toString(),
-        EUR2IDR: eur2idr.value.toString(),
-        SGD2IDR: sgd2idr.value.toString(),
+        year: year.value,
+        usd2idr: usd2idr.value.toString(),
+        jpy2idr: jpy2idr.value.toString(),
+        eur2idr: eur2idr.value.toString(),
+        sgd2idr: sgd2idr.value.toString(),
       },
 
       onResponseError({ response }) {
@@ -77,10 +77,10 @@ async function update() {
     const result = await $api("/master/systems/" + year.value, {
       method: "PUT",
       body: {
-        USD2IDR: usd2idr.value.toString(),
-        JPY2IDR: jpy2idr.value.toString(),
-        EUR2IDR: eur2idr.value.toString(),
-        SGD2IDR: sgd2idr.value.toString(),
+        usd2idr: usd2idr.value.toString(),
+        jpy2idr: jpy2idr.value.toString(),
+        eur2idr: eur2idr.value.toString(),
+        sgd2idr: sgd2idr.value.toString(),
       },
 
       onResponseError({ response }) {
@@ -107,11 +107,11 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    year.value = data.YEAR;
-    usd2idr.value = data.USD2IDR;
-    jpy2idr.value = data.JPY2IDR;
-    eur2idr.value = data.EUR2IDR;
-    sgd2idr.value = data.SGD2IDR;
+    year.value = data.year;
+    usd2idr.value = data.usd2idr;
+    jpy2idr.value = data.jpy2idr;
+    eur2idr.value = data.eur2idr;
+    sgd2idr.value = data.sgd2idr;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

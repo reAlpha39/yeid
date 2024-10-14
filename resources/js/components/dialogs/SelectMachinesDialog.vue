@@ -202,24 +202,24 @@ onMounted(() => {
           </thead>
 
           <tbody>
-            <tr v-for="item in data" :key="item.MACHINENO">
+            <tr v-for="item in data" :key="item.machino">
               <td>
                 <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.MACHINENAME }}</span>
-                  <small>{{ item.MACHINENO }}</small>
+                  <span style="font-weight: 500">{{ item.machinename }}</span>
+                  <small>{{ item.machineno }}</small>
                 </div>
               </td>
               <td>
-                {{ item.MODELNAME }}
+                {{ item.modelname }}
               </td>
               <td>
-                {{ item.MAKERNAME }}
+                {{ item.makername }}
               </td>
               <td>
-                {{ item.SHOPCODE }}
+                {{ item.shopcode }}
               </td>
               <td>
-                {{ item.LINECODE }}
+                {{ item.linecode }}
               </td>
               <td>
                 <VCheckbox

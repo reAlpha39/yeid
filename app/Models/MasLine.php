@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasLine extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_LINE';
+    protected $table = 'mas_line';
 
-    // Composite primary key (SHOPCODE and LINECODE)
-    protected $primaryKey = ['SHOPCODE', 'LINECODE'];
+    // Composite primary key (shopcode and linecode)
+    protected $primaryKey = ['shopcode', 'linecode'];
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,12 +23,12 @@ class MasLine extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'SHOPCODE',
-        'LINECODE',
-        'LINENAME',
-        'UNITPRICE',
-        'TACTTIME',
-        'STAFFNUM'
+        'shopcode',
+        'linecode',
+        'linename',
+        'unitprice',
+        'tacttime',
+        'staffnum'
     ];
 }
 

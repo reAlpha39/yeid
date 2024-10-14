@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasMeasure extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_MEASURE';
+    protected $table = 'mas_measure';
 
     // Specify the primary key
-    protected $primaryKey = 'MEASURECODE';
+    protected $primaryKey = 'measurecode';
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,9 +23,9 @@ class MasMeasure extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'MEASURECODE',
-        'MEASURENAME',
-        'REMARK'
+        'measurecode',
+        'measurename',
+        'remark'
     ];
 }
 

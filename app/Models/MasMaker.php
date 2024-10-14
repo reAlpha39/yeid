@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class MasMaker extends Model
 {
   // Specify the database table
-  protected $table = 'HOZENADMIN.MAS_MAKER';
+  protected $table = 'mas_maker';
 
   // Primary key field
-  protected $primaryKey = 'MAKERCODE';
+  protected $primaryKey = 'makercode';
 
-  // Disable auto-incrementing as MAKERCODE is not an integer
+  // Disable auto-incrementing as makercode is not an integer
   public $incrementing = false;
 
   // Specify the key type
@@ -23,9 +23,9 @@ class MasMaker extends Model
 
   // Define fillable properties
   protected $fillable = [
-    'MAKERCODE',
-    'MAKERNAME',
-    'REMARK'
+    'makercode',
+    'makername',
+    'remark'
   ];
 }
 

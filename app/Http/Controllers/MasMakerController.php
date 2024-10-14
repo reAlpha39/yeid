@@ -21,9 +21,9 @@ class MasMakerController extends Controller
             // Apply filters based on the query parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('MAKERCODE', 'LIKE', $search . '%')
-                        ->orWhere('MAKERNAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('makercode', 'LIKE', $search . '%')
+                        ->orWhere('makername', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -49,23 +49,23 @@ class MasMakerController extends Controller
     {
         try {
             $validated = $request->validate([
-                'MAKERCODE' => [
+                'makercode' => [
                     'required',
                     'string',
                     'max:6',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_MAKER')
-                            ->where('MAKERCODE', $value)
+                        $exists = DB::table('mas_maker')
+                            ->where('makercode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The MAKERCODE has already been taken.');
+                            $fail('The makercode has already been taken.');
                         }
                     }
                 ],
-                'MAKERNAME' => 'required|string|max:50',
-                'REMARK' => 'nullable|string|max:50',
+                'makername' => 'required|string|max:50',
+                'remark' => 'nullable|string|max:50',
             ]);
 
             $maker = MasMaker::create($validated);
@@ -125,8 +125,8 @@ class MasMakerController extends Controller
             }
 
             $validated = $request->validate([
-                'MAKERNAME' => 'required|string|max:50',
-                'REMARK' => 'nullable|string|max:50',
+                'makername' => 'required|string|max:50',
+                'remark' => 'nullable|string|max:50',
             ]);
 
             $maker->update($validated);

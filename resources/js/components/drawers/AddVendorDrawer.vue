@@ -34,8 +34,8 @@ async function add() {
     const result = await $api("/master/vendors", {
       method: "POST",
       body: {
-        VENDORCODE: vendorCode.value,
-        VENDORNAME: vendorName.value,
+        vendorcode: vendorCode.value,
+        vendorname: vendorName.value,
       },
 
       onResponseError({ response }) {
@@ -58,7 +58,7 @@ async function update() {
     const result = await $api("/master/vendors/" + vendorCode.value, {
       method: "PUT",
       body: {
-        VENDORNAME: vendorName.value,
+        vendorname: vendorName.value,
       },
 
       onResponseError({ response }) {
@@ -85,8 +85,8 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    vendorCode.value = data.VENDORCODE;
-    vendorName.value = data.VENDORNAME;
+    vendorCode.value = data.vendorcode;
+    vendorName.value = data.vendorname;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

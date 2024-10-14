@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class MasShop extends Model
 {
     // Define the table name
-    protected $table = 'HOZENADMIN.MAS_SHOP';
+    protected $table = 'mas_shop';
 
     // Define the primary key
-    protected $primaryKey = 'SHOPCODE';
+    protected $primaryKey = 'shopcode';
 
-    // If SHOPCODE is not auto-incrementing
+    // If shopcode is not auto-incrementing
     public $incrementing = false;
 
-    // Define the key type since SHOPCODE is CHAR(4)
+    // Define the key type since shopcode is CHAR(4)
     protected $keyType = 'string';
 
     // Disable timestamps if not present in the table
@@ -23,9 +23,9 @@ class MasShop extends Model
 
     // Specify the fillable fields
     protected $fillable = [
-        'SHOPCODE',
-        'SHOPNAME',
-        'PLANTTYPE',
-        'COUNTFLAG'
+        'shopcode',
+        'shopname',
+        'planttype',
+        'countflag'
     ];
 }

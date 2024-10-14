@@ -117,21 +117,21 @@ onMounted(() => {
           <VRow class="me-10">
             <VCol cols="12" md="3">
               <div class="d-flex flex-column align-items-center">
-                <span style="font-weight: 500">{{ item.PARTNAME }}</span>
-                <small>{{ item.PARTCODE }}</small>
+                <span style="font-weight: 500">{{ item.partname }}</span>
+                <small>{{ item.partcode }}</small>
               </div>
             </VCol>
             <VCol cols="12" md="2">
-              <text> {{ item.BRAND }}</text>
+              <text> {{ item.brand }}</text>
             </VCol>
             <VCol cols="12" md="3">
-              <text>{{ item.SPECIFICATION }}</text>
+              <text>{{ item.specification }}</text>
             </VCol>
             <VCol cols="12" md="1">
-              <text> {{ item.CURRENCY }}</text>
+              <text> {{ item.currency }}</text>
             </VCol>
             <VCol cols="12" md="2">
-              <text>{{ item.UNITPRICE.toLocaleString() }}</text>
+              <text>{{ item.unitprice.toLocaleString() }}</text>
             </VCol>
             <VCol cols="12" md="1">
               <a @click.prevent="handleItemClick(item)">Select</a>

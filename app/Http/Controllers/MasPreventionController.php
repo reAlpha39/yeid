@@ -20,9 +20,9 @@ class MasPreventionController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('PREVENTIONCODE', 'LIKE', $search . '%')
-                        ->orWhere('PREVENTIONNAME', 'LIKE', $search . '%')
-                        ->orWhere('REMARK', 'LIKE', $search . '%');
+                    $q->where('preventioncode', 'LIKE', $search . '%')
+                        ->orWhere('preventionname', 'LIKE', $search . '%')
+                        ->orWhere('remark', 'LIKE', $search . '%');
                 });
             }
 
@@ -46,23 +46,23 @@ class MasPreventionController extends Controller
     {
         try {
             $validated = $request->validate([
-                'PREVENTIONCODE' => [
+                'preventioncode' => [
                     'required',
                     'string',
                     'max:3',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_PREVENTION')
-                            ->where('PREVENTIONCODE', $value)
+                        $exists = DB::table('mas_prevention')
+                            ->where('preventioncode', $value)
                             ->exists();
 
                         if ($exists) {
-                            $fail('The PREVENTIONCODE has already been taken.');
+                            $fail('The preventioncode has already been taken.');
                         }
                     }
                 ],
-                'PREVENTIONNAME' => 'required|string|max:64',
-                'REMARK'         => 'nullable|string|max:64'
+                'preventionname' => 'required|string|max:64',
+                'remark'         => 'nullable|string|max:64'
             ]);
 
             $prevention = MasPrevention::create($validated);
@@ -81,7 +81,7 @@ class MasPreventionController extends Controller
         }
     }
 
-    // Find a Prevention record by PREVENTIONCODE
+    // Find a Prevention record by preventioncode
     public function show($preventionCode)
     {
         try {
@@ -121,8 +121,8 @@ class MasPreventionController extends Controller
             }
 
             $validated = $request->validate([
-                'PREVENTIONNAME' => 'required|string|max:64',
-                'REMARK'         => 'nullable|string|max:64'
+                'preventionname' => 'required|string|max:64',
+                'remark'         => 'nullable|string|max:64'
             ]);
 
             $prevention->update($validated);

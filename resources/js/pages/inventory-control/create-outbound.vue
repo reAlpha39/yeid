@@ -82,7 +82,7 @@ const handlePartSelected = (item) => {
     return `${hours}${minutes}${seconds}`;
   };
 
-  getMachines(item.PARTCODE);
+  getMachines(item.partcode);
 
   selectedMachine.value.push();
 
@@ -91,20 +91,20 @@ const handlePartSelected = (item) => {
     jobCode: "O",
     jobDate: formatDate(now), // Format date as 'YYYYMMDD'
     jobTime: formatTime(now), // Format time as 'HHMMSS'
-    partCode: item.PARTCODE,
-    partName: item.PARTNAME,
-    specification: item.SPECIFICATION,
-    brand: item.BRAND,
+    partCode: item.partcode,
+    partName: item.partname,
+    specification: item.specification,
+    brand: item.brand,
     usedFlag: "",
     quantity: 1,
-    unitPrice: item.UNITPRICE,
-    price: item.UNITPRICE,
-    currency: item.CURRENCY,
-    vendorCode: item.VENDORCODE,
+    unitPrice: item.unitprice,
+    price: item.unitprice,
+    currency: item.currency,
+    vendorCode: item.vendorcode,
     machineNo: "",
     machineName: "",
     note: "",
-    employeeCode: selectedStaff.value.EMPLOYEECODE,
+    employeeCode: selectedStaff.value.employeecode,
     // not used on api
     shopName: "",
     lineCode: "",
@@ -114,10 +114,10 @@ const handlePartSelected = (item) => {
 };
 
 const handleMachineSelected = (index) => {
-  parts.value[index].machineNo = selectedMachine.value[index].MACHINENO;
-  parts.value[index].machineName = selectedMachine.value[index].MACHINENAME;
-  parts.value[index].shopName = selectedMachine.value[index].SHOPNAME;
-  parts.value[index].lineCode = selectedMachine.value[index].LINECODE;
+  parts.value[index].machineNo = selectedMachine.value[index].machineno;
+  parts.value[index].machineName = selectedMachine.value[index].machinename;
+  parts.value[index].shopName = selectedMachine.value[index].shopname;
+  parts.value[index].lineCode = selectedMachine.value[index].linecode;
   // console.log(parts.value[index]);
 };
 
@@ -180,7 +180,7 @@ const deleteItem = (index) => {
         </VCardSubtitle>
       </div>
       <!-- Right side: Select Staff Button -->
-      <template v-if="selectedStaff.EMPLOYEECODE == null">
+      <template v-if="selectedStaff.employeecode == null">
         <!-- If a staff is selected, show the staff info -->
         <VBtn
           @click="
@@ -191,7 +191,7 @@ const deleteItem = (index) => {
         >
       </template>
     </div>
-    <template v-if="selectedStaff.EMPLOYEECODE">
+    <template v-if="selectedStaff.employeecode">
       <VCard
         flat
         border
@@ -201,9 +201,9 @@ const deleteItem = (index) => {
         <div class="d-flex justify-space-between align-center">
           <div class="d-flex flex-column">
             <text
-              ><strong> {{ selectedStaff.EMPLOYEENAME }}</strong></text
+              ><strong> {{ selectedStaff.employeename }}</strong></text
             >
-            <small> {{ selectedStaff.EMPLOYEECODE }}</small>
+            <small> {{ selectedStaff.employeecode }}</small>
           </div>
 
           <VBtn
@@ -294,7 +294,7 @@ const deleteItem = (index) => {
               <AppSelect
                 v-model="selectedMachine[index]"
                 :items="machines[index]"
-                item-title="MACHINENO"
+                item-title="machineno"
                 label="Machine"
                 placeholder="Select machine"
                 @update:modelValue="handleMachineSelected(index)"

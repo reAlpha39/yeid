@@ -17,15 +17,15 @@ const page = ref(1);
 const headers = [
   {
     title: "FACTOR CODE",
-    key: "FACTORCODE",
+    key: "factorcode",
   },
   {
     title: "FACTOR NAME",
-    key: "FACTORNAME",
+    key: "factorname",
   },
   {
     title: "REMARK",
-    key: "REMARK",
+    key: "remark",
   },
   {
     title: "ACTIONS",
@@ -196,10 +196,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.FACTORCODE)">
+          <IconBtn @click="openEditPartPage(item.factorcode)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.FACTORCODE)">
+          <IconBtn @click="openDeleteDialog(item.factorcode)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

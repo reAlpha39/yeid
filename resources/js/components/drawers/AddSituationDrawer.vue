@@ -34,9 +34,9 @@ async function add() {
     const result = await $api("/master/situations", {
       method: "POST",
       body: {
-        SITUATIONCODE: situationCode.value,
-        SITUATIONNAME: situationName.value,
-        REMARK: remark.value,
+        situationcode: situationCode.value,
+        situationname: situationName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -59,8 +59,8 @@ async function update() {
     const result = await $api("/master/situations/" + situationCode.value, {
       method: "PUT",
       body: {
-        SITUATIONNAME: situationName.value,
-        REMARK: remark.value,
+        situationname: situationName.value,
+        remark: remark.value,
       },
 
       onResponseError({ response }) {
@@ -87,9 +87,9 @@ async function fetchData(id) {
     });
 
     const data = response.data;
-    situationCode.value = data.SITUATIONCODE;
-    situationName.value = data.SITUATIONNAME;
-    remark.value = data.REMARK;
+    situationCode.value = data.situationcode;
+    situationName.value = data.situationname;
+    remark.value = data.remark;
     // console.log(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");

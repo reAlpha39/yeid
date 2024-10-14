@@ -70,6 +70,11 @@ async function fetchData() {
     });
 
     data.value = response.data;
+
+    data.value = response.data.map((item) => ({
+      ...item,
+      menu: false,
+    }));
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -350,7 +355,8 @@ onMounted(() => {
           <IconBtn @click="openDeleteDialog(item.id)">
             <VIcon icon="tabler-trash" />
           </IconBtn>
-          <VMenu v-model="menu">
+          <VMenu v-model="item.menu">
+            <!-- Each row has its own menu state -->
             <template #activator="{ props }">
               <IconBtn v-bind="props">
                 <VIcon icon="tabler-dots-vertical" />
@@ -360,15 +366,14 @@ onMounted(() => {
             <VCard>
               <VList>
                 <VListItem
-                  v-if="item.status == 0"
-                  title="Activate"
-                  @click="updateStatus(item.id, '1')"
-                />
-                <VListItem
-                  v-if="item.status == 1"
-                  title="Deactivate"
-                  @click="updateStatus(item.id, '0')"
-                />
+                  @click="
+                    updateStatus(item.id, item.status === '0' ? '1' : '0')
+                  "
+                >
+                  <span>{{
+                    item.status === "0" ? "Activate" : "Deactivate"
+                  }}</span>
+                </VListItem>
               </VList>
             </VCard>
           </VMenu>

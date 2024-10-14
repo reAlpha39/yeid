@@ -81,21 +81,21 @@ onMounted(() => {
           </thead>
 
           <tbody>
-            <tr v-for="item in data" :key="item.VENDORCODE">
+            <tr v-for="item in data" :key="item.vendorcode">
               <td>
                 <div class="d-flex flex-column ms-3 py-2">
-                  <span style="font-weight: 500">{{ item.VENDORNAME }}</span>
-                  <text>{{ item.VENDORCODE }}</text>
+                  <span style="font-weight: 500">{{ item.vendorname }}</span>
+                  <text>{{ item.vendorcode }}</text>
                 </div>
               </td>
               <td>
                 <div class="d-flex flex-column ms-3 py-2">
-                  <span style="font-weight: 500">{{ item.VENDORNAME }}</span>
-                  <text>{{ item.VENDORCODE }}</text>
+                  <span style="font-weight: 500">{{ item.vendorname }}</span>
+                  <text>{{ item.vendorcode }}</text>
                 </div>
               </td>
               <td>
-                {{ item.ADDRESS }}
+                {{ item.address }}
               </td>
               <td>
                 <a @click.prevent="handleItemClick(item)">Select</a>

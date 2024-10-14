@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class MasPrevention extends Model
 {
     // Specify the database table
-    protected $table = 'HOZENADMIN.MAS_PREVENTION';
+    protected $table = 'mas_prevention';
 
     // Specify the primary key
-    protected $primaryKey = 'PREVENTIONCODE';
+    protected $primaryKey = 'preventioncode';
 
     // Disable auto-incrementing as the primary key is not an integer
     public $incrementing = false;
@@ -23,9 +23,9 @@ class MasPrevention extends Model
 
     // Define fillable properties
     protected $fillable = [
-        'PREVENTIONCODE',
-        'PREVENTIONNAME',
-        'REMARK'
+        'preventioncode',
+        'preventionname',
+        'remark'
     ];
 }
 

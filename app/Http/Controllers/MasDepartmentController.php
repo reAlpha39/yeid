@@ -18,8 +18,8 @@ class MasDepartmentController extends Controller
             // Check for search parameters
             if ($request->has('search')) {
                 $search = $request->input('search');
-                $query->where('code', 'LIKE', "%{$search}%")
-                    ->orWhere('name', 'LIKE', "%{$search}%");
+                $query->where('code', 'LIKE', "{$search}%")
+                    ->orWhere('name', 'LIKE', "{$search}%");
             }
 
             $departments = $query->get();
@@ -48,8 +48,9 @@ class MasDepartmentController extends Controller
                     'max:64',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
-                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                        $exists = DB::table('mas_department')
                             ->where('code', $value)
+                            ->whereNull('deleted_at')
                             ->exists();
 
                         if ($exists) {
@@ -125,7 +126,7 @@ class MasDepartmentController extends Controller
                     'max:64',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) use ($id) {
-                        $exists = DB::table('HOZENADMIN.MAS_DEPARTMENT')
+                        $exists = DB::table('mas_department')
                             ->where('code', $value)
                             ->where('id', '<>', $id)
                             ->exists();
