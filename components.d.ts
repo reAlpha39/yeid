@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddAuthenticatorAppDialog: typeof import('./resources/js/components/dialogs/AddAuthenticatorAppDialog.vue')['default']
+    AddChangePartDialog: typeof import('./resources/js/components/dialogs/AddChangePartDialog.vue')['default']
     AddDepartmentDrawer: typeof import('./resources/js/components/drawers/AddDepartmentDrawer.vue')['default']
     AddEditAddressDialog: typeof import('./resources/js/components/dialogs/AddEditAddressDialog.vue')['default']
     AddEditPermissionDialog: typeof import('./resources/js/components/dialogs/AddEditPermissionDialog.vue')['default']
@@ -24,6 +25,7 @@ declare module 'vue' {
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']
     AddSituationDrawer: typeof import('./resources/js/components/drawers/AddSituationDrawer.vue')['default']
     AddVendorDrawer: typeof import('./resources/js/components/drawers/AddVendorDrawer.vue')['default']
+    AddWorkTimeDialog: typeof import('./resources/js/components/dialogs/AddWorkTimeDialog.vue')['default']
     AppAutocomplete: typeof import('./resources/js/@core/components/app-form-elements/AppAutocomplete.vue')['default']
     AppBarSearch: typeof import('./resources/js/@core/components/AppBarSearch.vue')['default']
     AppCardActions: typeof import('./resources/js/@core/components/cards/AppCardActions.vue')['default']

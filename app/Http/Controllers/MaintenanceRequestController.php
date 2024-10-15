@@ -261,6 +261,140 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+    public function updateReport(Request $request, $recordId)
+    {
+        DB::beginTransaction();
+
+        try {
+            $startDateTime = $request->input('startdatetime'); // Assumed to be in 'Y-m-d H:i' format
+            $endDateTime = $request->input('enddatetime');
+            $restoredDateTime = $request->input('restoreddatetime');
+            $machineStopTime = $request->input('machinestoptime', 0);
+            $lineStopTime = $request->input('linestoptime', 0);
+            $makerCode = $request->input('makercode', '');
+            $yokotenkai = $request->input('yokotenkai', '');
+            $makerName = $request->input('makername', '');
+            $makerHour = $request->input('makerhour', 0);
+            $makerService = $request->input('makerservice', 0);
+            $makerParts = $request->input('makerparts', 0);
+            $ltFactorCode = $request->input('ltfactorcode', '');
+            $ltFactor = $request->input('ltfactor', '');
+            $situationCode = $request->input('situationcode', '');
+            $situation = $request->input('situation', '');
+            $factorCode = $request->input('factorcode', '');
+            $factor = $request->input('factor', '');
+            $measureCode = $request->input('measurecode', '');
+            $measure = $request->input('measure', '');
+            $preventionCode = $request->input('preventioncode', '');
+            $prevention = $request->input('prevention', '');
+            $comment = $request->input('comments', '');
+            $staffNum = $request->input('staffnum', 0);
+            $inActiveSum = $request->input('inactivesum', 0);
+            $periodicalSum = $request->input('periodicalsum', 0);
+            $questionSum = $request->input('questionsum', 0);
+            $prepareSum = $request->input('preparesum', 0);
+            $checkSum = $request->input('checksum', 0);
+            $waitSum = $request->input('waitsum', 0);
+            $repairSum = $request->input('repairsum', 0);
+            $confirmSum = $request->input('confirmsum', 0);
+            $repairTotalSum = $request->input('totalrepairsum', 0);
+            $partCostSum = $request->input('partcostsum', 0);
+            $approval = $request->input('approval', 0);
+            $workData = $request->input('workdata');
+            $partData = $request->input('partdata');
+
+            // Perform the update query
+            DB::table('tbl_spkrecord')
+                ->where('recordid', $recordId)
+                ->update([
+                    'startdatetime' => DB::raw("to_timestamp('$startDateTime', 'YYYY-MM-DD HH24:MI')"),
+                    'enddatetime' => DB::raw("to_timestamp('$endDateTime', 'YYYY-MM-DD HH24:MI')"),
+                    'restoreddatetime' => DB::raw("to_timestamp('$restoredDateTime', 'YYYY-MM-DD HH24:MI')"),
+                    'machinestoptime' => $machineStopTime,
+                    'linestoptime' => $lineStopTime,
+                    'makercode' => $makerCode,
+                    'yokotenkai' => $yokotenkai,
+                    'makername' => $makerName,
+                    'makerhour' => $makerHour,
+                    'makerservice' => $makerService,
+                    'makerparts' => $makerParts,
+                    'ltfactorcode' => $ltFactorCode,
+                    'ltfactor' => $ltFactor,
+                    'situationcode' => $situationCode,
+                    'situation' => $situation,
+                    'factorcode' => $factorCode,
+                    'factor' => $factor,
+                    'measurecode' => $measureCode,
+                    'measure' => $measure,
+                    'preventioncode' => $preventionCode,
+                    'prevention' => $prevention,
+                    'comments' => $comment,
+                    'staffnum' => $staffNum,
+                    'inactivesum' => $inActiveSum,
+                    'periodicalsum' => $periodicalSum,
+                    'questionsum' => $questionSum,
+                    'preparesum' => $prepareSum,
+                    'checksum' => $checkSum,
+                    'waitsum' => $waitSum,
+                    'repairsum' => $repairSum,
+                    'confirmsum' => $confirmSum,
+                    'totalrepairsum' => $repairTotalSum,
+                    'partcostsum' => $partCostSum,
+                    'approval' => $approval,
+                    'updatetime' => DB::raw('CURRENT_TIMESTAMP')
+                ]);
+
+            // delete workdata data
+            DB::table('tbl_work')->where('recordid', $recordId)->delete();
+
+            // insert workdata
+            foreach ($workData as $work) {
+                DB::table('tbl_work')->insert([
+                    'recordid' => $recordId,
+                    'workid' => $work['workid'],
+                    'staffname' => $work['staffname'],
+                    'inactivetime' => $work['inactivetime'],
+                    'periodicaltime' => $work['periodicaltime'],
+                    'questiontime' => $work['questiontime'],
+                    'preparetime' => $work['preparetime'],
+                    'checktime' => $work['checktime'],
+                    'waittime' => $work['waittime'],
+                    'repairtime' => $work['repairtime'],
+                    'confirmtime' => $work['confirmtime'],
+                ]);
+            }
+
+            // delete partdata
+            DB::table('tbl_part')->where('recordid', $recordId)->delete();
+
+            // insert partdata
+            foreach ($partData as $part) {
+                DB::table('tbl_part')->insert([
+                    'recordid' => $recordId,
+                    'partid' => $part['partid'],
+                    'partcode' => $part['partcode'],
+                    'partname' => $part['partname'],
+                    'specification' => $part['specification'],
+                    'brand' => $part['brand'],
+                    'qtty' => $part['qtty'],
+                    'price' => $part['price'],
+                    'currency' => $part['currency'],
+                    'isstock' => $part['isstock']
+                ]);
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            // Return success response
+            return response()->json(['message' => 'Report updated successfully'], 200);
+        } catch (Exception $e) {
+            // Rollback the transaction in case of error
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to update report', 'message' => $e->getMessage()], 500);
+        }
+    }
+
 
     public function destroy($recordId)
     {
@@ -270,6 +404,12 @@ class MaintenanceRequestController extends Controller
             $deletedRows = DB::table('tbl_spkrecord')
                 ->where('recordid', $recordId)
                 ->delete();
+
+            // delete workdata data
+            DB::table('tbl_work')->where('recordid', $recordId)->delete();
+
+            // delete partdata
+            DB::table('tbl_part')->where('recordid', $recordId)->delete();
 
             if ($deletedRows === 0) {
                 return response()->json([
