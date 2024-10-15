@@ -12,6 +12,11 @@ const route = useRoute();
 
 const form = ref();
 
+let idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+});
+
 const startDate = ref();
 const startTime = ref();
 const startMinuteStop = ref();
@@ -47,6 +52,7 @@ const preventionNote = ref();
 const commentNote = ref();
 
 const totalWorkTime = ref(0);
+const totalPartCost = ref(0);
 
 const ltfactor = ref([]);
 const situations = ref([]);
@@ -89,6 +95,7 @@ function handleAddedChangedPart(data) {
     addedChangedPart.value.push(newData);
   }
 
+  calculateTotalPriceInIDR();
   selectedPart.value = null;
 }
 
@@ -97,6 +104,8 @@ function handleDeleteChangedPart(id) {
   addedChangedPart.value = addedChangedPart.value.filter(
     (item) => item.partid !== id
   );
+
+  calculateTotalPriceInIDR();
 }
 
 function handleUpdateChangedPart(id) {
@@ -115,6 +124,8 @@ function handleUpdateChangedPart(id) {
     selectedPart.value = null;
     isAddChangedPartDialogVisible.value = true;
   }
+
+  calculateTotalPriceInIDR();
 }
 
 function handleAddedWorkTime(data) {
@@ -202,11 +213,7 @@ async function fetchDataEdit(id) {
 
 async function fetchDataMachine(id) {
   try {
-    const response = await $api("/master/machines/" + encodeURIComponent(id), {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    const response = await $api("/master/machines/" + encodeURIComponent(id));
 
     let data = response.data;
 
@@ -219,13 +226,75 @@ async function fetchDataMachine(id) {
 
 async function initEditData(id) {
   await fetchDataEdit(id);
+  await fetchWorks(id);
+  await fetchParts(id);
 
   const data = prevData.value;
+
+  startDate.value = data.startdatetime.split(" ")[0];
+  startTime.value = data.startdatetime.split(" ")[1];
+  startMinuteStop.value = data.machinestoptime;
+  finishedDate.value = data.enddatetime.split(" ")[0];
+  finishedTime.value = data.enddatetime.split(" ")[1];
+  lineStop.value = data.linestoptime;
+  runProdDate.value = data.restoreddatetime.split(" ")[0];
+  runProdTime.value = data.restoreddatetime.split(" ")[1];
+  runProdNextStop.value = data.yokotenkai;
+  makerName.value = data.makername;
+  makerManxJam.value = data.makerhour;
+  makerServiceFee.value = data.makerservice;
+  makerPartPrice.value = data.makerparts;
+  ltfactorNote.value = data.ltfactor;
+  situationNote.value = data.situation;
+  factorNote.value = data.factor;
+  measureNote.value = data.measure;
+  preventionNote.value = data.prevention;
+  commentNote.value = data.comments;
+  totalWorkTime.value = data.totalrepairsum;
+  totalPartCost.value = data.partcostsum;
 
   await fetchDataMachine(data.machineno);
 
   if (data.ltfactorcode) {
-    await fetchLtfactors(data.ltfactor);
+    await fetchLtfactors(data.ltfactorcode);
+  }
+
+  if (data.situationcode) {
+    await fetchSituations(data.situationcode);
+  }
+
+  if (data.factorcode) {
+    await fetchFactor(data.factorcode);
+  }
+
+  if (data.measurecode) {
+    await fetchMeasure(data.measurecode);
+  }
+
+  if (data.preventioncode) {
+    await fetchPrevention(data.preventioncode);
+  }
+}
+
+async function fetchWorks(id) {
+  try {
+    const response = await $api("/maintenance-database-system/work/" + id);
+
+    addedWorkTime.value = response.data;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchParts(id) {
+  try {
+    const response = await $api("/maintenance-database-system/part/" + id);
+
+    addedChangedPart.value = response.data;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
   }
 }
 
@@ -244,11 +313,11 @@ async function fetchExchangeRate() {
 async function fetchLtfactors(id) {
   try {
     if (id) {
-      const response = await $api("/master/ltfactors" + id);
+      const response = await $api("/master/ltfactors/" + id);
 
       selectedltfactor.value = response.data;
       selectedltfactor.value.title =
-        response.data.ltfactorcode + response.data.ltfactorname;
+        response.data.ltfactorcode + " | " + response.data.ltfactorname;
     } else {
       const response = await $api("/master/ltfactors");
 
@@ -266,74 +335,90 @@ async function fetchLtfactors(id) {
 
 async function fetchSituations(id) {
   try {
-    const response = await $api("/master/situations", {
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/situations/" + id);
 
-    situations.value = response.data;
+      selectedSituation.value = response.data;
+      selectedSituation.value.title =
+        response.data.situationcode + " | " + response.data.situationname;
+    } else {
+      const response = await $api("/master/situations");
 
-    situations.value.forEach((data) => {
-      data.title = data.situationcode + " | " + data.situationname;
-    });
+      situations.value = response.data;
+
+      situations.value.forEach((data) => {
+        data.title = data.situationcode + " | " + data.situationname;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
   }
 }
 
-async function fetchFactor() {
+async function fetchFactor(id) {
   try {
-    const response = await $api("/master/factors", {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/factors/" + id);
 
-    factors.value = response.data;
+      selectedFactor.value = response.data;
+      selectedFactor.value.title =
+        response.data.factorcode + " | " + response.data.factorname;
+    } else {
+      const response = await $api("/master/factors");
 
-    factors.value.forEach((data) => {
-      data.title = data.factorcode + " | " + data.factorname;
-    });
+      factors.value = response.data;
+
+      factors.value.forEach((data) => {
+        data.title = data.factorcode + " | " + data.factorname;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
   }
 }
 
-async function fetchMeasure() {
+async function fetchMeasure(id) {
   try {
-    const response = await $api("/master/measures", {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/measures/" + id);
 
-    measures.value = response.data;
+      selectedMeasure.value = response.data;
+      selectedMeasure.value.title =
+        response.data.measurecode + " | " + response.data.measurename;
+    } else {
+      const response = await $api("/master/measures");
 
-    measures.value.forEach((data) => {
-      data.title = data.measurecode + " | " + data.measurename;
-    });
+      measures.value = response.data;
+
+      measures.value.forEach((data) => {
+        data.title = data.measurecode + " | " + data.measurename;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
   }
 }
 
-async function fetchPrevention() {
+async function fetchPrevention(id) {
   try {
-    const response = await $api("/master/preventions", {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    if (id) {
+      const response = await $api("/master/preventions/" + id);
 
-    preventions.value = response.data;
+      selectedPrevention.value = response.data;
+      selectedPrevention.value.title =
+        response.data.preventioncode + " | " + response.data.preventionname;
+    } else {
+      const response = await $api("/master/preventions");
 
-    preventions.value.forEach((data) => {
-      data.title = data.preventioncode + " | " + data.preventionname;
-    });
+      preventions.value = response.data;
+
+      preventions.value.forEach((data) => {
+        data.title = data.preventioncode + " | " + data.preventionname;
+      });
+    }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -347,6 +432,8 @@ async function addData() {
   }
 
   try {
+    calculateTotalPriceInIDR();
+
     const requestData = {
       startdatetime: startDate.value + " " + startTime.value,
       enddatetime: finishedDate.value + " " + finishedTime.value,
@@ -396,7 +483,7 @@ async function addData() {
         return total + item.confirmtime;
       }, 0),
       totalrepairsum: totalWorkTime.value,
-      partcostsum: calculateTotalPriceInIDR(),
+      partcostsum: totalPartCost.value,
       workdata: addedWorkTime.value,
       partdata: addedChangedPart.value,
     };
@@ -450,7 +537,7 @@ function calculateTotalPriceInIDR() {
     return total + convertedPrice;
   }, 0);
 
-  return totalPriceInIDR;
+  totalPartCost.value = totalPriceInIDR;
 }
 
 function isNumber(evt) {
@@ -981,7 +1068,7 @@ onMounted(() => {
             <tbody>
               <tr v-for="item in addedWorkTime" :key="item.workid">
                 <td>{{ item.workid }}</td>
-                <td>{{ item.employee.employeename }}</td>
+                <td>{{ item.staffname }}</td>
                 <td>{{ item.inactivetime }}</td>
                 <td>{{ item.periodicaltime }}</td>
                 <td>{{ item.questiontime }}</td>
@@ -1036,7 +1123,9 @@ onMounted(() => {
         class="mx-4 px-4 py-2"
         style="background-color: #f9f9f9; width: auto; display: inline-block"
       >
-        <text style="text-align: center"> Total = 0 Menit </text>
+        <text style="text-align: center">
+          Total = {{ idr.format(parseFloat(totalPartCost)) }}
+        </text>
       </VCard>
 
       <VCard variant="outlined" class="mx-4">

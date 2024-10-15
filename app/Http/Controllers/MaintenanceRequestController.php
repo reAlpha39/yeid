@@ -71,6 +71,78 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+    public function indexWork($recordId)
+    {
+        try {
+            $results = DB::table('tbl_work')
+                ->select(
+                    'workid',
+                    'staffname',
+                    'inactivetime',
+                    'periodicaltime',
+                    'questiontime',
+                    'preparetime',
+                    'checktime',
+                    'waittime',
+                    'repairtime',
+                    'confirmtime'
+                )
+                ->where('recordid', $recordId)
+                ->orderBy('workid')
+                ->get();
+
+            if ($results->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No records found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function indexPart($recordId)
+    {
+        try {
+            $parts = DB::table('tbl_part')
+                ->select(
+                    'partid',
+                    'partcode',
+                    'partname',
+                    'specification',
+                    'brand',
+                    'qtty',
+                    'price',
+                    'currency',
+                    'isstock'
+                )
+                ->where('recordid', $recordId)
+                ->orderBy('partid')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $parts
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -129,13 +201,7 @@ class MaintenanceRequestController extends Controller
         try {
             // Prepare the SQL query
             $sql = "SELECT
-                s.recordid,
-                s.maintenancecode,
-                s.orderdatetime,
-                s.orderempcode,
-                s.orderempname,
-                s.ordershop,
-                s.machineno,
+                s.*,
                 m.machinename,
                 m.plantcode,
                 m.shopcode,
@@ -144,16 +210,11 @@ class MaintenanceRequestController extends Controller
                 m.makername,
                 m.serialno,
                 m.installdate,
-                s.ordertitle,
                 COALESCE(s.orderfinishdate, '') AS orderfinishdate,
-                s.orderjobtype,
-                s.orderqtty,
-                s.orderstoptime,
                 COALESCE(s.approval, 0) AS approval,
-                (SELECT shopname FROM mas_shop WHERE shopcode = m.shopcode) AS shopname,
                 COALESCE(s.createempcode, '') AS createempcode,
                 COALESCE(s.createempname, '') AS createempname,
-                s.updatetime
+                (SELECT shopname FROM mas_shop WHERE shopcode = m.shopcode) AS shopname
             FROM
                 tbl_spkrecord s
             LEFT JOIN
