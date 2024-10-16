@@ -225,10 +225,15 @@ async function fetchDataMachine(id) {
 
 async function initEditData(id) {
   await fetchDataEdit(id);
-  await fetchWorks(id);
-  await fetchParts(id);
 
   const data = prevData.value;
+
+  if (!data.startdatetime) {
+    return;
+  }
+
+  await fetchWorks(id);
+  await fetchParts(id);
 
   startDate.value = data.startdatetime.split(" ")[0];
   startTime.value = data.startdatetime.split(" ")[1];
@@ -281,8 +286,10 @@ async function fetchWorks(id) {
 
     addedWorkTime.value = response.data;
   } catch (err) {
-    toast.error("Failed to fetch data");
-    console.log(err);
+    if (!(err.response && err.response.status === 404)) {
+      toast.error("Failed to fetch data");
+      console.log(err);
+    }
   }
 }
 
@@ -292,8 +299,10 @@ async function fetchParts(id) {
 
     addedChangedPart.value = response.data;
   } catch (err) {
-    toast.error("Failed to fetch data");
-    console.log(err);
+    if (!(err.response && err.response.status === 404)) {
+      toast.error("Failed to fetch data");
+      console.log(err);
+    }
   }
 }
 
