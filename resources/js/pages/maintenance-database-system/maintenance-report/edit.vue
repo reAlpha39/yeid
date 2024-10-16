@@ -226,14 +226,18 @@ async function fetchDataMachine(id) {
 async function initEditData(id) {
   await fetchDataEdit(id);
 
-  const data = prevData.value;
+  const data = prevData?.value;
 
   if (!data.startdatetime) {
     return;
   }
 
-  await fetchWorks(id);
-  await fetchParts(id);
+  if (data.totalrepairsum != "0") {
+    await fetchWorks(id);
+  }
+  if (data.partcostsum != "0") {
+    await fetchParts(id);
+  }
 
   startDate.value = data.startdatetime.split(" ")[0];
   startTime.value = data.startdatetime.split(" ")[1];
