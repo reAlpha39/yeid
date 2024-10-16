@@ -17,16 +17,16 @@ let idr = new Intl.NumberFormat("id-ID", {
   currency: "IDR",
 });
 
-const startDate = ref();
-const startTime = ref();
+const startDate = ref(null);
+const startTime = ref(null);
 const startMinuteStop = ref();
 
-const finishedDate = ref();
-const finishedTime = ref();
+const finishedDate = ref(null);
+const finishedTime = ref(null);
 const lineStop = ref();
 
-const runProdDate = ref();
-const runProdTime = ref();
+const runProdDate = ref(null);
+const runProdTime = ref(null);
 const runProdNextStop = ref();
 
 const makerName = ref();
@@ -152,8 +152,6 @@ function handleAddedWorkTime(data) {
   selectedWorkTime.value = null;
 
   calculateTotalWorkTime();
-
-  console.log(addedWorkTime.value);
 }
 
 function handleDeleteWorkTime(id) {
@@ -184,6 +182,7 @@ function handleUpdateWorkTime(id) {
 }
 
 function calculateTotalWorkTime() {
+  console.log(addedWorkTime.value);
   // Calculate the total work time from addedWorkTime
   totalWorkTime.value = addedWorkTime.value.reduce((total, item) => {
     return (
@@ -507,7 +506,7 @@ async function addData() {
 }
 
 function calculateTotalPriceInIDR() {
-  console.log(exchangeRate.value);
+  console.log(addedChangedPart.value);
 
   const totalPriceInIDR = addedChangedPart.value.reduce((total, part) => {
     // Get the price, qtty (quantity), and currency of each part
