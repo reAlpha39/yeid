@@ -84,8 +84,10 @@ async function openEditPage(id) {
 }
 
 async function openDetailPage(id) {
-  selectedItem.value = id;
-  isDetailDialogVisible.value = true;
+  await router.push({
+    path: "/maintenance-database-system/maintenance-report/detail",
+    query: { record_id: id },
+  });
 }
 
 onMounted(() => {
@@ -103,7 +105,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Department Request',
+          title: 'Maintenance Report',
           class: 'text-h4',
         },
       ]"
