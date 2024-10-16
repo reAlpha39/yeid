@@ -34,9 +34,13 @@ const isUpdate = ref(false);
 async function fetchEmployee(id) {
   try {
     if (id) {
-      const response = await $api("/master/employees/" + id);
+      const response = await $api("/master/employees/", {
+        params: {
+          search: id,
+        },
+      });
 
-      selectedEmployee.value = response.data;
+      workTime.value.employee = response.data[0];
     } else {
       const response = await $api("/master/employees");
 
@@ -81,7 +85,18 @@ function handleEmployeeSelection(val) {
 
 const resetForm = () => {
   emit("update:isDialogVisible", false);
-  refVForm.value?.reset();
+  workTime.value = {
+    employee: undefined,
+    staffname: undefined,
+    inactivetime: 0,
+    periodicaltime: 0,
+    questiontime: 0,
+    preparetime: 0,
+    checktime: 0,
+    waittime: 0,
+    repairtime: 0,
+    confirmtime: 0,
+  };
 };
 
 function isNumber(evt) {
@@ -100,8 +115,22 @@ watch(
       fetchEmployee();
       console.log("Dialog opened with id:", props.item?.workid);
 
+      workTime.value = {
+        employee: undefined,
+        staffname: undefined,
+        inactivetime: 0,
+        periodicaltime: 0,
+        questiontime: 0,
+        preparetime: 0,
+        checktime: 0,
+        waittime: 0,
+        repairtime: 0,
+        confirmtime: 0,
+      };
+
       if (props.item?.workid) {
-        workTime.value = props.item;
+        fetchEmployee(props.item?.staffname);
+        workTime.value = { ...props.item };
         isUpdate.value = true;
       } else {
         isUpdate.value = false;
