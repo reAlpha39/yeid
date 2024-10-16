@@ -89,7 +89,18 @@ class MaintenanceRequestController extends Controller
                 )
                 ->where('recordid', $recordId)
                 ->orderBy('workid')
-                ->get();
+                ->get()
+                ->map(function ($row) {
+                    $row->inactivetime = (int) $row->inactivetime;
+                    $row->periodicaltime = (int) $row->periodicaltime;
+                    $row->questiontime = (int) $row->questiontime;
+                    $row->preparetime = (int) $row->preparetime;
+                    $row->checktime = (int) $row->checktime;
+                    $row->waittime = (int) $row->waittime;
+                    $row->repairtime = (int) $row->repairtime;
+                    $row->confirmtime = (int) $row->confirmtime;
+                    return $row;
+                });
 
             if ($results->isEmpty()) {
                 return response()->json([
