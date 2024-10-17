@@ -239,9 +239,9 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDetailPage(item.wsrid)">
+          <!-- <IconBtn @click="openDetailPage(item.wsrid)">
             <VIcon icon="tabler-eye" />
-          </IconBtn>
+          </IconBtn> -->
           <IconBtn @click="openEditPage(item.wsrid)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
