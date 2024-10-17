@@ -95,15 +95,17 @@ function formatStaffNames() {
     .join("\t");
 }
 
-async function fetchDataEmployee(id) {
+async function fetchDataEmployee(id, isSelectPemohon) {
   try {
     if (id) {
       const response = await $api("/master/employees/" + id);
 
       let data = response.data;
 
-      selectedPemohon.value = data;
-      selectedPemohon.value.title = data.employeename;
+      if (isSelectPemohon) {
+        selectedPemohon.value = data;
+        selectedPemohon.value.title = data.employeename;
+      }
     } else {
       const response = await $api("/master/employees");
 
@@ -170,7 +172,7 @@ async function initEditData(id) {
   await fetchDataEdit(id);
 
   const data = prevData.value;
-  await fetchDataEmployee(data.employeecode);
+  await fetchDataEmployee(data.employeecode, true);
   await fetchDataShop(data.shopcode);
 
   title.value = data.title;
