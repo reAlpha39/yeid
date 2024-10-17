@@ -182,7 +182,6 @@ function handleUpdateWorkTime(id) {
 }
 
 function calculateTotalWorkTime() {
-  console.log(addedWorkTime.value);
   // Calculate the total work time from addedWorkTime
   totalWorkTime.value = addedWorkTime.value.reduce((total, item) => {
     return (

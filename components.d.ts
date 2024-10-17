@@ -412,6 +412,5 @@ declare module 'vue' {
     UpdatePartStockQtyDialog: typeof import('./resources/js/components/dialogs/UpdatePartStockQtyDialog.vue')['default']
     UserInfoEditDialog: typeof import('./resources/js/components/dialogs/UserInfoEditDialog.vue')['default']
     UserUpgradePlanDialog: typeof import('./resources/js/components/dialogs/UserUpgradePlanDialog.vue')['default']
-    VueApexCharts: typeof import('vue3-apexcharts')['default']
   }
 }
