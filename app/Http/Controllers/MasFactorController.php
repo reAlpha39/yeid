@@ -22,9 +22,9 @@ class MasFactorController extends Controller
             // Apply filters based on the query parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('factorcode', 'LIKE', $search . '%')
-                        ->orWhere('factorname', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('factorcode', 'ILIKE', $search . '%')
+                        ->orWhere('factorname', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

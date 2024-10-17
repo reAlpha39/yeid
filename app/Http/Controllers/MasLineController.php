@@ -26,8 +26,8 @@ class MasLineController extends Controller
             // Apply the search filter if a search query is provided
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('linecode', 'like',  $search . '%')
-                        ->orWhere('linename', 'like', $search . '%');
+                    $q->where('linecode', 'ILIKE',  $search . '%')
+                        ->orWhere('linename', 'ILIKE', $search . '%');
                 });
             }
 

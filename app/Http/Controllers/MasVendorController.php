@@ -17,8 +17,8 @@ class MasVendorController extends Controller
 
             // Search by vendorcode or vendorname
             $vendors = MasVendor::when($search, function ($query, $search) {
-                return $query->where('vendorcode', 'like', "$search%")
-                    ->orWhere('vendorname', 'like', "$search%");
+                return $query->where('vendorcode', 'ILIKE', "$search%")
+                    ->orWhere('vendorname', 'ILIKE', "$search%");
             })->get();
 
             return response()->json([

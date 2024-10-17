@@ -19,9 +19,9 @@ class MasSituationController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('situationcode', 'LIKE', $search . '%')
-                        ->orWhere('situationname', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('situationcode', 'ILIKE', $search . '%')
+                        ->orWhere('situationname', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

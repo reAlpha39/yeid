@@ -20,9 +20,9 @@ class MasPreventionController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('preventioncode', 'LIKE', $search . '%')
-                        ->orWhere('preventionname', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('preventioncode', 'ILIKE', $search . '%')
+                        ->orWhere('preventionname', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

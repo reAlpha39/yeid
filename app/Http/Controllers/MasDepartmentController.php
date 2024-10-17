@@ -18,8 +18,8 @@ class MasDepartmentController extends Controller
             // Check for search parameters
             if ($request->has('search')) {
                 $search = $request->input('search');
-                $query->where('code', 'LIKE', "{$search}%")
-                    ->orWhere('name', 'LIKE', "{$search}%");
+                $query->where('code', 'ILIKE', "{$search}%")
+                    ->orWhere('name', 'ILIKE', "{$search}%");
             }
 
             $departments = $query->get();

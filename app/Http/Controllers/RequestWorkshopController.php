@@ -41,7 +41,7 @@ class RequestWorkshopController extends Controller
                     'note',
                     'inspector'
                 )
-                ->where('requestdate', 'like', $year . '%');
+                ->where('requestdate', 'ILIKE', $year . '%');
 
             if ($onlyActive) {
                 $query->where('status', 'R');
@@ -57,11 +57,11 @@ class RequestWorkshopController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like',  $search . '%')
-                        ->orWhere('wsrid', 'like', $search . '%')
-                        ->orWhere('ordername', 'like', $search . '%')
-                        ->orWhere('employeename', 'like', $search . '%')
-                        ->orWhere('shopname', 'like', $search . '%');
+                    $q->where('title', 'ILIKE',  $search . '%')
+                        ->orWhere('wsrid', 'ILIKE', $search . '%')
+                        ->orWhere('ordername', 'ILIKE', $search . '%')
+                        ->orWhere('employeename', 'ILIKE', $search . '%')
+                        ->orWhere('shopname', 'ILIKE', $search . '%');
                 });
             }
 

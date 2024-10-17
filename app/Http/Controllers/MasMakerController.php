@@ -21,9 +21,9 @@ class MasMakerController extends Controller
             // Apply filters based on the query parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('makercode', 'LIKE', $search . '%')
-                        ->orWhere('makername', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('makercode', 'ILIKE', $search . '%')
+                        ->orWhere('makername', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

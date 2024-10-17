@@ -22,8 +22,8 @@ class MasUserController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('name', 'LIKE', $search . '%')
-                        ->orWhere('email', 'LIKE', $search . '%');
+                    $q->where('name', 'ILIKE', $search . '%')
+                        ->orWhere('email', 'ILIKE', $search . '%');
                 });
             }
 
@@ -102,7 +102,7 @@ class MasUserController extends Controller
                     function ($attribute, $value, $fail) {
                         $exists = DB::table('mas_department')
                             ->where('id', $value)
-                            ->whereNull('deleted_at') 
+                            ->whereNull('deleted_at')
                             ->exists();
 
                         if (!$exists) {

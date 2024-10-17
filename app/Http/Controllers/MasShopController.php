@@ -22,11 +22,11 @@ class MasShopController extends Controller
 
             // Apply filters based on the query parameters
             if ($shopCode) {
-                $query->where('shopcode', 'like', '%' . $shopCode . '%');
+                $query->where('shopcode', 'ILIKE', '%' . $shopCode . '%');
             }
 
             if ($shopName) {
-                $query->orWhere('shopname', 'like', '%' . $shopName . '%');
+                $query->orWhere('shopname', 'ILIKE', '%' . $shopName . '%');
             }
 
             // Execute the query and get the results

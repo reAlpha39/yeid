@@ -78,8 +78,8 @@ class MasterPartController extends Controller
             // Apply search filters
             if ($search) {
                 $queryBuilder->where(function ($q) use ($search) {
-                    $q->where('m.partcode', 'like', $search . '%')
-                        ->orWhere(DB::raw('upper(m.partname)'), 'like',  strtoupper($search) . '%');
+                    $q->where('m.partcode', 'ILIKE', $search . '%')
+                        ->orWhere(DB::raw('upper(m.partname)'), 'ILIKE',  strtoupper($search) . '%');
                 });
             }
 
@@ -88,22 +88,22 @@ class MasterPartController extends Controller
             }
 
             if (!empty($brand)) {
-                $queryBuilder->where(DB::raw('upper(m.brand)'), 'like',  strtoupper($brand) . '%');
+                $queryBuilder->where(DB::raw('upper(m.brand)'), 'ILIKE',  strtoupper($brand) . '%');
             }
             if ($usedFlag) {
                 $queryBuilder->where('m.usedflag', 'O');
             }
             if (!empty($specification)) {
-                $queryBuilder->where(DB::raw('upper(m.specification)'), 'like',  strtoupper($specification) . '%');
+                $queryBuilder->where(DB::raw('upper(m.specification)'), 'ILIKE',  strtoupper($specification) . '%');
             }
             if (!empty($address)) {
-                $queryBuilder->where(DB::raw('upper(m.address)'), 'like', $address . '%');
+                $queryBuilder->where(DB::raw('upper(m.address)'), 'ILIKE', $address . '%');
             }
             if (!empty($vendorCode)) {
-                $queryBuilder->where(DB::raw('upper(m.vendorcode)'), 'like', strtoupper($vendorCode) . '%');
+                $queryBuilder->where(DB::raw('upper(m.vendorcode)'), 'ILIKE', strtoupper($vendorCode) . '%');
             }
             if (!empty($note)) {
-                $queryBuilder->where(DB::raw('upper(m.note)'), 'like',  strtoupper($note) . '%');
+                $queryBuilder->where(DB::raw('upper(m.note)'), 'ILIKE',  strtoupper($note) . '%');
             }
             if (in_array($category, ['M', 'F', 'J', 'O'])) {
                 $queryBuilder->where('m.category', $category);
@@ -111,7 +111,7 @@ class MasterPartController extends Controller
             if (!empty($vendorNameCmb)) {
                 $queryBuilder->where('m.vendorcode', $vendorNameCmb);
             } elseif (!empty($vendorNameText)) {
-                $queryBuilder->where(DB::raw('upper(v.vendorname)'), 'like', strtoupper($vendorNameText) . '%');
+                $queryBuilder->where(DB::raw('upper(v.vendorname)'), 'ILIKE', strtoupper($vendorNameText) . '%');
             }
             if ($minusFlag) {
                 $queryBuilder->where(DB::raw('m.minstock'), '>', DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0)'));

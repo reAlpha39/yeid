@@ -19,10 +19,10 @@ class MasEmployeeController extends Controller
             if ($request->has('search')) {
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
-                    $q->where('employeecode', 'LIKE', "{$search}%")
-                        ->orWhere('employeename', 'LIKE', "{$search}%")
-                        ->orWhere('mlevel', 'LIKE', "{$search}%")
-                        ->orWhere('password', 'LIKE', "{$search}%");
+                    $q->where('employeecode', 'ILIKE', "{$search}%")
+                        ->orWhere('employeename', 'ILIKE', "{$search}%")
+                        ->orWhere('mlevel', 'ILIKE', "{$search}%")
+                        ->orWhere('password', 'ILIKE', "{$search}%");
                 });
             }
 

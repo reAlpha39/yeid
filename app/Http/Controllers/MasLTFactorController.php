@@ -21,9 +21,9 @@ class MasLTFactorController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('ltfactorcode', 'LIKE', $search . '%')
-                        ->orWhere('ltfactorname', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('ltfactorcode', 'ILIKE', $search . '%')
+                        ->orWhere('ltfactorname', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

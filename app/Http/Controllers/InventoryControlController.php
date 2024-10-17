@@ -76,8 +76,8 @@ class InventoryControlController extends Controller
 
             // Perform the query on the mas_inventory table
             $results = DB::table('mas_inventory')
-                ->where('partcode', 'like', $query . '%')
-                ->orWhere('partname', 'like', $query . '%')
+                ->where('partcode', 'ILIKE', $query . '%')
+                ->orWhere('partname', 'ILIKE', $query . '%')
                 ->limit(100)
                 ->get();
 
@@ -104,8 +104,8 @@ class InventoryControlController extends Controller
 
             // Perform the query on the mas_inventory table
             $results = DB::table('mas_vendor')
-                ->where('vendorcode', 'like', $query . '%')
-                ->orWhere('vendorname', 'like', $query . '%')
+                ->where('vendorcode', 'ILIKE', $query . '%')
+                ->orWhere('vendorname', 'ILIKE', $query . '%')
                 ->limit(100)
                 ->get();
 
@@ -132,8 +132,8 @@ class InventoryControlController extends Controller
 
             // Perform the query on the mas_employee table
             $results = DB::table('mas_employee')
-                ->where('employeecode', 'like', $query . '%')
-                ->orWhere('employeename', 'like', $query . '%')
+                ->where('employeecode', 'ILIKE', $query . '%')
+                ->orWhere('employeename', 'ILIKE', $query . '%')
                 ->limit(100)
                 ->get();
 

@@ -83,11 +83,11 @@ class MasMachineController extends Controller
             if ($request->has('search')) {
                 $search = $request->input('search');
                 $query->where(function ($q) use ($search) {
-                    $q->where('machineno', 'like', $search . '%')
-                        ->orWhere('machinename', 'like', $search . '%')
-                        ->orWhere('plantcode', 'like', $search . '%')
-                        ->orWhere('shopcode', 'like', $search . '%')
-                        ->orWhere('shopname', 'like', $search . '%');
+                    $q->where('machineno', 'ILIKE', $search . '%')
+                        ->orWhere('machinename', 'ILIKE', $search . '%')
+                        ->orWhere('plantcode', 'ILIKE', $search . '%')
+                        ->orWhere('shopcode', 'ILIKE', $search . '%')
+                        ->orWhere('shopname', 'ILIKE', $search . '%');
                 });
             }
 

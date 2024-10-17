@@ -20,9 +20,9 @@ class MasMeasureController extends Controller
             // Check for search parameters
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('measurecode', 'LIKE', $search . '%')
-                        ->orWhere('measurename', 'LIKE', $search . '%')
-                        ->orWhere('remark', 'LIKE', $search . '%');
+                    $q->where('measurecode', 'ILIKE', $search . '%')
+                        ->orWhere('measurename', 'ILIKE', $search . '%')
+                        ->orWhere('remark', 'ILIKE', $search . '%');
                 });
             }
 

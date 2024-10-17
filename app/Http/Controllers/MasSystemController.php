@@ -19,11 +19,11 @@ class MasSystemController extends Controller
 
             if ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('year', 'LIKE', $search . '%')
-                        ->orWhere('usd2idr', 'LIKE', $search . '%')
-                        ->orWhere('jpy2idr', 'LIKE', $search . '%')
-                        ->orWhere('eur2idr', 'LIKE', $search . '%')
-                        ->orWhere('sgd2idr', 'LIKE', $search . '%');
+                    $q->where('year', 'ILIKE', $search . '%')
+                        ->orWhere('usd2idr', 'ILIKE', $search . '%')
+                        ->orWhere('jpy2idr', 'ILIKE', $search . '%')
+                        ->orWhere('eur2idr', 'ILIKE', $search . '%')
+                        ->orWhere('sgd2idr', 'ILIKE', $search . '%');
                 });
             }
 
