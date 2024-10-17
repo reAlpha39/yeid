@@ -218,7 +218,7 @@ class MaintenanceRequestController extends Controller
                 m.shopcode,
                 m.linecode,
                 m.modelname,
-                m.makername,
+                -- m.makername,  -- use s.makername instead
                 m.serialno,
                 m.installdate,
                 COALESCE(s.orderfinishdate, '') AS orderfinishdate,
