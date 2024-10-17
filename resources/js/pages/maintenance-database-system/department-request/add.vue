@@ -280,7 +280,7 @@ onMounted(() => {
               v-model="orderDate"
               :rules="[requiredValidator]"
               label="Tanggal Order"
-              placeholder="31/01/2024"
+              placeholder="31-01-2024"
               :config="{ enableTime: true, dateFormat: 'Y-m-d H:i' }"
               append-inner-icon="tabler-calendar"
             />
@@ -334,8 +334,8 @@ onMounted(() => {
               v-model="finishedDate"
               :rules="[requiredValidator]"
               label="Minta Tanggal Selesai"
-              placeholder="31/01/2024"
-              :config="{ dateFormat: 'd/m/Y' }"
+              placeholder="31-01-2024"
+              :config="{ dateFormat: 'd-m-Y' }"
               append-inner-icon="tabler-calendar"
             />
           </VCol>

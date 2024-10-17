@@ -261,7 +261,6 @@ class MaintenanceRequestController extends Controller
     public function update(Request $request, $recordId)
     {
         try {
-            // Get input data from request
             $mainteCode = $request->input('maintenancecode');
             $orderDate = $request->input('orderdatetime'); // Expecting in 'Y-m-d H:i' format
             $orderEmployeeName = $request->input('orderempname', '');
@@ -272,53 +271,35 @@ class MaintenanceRequestController extends Controller
             $orderFinishDate = $request->input('orderfinishdate', null); // Nullable
             $orderJobType = $request->input('orderjobtype', '');
             $orderQtty = $request->input('orderqtty', 0);
-            $orderStopTime = $request->input('orderstoptime', null); // Nullable
+            $orderStopTime = $request->input('orderstoptime', 0); // Nullable
             $approval = $request->input('approval', null);
             $analysisQuarter = $request->input('analysisquarter', '');
             $analysisHalf = $request->input('analysishalf', '');
             $analysisTerm = $request->input('analysisterm', '');
 
-            // Update query for PostgreSQL
-            $updateQuery = "UPDATE tbl_spkrecord
-                        SET maintenancecode = $1,
-                            orderdatetime = $2,
-                            orderempname = $3,
-                            ordershop = $4,
-                            machineno = $5,
-                            machinename = $6,
-                            ordertitle = $7,
-                            orderfinishdate = $8,
-                            orderjobtype = $9,
-                            orderqtty = $10,
-                            orderstoptime = $11,
-                            approval = $12,
-                            updatetime = NOW(),
-                            occurdate = $13,
-                            analysisquarter = $14,
-                            analysishalf = $15,
-                            analysisterm = $16
-                        WHERE recordid = $17";
+            // Perform the update query
+            DB::table('tbl_spkrecord')
+                ->where('recordid', $recordId)
+                ->update([
+                    'maintenancecode' => $mainteCode,
+                    'orderdatetime' => $orderDate,
+                    'orderempname' => $orderEmployeeName,
+                    'ordershop' => $orderShop,
+                    'machineno' => $machineNo,
+                    'machinename' => $machineName,
+                    'ordertitle' => $orderTitle,
+                    'orderfinishdate' => $orderFinishDate,
+                    'orderjobtype' => $orderJobType,
+                    'orderqtty' => $orderQtty,
+                    'orderstoptime' => $orderStopTime,
+                    'approval' => $approval,
+                    'occurdate' => date('Ymd', strtotime($orderDate)), // OCCURDATE
+                    'analysisquarter' => $analysisQuarter,
+                    'analysishalf' => $analysisHalf,
+                    'analysisterm' => $analysisTerm,
+                    'updatetime' => NOW()
+                ]);
 
-            // Execute update query with PostgreSQL syntax
-            DB::update($updateQuery, [
-                $mainteCode,
-                $orderDate,
-                $orderEmployeeName,
-                $orderShop,
-                $machineNo,
-                $machineName,
-                $orderTitle,
-                $orderFinishDate,
-                $orderJobType,
-                $orderQtty,
-                $orderStopTime,
-                $approval,
-                date('Ymd', strtotime($orderDate)), // OCCURDATE
-                $analysisQuarter,
-                $analysisHalf,
-                $analysisTerm,
-                $recordId
-            ]);
 
             return response()->json([
                 'success' => true,
