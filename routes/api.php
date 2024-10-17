@@ -17,7 +17,7 @@ use App\Http\Controllers\MasEmployeeController;
 use App\Http\Controllers\MasDepartmentController;
 use App\Http\Controllers\MasUserController;
 use App\Http\Controllers\MaintenanceRequestController;
-use App\Http\Controllers\WorkController;
+use App\Http\Controllers\RequestWorkshopController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -150,6 +150,14 @@ Route::delete('/maintenance-database-system/department-requests/{id}', [Maintena
 Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
 Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
 Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
+
+// Request to Workshop
+Route::get('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'index']);
+Route::get('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'show']);
+Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'store']);
+Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);
+Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
+
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);

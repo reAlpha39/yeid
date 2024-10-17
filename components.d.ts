@@ -393,6 +393,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     ScrollToTop: typeof import('./resources/js/@core/components/ScrollToTop.vue')['default']
+    SelectEmployeesDialog: typeof import('./resources/js/components/dialogs/SelectEmployeesDialog.vue')['default']
     SelectInventoryPartDialog: typeof import('./resources/js/components/dialogs/SelectInventoryPartDialog.vue')['default']
     SelectInventoryVendor: typeof import('./resources/js/components/dialogs/SelectInventoryVendor.vue')['default']
     SelectMachineDialog: typeof import('./resources/js/components/dialogs/SelectMachineDialog.vue')['default']

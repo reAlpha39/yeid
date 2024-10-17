@@ -13,7 +13,7 @@ export default [
       },
       {
         title: 'Request to Workshop',
-        // to: 'inventory-control-inventory-outbound',
+        to: 'maintenance-database-system-request-to-workshop',
       },
       {
         title: 'Maintenance Data Analyzation',

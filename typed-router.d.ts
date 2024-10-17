@@ -128,6 +128,8 @@ declare module 'vue-router/auto/routes' {
     'maintenance-database-system-maintenance-report': RouteRecordInfo<'maintenance-database-system-maintenance-report', '/maintenance-database-system/maintenance-report', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-maintenance-report-detail': RouteRecordInfo<'maintenance-database-system-maintenance-report-detail', '/maintenance-database-system/maintenance-report/detail', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-maintenance-report-edit': RouteRecordInfo<'maintenance-database-system-maintenance-report-edit', '/maintenance-database-system/maintenance-report/edit', Record<never, never>, Record<never, never>>,
+    'maintenance-database-system-request-to-workshop': RouteRecordInfo<'maintenance-database-system-request-to-workshop', '/maintenance-database-system/request-to-workshop', Record<never, never>, Record<never, never>>,
+    'maintenance-database-system-request-to-workshop-add': RouteRecordInfo<'maintenance-database-system-request-to-workshop-add', '/maintenance-database-system/request-to-workshop/add', Record<never, never>, Record<never, never>>,
     'master-department': RouteRecordInfo<'master-department', '/master/department', Record<never, never>, Record<never, never>>,
     'master-employee': RouteRecordInfo<'master-employee', '/master/employee', Record<never, never>, Record<never, never>>,
     'master-exchange-rate': RouteRecordInfo<'master-exchange-rate', '/master/exchange-rate', Record<never, never>, Record<never, never>>,
