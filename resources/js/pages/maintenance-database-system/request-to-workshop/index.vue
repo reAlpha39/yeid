@@ -115,6 +115,13 @@ async function openEditPage(id) {
   });
 }
 
+async function openDetailPage(id) {
+  await router.push({
+    path: "/maintenance-database-system/request-to-workshop/detail",
+    query: { wsrid: id },
+  });
+}
+
 function openDeleteDialog(partCode) {
   selectedItem.value = partCode;
   isDeleteDialogVisible.value = true;
@@ -239,9 +246,9 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <!-- <IconBtn @click="openDetailPage(item.wsrid)">
+          <IconBtn @click="openDetailPage(item.wsrid)">
             <VIcon icon="tabler-eye" />
-          </IconBtn> -->
+          </IconBtn>
           <IconBtn @click="openEditPage(item.wsrid)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
