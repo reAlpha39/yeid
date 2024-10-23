@@ -13,10 +13,13 @@ class InventoryControlController extends Controller
     {
         try {
             // Fetch parameters from the request, set default values if not provided
+            $search = $request->input('search');
             $startDate = $request->input('startDate', '20240417');
             $endDate = $request->input('endDate', '20240516');
             $jobCode = $request->input('jobCode', 'I');
             $limit = $request->input('limit');
+            $vendorCode = $request->input('vendorcode');
+            $currency = $request->input('currency');
 
             // Validate and set orderBy parameters, default to 'jobdate' and 'jobtime' descending
             $orderByColumn = $request->input('orderBy', 'jobdate');
@@ -47,14 +50,29 @@ class InventoryControlController extends Controller
                     'i.vendorcode'
                 )
                 ->whereBetween('i.jobdate', [$startDate, $endDate])
-                ->where('i.jobcode', $jobCode)
-                ->orderBy($orderByColumn, $orderByDirection)
-                ->orderBy('i.jobtime', $orderByDirection); // Always secondary sort by jobtime
+                ->where('i.jobcode', $jobCode);
+
+            if ($search) {
+                $query->where('i.partcode', 'ILIKE', "{$search}%")
+                    ->orWhere('i.partname', 'ILIKE', "{$search}%");
+            }
+
+
+            if ($vendorCode) {
+                $query->where('i.vendorcode', $vendorCode);
+            }
+
+            if ($currency) {
+                $query->where('i.currency', $currency);
+            }
 
             // Apply the limit only if provided
             if ($limit) {
                 $query->limit($limit);
             }
+
+            $query->orderBy($orderByColumn, $orderByDirection)
+                ->orderBy('i.jobtime', $orderByDirection);
 
             $records = $query->get();
 
