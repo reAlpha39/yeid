@@ -1,41 +1,31 @@
-import { breakpointsVuetify } from '@vueuse/core'
-import { VIcon } from 'vuetify/components/VIcon'
 import { defineThemeConfig } from '@core'
 import { Skins } from '@core/enums'
+import { breakpointsVuetify } from '@vueuse/core'
+import { VIcon } from 'vuetify/components/VIcon'
 
 // ❗ Logo SVG must be imported with ?raw suffix
-import logo from '@images/logo.svg?raw'
+import logo from '@images/yamaha_logo.svg?raw'
 import { AppContentLayoutNav, ContentWidth, FooterType, NavbarType } from '@layouts/enums'
 
 export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
-    title: 'vuexy',
+    title: '',
     logo: h('div', { innerHTML: logo, style: 'line-height:0; color: rgb(var(--v-global-theme-primary))' }),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetify.md + 16, // 16 for scrollbar. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/
     i18n: {
-      enable: true,
-      defaultLocale: 'en',
+      enable: false,
+      defaultLocale: 'id',
       langConfig: [
         {
-          label: 'English',
-          i18nLang: 'en',
+          label: 'Indonesia',
+          i18nLang: 'id',
           isRTL: false,
-        },
-        {
-          label: 'French',
-          i18nLang: 'fr',
-          isRTL: false,
-        },
-        {
-          label: 'Arabic',
-          i18nLang: 'ar',
-          isRTL: true,
         },
       ],
     },
-    theme: 'system',
+    theme: 'light',
     skin: Skins.Default,
     iconRenderer: VIcon,
   },

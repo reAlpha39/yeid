@@ -46,17 +46,17 @@ watch([
           />
         </IconBtn>
 
-        <NavSearchBar class="ms-lg-n3" />
+        <!-- <NavSearchBar class="ms-lg-n3" /> -->
 
         <VSpacer />
 
-        <NavBarI18n
+        <!-- <NavBarI18n
           v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
           :languages="themeConfig.app.i18n.langConfig"
-        />
+        /> -->
         <NavbarThemeSwitcher />
-        <NavbarShortcuts />
-        <NavBarNotifications class="me-1" />
+        <!-- <NavbarShortcuts /> -->
+        <!-- <NavBarNotifications class="me-1" /> -->
         <UserProfile />
       </div>
     </template>
@@ -80,6 +80,6 @@ watch([
     </template>
 
     <!-- 👉 Customizer -->
-    <TheCustomizer />
+    <!-- <TheCustomizer /> -->
   </VerticalNavLayout>
 </template>
