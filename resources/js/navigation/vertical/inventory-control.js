@@ -1,7 +1,7 @@
 export default [
   {
     title: 'Inventory Control',
-    icon: { icon: 'tabler-database' },
+    icon: { icon: 'tabler-building-warehouse' },
     children: [
       {
         title: 'Inventory In-Bound',

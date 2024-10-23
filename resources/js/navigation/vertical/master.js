@@ -1,7 +1,7 @@
 export default [
   {
     title: 'Master',
-    icon: { icon: 'tabler-database' },
+    icon: { icon: 'tabler-apps' },
     children: [
       {
         title: 'Machine',
