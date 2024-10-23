@@ -238,7 +238,7 @@ onMounted(() => {
         <div style="inline-size: 15.625rem">
           <AppTextField
             v-model="searchQuery"
-            placeholder="Search User"
+            placeholder="Search"
             v-on:input="fetchData()"
           />
         </div>

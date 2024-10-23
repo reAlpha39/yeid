@@ -7,6 +7,15 @@ const isDeleteDialogVisible = ref(false);
 const recordIdToDelete = ref(0);
 
 const now = new Date();
+const oneYearAgo = new Date(now);
+oneYearAgo.setFullYear(now.getFullYear() - 1);
+
+const selectedDate = ref(null);
+const searchQuery = ref();
+const vendors = ref([]);
+const selectedVendors = ref();
+const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
+const currency = ref();
 
 // Data table options
 const itemsPerPage = ref(10);
@@ -60,12 +69,15 @@ async function fetchData() {
   try {
     const response = await $api("/invControl", {
       params: {
-        startDate: "20240417",
-        endDate: formatDate(now),
+        search: searchQuery.value,
+        startDate: selectedDate.value ?? formatDate(oneYearAgo),
+        endDate: selectedDate.value ?? formatDate(now),
         jobCode: "O",
         limit: 0,
         orderBy: "jobdate",
         direction: "desc",
+        vendorcode: selectedVendors.value?.vendorcode,
+        currency: currency.value,
       },
       onResponseError({ response }) {
         toast.error("Failed to fetch data");
@@ -108,8 +120,32 @@ function openDeleteDialog(recordId) {
   recordIdToDelete.value = recordId.recordid;
 }
 
+async function fetchDataVendor(id) {
+  try {
+    if (id) {
+      const response = await $api("/master/vendors/" + id);
+
+      selectedVendors.value = response.data;
+      selectedVendors.value.title =
+        response.data.vendorcode + " | " + response.data.vendorname;
+    } else {
+      const response = await $api("/master/vendors");
+
+      vendors.value = response.data;
+
+      vendors.value.forEach((data) => {
+        data.title = data.vendorcode + " | " + data.vendorname;
+      });
+    }
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
 onMounted(() => {
   fetchData();
+  fetchDataVendor();
 });
 </script>
 
@@ -138,34 +174,38 @@ onMounted(() => {
 
     <VCardText>
       <VRow>
-        <!-- 👉 Select Role -->
         <VCol cols="12" sm="4">
-          <AppSelect
-            v-model="selectedRole"
+          <AppDateTimePicker
+            v-model="selectedDate"
             placeholder="Select Date"
-            :items="roles"
+            :config="{ dateFormat: 'Ymd' }"
+            append-inner-icon="tabler-calendar"
             clearable
             clear-icon="tabler-x"
+            @update:modelValue="fetchData()"
           />
         </VCol>
-        <!-- 👉 Select Plan -->
         <VCol cols="12" sm="4">
-          <AppSelect
-            v-model="selectedPlan"
+          <AppAutocomplete
+            v-model="selectedVendors"
             placeholder="Select Vendor"
-            :items="plans"
+            item-title="title"
+            :items="vendors"
+            return-object
             clearable
             clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
           />
         </VCol>
-        <!-- 👉 Select Status -->
         <VCol cols="12" sm="4">
           <AppSelect
-            v-model="selectedStatus"
+            v-model="currency"
+            :items="currencies"
             placeholder="Select Currency"
-            :items="status"
             clearable
             clear-icon="tabler-x"
+            @update:modelValue="fetchData()"
           />
         </VCol>
       </VRow>
@@ -193,7 +233,11 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField v-model="searchQuery" placeholder="Search User" />
+          <AppTextField
+            v-model="searchQuery"
+            placeholder="Search"
+            v-on:input="fetchData()"
+          />
         </div>
 
         <!-- 👉 Export button -->
