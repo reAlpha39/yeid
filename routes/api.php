@@ -18,6 +18,7 @@ use App\Http\Controllers\MasDepartmentController;
 use App\Http\Controllers\MasUserController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\RequestWorkshopController;
+use App\Http\Controllers\AnalyzationController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -158,6 +159,9 @@ Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopCon
 Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);
 Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
 
+// Database Analyzation
+Route::get('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
+Route::get('/maintenance-database-system/term-analyze', [AnalyzationController::class, 'termAnalyze']);
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);
