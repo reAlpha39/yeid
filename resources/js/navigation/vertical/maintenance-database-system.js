@@ -17,7 +17,7 @@ export default [
       },
       {
         title: 'Maintenance Data Analyzation',
-        // to: 'inventory-control-inventory-outbound',
+        to: 'maintenance-database-system-maintenance-data-analyzation',
       },
       {
         title: 'Spare Part Referring',

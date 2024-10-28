@@ -1,16 +1,13 @@
 <script setup>
-import { useTheme } from 'vuetify'
-import { getDonutChartConfig } from '@core/libs/apex-chart/apexCharConfig'
+import { getDonutChartConfig } from "@core/libs/apex-chart/apexCharConfig";
+import { useTheme } from "vuetify";
 
-const vuetifyTheme = useTheme()
-const expenseRationChartConfig = computed(() => getDonutChartConfig(vuetifyTheme.current.value))
+const vuetifyTheme = useTheme();
+const expenseRationChartConfig = computed(() =>
+  getDonutChartConfig(vuetifyTheme.current.value)
+);
 
-const series = [
-  85,
-  16,
-  50,
-  50,
-]
+const series = [85, 16, 50, 50, 6, 66, 24, 54, 52];
 </script>
 
 <template>

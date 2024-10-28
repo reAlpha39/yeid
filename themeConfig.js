@@ -16,11 +16,11 @@ export const { themeConfig, layoutConfig } = defineThemeConfig({
     overlayNavFromBreakpoint: breakpointsVuetify.md + 16, // 16 for scrollbar. Docs: https://next.vuetifyjs.com/en/features/display-and-platform/
     i18n: {
       enable: false,
-      defaultLocale: 'id',
+      defaultLocale: 'en',
       langConfig: [
         {
-          label: 'Indonesia',
-          i18nLang: 'id',
+          label: 'English',
+          i18nLang: 'en',
           isRTL: false,
         },
       ],

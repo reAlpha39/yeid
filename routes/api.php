@@ -160,8 +160,7 @@ Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWork
 Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
 
 // Database Analyzation
-Route::get('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
-Route::get('/maintenance-database-system/term-analyze', [AnalyzationController::class, 'termAnalyze']);
+Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);

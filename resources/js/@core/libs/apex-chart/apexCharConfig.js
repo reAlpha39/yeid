@@ -297,27 +297,19 @@ export const getRadialBarChartConfig = themeColors => {
     },
   }
 }
-export const getDonutChartConfig = themeColors => {
-  const donutColors = {
-    series1: '#fdd835',
-    series2: '#00d4bd',
-    series3: '#826bf8',
-    series4: '#32baff',
-    series5: '#ffa1a1',
-  }
-
+export const getDonutChartConfig = (themeColors, labels, colors) => {
   const { themeSecondaryTextColor, themePrimaryTextColor } = colorVariables(themeColors)
-  
+
   return {
     stroke: { width: 0 },
-    labels: ['Operational', 'Networking', 'Hiring', 'R&D'],
-    colors: [donutColors.series1, donutColors.series5, donutColors.series3, donutColors.series2],
+    labels: labels,
+    colors: colors,
     dataLabels: {
       enabled: true,
       formatter: val => `${Number.parseInt(val, 10)}%`,
     },
     legend: {
-      position: 'bottom',
+      position: 'right',
       markers: { offsetX: -3 },
       fontSize: '13px',
       labels: { colors: themeSecondaryTextColor },
@@ -342,8 +334,6 @@ export const getDonutChartConfig = themeColors => {
             total: {
               show: true,
               fontSize: '1.125rem',
-              label: 'Operational',
-              formatter: () => '31%',
               color: themePrimaryTextColor,
             },
           },
@@ -507,11 +497,15 @@ export const getColumnChartConfig = themeColors => {
       colors: ['transparent'],
     },
     plotOptions: {
+     
       bar: {
         columnWidth: '15%',
+        borderRadius: 10,
+        borderRadiusWhenStacked: 'last', // 'all', 'last'
+        borderRadiusApplication: 'end', // 'around', 'end'
         colors: {
-          backgroundBarRadius: 10,
-          backgroundBarColors: [columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg],
+          // backgroundBarRadius: 10,
+          // backgroundBarColors: [columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg],
         },
       },
     },
