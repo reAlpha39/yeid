@@ -163,13 +163,13 @@ class AnalyzationController extends Controller
                 );
 
                 // Add ordering for term analysis
-                $sortDirection = $validatedData['targetSort'] < 1 ? 'desc' : 'asc';
+                $sortDirection = $validatedData['targetSort'] == 1 ? 'desc' : 'asc';
                 $query->orderBy(DB::raw($termConfig['field']))
                     ->orderBy(DB::raw($sumConfig['sortField']), $sortDirection);
             } else {
                 // Regular grouping and ordering
                 $query->groupBy(DB::raw($targetConfig['groupField']));
-                $sortDirection = $validatedData['targetSort'] < 1 ? 'desc' : 'asc';
+                $sortDirection = $validatedData['targetSort'] == 1 ? 'desc' : 'asc';
                 $query->orderBy(DB::raw($sumConfig['sortField']), $sortDirection);
             }
 
@@ -198,159 +198,6 @@ class AnalyzationController extends Controller
         }
     }
 
-    public function termAnalyze(Request $request)
-    {
-        try {
-            $validatedData = $request->validate([
-                'targetTerm' => 'required|integer|min:1|max:11',
-                'targetItem' => 'required|integer|min:0|max:10',
-                'targetSum' => 'required|integer|min:0|max:16',
-                'startYear' => 'required|digits:4',
-                'startMonth' => 'required|min:1|max:12',
-                'endYear' => 'required|digits:4',
-                'endMonth' => 'required|min:1|max:12',
-                'tdivision' => 'nullable|string',
-                'section' => 'nullable|string',
-                'line' => 'nullable|string',
-                'machineNo' => 'nullable|string',
-                'situation' => 'nullable|string',
-                'measures' => 'nullable|string',
-                'factor' => 'nullable|string',
-                'factorLt' => 'nullable|string',
-                'preventive' => 'nullable|string',
-                'machineMaker' => 'nullable|string',
-                'numItem' => 'nullable|integer|min:1|max:7',
-                'numMin' => 'nullable|numeric',
-                'numMax' => 'nullable|numeric',
-                'targetSort' => 'nullable|integer|min:0|max:1',
-                'selectedItems.*' => 'nullable|string'
-            ]);
-
-            // Get configurations
-            $termConfig = $this->getTermFieldConfig($validatedData['targetTerm']);
-            $targetConfig = $this->getTargetConfig($validatedData['targetItem']);
-            $sumConfig = $this->getSumConfig($validatedData['targetSum']);
-
-            if (!$termConfig || !$targetConfig || !$sumConfig) {
-                throw new Exception('Invalid configuration parameters');
-            }
-
-            // Initialize query
-            $query = DB::table('tbl_spkrecord as r')
-                ->join('mas_machine as mm', 'r.machineno', '=', 'mm.machineno');
-
-            // Add term field
-            $query->addSelect(DB::raw("{$termConfig['field']} as term"));
-
-            // Add source and target fields
-            $query->addSelect(DB::raw($targetConfig['sourceField']))
-                ->addSelect(DB::raw($targetConfig['targetQuery']))
-                ->addSelect($sumConfig['selectField']);
-
-            // Add date filters
-            $startDate = sprintf(
-                '%d%02d01',
-                $validatedData['startYear'],
-                intval($validatedData['startMonth'])
-            );
-
-            $endDate = Carbon::create(
-                $validatedData['endYear'],
-                $validatedData['endMonth'],
-                1
-            )->endOfMonth()->format('Ymd');
-
-            $query->whereBetween('occurdate', [$startDate, $endDate]);
-
-            // Add division filter
-            if (!empty($validatedData['tdivision'])) {
-                $query->where('r.maintenancecode', $validatedData['tdivision']);
-            }
-
-            // Add section filter
-            if (!empty($validatedData['section'])) {
-                $query->where('r.ordershop', $validatedData['section']);
-            }
-
-            // Add line filter
-            if (!empty($validatedData['line'])) {
-                $query->where('mm.linecode', $validatedData['line']);
-            }
-
-            // Add machine number filter
-            if (!empty($validatedData['machineNo'])) {
-                $query->where('r.machineno', 'like', $validatedData['machineNo'] . '%');
-            }
-
-            // Add situation filter
-            if (!empty($validatedData['situation'])) {
-                $query->where('r.situationcode', $validatedData['situation']);
-            }
-
-            // Add measures filter
-            if (!empty($validatedData['measures'])) {
-                $query->where('r.measurecode', $validatedData['measures']);
-            }
-
-            // Add factor filter
-            if (!empty($validatedData['factor'])) {
-                $query->where('r.factorcode', $validatedData['factor']);
-            }
-
-            // Add LT factor filter
-            if (!empty($validatedData['factorLt'])) {
-                $query->where('r.ltfactorcode', $validatedData['factorLt']);
-            }
-
-            // Add preventive filter
-            if (!empty($validatedData['preventive'])) {
-                $query->where('r.preventioncode', $validatedData['preventive']);
-            }
-
-            // Add machine maker filter
-            if (!empty($validatedData['machineMaker'])) {
-                $query->where('mm.makercode', $validatedData['machineMaker']);
-            }
-
-            // Add numeric filters
-            $this->addNumericFilters($query, $validatedData);
-
-            // Add selected items filter if provided
-            if (!empty($validatedData['selectedItems'])) {
-                $query->whereIn(DB::raw($targetConfig['sourceField']), $validatedData['selectedItems']);
-            }
-
-            // Add grouping
-            $query->groupBy(
-                DB::raw($termConfig['field']),
-                DB::raw($targetConfig['groupField'])
-            );
-
-            // Add ordering
-            $sortDirection = ($validatedData['targetSort'] ?? 0) < 1 ? 'desc' : 'asc';
-            $query->orderBy(DB::raw($termConfig['field']))
-                ->orderBy(DB::raw($sumConfig['sortField']), $sortDirection);
-
-            $results = $query->get();
-
-            return response()->json([
-                'success' => true,
-                'data' => $results,
-                'query' => [
-                    'sql' => $query->toSql(),
-                    'bindings' => $query->getBindings()
-                ],
-                'message' => 'Term analysis completed successfully'
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error performing term analysis',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     // Helper method for getting formatted parameters from UI inputs
     private function getFormattedParameter($text, $separator = '|')
     {
@@ -367,17 +214,17 @@ class AnalyzationController extends Controller
             0 => [
                 'sourceField' => 'maintenancecode as code',
                 'targetQuery' => "(CASE maintenancecode 
-                    WHEN '01' THEN 'UM' 
-                    WHEN '02' THEN 'BM'
-                    WHEN '03' THEN 'TBC'
-                    WHEN '04' THEN 'TBA'
-                    WHEN '05' THEN 'PvM'
-                    WHEN '06' THEN 'FM'
-                    WHEN '07' THEN 'CM'
-                    WHEN '08' THEN 'CHECK'
-                    WHEN '09' THEN 'LAYOUT'
-                    ELSE '--'
-                END) as nama",
+                WHEN '01' THEN 'UM' 
+                WHEN '02' THEN 'BM'
+                WHEN '03' THEN 'TBC'
+                WHEN '04' THEN 'TBA'
+                WHEN '05' THEN 'PvM'
+                WHEN '06' THEN 'FM'
+                WHEN '07' THEN 'CM'
+                WHEN '08' THEN 'CHECK'
+                WHEN '09' THEN 'LAYOUT'
+                ELSE '--'
+            END) as nama",
                 'groupField' => 'r.maintenancecode'
             ],
             1 => [
@@ -386,8 +233,8 @@ class AnalyzationController extends Controller
                 'groupField' => 'r.ordershop'
             ],
             2 => [
-                'sourceField' => "(mm.shopcode || '-' || mm.linecode) as code",
-                'targetQuery' => "(MAX(mm.shopname) || '-' || mm.linecode) as line_name",
+                'sourceField' => "(COALESCE(mm.shopcode, '') || '-' || COALESCE(mm.linecode, '')) as code",
+                'targetQuery' => "(COALESCE(MAX(mm.shopname), '') || '-' || COALESCE(mm.linecode, '')) as line_name",
                 'groupField' => 'mm.shopcode,mm.linecode'
             ],
             3 => [
