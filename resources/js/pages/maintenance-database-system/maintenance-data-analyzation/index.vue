@@ -132,6 +132,8 @@ const formattedDate = new Intl.DateTimeFormat("en", {
   year: "numeric",
 }).format(now);
 
+const isLoadingChart = ref(false);
+
 const startDate = ref(formattedDate);
 const endDate = ref(formattedDate);
 const method = ref("One Term");
@@ -154,7 +156,30 @@ const counter = ref(null);
 const moreThan = ref(null);
 const lessThan = ref(null);
 
-function resetFilter() {}
+async function resetFilter() {
+  startDate.value = formattedDate;
+  endDate.value = formattedDate;
+  method.value = "One Term";
+  seeOnly.value = "50";
+  targetItem.value = "Jenis Perbaikan";
+  targetSum.value = "Count";
+  sort.value = "DESC";
+  includeOtherCheckBox.value = false;
+  maintenanceCode.value = null;
+  shop.value = null;
+  line.value = null;
+  machineNo.value = null;
+  situation.value = null;
+  factor.value = null;
+  measure.value = null;
+  prevention.value = null;
+  ltfactor.value = null;
+  maker.value = null;
+  counter.value = null;
+  moreThan.value = null;
+  lessThan.value = null;
+  await fetchData();
+}
 
 const data = ref();
 const series = ref([]);
@@ -284,6 +309,7 @@ function formatDate(date) {
 }
 
 async function fetchData() {
+  isLoadingChart.value = true;
   try {
     let startYear = null;
     let startMonth = null;
@@ -380,11 +406,23 @@ async function fetchData() {
       const rawData = response.data;
       const groupedData = {};
       const codes = new Set();
+      const codeDetails = new Map(); // Store additional details for each code
 
-      // Process raw data
+      if (rawData.length === 0) {
+        isLoadingChart.value = false;
+        return;
+      }
+
+      // Find the item count field from the first data item
+      const firstItem = rawData[0];
+      const itemCountField =
+        Object.keys(firstItem).find((key) => itemCountFields.includes(key)) ||
+        "item_count";
+
+      // Process raw data and store code details
       rawData.forEach((item) => {
         const code = item.code;
-        const itemCount = item.item_count;
+        const itemCount = parseInt(item[itemCountField]);
 
         if (!groupedData[item.term]) {
           groupedData[item.term] = {};
@@ -392,6 +430,22 @@ async function fetchData() {
 
         groupedData[item.term][code] = itemCount;
         codes.add(code);
+
+        // Store all available columns from columnLabels
+        if (!codeDetails.has(code)) {
+          const details = {
+            code: item.code,
+          };
+
+          // Add all available fields from columnLabels
+          Object.keys(columnLabels).forEach((key) => {
+            if (key !== itemCountField && item[key] !== undefined) {
+              details[key] = item[key];
+            }
+          });
+
+          codeDetails.set(code, details);
+        }
       });
 
       // Set up term-based placeholders based on method
@@ -473,14 +527,47 @@ async function fetchData() {
         }
       });
 
+      // Calculate total counts for each code across all terms
+      const totalCounts = {};
+      codes.forEach((code) => {
+        totalCounts[code] = terms.reduce(
+          (sum, term) => sum + (groupedData[term]?.[code] || 0),
+          0
+        );
+      });
+
+      // Transform the data for the table similar to One Term format
+      const unsortedData = Array.from(codes).map((code, index) => {
+        const codeDetail = codeDetails.get(code);
+        return {
+          ...codeDetail,
+          color:
+            index < parseInt(seeOnly.value ?? "50")
+              ? getRandomColor()
+              : "#5C4646",
+          [itemCountField]: totalCounts[code],
+        };
+      });
+
+      // Sort the data based on the item count field and sort direction
+      data.value = unsortedData.sort((a, b) => {
+        const aValue = a[itemCountField] || 0;
+        const bValue = b[itemCountField] || 0;
+        return sort.value === "DESC" ? bValue - aValue : aValue - bValue;
+      });
+
+      // Map colors and series data in the same order as the sorted data
+      const sortedCodes = data.value.map((item) => item.code);
+
       // Build series with zeros where data is missing
-      series.value = Array.from(codes).map((code) => ({
+      series.value = sortedCodes.map((code) => ({
         name: code,
         data: terms.map((term) => groupedData[term]?.[code] || 0),
-        color: getRandomColor(),
+        color:
+          data.value.find((item) => item.code === code)?.color ||
+          getRandomColor(),
       }));
 
-      // Format display labels while keeping original terms for data mapping
       labels.value = terms.map((term) => formatDisplayLabel(term, methodType));
       colors.value = series.value.map((item) => item.color);
 
@@ -489,9 +576,33 @@ async function fetchData() {
         labels.value,
         colors.value
       );
+
+      // Set column names for the table
+      if (data.value.length > 0) {
+        const firstItemKeys = Object.keys(data.value[0]);
+
+        // Find the first available column from columnLabels
+        targetItemColumnName.value =
+          firstItemKeys.find(
+            (key) => columnLabels[key] && key !== itemCountField
+          ) || "";
+
+        // Set itemCountFieldName using the dynamic field
+        itemCountFieldName.value = itemCountField;
+
+        // Set targetSumColumnName based on the itemCountField
+        const itemCountFieldIndex = itemCountFields.indexOf(itemCountField);
+        targetSumColumnName.value =
+          itemCountFieldIndex >= 0
+            ? targetSums[itemCountFieldIndex]
+            : columnLabels[itemCountField] || "";
+      }
     }
+
+    isLoadingChart.value = false;
   } catch (err) {
     toast.error("Failed to fetch data");
+    isLoadingChart.value = false;
     console.log(err);
   }
 }
@@ -987,56 +1098,67 @@ watch(
 
   <br />
 
-  <VCard title="Grafik">
-    <VCardText>
-      <VueApexCharts
-        v-if="series.length !== 0 && method === 'One Term'"
-        type="donut"
-        height="410"
-        :options="expenseRationChartConfig"
-        :series="series"
-      />
-      <VueApexCharts
-        v-if="series.length !== 0 && method !== 'One Term'"
-        type="bar"
-        height="410"
-        :options="chartMultiTermConfig"
-        :series="series"
-      />
-      <VCardText v-else class="my-4 justify-center" style="text-align: center">
-        Data tidak ditemukan
+  <VCard title="Chart" v-if="!isLoadingChart">
+    <div v-if="series.length !== 0">
+      <VCardText>
+        <VueApexCharts
+          v-if="series.length !== 0 && method === 'One Term'"
+          type="donut"
+          height="410"
+          :options="expenseRationChartConfig"
+          :series="series"
+        />
+        <VueApexCharts
+          v-if="series.length !== 0 && method !== 'One Term'"
+          type="bar"
+          height="410"
+          :options="chartMultiTermConfig"
+          :series="series"
+        />
       </VCardText>
+
+      <VDivider />
+
+      <VCardTitle class="pl-7 mt-4"> Detail</VCardTitle>
+
+      <br />
+
+      <VTable class="text-no-wrap px-7">
+        <thead>
+          <tr>
+            <th></th>
+            <th class="color-column">Code</th>
+            <th>{{ targetItemColumnName }}</th>
+            <th>{{ targetSumColumnName }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in data" :key="item.code">
+            <td class="color-column" :style="{ backgroundColor: item.color }">
+              <div style="width: 20px; height: 20px; border-radius: 4px"></div>
+            </td>
+            <td>{{ item.code }}</td>
+            <td>{{ item[targetItemColumnName] }}</td>
+            <td>{{ item[itemCountFieldName] }}</td>
+          </tr>
+        </tbody>
+      </VTable>
+
+      <br />
+    </div>
+    <div v-else>
+      <VCardText>
+        <VCardText class="my-4 justify-center" style="text-align: center">
+          Data tidak ditemukan
+        </VCardText>
+      </VCardText>
+    </div>
+  </VCard>
+
+  <VCard title="Chart" v-else>
+    <VCardText class="text-center justify-center my-12">
+      Loading Chart...
     </VCardText>
-
-    <VDivider />
-
-    <VCardTitle class="pl-7"> Detail</VCardTitle>
-
-    <br />
-
-    <VTable class="text-no-wrap px-7">
-      <thead>
-        <tr>
-          <th></th>
-          <th class="color-column">Code</th>
-          <th>{{ targetItemColumnName }}</th>
-          <th>{{ targetSumColumnName }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in data" :key="item.code">
-          <td class="color-column" :style="{ backgroundColor: item.color }">
-            <div style="width: 20px; height: 20px; border-radius: 4px"></div>
-            <!-- Colored box -->
-          </td>
-          <td>{{ item.code }}</td>
-          <td>{{ item[targetItemColumnName] }}</td>
-          <td>{{ item[itemCountFieldName] }}</td>
-        </tr>
-      </tbody>
-    </VTable>
-
-    <br />
   </VCard>
 </template>
 
