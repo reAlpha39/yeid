@@ -17,9 +17,9 @@ class AnalyzationController extends Controller
                 'targetItem' => 'required|integer|min:0|max:10',
                 'targetSum' => 'required|integer|min:0|max:16',
                 'startYear' => 'required|digits:4',
-                'startMonth' => 'required|digits:2|min:1|max:12',
+                'startMonth' => 'required|min:1|max:12',
                 'endYear' => 'required|digits:4',
-                'endMonth' => 'required|digits:2|min:1|max:12',
+                'endMonth' => 'required|min:1|max:12',
                 'tdivision' => 'nullable|string',
                 'section' => 'nullable|string',
                 'line' => 'nullable|string',
@@ -96,58 +96,8 @@ class AnalyzationController extends Controller
                 $query->whereBetween('occurdate', [$startDate, $endDate]);
             }
 
-            // Add division filter
-            if (!empty($validatedData['tdivision'])) {
-                $query->where('r.maintenancecode', $validatedData['tdivision']);
-            }
-
-            // Add section filter
-            if (!empty($validatedData['section'])) {
-                $query->where('r.ordershop', $validatedData['section']);
-            }
-
-            // Add line filter
-            if (!empty($validatedData['line'])) {
-                $query->where('mm.linecode', $validatedData['line']);
-            }
-
-            // Add machine number filter
-            if (!empty($validatedData['machineNo'])) {
-                $query->where('r.machineno', 'like', $validatedData['machineNo'] . '%');
-            }
-
-            // Add situation filter
-            if (!empty($validatedData['situation'])) {
-                $query->where('r.situationcode', $validatedData['situation']);
-            }
-
-            // Add measures filter
-            if (!empty($validatedData['measures'])) {
-                $query->where('r.measurecode', $validatedData['measures']);
-            }
-
-            // Add factor filter
-            if (!empty($validatedData['factor'])) {
-                $query->where('r.factorcode', $validatedData['factor']);
-            }
-
-            // Add LT factor filter
-            if (!empty($validatedData['factorLt'])) {
-                $query->where('r.ltfactorcode', $validatedData['factorLt']);
-            }
-
-            // Add preventive filter
-            if (!empty($validatedData['preventive'])) {
-                $query->where('r.preventioncode', $validatedData['preventive']);
-            }
-
-            // Add machine maker filter
-            if (!empty($validatedData['machineMaker'])) {
-                $query->where('mm.makercode', $validatedData['machineMaker']);
-            }
-
-            // Add numeric filters
-            $this->addNumericFilters($query, $validatedData);
+            // Add filter
+            $this->addFilters($query, $validatedData);
 
             // Add selected items filter if provided
             if (!empty($validatedData['selectedItems'])) {
@@ -206,6 +156,44 @@ class AnalyzationController extends Controller
         }
         $parts = explode($separator, $text);
         return $parts[0] ?? null;
+    }
+
+    // Helper method to add common filters
+    private function addFilters($query, $params)
+    {
+        if (!empty($params['tdivision'])) {
+            $query->where('r.maintenancecode', $params['tdivision']);
+        }
+        if (!empty($params['section'])) {
+            $query->where('r.ordershop', $params['section']);
+        }
+        if (!empty($params['line'])) {
+            $query->where('mm.linecode', $params['line']);
+        }
+        if (!empty($params['machineNo'])) {
+            $query->where('r.machineno', 'like', $params['machineNo'] . '%');
+        }
+        if (!empty($params['situation'])) {
+            $query->where('r.situationcode', $params['situation']);
+        }
+        if (!empty($params['measures'])) {
+            $query->where('r.measurecode', $params['measures']);
+        }
+        if (!empty($params['factor'])) {
+            $query->where('r.factorcode', $params['factor']);
+        }
+        if (!empty($params['factorLt'])) {
+            $query->where('r.ltfactorcode', $params['factorLt']);
+        }
+        if (!empty($params['preventive'])) {
+            $query->where('r.preventioncode', $params['preventive']);
+        }
+        if (!empty($params['machineMaker'])) {
+            $query->where('mm.makercode', $params['machineMaker']);
+        }
+
+        // Add numeric filters
+        $this->addNumericFilters($query, $params);
     }
 
     private function getTargetConfig($targetIndex)
