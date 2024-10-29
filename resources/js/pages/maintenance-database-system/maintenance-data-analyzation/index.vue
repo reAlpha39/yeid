@@ -339,7 +339,7 @@ async function fetchData() {
         endMonth: endMonth,
         tdivision:
           maintenanceCode.value !== null
-            ? maintenanceCodes.indexOf(maintenanceCode.value).toString()
+            ? maintenanceCode.value.split("|")[0]
             : null,
         section: shop.value?.shopcode,
         line: line.value?.linecode,
