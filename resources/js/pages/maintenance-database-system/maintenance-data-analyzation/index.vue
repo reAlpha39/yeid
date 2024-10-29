@@ -1,5 +1,8 @@
 <script setup>
-import { getDonutChartConfig } from "@core/libs/apex-chart/apexCharConfig";
+import {
+  getColumnChartConfig,
+  getDonutChartConfig,
+} from "@core/libs/apex-chart/apexCharConfig";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
@@ -130,9 +133,9 @@ const formattedDate = new Intl.DateTimeFormat("en", {
 }).format(now);
 
 const startDate = ref(formattedDate);
-const endDate = ref(null);
+const endDate = ref(formattedDate);
 const method = ref("One Term");
-const seeOnly = ref();
+const seeOnly = ref("50");
 const targetItem = ref("Jenis Perbaikan");
 const targetSum = ref("Count");
 const sort = ref("DESC");
@@ -158,6 +161,7 @@ const series = ref([]);
 const labels = ref([]);
 const colors = ref([]);
 const expenseRationChartConfig = ref();
+const chartMultiTermConfig = ref();
 const targetItemColumnName = ref();
 const targetSumColumnName = ref();
 const itemCountFieldName = ref();
@@ -167,12 +171,122 @@ function getRandomColor() {
   return `#${randomColor.padStart(6, "0")}`;
 }
 
+function calculateEndDate() {
+  let startYear = null;
+  let startMonth = null;
+  let endYear = null;
+  let endMonth = null;
+  let endDay = null;
+
+  switch (method.value) {
+    case "4 Quarters":
+    case "8 Quarters":
+    case "12 Quarters":
+    case "2 Halfs":
+    case "4 Halfs":
+    case "3 Years": {
+      const date = new Date(startDate.value);
+      startDate.value = formatDate(new Date(date.getFullYear(), 0, 1));
+
+      break;
+    }
+  }
+
+  const date = new Date(startDate.value);
+  startYear = date.getFullYear();
+  startMonth = date.getMonth() + 1; // Months are 0-indexed
+
+  switch (method.value) {
+    case "One Term": {
+      const date = new Date(endDate.value);
+      endYear = date.getFullYear();
+      endMonth = date.getMonth() + 1;
+      endDay = date.getDate();
+
+      break;
+    }
+
+    case "Days": {
+      endYear = startYear;
+      endMonth = startMonth;
+      const date = new Date(startYear, startMonth, 0);
+      endDay = date.getDate(); // Last day of the start month
+
+      endDate.value = formatDate(date);
+      break;
+    }
+
+    case "3 Months":
+    case "6 Months":
+    case "12 Months":
+    case "24 Months": {
+      const monthsToAdd = parseInt(method.value.split(" ")[0]);
+      const date = new Date(startYear, startMonth - 1 + monthsToAdd, 0); // Last day of the calculated month
+      endYear = date.getFullYear();
+      endMonth = date.getMonth() + 1;
+      endDay = date.getDate();
+
+      endDate.value = formatDate(date);
+      break;
+    }
+
+    case "4 Quarters":
+    case "8 Quarters":
+    case "12 Quarters": {
+      const quartersToAdd = parseInt(method.value.split(" ")[0]);
+      const monthsToAdd = quartersToAdd * 3;
+      const date = new Date(startYear, startMonth - 1 + monthsToAdd, 0);
+      endYear = date.getFullYear();
+      endMonth = date.getMonth() + 1;
+      endDay = date.getDate();
+
+      endDate.value = formatDate(date);
+      break;
+    }
+
+    case "2 Halfs":
+    case "4 Halfs": {
+      const halvesToAdd = parseInt(method.value.split(" ")[0]);
+      const monthsToAdd = halvesToAdd * 6;
+      const date = new Date(startYear, startMonth - 1 + monthsToAdd, 0);
+      endYear = date.getFullYear();
+      endMonth = date.getMonth() + 1;
+      endDay = date.getDate();
+
+      endDate.value = formatDate(date);
+      break;
+    }
+
+    case "3 Years": {
+      const yearsToAdd = parseInt(method.value.split(" ")[0]);
+      const date = new Date(startYear + yearsToAdd, startMonth - 1, 0);
+      endYear = date.getFullYear();
+      endMonth = date.getMonth() + 1;
+      endDay = date.getDate();
+
+      endDate.value = formatDate(date);
+      break;
+    }
+
+    default:
+      console.warn("Method not recognized");
+      break;
+  }
+
+  return { endYear, endMonth, endDay };
+}
+
+function formatDate(date) {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
 async function fetchData() {
   try {
     let startYear = null;
     let startMonth = null;
-    let endYear = null;
-    let endMonth = null;
 
     if (startDate.value) {
       const date = new Date(startDate.value);
@@ -180,23 +294,23 @@ async function fetchData() {
       startMonth = date.getMonth() + 1; // Months are 0-indexed
     }
 
-    if (endDate.value) {
-      const date = new Date(endDate.value);
-      endYear = date.getFullYear();
-      endMonth = date.getMonth() + 1; // Months are 0-indexed
-    }
+    const { endYear, endMonth } = calculateEndDate();
+    // console.log(startDate.value);
+    // console.log(endDate.value);
+    // console.log(`Start Year: ${startYear}, Start Month: ${startMonth}`);
+    // console.log(`End Year: ${endYear}, End Month: ${endMonth}`);
 
     const response = await $api("/maintenance-database-system/analyze", {
       method: "POST",
       body: {
         targetTerm:
-          method.value === "One Term" ? null : methods.indexOf(method),
+          method.value === "One Term" ? null : methods.indexOf(method.value),
         targetItem: targetItems.indexOf(targetItem.value),
         targetSum: targetSums.indexOf(targetSum.value),
         startYear: startYear,
         startMonth: startMonth,
-        endYear: method.value === "One Term" ? startYear : endYear,
-        endMonth: method.value === "One Term" ? startMonth : endMonth,
+        endYear: endYear,
+        endMonth: endMonth,
         tdivision:
           maintenanceCode.value !== null
             ? maintenanceCodes.indexOf(maintenanceCode.value)
@@ -215,56 +329,111 @@ async function fetchData() {
         numMin: counter.value !== null ? lessThan.value : null,
         numMax: counter.value !== null ? moreThan.value : null,
         targetSort: sorts.indexOf(sort.value),
+        maxRow: parseInt(seeOnly.value ?? "50"),
         outofRank: includeOtherCheckBox.value,
       },
     });
 
-    data.value = response.data.map((item, index) => ({
-      ...item,
-      color: getRandomColor(),
-    }));
+    if (method.value === "One Term") {
+      data.value = response.data.map((item, index) => ({
+        ...item,
+        color:
+          index < parseInt(seeOnly.value ?? "50")
+            ? getRandomColor()
+            : "#5C4646",
+      }));
 
-    console.log(data.value);
+      series.value = data.value
+        .map(
+          (item) =>
+            itemCountFields
+              .map((field) => item[field])
+              .find((value) => value !== undefined) || 0
+        )
+        .map((value) => parseInt(value, 10) || 0);
 
-    series.value = data.value
-      .map(
-        (item) =>
-          itemCountFields
-            .map((field) => item[field])
-            .find((value) => value !== undefined) || 0
-      )
-      .map((value) => parseInt(value, 10) || 0);
+      labels.value = data.value.map((item) => item.code);
+      colors.value = data.value.map((item) => item.color);
 
-    labels.value = data.value.map((item) => item.code);
-    colors.value = data.value.map((item) => item.color);
+      expenseRationChartConfig.value = getDonutChartConfig(
+        vuetifyTheme.current.value,
+        labels.value,
+        colors.value
+      );
 
-    console.log(series.value);
-    console.log(labels.value);
+      if (data.value.length > 0) {
+        const firstItemKeys = Object.keys(data.value[0]);
 
-    expenseRationChartConfig.value = getDonutChartConfig(
-      vuetifyTheme.current.value,
-      labels.value,
-      colors.value
-    );
+        targetItemColumnName.value =
+          firstItemKeys.find((key) => columnLabels[key]) || "";
 
-    if (data.value.length > 0) {
-      const firstItemKeys = Object.keys(data.value[0]);
+        const itemCountField =
+          firstItemKeys.find((key) => itemCountFields.includes(key)) || "";
 
-      // Find the target item column name
-      targetItemColumnName.value =
-        firstItemKeys.find((key) => columnLabels[key]) || "";
+        const itemCountFieldIndex = itemCountFields.indexOf(itemCountField);
+        targetSumColumnName.value =
+          itemCountFieldIndex >= 0 ? targetSums[itemCountFieldIndex] : "";
 
-      // Find the first matching itemCountField
-      const itemCountField =
-        firstItemKeys.find((key) => itemCountFields.includes(key)) || "";
+        itemCountFieldName.value = itemCountField;
+      }
+    } else {
+      const rawData = response.data;
+      const groupedData = {};
+      const codes = new Set(); // To track unique codes
 
-      // Find the corresponding target sum based on the found itemCountField
-      const itemCountFieldIndex = itemCountFields.indexOf(itemCountField);
-      targetSumColumnName.value =
-        itemCountFieldIndex >= 0 ? targetSums[itemCountFieldIndex] : "";
+      // Group data by term and code
+      rawData.forEach((item) => {
+        const term = item.term;
+        const code = item.code;
+        const itemCount = item.item_count;
 
-      // Store the field name for rendering in the table
-      itemCountFieldName.value = itemCountField; // Store the dynamic field name
+        if (!groupedData[term]) {
+          groupedData[term] = {};
+        }
+
+        groupedData[term][code] = itemCount;
+        codes.add(code); // Add code to the set
+      });
+
+      // Prepare the final data structure
+      const finalData = [];
+      const terms = Object.keys(groupedData).sort(); // Get sorted terms
+
+      terms.forEach((term) => {
+        const termData = { term: term };
+        codes.forEach((code) => {
+          termData[code] = groupedData[term][code] || 0; // Fill with 0 if code is missing
+        });
+        finalData.push(termData);
+      });
+
+      // Prepare series and colors based on the final data
+      series.value = Array.from(codes).map((code) => ({
+        name: code,
+        data: terms.map(
+          (term) => finalData.find((item) => item.term === term)[code]
+        ),
+        color: getRandomColor(), // Assign a random color for each code
+      }));
+
+      labels.value = terms; // Use terms as labels
+      colors.value = series.value.map((item) => item.color); // Extract colors for legend
+
+      // Chart configuration
+      expenseRationChartConfig.value = getDonutChartConfig(
+        vuetifyTheme.current.value,
+        labels.value,
+        colors.value
+      );
+
+      // console.log(series.value);
+      // console.log(labels.value);
+
+      chartMultiTermConfig.value = getColumnChartConfig(
+        vuetifyTheme.current.value,
+        labels.value,
+        colors.value
+      );
     }
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -461,7 +630,7 @@ watch(
           placeholder="Oct 2024"
           :config="{ dateFormat: 'M Y' }"
           append-inner-icon="tabler-calendar"
-          :disabled="method === 'One Term'"
+          :disabled="method !== 'One Term'"
           @update:modelValue="fetchData()"
         />
       </VCol>
@@ -711,10 +880,17 @@ watch(
   <VCard title="Grafik">
     <VCardText>
       <VueApexCharts
-        v-if="series.length !== 0"
+        v-if="series.length !== 0 && method === 'One Term'"
         type="donut"
         height="410"
         :options="expenseRationChartConfig"
+        :series="series"
+      />
+      <VueApexCharts
+        v-if="series.length !== 0 && method !== 'One Term'"
+        type="bar"
+        height="410"
+        :options="chartMultiTermConfig"
         :series="series"
       />
       <VCardText v-else class="my-4 justify-center" style="text-align: center">

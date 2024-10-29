@@ -459,13 +459,7 @@ export const getAreaChartSplineConfig = themeColors => {
     },
   }
 }
-export const getColumnChartConfig = themeColors => {
-  const columnColors = {
-    series1: '#826af9',
-    series2: '#d2b0ff',
-    bg: '#f8d3ff',
-  }
-
+export const getColumnChartConfig =  (themeColors, labels, colors)  => {
   const { themeSecondaryTextColor, themeBorderColor, themeDisabledTextColor } = colorVariables(themeColors)
   
   return {
@@ -477,7 +471,7 @@ export const getColumnChartConfig = themeColors => {
     },
     fill: { opacity: 1 },
     dataLabels: { enabled: false },
-    colors: [columnColors.series1, columnColors.series2],
+    colors: colors,
     legend: {
       position: 'top',
       horizontalAlign: 'left',
@@ -497,16 +491,10 @@ export const getColumnChartConfig = themeColors => {
       colors: ['transparent'],
     },
     plotOptions: {
-     
       bar: {
         columnWidth: '15%',
-        borderRadius: 10,
         borderRadiusWhenStacked: 'last', // 'all', 'last'
         borderRadiusApplication: 'end', // 'around', 'end'
-        colors: {
-          // backgroundBarRadius: 10,
-          // backgroundBarColors: [columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg, columnColors.bg],
-        },
       },
     },
     grid: {
@@ -523,7 +511,7 @@ export const getColumnChartConfig = themeColors => {
     xaxis: {
       axisBorder: { show: false },
       axisTicks: { color: themeBorderColor },
-      categories: ['7/12', '8/12', '9/12', '10/12', '11/12', '12/12', '13/12', '14/12', '15/12'],
+      categories: labels,
       crosshairs: {
         stroke: { color: themeBorderColor },
       },
