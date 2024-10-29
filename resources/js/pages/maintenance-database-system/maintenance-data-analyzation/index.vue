@@ -313,7 +313,7 @@ async function fetchData() {
         endMonth: endMonth,
         tdivision:
           maintenanceCode.value !== null
-            ? maintenanceCodes.indexOf(maintenanceCode.value)
+            ? maintenanceCodes.indexOf(maintenanceCode.value).toString()
             : null,
         section: shop.value?.shopcode,
         line: line.value?.linecode,
@@ -379,55 +379,110 @@ async function fetchData() {
     } else {
       const rawData = response.data;
       const groupedData = {};
-      const codes = new Set(); // To track unique codes
+      const codes = new Set();
 
-      // Group data by term and code
+      // Process raw data
       rawData.forEach((item) => {
-        const term = item.term;
         const code = item.code;
         const itemCount = item.item_count;
 
-        if (!groupedData[term]) {
-          groupedData[term] = {};
+        if (!groupedData[item.term]) {
+          groupedData[item.term] = {};
         }
 
-        groupedData[term][code] = itemCount;
-        codes.add(code); // Add code to the set
+        groupedData[item.term][code] = itemCount;
+        codes.add(code);
       });
 
-      // Prepare the final data structure
-      const finalData = [];
-      const terms = Object.keys(groupedData).sort(); // Get sorted terms
+      // Set up term-based placeholders based on method
+      let termCount;
+      let termFormat;
+      let methodType;
+      let startDateObj = new Date(startDate.value);
+      const startYear = startDateObj.getFullYear();
+      const startMonth = startDateObj.getMonth() + 1;
 
-      terms.forEach((term) => {
-        const termData = { term: term };
-        codes.forEach((code) => {
-          termData[code] = groupedData[term][code] || 0; // Fill with 0 if code is missing
-        });
-        finalData.push(termData);
+      switch (method.value) {
+        case "Days":
+          termCount = new Date(startYear, startMonth, 0).getDate();
+          methodType = "Days";
+          termFormat = (day) => {
+            const date = new Date(startDateObj);
+            date.setDate(date.getDate() + day);
+            return formatDateToTerm(date, methodType);
+          };
+          break;
+
+        case "3 Months":
+        case "6 Months":
+        case "12 Months":
+        case "24 Months":
+          termCount = parseInt(method.value.split(" ")[0]);
+          methodType = "Month";
+          termFormat = (monthOffset) => {
+            const termDate = new Date(startDateObj);
+            termDate.setMonth(startDateObj.getMonth() + monthOffset);
+            return formatDateToTerm(termDate, methodType);
+          };
+          break;
+
+        case "4 Quarters":
+        case "8 Quarters":
+        case "12 Quarters":
+          termCount = parseInt(method.value.split(" ")[0]);
+          methodType = "Quarter";
+          termFormat = (quarterOffset) => {
+            const termDate = new Date(startDateObj);
+            termDate.setMonth(startDateObj.getMonth() + quarterOffset * 3);
+            return formatDateToTerm(termDate, methodType);
+          };
+          break;
+
+        case "2 Halfs":
+        case "4 Halfs":
+          termCount = parseInt(method.value.split(" ")[0]);
+          methodType = "Half";
+          termFormat = (halfOffset) => {
+            const termDate = new Date(startDateObj);
+            termDate.setMonth(startDateObj.getMonth() + halfOffset * 6);
+            return formatDateToTerm(termDate, methodType);
+          };
+          break;
+
+        case "3 Years":
+          termCount = 3;
+          methodType = "Year";
+          termFormat = (yearOffset) => {
+            const termDate = new Date(startDateObj);
+            termDate.setFullYear(startDateObj.getFullYear() + yearOffset);
+            return formatDateToTerm(termDate, methodType);
+          };
+          break;
+
+        default:
+          termCount = 1;
+          methodType = "Month";
+      }
+
+      // Generate terms array based on termFormat
+      const terms = Array.from({ length: termCount }, (_, idx) => {
+        if (method.value === "Days") {
+          return termFormat(idx);
+        } else {
+          return termFormat(idx);
+        }
       });
 
-      // Prepare series and colors based on the final data
+      // Build series with zeros where data is missing
       series.value = Array.from(codes).map((code) => ({
         name: code,
-        data: terms.map(
-          (term) => finalData.find((item) => item.term === term)[code]
-        ),
-        color: getRandomColor(), // Assign a random color for each code
+        data: terms.map((term) => groupedData[term]?.[code] || 0),
+        color: getRandomColor(),
       }));
 
-      labels.value = terms; // Use terms as labels
-      colors.value = series.value.map((item) => item.color); // Extract colors for legend
-
-      // Chart configuration
-      expenseRationChartConfig.value = getDonutChartConfig(
-        vuetifyTheme.current.value,
-        labels.value,
-        colors.value
-      );
-
-      // console.log(series.value);
-      // console.log(labels.value);
+      // Format display labels while keeping original terms for data mapping
+      labels.value = terms.map((term) => formatDisplayLabel(term, methodType));
+      colors.value = series.value.map((item) => item.color);
 
       chartMultiTermConfig.value = getColumnChartConfig(
         vuetifyTheme.current.value,
@@ -440,6 +495,61 @@ async function fetchData() {
     console.log(err);
   }
 }
+
+// Helper function to format date to match API format
+const formatDateToTerm = (date, methodType) => {
+  const year = date.getFullYear();
+
+  switch (methodType) {
+    case "Days":
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const day = date.getDate().toString().padStart(2, "0");
+      return `${year}${month}${day}`;
+
+    case "Half":
+      const half = date.getMonth() < 6 ? "1" : "2";
+      return `${year}${half}`;
+
+    case "Quarter":
+      const quarter = Math.floor(date.getMonth() / 3) + 1;
+      return `${year}${quarter}`;
+
+    case "Year":
+      return year.toString();
+
+    default:
+      const paddedMonth = (date.getMonth() + 1).toString().padStart(2, "0");
+      return `${year}${paddedMonth}`;
+  }
+};
+
+// Helper function to format display labels
+const formatDisplayLabel = (term, methodType) => {
+  switch (methodType) {
+    case "Days":
+      // Input: "20241016" -> Output: "10/16"
+      return `${term.slice(4, 6)}/${term.slice(6)}`;
+
+    case "Month":
+      // Input: "202410" -> Output: "2024/10"
+      return `${term.slice(0, 4)}/${term.slice(4)}`;
+
+    case "Quarter":
+      // Input: "20241" -> Output: "2024Q1"
+      return `${term.slice(0, 4)}Q${term.slice(4)}`;
+
+    case "Half":
+      // Input: "20241" -> Output: "2024H1"
+      return `${term.slice(0, 4)}H${term.slice(4)}`;
+
+    case "Year":
+      // Input: "2024" -> Output: "2024"
+      return term;
+
+    default:
+      return term;
+  }
+};
 
 async function fetchShop() {
   try {
