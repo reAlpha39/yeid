@@ -68,6 +68,7 @@ Route::delete('/master/makers/{makerCode}', [MasMakerController::class, 'destroy
 
 // Master Machine
 Route::get('/master/machines', [MasMachineController::class, 'index']);
+Route::get('/master/machines/export', [MasMachineController::class, 'export']);
 Route::get('/master/machines/{machineNo}', [MasMachineController::class, 'show']);
 Route::post('/master/machines', [MasMachineController::class, 'store']);
 Route::put('/master/machines/{machineNo}', [MasMachineController::class, 'update']);

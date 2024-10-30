@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\MasMachine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Exports\MachinesExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
-
-use function PHPUnit\Framework\isNull;
 
 class MasMachineController extends Controller
 {
@@ -270,6 +270,19 @@ class MasMachineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new MachinesExport(), 'machines.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
