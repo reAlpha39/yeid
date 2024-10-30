@@ -1,6 +1,12 @@
 <script setup>
+const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
+const vendors = ref();
+
 const data = ref({});
+
 const searchPart = ref("");
+const selectedVendors = ref();
+const currency = ref();
 
 const props = defineProps({
   isDialogVisible: {
@@ -17,7 +23,7 @@ const dialogVisibleUpdate = (val) => {
 
 const handleItemClick = (item) => {
   // Process the item data as needed
-  console.log("Selected item:", item);
+  // console.log("Selected item:", item);
 
   emit("update:isDialogVisible", false);
   emit("submit", item);
@@ -28,6 +34,8 @@ async function fetchData() {
     const response = await $api("/getPartInfo", {
       params: {
         query: searchPart.value,
+        vendorcode: selectedVendors.value?.vendorcode,
+        currency: currency.value,
       },
     });
 
@@ -37,8 +45,32 @@ async function fetchData() {
   }
 }
 
+async function fetchDataVendor(id) {
+  try {
+    if (id) {
+      const response = await $api("/master/vendors/" + id);
+
+      selectedVendors.value = response.data;
+      selectedVendors.value.title =
+        response.data.vendorcode + " | " + response.data.vendorname;
+    } else {
+      const response = await $api("/master/vendors");
+
+      vendors.value = response.data;
+
+      vendors.value.forEach((data) => {
+        data.title = data.vendorcode + " | " + data.vendorname;
+      });
+    }
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
 onMounted(() => {
   fetchData();
+  fetchDataVendor();
 });
 </script>
 
@@ -67,21 +99,26 @@ onMounted(() => {
           />
         </VCol>
         <VCol md="4">
-          <AppSelect
-            v-model="selectedRole"
-            placeholder="Select brand"
-            :items="roles"
+          <AppAutocomplete
+            v-model="selectedVendors"
+            placeholder="Select Vendor"
+            item-title="title"
+            :items="vendors"
+            return-object
             clearable
             clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol md="4">
           <AppSelect
-            v-model="selectedRole"
-            placeholder="Select curr"
-            :items="roles"
+            v-model="currency"
+            :items="currencies"
+            placeholder="Select Currency"
             clearable
             clear-icon="tabler-x"
+            @update:modelValue="fetchData()"
           />
         </VCol>
       </VRow>

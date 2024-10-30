@@ -89,28 +89,36 @@ class InventoryControlController extends Controller
     public function getPartInfo(Request $request)
     {
         try {
-            // Get the query parameter from the request
             $query = $request->input('query', '');
+            $vendor = $request->input('vendorcode');
+            $currency = $request->input('currency');
 
-            // Perform the query on the mas_inventory table
-            $results = DB::table('mas_inventory')
-                ->where('partcode', 'ILIKE', $query . '%')
-                ->orWhere('partname', 'ILIKE', $query . '%')
-                ->limit(100)
-                ->get();
+            $query = DB::table('mas_inventory')
+                ->where(function ($q) use ($query) {
+                    $q->where('partcode', 'ILIKE', $query . '%')
+                        ->orWhere('partname', 'ILIKE', $query . '%');
+                });
 
-            // Return the results as JSON
+            if ($vendor) {
+                $query->where('vendorcode', $vendor);
+            }
+
+            if ($currency) {
+                $query->where('currency', $currency);
+            }
+
+            $results = $query->limit(100)->get();
+
             return response()->json([
                 'success' => true,
                 'data' => $results
             ], 200);
         } catch (Exception $e) {
-            // Catch any exceptions and return an error response
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while fetching data',
-                'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
