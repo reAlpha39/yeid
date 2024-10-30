@@ -131,6 +131,7 @@ Route::delete('/master/systems/{year}', [MasSystemController::class, 'destroy'])
 
 // Master Employee
 Route::get('/master/employees', [MasEmployeeController::class, 'index']);
+Route::get('/master/employees/export', [MasEmployeeController::class, 'export']);
 Route::get('/master/employees/{employeeCode}', [MasEmployeeController::class, 'show']);
 Route::post('/master/employees', [MasEmployeeController::class, 'store']);
 Route::put('/master/employees/{employeeCode}', [MasEmployeeController::class, 'update']);

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\EmployeesExport;
 use Exception;
 
 class MasEmployeeController extends Controller
@@ -168,6 +170,19 @@ class MasEmployeeController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new EmployeesExport(), 'employees.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }
