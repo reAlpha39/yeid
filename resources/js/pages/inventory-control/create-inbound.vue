@@ -172,7 +172,7 @@ const deleteItem = (index) => {
   </VCard>
 
   <!-- List Part Card -->
-  <VCard class="mb-6 pa-6">
+  <VCard v-if="selectedVendor.vendorcode" class="mb-6 pa-6">
     <VCardTitle>List Part</VCardTitle>
 
     <!-- eslint-disable vue/no-mutating-props -->
