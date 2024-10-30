@@ -418,58 +418,58 @@ class AnalyzationController extends Controller
         switch ($params['numItem']) {
             case 1: // Machine Stop Time
                 if (is_numeric($params['numMin'])) {
-                    $query->where('r.machinestoptime', '>=', $params['numMin']);
+                    $query->where('r.machinestoptime', '<=', $params['numMin']);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->where('r.machinestoptime', '<', $params['numMax']);
+                    $query->where('r.machinestoptime', '>', $params['numMax']);
                 }
                 break;
             case 2: // Line Stop Time
                 if (is_numeric($params['numMin'])) {
-                    $query->where('r.linestoptime', '>=', $params['numMin']);
+                    $query->where('r.linestoptime', '<=', $params['numMin']);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->where('r.linestoptime', '<', $params['numMax']);
+                    $query->where('r.linestoptime', '>', $params['numMax']);
                 }
                 break;
             case 3: // Internal
                 if (is_numeric($params['numMin'])) {
-                    $query->whereRaw('(r.totalrepairsum * r.staffnum) >= ?', [$params['numMin']]);
+                    $query->whereRaw('(r.totalrepairsum * r.staffnum) <= ?', [$params['numMin']]);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->whereRaw('(r.totalrepairsum * r.staffnum) < ?', [$params['numMax']]);
+                    $query->whereRaw('(r.totalrepairsum * r.staffnum) > ?', [$params['numMax']]);
                 }
                 break;
             case 4: // Maker
                 if (is_numeric($params['numMin'])) {
-                    $query->where('r.makerhour', '>=', $params['numMin']);
+                    $query->where('r.makerhour', '<=', $params['numMin']);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->where('r.makerhour', '<', $params['numMax']);
+                    $query->where('r.makerhour', '>', $params['numMax']);
                 }
                 break;
             case 5: // Internal + Maker
                 if (is_numeric($params['numMin'])) {
-                    $query->whereRaw('(r.totalrepairsum * r.staffnum + r.makerhour) >= ?', [$params['numMin']]);
+                    $query->whereRaw('(r.totalrepairsum * r.staffnum + r.makerhour) <= ?', [$params['numMin']]);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->whereRaw('(r.totalrepairsum * r.staffnum + r.makerhour) < ?', [$params['numMax']]);
+                    $query->whereRaw('(r.totalrepairsum * r.staffnum + r.makerhour) > ?', [$params['numMax']]);
                 }
                 break;
             case 6: // Maker Cost
                 if (is_numeric($params['numMin'])) {
-                    $query->whereRaw('(r.makerservice + r.makerparts) >= ?', [$params['numMin']]);
+                    $query->whereRaw('(r.makerservice + r.makerparts) <= ?', [$params['numMin']]);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->whereRaw('(r.makerservice + r.makerparts) < ?', [$params['numMax']]);
+                    $query->whereRaw('(r.makerservice + r.makerparts) > ?', [$params['numMax']]);
                 }
                 break;
             case 7: // Parts Cost
                 if (is_numeric($params['numMin'])) {
-                    $query->where('r.partcostsum', '>=', $params['numMin']);
+                    $query->where('r.partcostsum', '<=', $params['numMin']);
                 }
                 if (is_numeric($params['numMax'])) {
-                    $query->where('r.partcostsum', '<', $params['numMax']);
+                    $query->where('r.partcostsum', '>', $params['numMax']);
                 }
                 break;
         }
