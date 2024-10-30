@@ -26,6 +26,7 @@ Route::get('/user', function (Request $request) {
 
 // Inventory Control
 Route::get('/invControl', [App\Http\Controllers\InventoryControlController::class, 'getRecords']);
+Route::get('/invControl/export', [App\Http\Controllers\InventoryControlController::class, 'export']);
 Route::get('/getPartInfo', [App\Http\Controllers\InventoryControlController::class, 'getPartInfo']);
 Route::get('/getVendor', [App\Http\Controllers\InventoryControlController::class, 'getVendor']);
 Route::get('/getStaff', [App\Http\Controllers\InventoryControlController::class, 'getStaff']);

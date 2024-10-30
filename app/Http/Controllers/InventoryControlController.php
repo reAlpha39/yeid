@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Exports\InventoryControlExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class InventoryControlController extends Controller
@@ -366,6 +367,36 @@ class InventoryControlController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'An error occurred while deleting the record.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $startDate = $request->input('startDate', '20240101');
+            $endDate = $request->input('endDate', '20240101');
+            $jobCode = $request->input('jobCode', 'I');
+            $vendorCode = $request->input('vendorcode');
+            $currency = $request->input('currency');
+            $search = $request->input('search');
+
+            return Excel::download(
+                new InventoryControlExport(
+                    $startDate,
+                    $endDate,
+                    $jobCode,
+                    $vendorCode,
+                    $currency,
+                    $search
+                ),
+                'inventory_records.xlsx'
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }
