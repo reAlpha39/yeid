@@ -107,6 +107,7 @@ Route::delete('/master/measures/{measureCode}', [MasMeasureController::class, 'd
 
 // Mas Prevention
 Route::get('/master/preventions', [MasPreventionController::class, 'index']);
+Route::get('/master/preventions/export', [MasPreventionController::class, 'export']);
 Route::get('/master/preventions/{preventionCode}', [MasPreventionController::class, 'show']);
 Route::post('/master/preventions', [MasPreventionController::class, 'store']);
 Route::put('/master/preventions/{preventionCode}', [MasPreventionController::class, 'update']);

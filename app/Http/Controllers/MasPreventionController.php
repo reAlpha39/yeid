@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasPrevention;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\PreventionsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class MasPreventionController extends Controller
@@ -163,6 +165,19 @@ class MasPreventionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new PreventionsExport(), 'preventions.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }
