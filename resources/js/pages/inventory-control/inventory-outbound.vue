@@ -261,7 +261,6 @@ onMounted(() => {
       :items="data"
       :headers="headers"
       class="text-no-wrap"
-      @update:options="updateOptions"
     >
       <!-- part name -->
       <template #item.partcode="{ item }">
