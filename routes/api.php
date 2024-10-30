@@ -145,6 +145,7 @@ Route::post('/master/departments/{id}/restore', [MasDepartmentController::class,
 
 // Master User
 Route::get('/master/users', [MasUserController::class, 'index']);
+Route::get('/master/users/export', [MasUserController::class, 'export']);
 Route::get('/master/users/{id}', [MasUserController::class, 'show']);
 Route::post('/master/users', [MasUserController::class, 'store']);
 Route::put('/master/users/{id}', [MasUserController::class, 'update']);
