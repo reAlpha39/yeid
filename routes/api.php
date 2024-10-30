@@ -72,6 +72,7 @@ Route::delete('/master/machines/{machineNo}', [MasMachineController::class, 'des
 
 // Master Situation
 Route::get('/master/situations', [MasSituationController::class, 'index']);
+Route::get('/master/situations/export', [MasSituationController::class, 'export']);
 Route::get('/master/situations/{situationCode}', [MasSituationController::class, 'show']);
 Route::post('/master/situations', [MasSituationController::class, 'store']);
 Route::put('/master/situations/{situationCode}', [MasSituationController::class, 'update']);

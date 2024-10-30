@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasSituation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\SituationsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class MasSituationController extends Controller
@@ -157,11 +159,24 @@ class MasSituationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Situation deleted successfully!'
-            ], 200);
+        ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new SituationsExport(), 'situations.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }
