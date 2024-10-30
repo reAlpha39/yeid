@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasShop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ShopsExport;
 use Exception;
 
 class MasShopController extends Controller
@@ -177,6 +179,19 @@ class MasShopController extends Controller
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
             ], 500); // Internal server error
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new ShopsExport(), 'shops.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

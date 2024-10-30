@@ -43,6 +43,7 @@ Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController:
 
 // Master Shop
 Route::get('/master/shops', [MasShopController::class, 'index']);
+Route::get('/master/shops/export', [MasShopController::class, 'export']);
 Route::get('/master/shops/{shopCode}', [MasShopController::class, 'show']);
 Route::post('/master/shops', [MasShopController::class, 'store']);
 Route::put('/master/shops/{shopCode}', [MasShopController::class, 'update']);

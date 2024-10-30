@@ -1,5 +1,6 @@
 <script setup>
 import AddShopDrawer from "@/components/drawers/AddShopDrawer.vue";
+import axios from "axios";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -94,6 +95,28 @@ async function openEditPartPage(partCode) {
   isAddShopDrawerOpen.value = true;
 }
 
+const loadingExport = ref(false);
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const response = await axios.get("/api/master/shops/export", {
+      responseType: "blob",
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "shops.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
+  }
+}
+
 watch(
   () => isAddShopDrawerOpen.value,
   (newVal) => {
@@ -156,7 +179,12 @@ onMounted(() => {
         </div>
 
         <!-- 👉 Export button -->
-        <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
           Export
         </VBtn>
 
