@@ -82,6 +82,7 @@ Route::delete('/master/situations/{situationCode}', [MasSituationController::cla
 
 // Master Line
 Route::get('/master/lines', [MasLineController::class, 'index']);
+Route::get('/master/lines/export', [MasLineController::class, 'export']);
 Route::get('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'show']);
 Route::post('/master/lines', [MasLineController::class, 'store']);
 Route::put('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'update']);
