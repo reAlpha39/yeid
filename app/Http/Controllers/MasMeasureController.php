@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasMeasure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\MeasuresExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class MasMeasureController extends Controller
@@ -163,6 +165,19 @@ class MasMeasureController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new MeasuresExport(), 'measures.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

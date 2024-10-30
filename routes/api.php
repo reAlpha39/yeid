@@ -100,6 +100,7 @@ Route::delete('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class,
 
 // Mas Measure
 Route::get('/master/measures', [MasMeasureController::class, 'index']);
+Route::get('/master/measures/export', [MasMeasureController::class, 'export']);
 Route::get('/master/measures/{measureCode}', [MasMeasureController::class, 'show']);
 Route::post('/master/measures', [MasMeasureController::class, 'store']);
 Route::put('/master/measures/{measureCode}', [MasMeasureController::class, 'update']);
