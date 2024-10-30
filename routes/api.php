@@ -59,6 +59,7 @@ Route::delete('/master/vendors/{vendorCode}', [MasVendorController::class, 'dest
 
 // Master Maker
 Route::get('/master/makers', [MasMakerController::class, 'index']);
+Route::get('/master/makers/export', [MasMakerController::class, 'export']);
 Route::get('/master/makers/{makerCode}', [MasMakerController::class, 'show']);
 Route::post('/master/makers', [MasMakerController::class, 'store']);
 Route::put('/master/makers/{makerCode}', [MasMakerController::class, 'update']);
