@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasFactor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\FactorsExport;
 use Exception;
 
 class MasFactorController extends Controller
@@ -165,6 +167,19 @@ class MasFactorController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new FactorsExport(), 'factors.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

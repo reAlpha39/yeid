@@ -87,6 +87,7 @@ Route::delete('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 
 
 // Mas Factor
 Route::get('/master/factors', [MasFactorController::class, 'index']);
+Route::get('/master/factors/export', [MasFactorController::class, 'export']);
 Route::get('/master/factors/{factorCode}', [MasFactorController::class, 'show']);
 Route::post('/master/factors', [MasFactorController::class, 'store']);
 Route::put('/master/factors/{factorCode}', [MasFactorController::class, 'update']);
