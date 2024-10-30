@@ -138,6 +138,7 @@ Route::delete('/master/employees/{employeeCode}', [MasEmployeeController::class,
 
 // Master Department
 Route::get('/master/departments', [MasDepartmentController::class, 'index']);
+Route::get('/master/departments/export', [MasDepartmentController::class, 'export']);
 Route::get('/master/departments/{departmentCode}', [MasDepartmentController::class, 'show']);
 Route::post('/master/departments', [MasDepartmentController::class, 'store']);
 Route::put('/master/departments/{departmentCode}', [MasDepartmentController::class, 'update']);

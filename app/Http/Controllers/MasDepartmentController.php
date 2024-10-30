@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Exports\DepartmentsExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class MasDepartmentController extends Controller
@@ -204,6 +206,19 @@ class MasDepartmentController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new DepartmentsExport(), 'departments.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }
