@@ -219,7 +219,7 @@ const deleteItem = (index) => {
   </VCard>
 
   <!-- List Part Card -->
-  <VCard class="mb-6 pa-6">
+  <VCard v-if="selectedStaff.employeecode" class="mb-6 pa-6">
     <VRow class="d-flex pb-8 pt-4 pr-3 justify-space-between">
       <VCardTitle>List Part</VCardTitle>
 
