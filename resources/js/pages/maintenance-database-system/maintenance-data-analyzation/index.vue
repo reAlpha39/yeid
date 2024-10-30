@@ -3,6 +3,7 @@ import {
   getColumnChartConfig,
   getDonutChartConfig,
 } from "@core/libs/apex-chart/apexCharConfig";
+import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { debounce } from "lodash";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
@@ -798,6 +799,8 @@ function isNumber(evt) {
   }
 }
 
+const menu = ref(false);
+
 onMounted(() => {
   fetchData();
   fetchShop();
@@ -845,8 +848,17 @@ watch(
           placeholder="Oct 2024"
           :config="{
             dateFormat: 'M Y',
+            mode: 'single',
+            enableTime: false,
+            enableSeconds: false,
+            plugins: [
+              new monthSelectPlugin({
+                shorthand: true,
+                dateFormat: 'M Y',
+                altFormat: 'M Y',
+              }),
+            ],
           }"
-          type="month"
           append-inner-icon="tabler-calendar"
           @update:modelValue="fetchData()"
         />
@@ -857,7 +869,20 @@ watch(
           v-model="endDate"
           label=" "
           placeholder="Oct 2024"
-          :config="{ dateFormat: 'M Y' }"
+          :config="{
+            dateFormat: 'M Y',
+            mode: 'single',
+            enableTime: false,
+            enableSeconds: false,
+            minDate: startDate,
+            plugins: [
+              new monthSelectPlugin({
+                shorthand: true,
+                dateFormat: 'M Y',
+                altFormat: 'M Y',
+              }),
+            ],
+          }"
           append-inner-icon="tabler-calendar"
           :disabled="method !== 'One Term'"
           @update:modelValue="fetchData()"
@@ -1169,5 +1194,40 @@ watch(
 <style scoped>
 .color-column {
   width: 100px; /* Set the desired width */
+}
+</style>
+
+<style>
+.flatpickr-monthSelect-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.flatpickr-monthSelect-month {
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.flatpickr-monthSelect-month:hover {
+  background: #e0e0e0;
+}
+
+.flatpickr-monthSelect-month.selected {
+  background: #fa0202;
+  color: white;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled {
+  color: #999;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled:hover {
+  background: #f0f0f0;
 }
 </style>
