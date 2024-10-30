@@ -3,6 +3,7 @@ import {
   getColumnChartConfig,
   getDonutChartConfig,
 } from "@core/libs/apex-chart/apexCharConfig";
+import { debounce } from "lodash";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
@@ -308,8 +309,15 @@ function formatDate(date) {
   }).format(date);
 }
 
+// Create a debounced version of fetchData
+const debouncedFetchData = debounce(() => {
+  fetchData();
+}, 500); // 500ms delay
+
 async function fetchData() {
   isLoadingChart.value = true;
+  series.value = [];
+
   try {
     let startYear = null;
     let startMonth = null;
@@ -351,9 +359,9 @@ async function fetchData() {
         preventive: prevention.value?.preventioncode,
         machineMaker: maker.value?.makercode,
         numItem:
-          counter.value !== null ? counters.indexOf(counter.value) : null,
-        numMin: counter.value !== null ? lessThan.value : null,
-        numMax: counter.value !== null ? moreThan.value : null,
+          counter.value !== null ? counters.indexOf(counter.value) + 1 : null,
+        numMin: counter.value !== null ? parseInt(lessThan.value) : null,
+        numMax: counter.value !== null ? parseInt(moreThan.value) : null,
         targetSort: sorts.indexOf(sort.value),
         maxRow: parseInt(seeOnly.value ?? "50"),
         outofRank: includeOtherCheckBox.value,
@@ -541,10 +549,7 @@ async function fetchData() {
         const codeDetail = codeDetails.get(code);
         return {
           ...codeDetail,
-          color:
-            index < parseInt(seeOnly.value ?? "50")
-              ? getRandomColor()
-              : "#5C4646",
+          color: getRandomColor(),
           [itemCountField]: totalCounts[code],
         };
       });
@@ -555,6 +560,9 @@ async function fetchData() {
         const bValue = b[itemCountField] || 0;
         return sort.value === "DESC" ? bValue - aValue : aValue - bValue;
       });
+
+      // Limit the data based on seeOnly value
+      data.value = data.value.slice(0, parseInt(seeOnly.value ?? "50"));
 
       // Map colors and series data in the same order as the sorted data
       const sortedCodes = data.value.map((item) => item.code);
@@ -874,7 +882,7 @@ watch(
           outlined
           maxlength="3"
           @keypress="isNumber($event)"
-          v-on:input="fetchData()"
+          v-on:input="debouncedFetchData()"
         />
       </VCol>
     </VRow>
@@ -968,7 +976,7 @@ watch(
           placeholder="Input machine no"
           maxlength="12"
           outlined
-          v-on:input="fetchData()"
+          v-on:input="debouncedFetchData()"
         />
       </VCol>
     </VRow>
@@ -1071,7 +1079,7 @@ watch(
           outlined
           maxlength="12"
           @keypress="isNumber($event)"
-          v-on:input="fetchData()"
+          v-on:input="debouncedFetchData()"
         />
       </VCol>
 
@@ -1087,7 +1095,7 @@ watch(
           outlined
           maxlength="12"
           @keypress="isNumber($event)"
-          v-on:input="fetchData()"
+          v-on:input="debouncedFetchData()"
         />
       </VCol>
     </VRow>
@@ -1102,17 +1110,13 @@ watch(
     <div v-if="series.length !== 0">
       <VCardText>
         <VueApexCharts
-          v-if="series.length !== 0 && method === 'One Term'"
-          type="donut"
+          :type="method === 'One Term' ? 'donut' : 'bar'"
           height="410"
-          :options="expenseRationChartConfig"
-          :series="series"
-        />
-        <VueApexCharts
-          v-if="series.length !== 0 && method !== 'One Term'"
-          type="bar"
-          height="410"
-          :options="chartMultiTermConfig"
+          :options="
+            method === 'One Term'
+              ? expenseRationChartConfig
+              : chartMultiTermConfig
+          "
           :series="series"
         />
       </VCardText>
