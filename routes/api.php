@@ -93,6 +93,7 @@ Route::delete('/master/factors/{factorCode}', [MasFactorController::class, 'dest
 
 // Mas LTFactor
 Route::get('/master/ltfactors', [MasLTFactorController::class, 'index']);
+Route::get('/master/ltfactors/export', [MasLTFactorController::class, 'export']);
 Route::get('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'show']);
 Route::post('/master/ltfactors', [MasLTFactorController::class, 'store']);
 Route::put('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'update']);
