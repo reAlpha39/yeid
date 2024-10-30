@@ -35,6 +35,7 @@ Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController:
 
 // Master Part
 Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
+Route::get('/master/part-list/export', [App\Http\Controllers\MasterPartController::class, 'export']);
 Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
 Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
 
