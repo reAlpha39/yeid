@@ -114,6 +114,7 @@ Route::delete('/master/preventions/{preventionCode}', [MasPreventionController::
 
 // Master System
 Route::get('/master/systems', [MasSystemController::class, 'index']);
+Route::get('/master/systems/export', [MasSystemController::class, 'export']);
 Route::get('/master/systems/{year}', [MasSystemController::class, 'show']);
 Route::post('/master/systems', [MasSystemController::class, 'store']);
 Route::put('/master/systems/{year}', [MasSystemController::class, 'update']);
