@@ -1,5 +1,6 @@
 <script setup>
 import AddVendorDrawer from "@/components/drawers/AddVendorDrawer.vue";
+import axios from "axios";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -83,6 +84,28 @@ async function openEditPage(id) {
   isDrawerOpen.value = true;
 }
 
+const loadingExport = ref(false);
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const response = await axios.get("/api/master/vendors/export", {
+      responseType: "blob",
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "vendors.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
+  }
+}
+
 watch(
   () => isDrawerOpen.value,
   (newVal) => {
@@ -145,7 +168,12 @@ onMounted(() => {
         </div>
 
         <!-- 👉 Export button -->
-        <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
           Export
         </VBtn>
 

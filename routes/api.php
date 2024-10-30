@@ -51,6 +51,7 @@ Route::delete('/master/shops/{shopCode}', [MasShopController::class, 'destroy'])
 
 // Master Vendor
 Route::get('/master/vendors', [MasVendorController::class, 'index']);
+Route::get('/master/vendors/export', [MasVendorController::class, 'export']);
 Route::get('/master/vendors/{vendorCode}', [MasVendorController::class, 'show']);
 Route::post('/master/vendors', [MasVendorController::class, 'store']);
 Route::put('/master/vendors/{vendorCode}', [MasVendorController::class, 'update']);

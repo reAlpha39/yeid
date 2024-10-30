@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\MasVendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\VendorsExport;
 use Exception;
 
 class MasVendorController extends Controller
@@ -161,6 +163,19 @@ class MasVendorController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
+            ], 500);
+        }
+    }
+
+    public function export()
+    {
+        try {
+            return Excel::download(new VendorsExport(), 'vendors.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
