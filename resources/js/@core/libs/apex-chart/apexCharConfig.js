@@ -302,6 +302,50 @@ export const getDonutChartConfig = (themeColors, labels, colors) => {
 
   return {
     stroke: { width: 0 },
+     chart: {
+      toolbar: {
+        show: true,
+        offsetX: 0,
+        offsetY: 0,
+        tools: {
+          download: true,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true | '<img src="/static/icons/reset.png" width="20">',
+          customIcons: []
+        },
+        export: {
+          csv: {
+            filename: undefined,
+            columnDelimiter: ',',
+            headerCategory: 'category',
+            headerValue: 'value',
+            categoryFormatter(x) {
+              return new Date(x).toDateString()
+            },
+            valueFormatter(y) {
+              return y
+            }
+          },
+          svg: {
+            filename: undefined,
+          },
+          png: {
+            filename: undefined,
+          }
+        },
+        autoSelected: 'zoom'
+      },
+      animations: {
+          enabled: false,
+          dynamicAnimation: {
+            enabled: false
+          }
+        },
+  },
     labels: labels,
     colors: colors,
     dataLabels: {
@@ -467,13 +511,54 @@ export const getColumnChartConfig =  (themeColors, labels, colors)  => {
       offsetX: -10,
       stacked: true,
       parentHeightOffset: 0,
-      toolbar: { show: false },
+      toolbar: {
+        show: true,
+        offsetX: 0,
+        offsetY: 0,
+        tools: {
+          download: true,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true | '<img src="/static/icons/reset.png" width="20">',
+          customIcons: []
+        },
+        export: {
+          csv: {
+            filename: undefined,
+            columnDelimiter: ',',
+            headerCategory: 'category',
+            headerValue: 'value',
+            categoryFormatter(x) {
+              return new Date(x).toDateString()
+            },
+            valueFormatter(y) {
+              return y
+            }
+          },
+          svg: {
+            filename: undefined,
+          },
+          png: {
+            filename: undefined,
+          }
+        },
+        autoSelected: 'zoom'
+      },
+      animations: {
+          enabled: false,
+          dynamicAnimation: {
+            enabled: false
+          }
+        },
     },
     fill: { opacity: 1 },
     dataLabels: { enabled: false },
     colors: colors,
     legend: {
-      position: 'top',
+      position: 'right',
       horizontalAlign: 'left',
       fontSize: '13px',
       labels: { colors: themeSecondaryTextColor },
