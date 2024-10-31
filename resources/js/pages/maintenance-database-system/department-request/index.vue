@@ -1,5 +1,6 @@
 <script setup>
 import axios from "axios";
+import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -11,6 +12,18 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
+
+const now = new Date();
+const formattedDate = new Intl.DateTimeFormat("en", {
+  year: "numeric",
+  month: "2-digit",
+})
+  .format(now)
+  .split("/")
+  .reverse()
+  .join("-");
+const date = ref(formattedDate);
+
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -58,6 +71,7 @@ async function fetchData() {
       {
         params: {
           search: searchQuery.value,
+          date: date.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -122,6 +136,10 @@ async function handleExport() {
       "/api/maintenance-database-system/department-requests/export",
       {
         responseType: "blob",
+        params: {
+          search: searchQuery.value,
+          date: date.value,
+        },
       }
     );
 
@@ -180,6 +198,27 @@ onMounted(() => {
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <div style="inline-size: 10rem">
+          <AppDateTimePicker
+            v-model="date"
+            placeholder="Select month"
+            :config="{
+              dateFormat: 'Y-m',
+              mode: 'single',
+              enableTime: false,
+              enableSeconds: false,
+              plugins: [
+                new monthSelectPlugin({
+                  shorthand: true,
+                  dateFormat: 'Y-m',
+                  altFormat: 'Y-m',
+                }),
+              ],
+            }"
+            append-inner-icon="tabler-calendar"
+            @update:modelValue="fetchData()"
+          />
+        </div>
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
           <AppTextField
@@ -331,3 +370,38 @@ onMounted(() => {
     v-model:id="selectedItem"
   />
 </template>
+
+<style>
+.flatpickr-monthSelect-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.flatpickr-monthSelect-month {
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.flatpickr-monthSelect-month:hover {
+  background: #e0e0e0;
+}
+
+.flatpickr-monthSelect-month.selected {
+  background: #fa0202;
+  color: white;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled {
+  color: #999;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled:hover {
+  background: #f0f0f0;
+}
+</style>

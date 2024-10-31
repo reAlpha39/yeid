@@ -498,10 +498,14 @@ class MaintenanceRequestController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new DepartmentRequestsExport(), 'department_requests.xlsx');
+            $filename = 'department_requests_' . date('Y-m-d_His') . '.xlsx';
+            return Excel::download(
+                new DepartmentRequestsExport($request),
+                $filename
+            );
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
