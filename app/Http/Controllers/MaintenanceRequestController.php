@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\DepartmentRequestsExport;
+use App\Exports\MaintenanceReportsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
+use Log;
 
 class MaintenanceRequestController extends Controller
 {
@@ -39,6 +41,12 @@ class MaintenanceRequestController extends Controller
             // Apply filters
             if ($request->input('only_active') == 'true') {
                 $sql .= " AND COALESCE(s.approval, 0) < 119";
+            }
+
+            // Add date filter
+            if ($request->input('date')) {
+                $date = $request->input('date'); // Format: "2024-01"
+                $sql .= " AND TO_CHAR(s.orderdatetime, 'YYYY-MM') = '" . $date . "'";
             }
 
             // Implement search across multiple fields
@@ -495,6 +503,44 @@ class MaintenanceRequestController extends Controller
         try {
             return Excel::download(new DepartmentRequestsExport(), 'department_requests.xlsx');
         } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    // public function exportMaintenanceReports(Request $request)
+    // {
+    //     try {
+    //         return Excel::download(new MaintenanceReportsExport($request), 'maintenance_reports.xlsx');
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Export failed',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function exportMaintenanceReports(Request $request)
+    {
+        try {
+
+            $filename = 'maintenance_reports_' . date('Y-m-d_His') . '.xlsx';
+
+            return Excel::download(
+                new MaintenanceReportsExport($request),
+                $filename
+            );
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export validation failed',
+                'errors' => $e->failures()
+            ], 422);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Export failed',

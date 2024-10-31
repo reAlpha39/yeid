@@ -167,6 +167,7 @@ Route::put('/maintenance-database-system/department-requests/{id}', [Maintenance
 Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);
 Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
 Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
+Route::get('/maintenance-database-system/maintenance-report/export', [MaintenanceRequestController::class, 'exportMaintenanceReports']);
 Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
 
 // Request to Workshop

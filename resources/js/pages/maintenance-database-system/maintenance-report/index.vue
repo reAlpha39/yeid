@@ -1,4 +1,6 @@
 <script setup>
+import axios from "axios";
+import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -10,6 +12,17 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
+
+const now = new Date();
+const formattedDate = new Intl.DateTimeFormat("en", {
+  year: "numeric",
+  month: "2-digit",
+})
+  .format(now)
+  .split("/")
+  .reverse()
+  .join("-");
+const date = ref(formattedDate);
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -57,11 +70,13 @@ const data = ref([]);
 
 async function fetchData() {
   try {
+    console.log(date.value);
     const response = await $api(
       "/maintenance-database-system/department-requests",
       {
         params: {
           search: searchQuery.value,
+          date: date.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -88,6 +103,35 @@ async function openDetailPage(id) {
     path: "/maintenance-database-system/maintenance-report/detail",
     query: { record_id: id },
   });
+}
+
+const loadingExport = ref(false);
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const response = await axios.get(
+      "/api/maintenance-database-system/maintenance-report/export",
+      {
+        responseType: "blob",
+        params: {
+          search: searchQuery.value,
+          date: date.value,
+        },
+      }
+    );
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "maintenance_reports.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
+  }
 }
 
 onMounted(() => {
@@ -132,6 +176,28 @@ onMounted(() => {
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <div style="inline-size: 10rem">
+          <AppDateTimePicker
+            v-model="date"
+            placeholder="Select month"
+            :config="{
+              dateFormat: 'Y-m',
+              mode: 'single',
+              enableTime: false,
+              enableSeconds: false,
+              plugins: [
+                new monthSelectPlugin({
+                  shorthand: true,
+                  dateFormat: 'Y-m',
+                  altFormat: 'Y-m',
+                }),
+              ],
+            }"
+            append-inner-icon="tabler-calendar"
+            @update:modelValue="fetchData()"
+          />
+        </div>
+
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
           <AppTextField
@@ -142,7 +208,12 @@ onMounted(() => {
         </div>
 
         <!-- 👉 Export button -->
-        <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
           Export
         </VBtn>
       </div>
@@ -243,5 +314,40 @@ onMounted(() => {
   max-width: 200px; /* Constrain width to trigger ellipsis */
   line-height: 1.2em; /* Adjust the line height */
   height: 2.4em; /* Control the max height (2 lines * line-height) */
+}
+</style>
+
+<style>
+.flatpickr-monthSelect-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.flatpickr-monthSelect-month {
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.flatpickr-monthSelect-month:hover {
+  background: #e0e0e0;
+}
+
+.flatpickr-monthSelect-month.selected {
+  background: #fa0202;
+  color: white;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled {
+  color: #999;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.flatpickr-monthSelect-month.flatpickr-disabled:hover {
+  background: #f0f0f0;
 }
 </style>
