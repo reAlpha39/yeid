@@ -171,6 +171,7 @@ Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceR
 
 // Request to Workshop
 Route::get('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'index']);
+Route::get('/maintenance-database-system/request-workshop/export', [RequestWorkshopController::class, 'export']);
 Route::get('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'show']);
 Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'store']);
 Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);

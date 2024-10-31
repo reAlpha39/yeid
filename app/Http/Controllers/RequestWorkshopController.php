@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RequestToWorkshopsExport;
 use Exception;
 
 class RequestWorkshopController extends Controller
@@ -245,6 +247,25 @@ class RequestWorkshopController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function export(Request $request)
+    {
+        try {
+            $filters = $request->only(['search', 'year', 'only_active', 'shop_code', 'employee_code']);
+
+            return Excel::download(
+                new RequestToWorkshopsExport($filters),
+                'request_to_workshops.xlsx'
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

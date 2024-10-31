@@ -1,4 +1,5 @@
 <script setup>
+import axios from "axios";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -127,6 +128,31 @@ function openDeleteDialog(partCode) {
   isDeleteDialogVisible.value = true;
 }
 
+const loadingExport = ref(false);
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const response = await axios.get(
+      "/api/maintenance-database-system/request-workshop/export",
+      {
+        responseType: "blob",
+      }
+    );
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "request_to_workshops.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
+  }
+}
+
 onMounted(() => {
   fetchData();
 });
@@ -178,7 +204,12 @@ onMounted(() => {
         </div>
 
         <!-- 👉 Export button -->
-        <VBtn variant="tonal" color="secondary" prepend-icon="tabler-upload">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
           Export
         </VBtn>
 
