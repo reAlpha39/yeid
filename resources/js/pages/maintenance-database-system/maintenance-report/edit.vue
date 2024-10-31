@@ -560,6 +560,30 @@ function isNumber(evt) {
   }
 }
 
+const disableDateConfig = ref({
+  dateFormat: "Y-m-d",
+  disable: [
+    {
+      from: "1900-01-01",
+      to: startDate,
+    },
+  ],
+});
+
+function resetDate() {
+  finishedDate.value = null;
+  runProdDate.value = null;
+  disableDateConfig.value = {
+    dateFormat: "Y-m-d",
+    disable: [
+      {
+        from: "1900-01-01",
+        to: startDate,
+      },
+    ],
+  };
+}
+
 onMounted(() => {
   initEditData(route.query.record_id);
   fetchLtfactors();
@@ -674,6 +698,7 @@ onMounted(() => {
                 placeholder="2024-01-01"
                 :config="{ dateFormat: 'Y-m-d' }"
                 append-inner-icon="tabler-calendar"
+                @update:modelValue="resetDate()"
               />
             </VCol>
             <VCol cols="6">
@@ -715,7 +740,7 @@ onMounted(() => {
                 :rules="[requiredValidator]"
                 label="Tanggal"
                 placeholder="2024-01-01"
-                :config="{ dateFormat: 'Y-m-d' }"
+                :config="disableDateConfig"
                 append-inner-icon="tabler-calendar"
               />
             </VCol>
@@ -758,7 +783,7 @@ onMounted(() => {
                 :rules="[requiredValidator]"
                 label="Tanggal"
                 placeholder="2024-01-01"
-                :config="{ dateFormat: 'Y-m-d' }"
+                :config="disableDateConfig"
                 append-inner-icon="tabler-calendar"
               />
             </VCol>
