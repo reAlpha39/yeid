@@ -1,36 +1,39 @@
 <script setup>
-import CrmActiveProject from '@/views/dashboards/crm/CrmActiveProject.vue'
-import CrmActivityTimeline from '@/views/dashboards/crm/CrmActivityTimeline.vue'
-import CrmAnalyticsSales from '@/views/dashboards/crm/CrmAnalyticsSales.vue'
-import CrmEarningReportsYearlyOverview from '@/views/dashboards/crm/CrmEarningReportsYearlyOverview.vue'
-import CrmOrderBarChart from '@/views/dashboards/crm/CrmOrderBarChart.vue'
-import CrmProjectStatus from '@/views/dashboards/crm/CrmProjectStatus.vue'
-import CrmRecentTransactions from '@/views/dashboards/crm/CrmRecentTransactions.vue'
-import CrmRevenueGrowth from '@/views/dashboards/crm/CrmRevenueGrowth.vue'
-import CrmSalesAreaCharts from '@/views/dashboards/crm/CrmSalesAreaCharts.vue'
-import CrmSalesByCountries from '@/views/dashboards/crm/CrmSalesByCountries.vue'
-
 const simpleStatisticsDemoCards = [
   {
-    icon: 'tabler-credit-card',
-    color: 'error',
-    title: 'Total Profit',
-    subTitle: 'Last week',
-    stat: '1.28k',
-    change: '-12.2%',
+    icon: "tabler-credit-card",
+    color: "error",
+    title: "Total Profit",
+    subTitle: "Last week",
+    stat: "1.28k",
+    change: "-12.2%",
   },
   {
-    icon: 'tabler-currency-dollar',
-    color: 'success',
-    title: 'Total Sales',
-    subTitle: 'Last week',
-    stat: '$4,673',
-    change: '+25.2%',
+    icon: "tabler-currency-dollar",
+    color: "success",
+    title: "Total Sales",
+    subTitle: "Last week",
+    stat: "$4,673",
+    change: "+25.2%",
   },
-]
+];
 </script>
 
 <template>
+  <div>
+    <VBreadcrumbs
+      class="px-0 pb-2 pt-0 inventory-control-create-inbound"
+      :items="[
+        {
+          title: 'Dashboard',
+          class: 'text-h4',
+        },
+      ]"
+    />
+  </div>
+</template>
+
+<!-- <template>
   <VRow class="match-height">
     <VCol
       cols="12"
@@ -92,7 +95,7 @@ const simpleStatisticsDemoCards = [
       </VCard>
     </VCol>
 
-    <!-- 👉 Revenue Growth -->
+    👉 Revenue Growth
     <VCol
       cols="12"
       md="8"
@@ -101,7 +104,7 @@ const simpleStatisticsDemoCards = [
       <CrmRevenueGrowth />
     </VCol>
 
-    <!-- 👉 Earning Reports -->
+    👉 Earning Reports
     <VCol
       cols="12"
       md="8"
@@ -109,7 +112,7 @@ const simpleStatisticsDemoCards = [
       <CrmEarningReportsYearlyOverview />
     </VCol>
 
-    <!-- 👉 Sales -->
+    👉 Sales
     <VCol
       cols="12"
       md="4"
@@ -117,7 +120,7 @@ const simpleStatisticsDemoCards = [
       <CrmAnalyticsSales />
     </VCol>
 
-    <!-- 👉 Browser States -->
+    👉 Browser States
     <VCol
       cols="12"
       md="4"
@@ -125,7 +128,7 @@ const simpleStatisticsDemoCards = [
       <CrmSalesByCountries />
     </VCol>
 
-    <!-- 👉 Project Status -->
+    👉 Project Status
     <VCol
       cols="12"
       md="4"
@@ -133,7 +136,7 @@ const simpleStatisticsDemoCards = [
       <CrmProjectStatus />
     </VCol>
 
-    <!-- 👉 Active Project -->
+    👉 Active Project
     <VCol
       cols="12"
       md="4"
@@ -141,7 +144,7 @@ const simpleStatisticsDemoCards = [
       <CrmActiveProject />
     </VCol>
 
-    <!-- 👉 Recent Transactions -->
+    👉 Recent Transactions
     <VCol
       cols="12"
       md="6"
@@ -149,7 +152,7 @@ const simpleStatisticsDemoCards = [
       <CrmRecentTransactions />
     </VCol>
 
-    <!-- 👉 Active timeline -->
+    👉 Active timeline
     <VCol
       cols="12"
       md="6"
@@ -157,4 +160,4 @@ const simpleStatisticsDemoCards = [
       <CrmActivityTimeline />
     </VCol>
   </VRow>
-</template>
+</template> -->
