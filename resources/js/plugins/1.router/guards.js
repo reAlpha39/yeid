@@ -1,4 +1,4 @@
-import { canNavigate } from '@layouts/plugins/casl'
+import { canNavigate } from '@layouts/plugins/casl';
 
 export const setupGuards = router => {
   // 👉 router.beforeEach
@@ -15,6 +15,14 @@ export const setupGuards = router => {
          * Check if user is logged in by checking if token & user data exists in local storage
          * Feel free to update this logic to suit your needs
          */
+    const ability = useAbility();
+    if ((useCookie('userData').value?.id ?? 0) !== 6) {
+      useCookie("accessToken").value = null;
+      useCookie('userData').value = null;
+      useCookie("userAbilityRules").value = null;
+      ability.update([]);
+    }
+
     const isLoggedIn = !!(useCookie('userData').value && useCookie('accessToken').value)
 
     /*
