@@ -14,6 +14,16 @@ const searchQuery = ref("");
 const itemsPerPage = ref(10);
 const page = ref(1);
 
+const now = new Date();
+const currentYear = now.getFullYear();
+const years = ref([]);
+const year = ref(currentYear);
+
+function getLastTenYears() {
+  for (let i = 0; i <= 10; i++) {
+    years.value.push(currentYear - i);
+  }
+}
 // data table
 const data = ref([]);
 
@@ -24,6 +34,7 @@ async function fetchData() {
       {
         params: {
           search: searchQuery.value,
+          year: year.value.toString(),
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -137,6 +148,10 @@ async function handleExport() {
       "/api/maintenance-database-system/request-workshop/export",
       {
         responseType: "blob",
+        params: {
+          search: searchQuery.value,
+          year: year.value.toString(),
+        },
       }
     );
 
@@ -154,6 +169,7 @@ async function handleExport() {
 }
 
 onMounted(() => {
+  getLastTenYears();
   fetchData();
 });
 </script>
@@ -194,6 +210,12 @@ onMounted(() => {
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <AppAutocomplete
+          v-model="year"
+          :items="years"
+          outlined
+          @update:model-value="fetchData()"
+        />
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
           <AppTextField
