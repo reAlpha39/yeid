@@ -799,8 +799,6 @@ function isNumber(evt) {
   }
 }
 
-const menu = ref(false);
-
 onMounted(() => {
   fetchData();
   fetchShop();
@@ -811,6 +809,15 @@ onMounted(() => {
   fetchPrevention();
   fetchLtfactors();
   fetchMakers();
+});
+
+const key = ref(0);
+watch(startDate, (newStartDate) => {
+  if (endDate.value && new Date(endDate.value) < new Date(newStartDate)) {
+    endDate.value = newStartDate;
+  }
+
+  key.value++;
 });
 
 watch(
@@ -865,10 +872,11 @@ watch(
       </VCol>
       <VCol>
         <AppDateTimePicker
+          :key="key"
           class="pt-1"
           v-model="endDate"
           label=" "
-          placeholder="Oct 2024"
+          :placeholder="endDate"
           :config="{
             dateFormat: 'M Y',
             mode: 'single',
