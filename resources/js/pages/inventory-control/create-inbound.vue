@@ -74,8 +74,6 @@ const handlePartSelected = (item) => {
     note: "",
     employeeCode: "",
   });
-
-  // console.log(parts.value);
 };
 
 const handleItemSelected = (item) => {

@@ -19,6 +19,8 @@ use App\Http\Controllers\MasUserController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\RequestWorkshopController;
 use App\Http\Controllers\AnalyzationController;
+use App\Http\Controllers\ExchangeDataController;
+use App\Http\Controllers\ProductionDataController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -180,6 +182,16 @@ Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestW
 
 // Database Analyzation
 Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
+
+// Exchange Data
+Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
+Route::get('/press-shot/exchange/model-dies', [ExchangeDataController::class, 'indexModelDie']);
+Route::get('/press-shot/exchange/machines-no', [ExchangeDataController::class, 'indexMachineNo']);
+Route::get('/press-shot/exchanges/{id}', [ExchangeDataController::class, 'show']);
+
+// Production Data
+Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
+
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);
