@@ -12,8 +12,8 @@ export default [
         to: 'press-shot-production-data',
       },
       {
-        title: 'History Data',
-        // to: 'inventory-control-inventory-outbound',
+        title: 'History Activity',
+        to: 'press-shot-history-activity',
       },
     ],
   },

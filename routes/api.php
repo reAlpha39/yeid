@@ -21,6 +21,7 @@ use App\Http\Controllers\RequestWorkshopController;
 use App\Http\Controllers\AnalyzationController;
 use App\Http\Controllers\ExchangeDataController;
 use App\Http\Controllers\ProductionDataController;
+use App\Http\Controllers\HistoryActivityController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -195,6 +196,8 @@ Route::get('/press-shot/productions', [ProductionDataController::class, 'index']
 Route::get('/press-shot/production', [ProductionDataController::class, 'show']);
 Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
 
+// History Activity
+Route::get('/press-shot/history-activity', [HistoryActivityController::class, 'index']);
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);

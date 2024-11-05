@@ -180,6 +180,7 @@ declare module 'vue-router/auto/routes' {
     'pages-user-profile-tab': RouteRecordInfo<'pages-user-profile-tab', '/pages/user-profile/:tab', { tab: ParamValue<true> }, { tab: ParamValue<false> }>,
     'press-shot-exchange-data': RouteRecordInfo<'press-shot-exchange-data', '/press-shot/exchange-data', Record<never, never>, Record<never, never>>,
     'press-shot-exchange-data-exchange-part': RouteRecordInfo<'press-shot-exchange-data-exchange-part', '/press-shot/exchange-data/exchange-part', Record<never, never>, Record<never, never>>,
+    'press-shot-history-activity': RouteRecordInfo<'press-shot-history-activity', '/press-shot/history-activity', Record<never, never>, Record<never, never>>,
     'press-shot-production-data': RouteRecordInfo<'press-shot-production-data', '/press-shot/production-data', Record<never, never>, Record<never, never>>,
     'press-shot-production-data-add': RouteRecordInfo<'press-shot-production-data-add', '/press-shot/production-data/add', Record<never, never>, Record<never, never>>,
     'register': RouteRecordInfo<'register', '/register', Record<never, never>, Record<never, never>>,
