@@ -147,7 +147,7 @@ class ExchangeDataController extends Controller
     {
         try {
             $results = DB::table('mas_presspart')
-            ->distinct()
+                ->distinct()
                 ->whereNotNull('dieunitno')
                 ->orderBy('dieunitno')
                 ->pluck('dieunitno');

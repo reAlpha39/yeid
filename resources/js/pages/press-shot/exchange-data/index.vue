@@ -1,5 +1,6 @@
 <script setup>
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
+import moment from "moment";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -15,17 +16,7 @@ const selectedItem = ref("");
 const itemsPerPage = ref(10);
 const page = ref(1);
 
-const now = new Date();
-
-const formattedDate = new Intl.DateTimeFormat("en", {
-  year: "numeric",
-  month: "2-digit",
-})
-  .format(now)
-  .split("/")
-  .reverse()
-  .join("-");
-const date = ref(formattedDate);
+const date = ref(moment().format("YYYY-MM"));
 
 const data = ref([]);
 const modelDieData = ref([]);
@@ -85,36 +76,24 @@ async function fetchDataMachineNo() {
   }
 }
 
-function formatDateTime(datetimeString) {
-  // Parse the datetime string
-  const year = datetimeString.slice(0, 4);
-  const month = datetimeString.slice(4, 6);
-  const day = datetimeString.slice(6, 8);
-  const hours = datetimeString.slice(8, 10);
-  const minutes = datetimeString.slice(10, 12);
-  const seconds = datetimeString.slice(12, 14);
+function formatDateTime(dateString) {
+  let momentDate;
 
-  // Create a Date object
-  const date = new Date(
-    `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
-  );
+  // Check if the date is in numeric format (20241105094958)
+  if (/^\d{14}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYYMMDDHHmmss");
+  }
+  // Check if the date is in YYYY-MM-DD HH:mm:ss format
+  else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYY-MM-DD HH:mm:ss");
+  } else {
+    return "Invalid date format";
+  }
 
-  // Define Indonesian locale options for date and time formatting
-  const dateFormatter = new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  moment.locale("id");
 
-  const timeFormatter = new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
-  // Format the date and time
-  const formattedDate = dateFormatter.format(date);
-  const formattedTime = timeFormatter.format(date);
+  const formattedDate = momentDate.format("D MMMM YYYY");
+  const formattedTime = momentDate.format("HH:mm:ss");
 
   return { formattedDate, formattedTime };
 }
@@ -334,11 +313,8 @@ onMounted(() => {
 
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn>
-            <VIcon
-              @click="openDetailPage(item.exchangedatetime)"
-              icon="tabler-eye"
-            />
+          <IconBtn @click="openDetailPage(item.exchangedatetime)">
+            <VIcon icon="tabler-eye" />
           </IconBtn>
           <!-- <IconBtn @click="openDeleteDialog(item.makercode)">
             <VIcon icon="tabler-trash" />
