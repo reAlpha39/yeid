@@ -84,7 +84,10 @@ class MasterPartController extends Controller
             }
 
             if (!empty($partCode)) {
-                $queryBuilder->where(DB::raw('m.partcode', $partCode));
+                $queryBuilder->where(function ($q) use ($partCode) {
+                    $q->where('m.partcode',  $partCode)
+                        ->orWhere(DB::raw('upper(m.partname)'), strtoupper($partCode));
+                });
             }
 
             if (!empty($brand)) {
