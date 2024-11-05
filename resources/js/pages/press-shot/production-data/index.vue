@@ -137,6 +137,10 @@ const headers = [
     key: "dieno",
   },
   {
+    title: "DIE UNIT NO#",
+    key: "dieunitno",
+  },
+  {
     title: "START DATE",
     key: "startdatetime",
   },
@@ -324,6 +328,14 @@ onMounted(() => {
             <small>{{ formatDateTime(item.enddatetime).formattedTime }}</small>
           </div>
         </div>
+      </template>
+
+      <template v-slot:header.dieunitno="{ headers }">
+        DIE<br />UNIT NO#
+      </template>
+
+      <template v-slot:header.shotcount="{ headers }">
+        SHOT<br />COUNT
       </template>
 
       <template #item.actions="{ item }">

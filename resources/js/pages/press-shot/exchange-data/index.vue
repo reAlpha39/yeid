@@ -138,6 +138,14 @@ const headers = [
     key: "processname",
   },
   {
+    title: "SERIAL NO",
+    key: "serialno",
+  },
+  {
+    title: "REASON",
+    key: "reason",
+  },
+  {
     title: "QTTY",
     key: "exchangeqtty",
   },
@@ -310,6 +318,12 @@ onMounted(() => {
           </div>
         </div>
       </template>
+
+      <template v-slot:header.dieunitno="{ headers }">
+        DIE<br />UNIT NO#
+      </template>
+
+      <template v-slot:header.serialno="{ headers }"> SERIAL<br />NO </template>
 
       <template #item.actions="{ item }">
         <div class="align-center">
