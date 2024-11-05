@@ -187,10 +187,12 @@ Route::post('/maintenance-database-system/analyze', [AnalyzationController::clas
 Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
 Route::get('/press-shot/exchange/model-dies', [ExchangeDataController::class, 'indexModelDie']);
 Route::get('/press-shot/exchange/machines-no', [ExchangeDataController::class, 'indexMachineNo']);
+Route::get('/press-shot/exchange/die-units', [ExchangeDataController::class, 'indexDieUnit']);
 Route::get('/press-shot/exchanges/{id}', [ExchangeDataController::class, 'show']);
 
 // Production Data
 Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
+Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
 
 
 // Work

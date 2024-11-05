@@ -181,6 +181,7 @@ declare module 'vue-router/auto/routes' {
     'press-shot-exchange-data': RouteRecordInfo<'press-shot-exchange-data', '/press-shot/exchange-data', Record<never, never>, Record<never, never>>,
     'press-shot-exchange-data-exchange-part': RouteRecordInfo<'press-shot-exchange-data-exchange-part', '/press-shot/exchange-data/exchange-part', Record<never, never>, Record<never, never>>,
     'press-shot-production-data': RouteRecordInfo<'press-shot-production-data', '/press-shot/production-data', Record<never, never>, Record<never, never>>,
+    'press-shot-production-data-add': RouteRecordInfo<'press-shot-production-data-add', '/press-shot/production-data/add', Record<never, never>, Record<never, never>>,
     'register': RouteRecordInfo<'register', '/register', Record<never, never>, Record<never, never>>,
     'tables-data-table': RouteRecordInfo<'tables-data-table', '/tables/data-table', Record<never, never>, Record<never, never>>,
     'tables-simple-table': RouteRecordInfo<'tables-simple-table', '/tables/simple-table', Record<never, never>, Record<never, never>>,

@@ -76,4 +76,47 @@ class ProductionDataController extends Controller
             ], 500);
         }
     }
+
+    public function store(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $dieUnitNo = $request->input('die_unit_no');
+            $shotCount = intval($request->input('shot_count', 0));
+            $startDateTime = $request->input('start_datetime');
+            $endDateTime = $request->input('end_datetime');
+            $reason = $request->input('reason');
+
+            DB::table('tbl_presswork')->insert([
+                'machineno' => $machineNo,
+                'model' => $model,
+                'dieno' => $dieNo,
+                'dieunitno' => $dieUnitNo,
+                'shotcount' => $shotCount,
+                'startdatetime' => $startDateTime,
+                'enddatetime' => $endDateTime,
+                'reason' => $reason,
+                'updatetime' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data inserted successfully'
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error inserting data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

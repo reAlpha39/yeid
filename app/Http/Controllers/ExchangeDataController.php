@@ -143,6 +143,29 @@ class ExchangeDataController extends Controller
         }
     }
 
+    public function indexDieUnit()
+    {
+        try {
+            $results = DB::table('mas_presspart')
+            ->distinct()
+                ->whereNotNull('dieunitno')
+                ->orderBy('dieunitno')
+                ->pluck('dieunitno');
+
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function show($exchangeId)
     {
         try {

@@ -273,8 +273,8 @@ onMounted(() => {
 
         <VBtn variant="tonal" prepend-icon="tabler-list"> Log </VBtn>
 
-        <VBtn prepend-icon="tabler-edit" to="exchange-data/exchange-part">
-          Exchange Part
+        <VBtn prepend-icon="tabler-edit" to="production-data/add">
+          Create Production Data
         </VBtn>
       </div>
     </VCardText>
@@ -342,10 +342,10 @@ onMounted(() => {
     </VDataTable>
   </VCard>
 
-  <DetailExchangeDataDialog
+  <!-- <AddProductionDataDialog
     v-model:isDialogVisible="isDetailDialogVisible"
     v-model:id="selectedItem"
-  />
+  /> -->
 </template>
 
 <style>
