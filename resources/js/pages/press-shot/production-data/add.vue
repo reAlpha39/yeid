@@ -40,6 +40,9 @@ async function addProductionData() {
       start_datetime: moment(startDate.value).format("YYYYMMDDHHmmss"),
       end_datetime: moment(endDate.value).format("YYYYMMDDHHmmss"),
       reason: reason.value,
+      // TODO: update user code and name based on login
+      login_user_code: "-",
+      login_user_name: "-",
     };
 
     const response = await $api("/press-shot/productions", {

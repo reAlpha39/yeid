@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Exception;
 
 class ProductionDataController extends Controller
@@ -139,6 +140,11 @@ class ProductionDataController extends Controller
             $endDateTime = $request->input('end_datetime');
             $reason = $request->input('reason');
 
+            $loginUserCode = $request->input('login_user_code');
+            $loginUserName = $request->input('login_user_name');
+
+            $currentDateTime = now();
+
             DB::table('tbl_presswork')->insert([
                 'machineno' => $machineNo,
                 'model' => $model,
@@ -148,7 +154,25 @@ class ProductionDataController extends Controller
                 'startdatetime' => $startDateTime,
                 'enddatetime' => $endDateTime,
                 'reason' => $reason,
-                'updatetime' => now()
+                'updatetime' => $currentDateTime
+            ]);
+
+            // Insert Log
+            DB::table('tbl_activity')->insert([
+                'datetime' => $currentDateTime->format('YmdHis'),
+                'machineno' => $machineNo,
+                'model' => $model,
+                'dieno' => $dieNo,
+                'processname' => '',       // Empty string as per original code
+                'partcode' => '',          // Empty string as per original code
+                'partname' => '',          // Empty string as per original code
+                'qty' => $shotCount,
+                'employeecode' => $loginUserCode,
+                'employeename' => $loginUserName,
+                'mainform' => 'Production Data',
+                'submenu' => 'Add Result Data Production',
+                'reason' => $reason,
+                'updatetime' => $currentDateTime,
             ]);
 
             DB::commit();
