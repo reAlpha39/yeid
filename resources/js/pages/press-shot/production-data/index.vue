@@ -1,5 +1,6 @@
 <script setup>
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
+import moment from "moment";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
@@ -84,36 +85,24 @@ async function fetchDataMachineNo() {
   }
 }
 
-function formatDateTime(datetimeString) {
-  // Parse the datetime string
-  const year = datetimeString.slice(0, 4);
-  const month = datetimeString.slice(4, 6);
-  const day = datetimeString.slice(6, 8);
-  const hours = datetimeString.slice(8, 10);
-  const minutes = datetimeString.slice(10, 12);
-  const seconds = datetimeString.slice(12, 14);
+function formatDateTime(dateString) {
+  let momentDate;
 
-  // Create a Date object
-  const date = new Date(
-    `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
-  );
+  // Check if the date is in numeric format (20241105094958)
+  if (/^\d{14}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYYMMDDHHmmss");
+  }
+  // Check if the date is in YYYY-MM-DD HH:mm:ss format
+  else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYY-MM-DD HH:mm:ss");
+  } else {
+    return "Invalid date format";
+  }
 
-  // Define Indonesian locale options for date and time formatting
-  const dateFormatter = new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+  moment.locale("id");
 
-  const timeFormatter = new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-
-  // Format the date and time
-  const formattedDate = dateFormatter.format(date);
-  const formattedTime = timeFormatter.format(date);
+  const formattedDate = momentDate.format("D MMMM YYYY");
+  const formattedTime = momentDate.format("HH:mm:ss");
 
   return { formattedDate, formattedTime };
 }
@@ -336,6 +325,18 @@ onMounted(() => {
 
       <template v-slot:header.shotcount="{ headers }">
         SHOT<br />COUNT
+      </template>
+
+      <template #item.updatetime="{ item }">
+        <div class="d-flex align-center">
+          <div class="d-flex flex-column">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ formatDateTime(item.updatetime).formattedDate }}</span
+            >
+            <small>{{ formatDateTime(item.updatetime).formattedTime }}</small>
+          </div>
+        </div>
       </template>
 
       <template #item.actions="{ item }">
