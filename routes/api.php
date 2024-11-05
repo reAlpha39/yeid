@@ -192,6 +192,7 @@ Route::get('/press-shot/exchanges/{id}', [ExchangeDataController::class, 'show']
 
 // Production Data
 Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
+Route::get('/press-shot/production', [ProductionDataController::class, 'show']);
 Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
 
 

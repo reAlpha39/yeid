@@ -77,6 +77,54 @@ class ProductionDataController extends Controller
         }
     }
 
+    public function show(Request $request)
+    {
+        try {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $updateTime = $request->input('update_time');
+            $dieUnitNo = $request->input('die_unit_no');
+
+            $query = DB::table('tbl_presswork');
+
+            $query->select([
+                'machineno',
+                'model',
+                'dieno',
+                'dieunitno',
+                'startdatetime',
+                'enddatetime',
+                'shotcount',
+                'reason',
+                'employeecode',
+                'employeename',
+                'updatetime'
+            ])->where('machineno', $machineNo)
+                ->where('model', $model)
+                ->where('dieno', $dieNo)
+                ->where('startdatetime',  $startDate)
+                ->where('enddatetime', $endDate)
+                ->where('updatetime', $updateTime)
+                ->where('dieunitno', $dieUnitNo);
+
+            $results = $query->first();
+
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();

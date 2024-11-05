@@ -1,7 +1,8 @@
-import { createApp } from 'vue';
 import App from '@/App.vue';
 import { registerPlugins } from '@core/utils/plugins';
 import axios from 'axios';
+import 'moment/locale/id';
+import { createApp } from 'vue';
 
 // Styles
 import '@core-scss/template/index.scss';

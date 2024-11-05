@@ -118,8 +118,8 @@ function formatDateTime(datetimeString) {
   return { formattedDate, formattedTime };
 }
 
-function openDetailPage(id) {
-  selectedItem.value = id;
+function openDetailPage(data) {
+  selectedItem.value = data;
   isDetailDialogVisible.value = true;
 }
 
@@ -328,11 +328,8 @@ onMounted(() => {
 
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn>
-            <VIcon
-              @click="openDetailPage(item.exchangedatetime)"
-              icon="tabler-eye"
-            />
+          <IconBtn @click="openDetailPage(item)">
+            <VIcon icon="tabler-eye" />
           </IconBtn>
           <!-- <IconBtn @click="openDeleteDialog(item.makercode)">
             <VIcon icon="tabler-trash" />
@@ -342,10 +339,10 @@ onMounted(() => {
     </VDataTable>
   </VCard>
 
-  <!-- <AddProductionDataDialog
+  <DetailProductionDataDialog
     v-model:isDialogVisible="isDetailDialogVisible"
-    v-model:id="selectedItem"
-  /> -->
+    v-model:data="selectedItem"
+  />
 </template>
 
 <style>
