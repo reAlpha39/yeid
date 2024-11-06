@@ -17,26 +17,26 @@ class MaintenanceRequestController extends Controller
         try {
             // Base SQL query for PostgreSQL
             $sql = "SELECT
-                    s.recordid,
-                    s.maintenancecode,
-                    s.orderdatetime,
-                    s.orderempname,
-                    s.ordershop,
-                    s.machineno,
-                    m.machinename,
-                    s.ordertitle,
-                    s.orderfinishdate,
-                    s.orderjobtype,
-                    s.orderqtty,
-                    s.orderstoptime,
-                    s.updatetime,
-                    COALESCE(s.planid, 0) AS planid,
-                    COALESCE(s.approval, 0) AS approval,
-                    COALESCE(s.createempcode, '') AS createempcode,
-                    COALESCE(s.createempname, '') AS createempname
-                FROM tbl_spkrecord s
-                LEFT JOIN mas_machine m ON s.machineno = m.machineno
-                WHERE 1=1";
+                s.recordid,
+                s.maintenancecode,
+                s.orderdatetime,
+                s.orderempname,
+                s.ordershop,
+                s.machineno,
+                m.machinename,
+                s.ordertitle,
+                s.orderfinishdate,
+                s.orderjobtype,
+                s.orderqtty,
+                s.orderstoptime,
+                s.updatetime,
+                COALESCE(s.planid, 0) AS planid,
+                COALESCE(s.approval, 0) AS approval,
+                COALESCE(s.createempcode, '') AS createempcode,
+                COALESCE(s.createempname, '') AS createempname
+            FROM tbl_spkrecord s
+            LEFT JOIN mas_machine m ON s.machineno = m.machineno
+            WHERE 1=1";
 
             // Apply filters
             if ($request->input('only_active') == 'true') {
@@ -46,26 +46,41 @@ class MaintenanceRequestController extends Controller
             // Add date filter
             if ($request->input('date')) {
                 $date = $request->input('date'); // Format: "2024-01"
-                $sql .= " AND TO_CHAR(s.orderdatetime, 'YYYY-MM') = '" . $date . "'";
+                $sql .= " AND TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?";
             }
 
-            // Implement search across multiple fields
+            // Implement search across multiple fields with proper type casting
             if ($request->input('search')) {
                 $search = $request->input('search');
-                $sql .= " AND (s.recordid LIKE '$search%'
-                OR s.maintenancecode LIKE '$search%'
-                OR s.orderempname LIKE '$search%'
-                OR s.ordershop LIKE '$search%'
-                OR s.machineno LIKE '$search%'
-                OR m.machinename LIKE '$search%'
-                OR s.ordertitle LIKE '$search%')";
+                $sql .= " AND (
+                CAST(s.recordid AS TEXT) ILIKE ? 
+                OR COALESCE(s.maintenancecode, '') ILIKE ? 
+                OR COALESCE(s.orderempname, '') ILIKE ? 
+                OR COALESCE(s.ordershop, '') ILIKE ? 
+                OR COALESCE(s.machineno, '') ILIKE ? 
+                OR COALESCE(m.machinename, '') ILIKE ? 
+                OR COALESCE(s.ordertitle, '') ILIKE ?
+            )";
             }
 
             // Order by recordid descending
             $sql .= " ORDER BY s.recordid DESC";
 
-            // Execute the query
-            $results = DB::select($sql);
+            // Prepare the bindings array
+            $bindings = [];
+            if ($request->input('date')) {
+                $bindings[] = $request->input('date');
+            }
+            if ($request->input('search')) {
+                $search = $request->input('search') . '%';
+                // Add the search term 7 times for each ILIKE condition
+                for ($i = 0; $i < 7; $i++) {
+                    $bindings[] = $search;
+                }
+            }
+
+            // Execute the query with bindings
+            $results = DB::select($sql, $bindings);
 
             // Return the data
             return response()->json([
