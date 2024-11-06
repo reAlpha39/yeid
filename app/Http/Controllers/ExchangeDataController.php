@@ -165,6 +165,50 @@ class ExchangeDataController extends Controller
         }
     }
 
+    public function showQtyPerDie(Request $request)
+    {
+        try {
+            $machineNo = $request->input('machine_no');
+            $model =  $request->input('model');
+            $dieNo =  $request->input('die_no');
+            $partCode = $request->input('part_code');
+
+            $query = DB::table('mas_presspart')
+                ->select('qttyperdie')
+                ->where('machineno', $machineNo);
+
+            if (!empty($model) && !empty($dieNo)) {
+                $query->where('model', $model)
+                    ->where('dieno', $dieNo);
+            }
+
+            if (!empty($partCode)) {
+                $query->where('partcode', $partCode);
+            }
+
+            $result = $query->first();
+
+            if ($result) {
+                return response()->json([
+                    'success' => true,
+                    'data' => $result
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No data found.'
+                ], 404);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetch data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
     public function show($exchangeId)
     {
@@ -199,6 +243,88 @@ class ExchangeDataController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetch data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $exchangeDateTime = $request->input('exchange_date_time'); // Format: 'YYYYMMDDHHMMSS'
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $processName = $request->input('process_name');
+            $partCode = $request->input('part_code');
+            $partName = $request->input('part_name');
+            $exchangeShotNo = $request->input('exchange_shot_no');
+            $exchangeQty = $request->input('exchange_qty');
+            $reason = $request->input('reason');
+            $updateTime = now();
+
+            $loginUserCode = $request->input('login_user_code');
+            $loginUserName = $request->input('login_user_name');
+
+
+            // Insert exchange data record
+            DB::table('tbl_exchangework')->insert([
+                'exchangedatetime' => $exchangeDateTime,
+                'machineno' => $machineNo,
+                'model' => $model,
+                'dieno' => $dieNo,
+                'processname' => $processName,
+                'partcode' => $partCode,
+                'partname' => $partName,
+                'exchangeshotno' => $exchangeShotNo,
+                'exchangeqtty' => $exchangeQty,
+                'reason' => $reason,
+                'updatetime' => $updateTime
+            ]);
+
+            // Update exchange data master
+            DB::table('mas_presspart')
+                ->where('machineno', $machineNo)
+                ->where('model', $model)
+                ->where('dieno', $dieNo)
+                ->where('partcode', $partCode)
+                ->update([
+                    'exchangedatetime' => $exchangeDateTime,
+                    'updatetime' => $updateTime
+                ]);
+
+            // Insert data Log
+            DB::table('tbl_activity')->insert([
+                'datetime' => $updateTime->format('YmdHis'),
+                'machineno' => $machineNo,
+                'model' => $model,
+                'dieno' => $dieNo,
+                'processname' => '', // process name is empty
+                'partcode' => '',    // part code is empty
+                'partname' => '',    // part name is empty
+                'qty' => $exchangeQty,
+                'employeecode' => $loginUserCode,
+                'employeename' => $loginUserName,
+                'mainform' => 'Exchange Data',
+                'submenu' => 'Add Exchange Data',
+                'reason' => $reason,
+                'updatetime' => $updateTime
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data inserted successfully.'
+            ], 201);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching data',
                 'error' => $e->getMessage()
             ], 500);
         }
