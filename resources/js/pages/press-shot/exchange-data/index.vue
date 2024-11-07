@@ -1,9 +1,11 @@
 <script setup>
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import moment from "moment";
+import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
+const router = useRouter();
 
 const searchQuery = ref("");
 const selectedMachineNo = ref(null);
@@ -101,6 +103,13 @@ function formatDateTime(dateString) {
 function openDetailPage(id) {
   selectedItem.value = id;
   isDetailDialogVisible.value = true;
+}
+
+async function openEditPage(id) {
+  await router.push({
+    path: "/press-shot/exchange-data/exchange-part",
+    query: { exchangeid: id },
+  });
 }
 
 // headers
@@ -330,9 +339,9 @@ onMounted(() => {
           <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <!-- <IconBtn @click="openDeleteDialog(item.makercode)">
-            <VIcon icon="tabler-trash" />
-          </IconBtn> -->
+          <IconBtn @click="openEditPage(item.exchangedatetime)">
+            <VIcon icon="tabler-exchange" />
+          </IconBtn>
         </div>
       </template>
     </VDataTable>

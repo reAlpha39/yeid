@@ -10,6 +10,9 @@ const route = useRoute();
 const isSelectInventoryPartDialogVisible = ref(false);
 const part = ref();
 
+const data = ref(null);
+const machine = ref(null);
+
 const form = ref(null);
 const now = new Date();
 
@@ -17,13 +20,86 @@ const exchangeDate = ref(formatDateTime(now));
 const exchangeQty = ref("0");
 const reason = ref(null);
 
+async function initEditData(id) {
+  await fetchData(id);
+  await fetchDataMachine(data.value?.machineno);
+}
+
+async function fetchData(id) {
+  try {
+    const response = await $api("/press-shot/exchanges/" + id);
+
+    data.value = response.data;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
 async function submitData() {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
     return;
   }
 
-  // await addProductionData();
+  await addExchangeData();
+}
+
+async function addExchangeData() {
+  try {
+    const response = await $api("/press-shot/exchanges", {
+      method: "POST",
+      body: {
+        exchange_date_time: moment(exchangeDate.value).format("YYYYMMDDHHmmss"),
+        machine_no: data.value?.machineno,
+        model: data.value?.model,
+        die_no: data.value?.dieno,
+        process_name: data.value?.processname,
+        part_code: data.value?.partcode,
+        part_name: data.value?.partname,
+        exchange_shot_no: data.value?.exchangeshotno,
+        exchange_qty: parseInt(exchangeQty.value),
+        reason: reason.value,
+        // TODO: update login user
+        login_user_code: "",
+        login_user_name: "",
+      },
+    });
+
+    toast.success("Update exchange data success");
+    await router.push("/press-shot/exchange-data");
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataQtyPerDie() {
+  try {
+    const response = await $api("/press-shot/exchanges/qty-per-die", {
+      params: {
+        machine_no: data.value?.machineno,
+        model: data.value?.model,
+        die_no: data.value?.dieno,
+        part_code: data.value?.partcode,
+      },
+    });
+
+    exchangeQty.value = response.data;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataMachine(id) {
+  try {
+    const response = await $api("/master/machines/" + id);
+
+    machine.value = response.data;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 function formatDateTime(date) {
@@ -42,6 +118,10 @@ function isNumber(evt) {
     evt.preventDefault();
   }
 }
+
+onMounted(() => {
+  initEditData(route.query.exchangeid);
+});
 </script>
 
 <template>
@@ -69,35 +149,49 @@ function isNumber(evt) {
 
       <VRow class="mx-4 my-4">
         <VCol cols="6">
-          <VCardTitle> Part Name </VCardTitle>
-          <text class="ml-4"> Part Code : -</text>
+          <VCardTitle> {{ data?.partname }} </VCardTitle>
+          <text class="ml-4"> Part Code : {{ data?.partcode }}</text>
           <VRow class="ml-4 mb-2 mt-6" no-gutters>
             <VCol cols="4"><text> Machine No</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ machine?.machineno }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Machine Name</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ machine?.machinename }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Model</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ data?.model }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Die No</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ data?.dieno }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Die Unit No</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ data?.dieunitno }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Process Name</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ data?.processname }}</text></VCol
+            >
           </VRow>
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Exchange Shot No</text></VCol>
-            <VCol><text> : -</text></VCol>
+            <VCol
+              ><text> : {{ data?.machineno }}</text></VCol
+            >
           </VRow>
         </VCol>
         <VCol cols="6">
@@ -118,17 +212,31 @@ function isNumber(evt) {
                 :config="{ enableTime: true, dateFormat: 'Y-m-d H:i' }"
                 append-inner-icon="tabler-calendar"
               />
-              <AppTextField
-                class="mb-2"
-                style="background-color: #ffffff"
-                v-model.number="exchangeQty"
-                label="Exchange Qtty"
-                :rules="[requiredValidator]"
-                placeholder="Input exchange qtty"
-                outlined
-                maxlength="12"
-                @keypress="isNumber($event)"
-              />
+              <VRow class="align-center">
+                <VCol>
+                  <AppTextField
+                    class="mb-2"
+                    style="background-color: #ffffff"
+                    v-model.number="exchangeQty"
+                    label="Exchange Qtty"
+                    :rules="[requiredValidator]"
+                    placeholder="Input exchange qtty"
+                    outlined
+                    maxlength="12"
+                    @keypress="isNumber($event)"
+                  />
+                </VCol>
+                <VCol>
+                  <VBtn
+                    class="mt-4"
+                    variant="tonal"
+                    @click="fetchDataQtyPerDie()"
+                  >
+                    Get Usage
+                  </VBtn>
+                </VCol>
+              </VRow>
+
               <VTextarea
                 class="mb-2"
                 style="background-color: #ffffff"
