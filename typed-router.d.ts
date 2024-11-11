@@ -132,6 +132,7 @@ declare module 'vue-router/auto/routes' {
     'maintenance-database-system-request-to-workshop': RouteRecordInfo<'maintenance-database-system-request-to-workshop', '/maintenance-database-system/request-to-workshop', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-request-to-workshop-add': RouteRecordInfo<'maintenance-database-system-request-to-workshop-add', '/maintenance-database-system/request-to-workshop/add', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-request-to-workshop-detail': RouteRecordInfo<'maintenance-database-system-request-to-workshop-detail', '/maintenance-database-system/request-to-workshop/detail', Record<never, never>, Record<never, never>>,
+    'maintenance-database-system-spare-part-referring': RouteRecordInfo<'maintenance-database-system-spare-part-referring', '/maintenance-database-system/spare-part-referring', Record<never, never>, Record<never, never>>,
     'master-department': RouteRecordInfo<'master-department', '/master/department', Record<never, never>, Record<never, never>>,
     'master-employee': RouteRecordInfo<'master-employee', '/master/employee', Record<never, never>, Record<never, never>>,
     'master-exchange-rate': RouteRecordInfo<'master-exchange-rate', '/master/exchange-rate', Record<never, never>, Record<never, never>>,

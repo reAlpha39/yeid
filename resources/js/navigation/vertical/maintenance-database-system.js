@@ -21,7 +21,7 @@ export default [
       },
       {
         title: 'Spare Part Referring',
-        // to: 'inventory-control-inventory-outbound',
+        to: 'maintenance-database-system-spare-part-referring',
       },
     ],
   },

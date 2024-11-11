@@ -22,6 +22,8 @@ use App\Http\Controllers\AnalyzationController;
 use App\Http\Controllers\ExchangeDataController;
 use App\Http\Controllers\ProductionDataController;
 use App\Http\Controllers\HistoryActivityController;
+use App\Http\Controllers\SparePartReferringController;
+use App\Http\Controllers\PressPartController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -181,8 +183,19 @@ Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopCon
 Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);
 Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
 
+// Spare Parts Referring
+Route::get('/maintenance-database-system/spare-part-referring/cost-summary', [SparePartReferringController::class, 'getCostSummary']);
+Route::get('/maintenance-database-system/spare-part-referring/inventory-summary', [SparePartReferringController::class, 'getInventorySummary']);
+Route::get('/maintenance-database-system/spare-part-referring/parts-cost', [SparePartReferringController::class, 'getPartsCost']);
+Route::get('/maintenance-database-system/spare-part-referring/machines-cost', [SparePartReferringController::class, 'getMachinesCost']);
+Route::get('/maintenance-database-system/spare-part-referring/inventory-change-cost', [SparePartReferringController::class, 'getInventoryChangeCost']);
+
 // Database Analyzation
 Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
+
+// Press Part
+Route::get('/press-shot/parts', [PressPartController::class, 'index']);
+
 
 // Exchange Data
 Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
