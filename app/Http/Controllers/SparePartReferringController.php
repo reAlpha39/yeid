@@ -315,7 +315,10 @@ class SparePartReferringController extends Controller
                 ->max('yearmonth');
 
             if (!$maxym) {
-                return response()->json(['error' => 'No data found'], 400);
+                return response()->json([
+                    'success' => true,
+                    'data' => [],
+                ], 200);
             }
 
             // Step 2: Fetch inventory data with the max yearmonth
