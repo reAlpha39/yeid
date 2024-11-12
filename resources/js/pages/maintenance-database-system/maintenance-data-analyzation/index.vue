@@ -426,7 +426,7 @@ async function fetchData() {
       const firstItem = rawData[0];
       const itemCountField =
         Object.keys(firstItem).find((key) => itemCountFields.includes(key)) ||
-        "item_count";
+        "count";
 
       // Process raw data and store code details
       rawData.forEach((item) => {
@@ -1176,7 +1176,9 @@ watch(
             </td>
             <td>{{ item.code }}</td>
             <td>{{ item[targetItemColumnName] }}</td>
-            <td>{{ item[itemCountFieldName] }}</td>
+            <td>
+              {{ Intl.NumberFormat().format(item[itemCountFieldName] ?? 0) }}
+            </td>
           </tr>
         </tbody>
       </VTable>

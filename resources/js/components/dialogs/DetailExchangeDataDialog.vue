@@ -184,7 +184,12 @@ watch(
               <text>Exchange Slot No</text>
             </VCol>
             <VCol>
-              <text>: {{ data?.exchangeshotno ?? "-" }} </text>
+              <text
+                >:
+                {{
+                  Intl.NumberFormat().format(data?.exchangeshotno ?? 0) ?? "-"
+                }}
+              </text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>

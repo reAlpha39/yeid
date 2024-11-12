@@ -330,6 +330,10 @@ onMounted(() => {
 
       <template v-slot:header.serialno="{ headers }"> SERIAL<br />NO </template>
 
+      <template #item.exchangeshotno="{ item }">
+        {{ Intl.NumberFormat().format(item.exchangeshotno) }}
+      </template>
+
       <template #item.actions="{ item }">
         <div class="align-center">
           <IconBtn @click="openDetailPage(item.exchangedatetime)">

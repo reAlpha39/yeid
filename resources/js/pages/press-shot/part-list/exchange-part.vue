@@ -176,7 +176,9 @@ onMounted(() => {
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Exchange Shot No</text></VCol>
             <VCol
-              ><text> : {{ data?.counter }}</text></VCol
+              ><text>
+                : {{ Intl.NumberFormat().format(data?.counter ?? 0) }}</text
+              ></VCol
             >
           </VRow>
         </VCol>

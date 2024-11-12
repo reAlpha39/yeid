@@ -319,12 +319,12 @@ onMounted(() => {
         </div>
       </template>
 
-      <template v-slot:header.dieunitno="{ headers }">
-        DIE<br />UNIT NO#
-      </template>
+      <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
 
-      <template v-slot:header.shotcount="{ headers }">
-        SHOT<br />COUNT
+      <template v-slot:header.shotcount> SHOT<br />COUNT </template>
+
+      <template #item.shotcount="{ item }">
+        {{ Intl.NumberFormat().format(item.shotcount) }}
       </template>
 
       <template #item.updatetime="{ item }">
