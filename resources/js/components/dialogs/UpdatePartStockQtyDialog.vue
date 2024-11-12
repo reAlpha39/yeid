@@ -170,6 +170,49 @@ function categoryType(category) {
   }
 }
 
+let idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+});
+
+let usd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "USD",
+});
+
+let sgd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "SGD",
+});
+
+let jpy = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "JPY",
+});
+
+function formatCurrency(currency, price) {
+  switch (currency) {
+    case "IDR":
+      return idr.format(parseFloat(price));
+    case "USD":
+      return usd.format(parseFloat(price));
+    case "SDG":
+      return sgd.format(parseFloat(price));
+    case "JPY":
+      return jpy.format(parseFloat(price));
+    default:
+      return "-";
+  }
+}
+
+function formatNumber(value) {
+  if (!value) return "0";
+  return parseFloat(value).toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
 watch(
   () => props.isDialogVisible,
   (newVal) => {
@@ -230,7 +273,7 @@ watch(
           <VRow class="no-gutters">
             <VCol cols="12" md="4"> Unit Price </VCol>
             <VCol>
-              : {{ data.unitprice ? data.unitprice.toLocaleString() : "-" }}
+              : {{ formatCurrency(data?.currency, data?.unitprice) }}
             </VCol>
           </VRow>
         </VCard>
@@ -247,7 +290,7 @@ watch(
           <VCol>
             <div style="text-align: right">
               <strong>
-                {{ data.totalstock ? data.totalstock.toLocaleString() : "0" }}
+                {{ formatNumber(data?.totalstock) }}
               </strong>
             </div>
           </VCol>
