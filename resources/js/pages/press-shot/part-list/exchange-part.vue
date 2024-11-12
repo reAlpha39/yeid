@@ -27,7 +27,7 @@ async function initEditData(id) {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/press-shot/exchanges/" + id);
+    const response = await $api("/press-shot/parts/" + id);
 
     data.value = response.data;
   } catch (err) {
@@ -57,7 +57,7 @@ async function addExchangeData() {
         process_name: data.value?.processname,
         part_code: data.value?.partcode,
         part_name: data.value?.partname,
-        exchange_shot_no: data.value?.exchangeshotno,
+        exchange_shot_no: data.value?.counter,
         exchange_qty: parseInt(exchangeQty.value),
         reason: reason.value,
         // TODO: update login user
@@ -67,29 +67,15 @@ async function addExchangeData() {
     });
 
     toast.success("Update exchange data success");
-    await router.push("/press-shot/exchange-data");
+    await router.push("/press-shot/part-list");
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
   }
 }
 
-async function fetchDataQtyPerDie() {
-  try {
-    const response = await $api("/press-shot/exchanges/qty-per-die", {
-      params: {
-        machine_no: data.value?.machineno,
-        model: data.value?.model,
-        die_no: data.value?.dieno,
-        part_code: data.value?.partcode,
-      },
-    });
-
-    exchangeQty.value = response.data;
-  } catch (err) {
-    toast.error("Failed to fetch data");
-    console.log(err);
-  }
+function fetchDataQtyPerDie() {
+  exchangeQty.value = data.value?.qttyperdie;
 }
 
 async function fetchDataMachine(id) {
@@ -125,28 +111,28 @@ onMounted(() => {
 </script>
 
 <template>
+  <div>
+    <VBreadcrumbs
+      class="px-0 pb-2 pt-0"
+      :items="[
+        {
+          title: 'Press Shot',
+          class: 'text-h4',
+        },
+        {
+          title: 'Part List',
+          class: 'text-h4',
+        },
+        {
+          title: 'Exchange',
+          class: 'text-h4',
+        },
+      ]"
+    />
+  </div>
+
   <VForm ref="form" @submit.prevent="submitData">
     <VCard>
-      <VRow class="mt-2">
-        <VCol>
-          <VCardTitle> Part </VCardTitle>
-          <text class="ml-4"
-            >Select the part to exchange. You can only choose one part.</text
-          >
-        </VCol>
-
-        <VCol>
-          <VRow class="d-flex justify-center py-8 mx-4">
-            <VCol class="d-flex justify-end align-center">
-              <VBtn @click="$emit('update:isDialogVisible', false)">
-                Select Part
-              </VBtn>
-            </VCol>
-          </VRow>
-        </VCol>
-      </VRow>
-      <VDivider />
-
       <VRow class="mx-4 my-4">
         <VCol cols="6">
           <VCardTitle> {{ data?.partname }} </VCardTitle>
@@ -190,7 +176,7 @@ onMounted(() => {
           <VRow class="ml-4 mb-2" no-gutters>
             <VCol cols="4"><text> Exchange Shot No</text></VCol>
             <VCol
-              ><text> : {{ data?.machineno }}</text></VCol
+              ><text> : {{ data?.counter }}</text></VCol
             >
           </VRow>
         </VCol>
@@ -252,6 +238,15 @@ onMounted(() => {
         </VCol>
       </VRow>
     </VCard>
+
+    <VCol>
+      <div class="d-flex justify-start">
+        <VBtn type="submit" color="primary" class="mr-4"> Add </VBtn>
+        <VBtn variant="outlined" color="error" to="/press-shot/part-list"
+          >Cancel</VBtn
+        >
+      </div>
+    </VCol>
   </VForm>
 
   <SelectInventoryPartDialog

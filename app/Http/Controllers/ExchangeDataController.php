@@ -268,21 +268,39 @@ class ExchangeDataController extends Controller
             $loginUserCode = $request->input('login_user_code');
             $loginUserName = $request->input('login_user_name');
 
+            // Check record
+            $isExists = DB::table('tbl_exchangework')
+                ->where('exchangedatetime', $exchangeDateTime)
+                ->first();
 
-            // Insert exchange data record
-            DB::table('tbl_exchangework')->insert([
-                'exchangedatetime' => $exchangeDateTime,
-                'machineno' => $machineNo,
-                'model' => $model,
-                'dieno' => $dieNo,
-                'processname' => $processName,
-                'partcode' => $partCode,
-                'partname' => $partName,
-                'exchangeshotno' => $exchangeShotNo,
-                'exchangeqtty' => $exchangeQty,
-                'reason' => $reason,
-                'updatetime' => $updateTime
-            ]);
+            if ($isExists) {
+                // Update exchange data record
+                DB::table('tbl_exchangework')
+                    ->where('exchangedatetime', $exchangeDateTime)
+                    ->update([
+                        'partname' => $partName,
+                        'exchangeshotno' => $exchangeShotNo,
+                        'exchangeqtty' => $exchangeQty,
+                        'reason' => $reason,
+                        'updatetime' => $updateTime
+                    ]);
+            } else {
+                // Insert exchange data record
+                DB::table('tbl_exchangework')->insert([
+                    'exchangedatetime' => $exchangeDateTime,
+                    'machineno' => $machineNo,
+                    'model' => $model,
+                    'dieno' => $dieNo,
+                    'processname' => $processName,
+                    'partcode' => $partCode,
+                    'partname' => $partName,
+                    'exchangeshotno' => $exchangeShotNo,
+                    'exchangeqtty' => $exchangeQty,
+                    'reason' => $reason,
+                    'updatetime' => $updateTime
+                ]);
+            }
+
 
             // Update exchange data master
             DB::table('mas_presspart')

@@ -195,7 +195,7 @@ Route::post('/maintenance-database-system/analyze', [AnalyzationController::clas
 
 // Press Part
 Route::get('/press-shot/parts', [PressPartController::class, 'index']);
-
+Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
 
 // Exchange Data
 Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);

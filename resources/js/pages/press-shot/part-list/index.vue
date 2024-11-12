@@ -1,11 +1,32 @@
 <script setup>
-import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import moment from "moment";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
 const toast = useToast();
 const router = useRouter();
+
+let formatNumber = new Intl.NumberFormat();
+
+let idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+});
+
+let usd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "USD",
+});
+
+let sgd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "SGD",
+});
+
+let jpy = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "JPY",
+});
 
 const searchQuery = ref("");
 const selectedMachineNo = ref(null);
@@ -27,10 +48,10 @@ const machineNoData = ref([]);
 async function fetchData() {
   try {
     let targetDateSplit = date.value.split("-");
-    const response = await $api("/press-shot/exchanges", {
+    const response = await $api("/press-shot/parts", {
       params: {
-        search: searchQuery.value,
-        target_date: targetDateSplit[0] + targetDateSplit[1],
+        part_code: searchQuery.value,
+        // year: targetDateSplit[0] + targetDateSplit[1],
         model: selectedModelDie.value?.model,
         die_no: selectedModelDie.value?.dieno,
         machine_no: selectedMachineNo.value?.machineno,
@@ -102,29 +123,70 @@ function formatDateTime(dateString) {
 
 function openDetailPage(id) {
   selectedItem.value = id;
+  console.log("aaaaaaaa " + selectedItem.value);
   isDetailDialogVisible.value = true;
 }
 
 async function openEditPage(id) {
   await router.push({
-    path: "/press-shot/exchange-data/exchange-part",
+    path: "/press-shot/part-list/exchange-part",
     query: { exchangeid: id },
   });
 }
 
+function formatCurrency(currency, price) {
+  switch (currency) {
+    case "IDR":
+      return idr.format(parseFloat(price));
+    case "USD":
+      return usd.format(parseFloat(price));
+    case "SDG":
+      return sgd.format(parseFloat(price));
+    case "JPY":
+      return jpy.format(parseFloat(price));
+    default:
+      return "-";
+  }
+}
+
+function getStatusColor(item) {
+  if (item.counter > 0 && item.counter > item.makerlimit) {
+    return "status-red";
+  } else if (item.counter > 0 && item.counter > item.companylimit) {
+    return "status-yellow";
+  } else if (item.minstock > 0 && item.minstock > item.currentstock) {
+    return "status-red";
+  }
+  return "status-green";
+}
+
+const rowClasses = computed(() => {
+  return data.value.map((item) => ({
+    "bg-red":
+      (item.counter > 0 && item.counter > item.makerlimit) ||
+      (item.minstock > 0 && item.minstock > item.currentstock),
+    "bg-yellow": item.counter > 0 && item.counter > item.companylimit,
+  }));
+});
+
+// Then use it in the template
+const getRowClass = (item, index) => {
+  const classes = rowClasses.value[index];
+  return Object.keys(classes)
+    .filter((key) => classes[key])
+    .join(" ");
+};
+
 // headers
 const headers = [
   {
-    title: "EXCHANGE DATE",
-    key: "exchangedatetime",
+    title: "STATUS",
+    key: "color",
+    sortable: false,
   },
   {
-    title: "EMPLOYEE",
-    key: "employeecode",
-  },
-  {
-    title: "PART",
-    key: "part",
+    title: "MACH SPEC",
+    key: "machinename",
   },
   {
     title: "MACHINE NO",
@@ -147,25 +209,75 @@ const headers = [
     key: "processname",
   },
   {
-    title: "SERIAL NO",
-    key: "serialno",
+    title: "PART",
+    key: "part",
   },
   {
-    title: "REASON",
-    key: "reason",
+    title: "CATEGORY",
+    key: "category",
   },
   {
-    title: "QTTY",
-    key: "exchangeqtty",
+    title: "COUNTER",
+    key: "counter",
   },
   {
-    title: "SHOT COUNT",
-    key: "exchangeshotno",
+    title: "TEMP LIMIT",
+    key: "companylimit",
+  },
+  {
+    title: "FIX LIMIT",
+    key: "makerlimit",
+  },
+  {
+    title: "QTY/DIE",
+    key: "qttyperdie",
+  },
+  {
+    title: "DRAWING#",
+    key: "drawingno",
+  },
+  {
+    title: "SPECIFICATION",
+    key: "note",
+  },
+  {
+    title: "LAST EXCHANGE DATE",
+    key: "exchangedatetime",
+  },
+  {
+    title: "MIN STOCK",
+    key: "minstock",
+  },
+  {
+    title: "ACTUAL STOCK",
+    key: "currentstock",
+  },
+  {
+    title: "UNIT PRICE",
+    key: "unitprice",
+  },
+  {
+    title: "BRAND",
+    key: "brand",
+  },
+  {
+    title: "SUPPLIER",
+    key: "vendorname",
+  },
+  {
+    title: "IMPORT/LOCAL",
+    key: "origin",
+  },
+  {
+    title: "LOCATION",
+    key: "address",
   },
   {
     title: "ACTIONS",
     key: "actions",
     sortable: false,
+    align: "center fixed",
+    class: "fixed",
   },
 ];
 
@@ -186,7 +298,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Exchange Data',
+          title: 'Part List',
           class: 'text-h4',
         },
       ]"
@@ -195,7 +307,7 @@ onMounted(() => {
 
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
-      <div class="me-3 d-flex gap-3">
+      <!-- <div class="me-3 d-flex gap-3">
         <AppSelect
           :model-value="itemsPerPage"
           :items="[
@@ -208,39 +320,17 @@ onMounted(() => {
           style="inline-size: 6.25rem"
           @update:model-value="itemsPerPage = parseInt($event, 10)"
         />
-      </div>
+      </div> -->
 
       <div style="inline-size: 15.625rem">
         <AppTextField
           v-model="searchQuery"
-          placeholder="Search"
+          placeholder="Search part"
           v-on:input="fetchData()"
         />
       </div>
 
       <VSpacer />
-      <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-        <AppDateTimePicker
-          style="inline-size: 10rem"
-          v-model="date"
-          placeholder="Select month"
-          :config="{
-            dateFormat: 'Y-m',
-            mode: 'single',
-            enableTime: false,
-            enableSeconds: false,
-            plugins: [
-              new monthSelectPlugin({
-                shorthand: true,
-                dateFormat: 'Y-m',
-                altFormat: 'Y-m',
-              }),
-            ],
-          }"
-          append-inner-icon="tabler-calendar"
-          @update:modelValue="fetchData()"
-        />
-      </div>
     </VCardText>
     <VDivider class="mt-4" />
     <VCardText class="d-flex flex-wrap gap-4">
@@ -274,6 +364,10 @@ onMounted(() => {
         <VBtn variant="tonal" prepend-icon="tabler-upload"> Export </VBtn>
 
         <VBtn variant="tonal" prepend-icon="tabler-list"> Log </VBtn>
+
+        <!-- <VBtn prepend-icon="tabler-edit" to="part-list/exchange-part">
+          Exchange Part
+        </VBtn> -->
       </div>
     </VCardText>
 
@@ -284,20 +378,11 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :row-class="getRowClass"
       class="text-no-wrap"
     >
-      <template #item.exchangedatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
-            >
-            <small>{{
-              formatDateTime(item.exchangedatetime).formattedTime
-            }}</small>
-          </div>
-        </div>
+      <template #item.color="{ item }">
+        <div class="status-indicator" :class="getStatusColor(item)" />
       </template>
 
       <template #item.employeecode="{ item }">
@@ -324,16 +409,65 @@ onMounted(() => {
         </div>
       </template>
 
-      <template v-slot:header.dieunitno="{ headers }">
-        DIE<br />UNIT NO#
+      <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
+
+      <template v-slot:header.serialno> SERIAL<br />NO </template>
+
+      <template #item.counter="{ item }">
+        {{ formatNumber.format(item.counter) }}
       </template>
 
-      <template v-slot:header.serialno="{ headers }"> SERIAL<br />NO </template>
+      <template #item.companylimit="{ item }">
+        {{ formatNumber.format(item.companylimit) }}
+      </template>
+
+      <template #item.makerlimit="{ item }">
+        {{ formatNumber.format(item.makerlimit) }}
+      </template>
+
+      <template v-slot:header.exchangedatetime>
+        LAST EXCHANGE<br />DATE
+      </template>
+
+      <template #item.exchangedatetime="{ item }">
+        <div class="d-flex align-center">
+          <div class="d-flex flex-column">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
+            >
+            <small>{{
+              formatDateTime(item.exchangedatetime).formattedTime
+            }}</small>
+          </div>
+        </div>
+      </template>
+
+      <template v-slot:header.minstock> MIN<br />STOCK </template>
+
+      <template #item.minstock="{ item }">
+        {{ formatNumber.format(item.minstock) }}
+      </template>
+
+      <template v-slot:header.currentstock> ACTUAL<br />STOCK </template>
+
+      <template #item.currentstock="{ item }">
+        {{ formatNumber.format(item.currentstock) }}
+      </template>
+
+      <template #item.unitprice="{ item }">
+        {{ formatCurrency(item.currency, item.unitprice) }}
+      </template>
+
+      <template v-slot:header.origin> IMPORT/<br />LOCAL </template>
 
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDetailPage(item.exchangedatetime)">
+          <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
+          </IconBtn> -->
+          <IconBtn @click="openEditPage(item.exchangedatetime)">
+            <VIcon icon="tabler-exchange" />
           </IconBtn>
         </div>
       </template>
@@ -347,6 +481,58 @@ onMounted(() => {
 </template>
 
 <style>
+.bg-red {
+  background-color: rgb(255, 0, 0, 0.1) !important;
+}
+
+.bg-yellow {
+  background-color: rgb(255, 255, 0, 0.1) !important;
+}
+
+/* Optional: Add hover effect to maintain visibility of the row color */
+.bg-red:hover {
+  background-color: rgb(255, 0, 0, 0.2) !important;
+}
+
+.bg-yellow:hover {
+  background-color: rgb(255, 255, 0, 0.2) !important;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: auto;
+}
+
+.status-red {
+  background-color: #ff4444;
+}
+
+.status-yellow {
+  background-color: #ffeb3b;
+}
+
+.status-green {
+  background-color: #4caf50;
+}
+
+table > tbody > tr > td.fixed:nth-last-child(1),
+table > thead > tr > th.fixed:nth-last-child(1) {
+  position: sticky !important;
+  position: -webkit-sticky !important;
+  right: 0;
+  z-index: 9998;
+  background: white;
+  -webkit-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+  -moz-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+  box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+}
+
+table > thead > tr > th.fixed:nth-last-child(1) {
+  z-index: 9999;
+}
+
 .flatpickr-monthSelect-months {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

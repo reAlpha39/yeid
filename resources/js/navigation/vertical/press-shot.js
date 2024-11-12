@@ -4,6 +4,10 @@ export default [
     icon: { icon: 'tabler-stack-3' },
     children: [
       {
+        title: 'Part List',
+        to: 'press-shot-part-list',
+      },
+      {
         title: 'Exchange Data',
         to: 'press-shot-exchange-data',
       },
