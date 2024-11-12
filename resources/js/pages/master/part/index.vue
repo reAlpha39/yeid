@@ -1,5 +1,6 @@
 <script setup>
 import axios from "axios";
+import moment from "moment";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -39,12 +40,14 @@ const headers = [
   },
   {
     title: "UNIT PRICE",
-    key: "unitprices",
+    key: "unitprice",
   },
   {
     title: "ACTIONS",
     key: "actions",
     sortable: false,
+    align: "center fixed",
+    class: "fixed",
   },
 ];
 
@@ -151,6 +154,114 @@ async function handleExport() {
   }
 }
 
+let idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+});
+
+let usd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "USD",
+});
+
+let sgd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "SGD",
+});
+
+let jpy = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "JPY",
+});
+
+function formatCurrency(currency, price) {
+  switch (currency) {
+    case "IDR":
+      return idr.format(parseFloat(price));
+    case "USD":
+      return usd.format(parseFloat(price));
+    case "SDG":
+      return sgd.format(parseFloat(price));
+    case "JPY":
+      return jpy.format(parseFloat(price));
+    default:
+      return "-";
+  }
+}
+
+function getPartNamePrefix(item) {
+  const status = (item.status || "").trim();
+  const totalstock = parseStock(item.totalstock);
+  const minstock = parseStock(item.minstock);
+
+  // Only add prefix for stock alerts
+  if (totalstock <= minstock) {
+    return status === "O" ? "# " : "* ";
+  }
+  return "";
+}
+
+function formatNumber(value) {
+  if (!value) return "0";
+  return parseFloat(value).toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+function parseStock(value) {
+  return value ? parseFloat(value) : 0;
+}
+
+// Status color logic
+function getStatusColor(item) {
+  // Remove whitespace from status and check if empty
+  const status = (item.status || "").trim();
+  const posentdate = (item.posentdate || "").trim();
+  const totalstock = parseStock(item.totalstock);
+  const minstock = parseStock(item.minstock);
+
+  // Check if item has PO sent date (order status)
+  if (posentdate) {
+    const etddate = (item.etddate || "").trim();
+    if (etddate) {
+      // Parse YYYYMMDD format using moment
+      const etd = moment(etddate, "YYYYMMDD");
+      const today = moment().startOf("day");
+
+      return etd.isSameOrAfter(today) ? "status-1a" : "status-2a";
+    }
+  }
+
+  // Check stock level status
+  if (totalstock <= minstock) {
+    return status === "O" ? "status-1b" : "status-2b";
+  }
+
+  return "status-default";
+}
+
+function getTextStyle(item) {
+  const status = (item.status || "").trim();
+  const totalstock = parseStock(item.totalstock);
+  const minstock = parseStock(item.minstock);
+
+  // Only apply bold style for stock alerts
+  if (totalstock <= minstock && status !== "O") {
+    return "font-weight-bold";
+  }
+  return "";
+}
+
+function getStockStyle(item) {
+  const posentdate = (item.posentdate || "").trim();
+  // Always bold the quantity for items with PO sent
+  if (posentdate) {
+    return "font-weight-bold";
+  }
+  return "";
+}
+
 onMounted(() => {
   fetchData();
 });
@@ -203,7 +314,7 @@ onMounted(() => {
         </div>
 
         <!-- 👉 Export button -->
-       <VBtn
+        <VBtn
           variant="tonal"
           prepend-icon="tabler-upload"
           @click="handleExport"
@@ -227,58 +338,70 @@ onMounted(() => {
       :headers="headers"
       class="text-no-wrap"
     >
-      <!-- part name -->
+      <!-- part code -->
       <template #item.partcode="{ item }">
         <div class="d-flex align-center">
           <span
             class="d-block font-weight-medium text-high-emphasis text-truncate"
+            :class="getTextStyle(item)"
             >{{ item.partcode }}</span
           >
         </div>
       </template>
 
-      <!-- date -->
+      <!-- part name -->
       <template #item.partname="{ item }">
         <div class="d-flex align-center">
-          {{ item.partname }}
+          <span :class="getTextStyle(item)">
+            {{ getPartNamePrefix(item) }}{{ item.partname }}
+          </span>
         </div>
       </template>
 
-      <!-- vendor -->
+      <!-- category -->
       <template #item.category="{ item }">
         <div class="d-flex align-center">
           {{ categoryType(item.category) }}
         </div>
       </template>
 
-      <!-- unit price -->
+      <!-- stock quantity -->
+      <template v-slot:header.totalstock> STOCK<br />QUANTITY </template>
+      <template #item.totalstock="{ item }">
+        <div class="d-flex align-center justify-start">
+          <span :class="getStockStyle(item)">{{
+            formatNumber(item.totalstock)
+          }}</span>
+        </div>
+      </template>
+
+      <!-- minimum stock -->
+      <template v-slot:header.minstock> MINIMUM<br />STOCK </template>
       <template #item.minstock="{ item }">
-        <div class="d-flex align-center">
-          {{ item.minstock }}
+        <div class="d-flex align-center justify-start">
+          {{ formatNumber(item.minstock) }}
         </div>
       </template>
 
       <!-- unit price -->
-      <template #item.unitprices="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-row ms-3">
-            {{ item.currency }}
-            {{ item.unitprice.toLocaleString() }}
-          </div>
-        </div>
+      <template #item.unitprice="{ item }">
+        {{ formatCurrency(item.currency, item.unitprice) }}
       </template>
 
       <!-- Actions -->
       <template #item.actions="{ item }">
-        <div class="align-center">
+        <div class="d-flex justify-center gap-2">
+          <div class="d-flex justify-center align-center">
+            <div class="status-indicator mr-2" :class="getStatusColor(item)" />
+          </div>
           <IconBtn @click="openEditPartPage(item.partcode)">
-            <VIcon icon="tabler-edit" />
+            <VIcon icon="tabler-edit" size="small" />
           </IconBtn>
           <IconBtn @click="openUpdateDialog(item.partcode)">
-            <VIcon icon="tabler-adjustments" />
+            <VIcon icon="tabler-adjustments" size="small" />
           </IconBtn>
           <IconBtn @click="openDeleteDialog(item.partcode)">
-            <VIcon icon="tabler-trash" />
+            <VIcon icon="tabler-trash" size="small" />
           </IconBtn>
         </div>
       </template>
@@ -318,3 +441,53 @@ onMounted(() => {
     </VCard>
   </VDialog>
 </template>
+
+<style>
+table > tbody > tr > td.fixed:nth-last-child(1),
+table > thead > tr > th.fixed:nth-last-child(1) {
+  position: sticky !important;
+  position: -webkit-sticky !important;
+  right: 0;
+  z-index: 9998;
+  background: white;
+  -webkit-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+  -moz-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+  box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
+}
+
+table > thead > tr > th.fixed:nth-last-child(1) {
+  z-index: 9999;
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.status-1b {
+  background-color: #f87d02;
+}
+
+.status-2b {
+  background-color: #fa0202;
+}
+
+.status-1a {
+  background-color: #f2ea00;
+}
+
+.status-2a {
+  background-color: #2d9cdb;
+}
+
+.status-default {
+  background-color: #28c76f;
+}
+
+:deep(.v-data-table) {
+  .text-no-wrap {
+    white-space: nowrap;
+  }
+}
+</style>
