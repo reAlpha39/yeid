@@ -169,7 +169,7 @@ const rowClasses = computed(() => {
   }));
 });
 
-// Then use it in the template
+
 const getRowClass = (item, index) => {
   const classes = rowClasses.value[index];
   return Object.keys(classes)
@@ -179,11 +179,6 @@ const getRowClass = (item, index) => {
 
 // headers
 const headers = [
-  {
-    title: "STATUS",
-    key: "color",
-    sortable: false,
-  },
   {
     title: "MACH SPEC",
     key: "machinename",
@@ -381,10 +376,6 @@ onMounted(() => {
       :row-class="getRowClass"
       class="text-no-wrap"
     >
-      <template #item.color="{ item }">
-        <div class="status-indicator" :class="getStatusColor(item)" />
-      </template>
-
       <template #item.employeecode="{ item }">
         <div class="d-flex align-center">
           <div class="d-flex flex-column">
@@ -462,7 +453,8 @@ onMounted(() => {
       <template v-slot:header.origin> IMPORT/<br />LOCAL </template>
 
       <template #item.actions="{ item }">
-        <div class="align-center">
+        <div class="d-flex justify-center gap-2">
+          <div class="status-indicator mx-2" :class="getStatusColor(item)" />
           <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
@@ -499,8 +491,8 @@ onMounted(() => {
 }
 
 .status-indicator {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   margin: auto;
 }
