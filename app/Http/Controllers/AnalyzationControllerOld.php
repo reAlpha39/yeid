@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Exception;
 use Carbon\Carbon;
 
-class AnalyzationController extends Controller
+class AnalyzationControllerOld extends Controller
 {
     public function analyze(Request $request)
     {
@@ -64,11 +64,11 @@ class AnalyzationController extends Controller
                     throw new Exception('Invalid term configuration');
                 }
 
-                // Add term field to select
-                $query->addSelect(DB::raw("{$termConfig['field']} as term"));
+                // Add term field to select with COALESCE
+                $query->addSelect(DB::raw("COALESCE({$termConfig['field']}::text, '--') as term"));
             }
 
-            // Add source and target fields
+            // Add source and target fields with COALESCE
             $query->addSelect(DB::raw($targetConfig['sourceField']))
                 ->addSelect(DB::raw($targetConfig['targetQuery']))
                 ->addSelect($sumConfig['selectField']);
@@ -203,76 +203,117 @@ class AnalyzationController extends Controller
 
     private function getTargetConfig($targetIndex)
     {
+        $defaultConfig = [
+            'sourceField' => "COALESCE(r.recordid::text, '--') as code",
+            'targetQuery' => "'--' as name",
+            'groupField' => 'r.recordid'
+        ];
+
         $configs = [
             0 => [
-                'sourceField' => 'maintenancecode as code',
-                'targetQuery' => "(CASE maintenancecode
-                WHEN '01' THEN 'UM'
-                WHEN '02' THEN 'BM'
-                WHEN '03' THEN 'TBC'
-                WHEN '04' THEN 'TBA'
-                WHEN '05' THEN 'PvM'
-                WHEN '06' THEN 'FM'
-                WHEN '07' THEN 'CM'
-                WHEN '08' THEN 'CHECK'
-                WHEN '09' THEN 'LAYOUT'
-                ELSE '--'
-            END) as nama",
-                'groupField' => 'r.maintenancecode'
+                'sourceField' => "COALESCE(maintenancecode, '--') as code",
+                'targetQuery' => "(CASE COALESCE(maintenancecode, '--')
+                    WHEN '01' THEN 'UM'
+                    WHEN '02' THEN 'BM'
+                    WHEN '03' THEN 'TBC'
+                    WHEN '04' THEN 'TBA'
+                    WHEN '05' THEN 'PvM'
+                    WHEN '06' THEN 'FM'
+                    WHEN '07' THEN 'CM'
+                    WHEN '08' THEN 'CHECK'
+                    WHEN '09' THEN 'LAYOUT'
+                    ELSE '--'
+                END) as nama",
+                'groupField' => "COALESCE(r.maintenancecode, '--')"
             ],
             1 => [
-                'sourceField' => 'ordershop as code',
-                'targetQuery' => "(SELECT COALESCE(shopname,'') FROM mas_shop ms1 WHERE ms1.shopcode = r.ordershop) as shop",
-                'groupField' => 'r.ordershop'
+                'sourceField' => "COALESCE(ordershop, '--') as code",
+                'targetQuery' => "MAX(COALESCE((SELECT shopname FROM mas_shop ms1 WHERE ms1.shopcode = r.ordershop), '--')) as shop",
+                'groupField' => "COALESCE(r.ordershop, '--')"
             ],
             2 => [
-                'sourceField' => "(COALESCE(mm.shopcode, '') || '-' || COALESCE(mm.linecode, '')) as code",
-                'targetQuery' => "(COALESCE(MAX(mm.shopname), '') || '-' || COALESCE(mm.linecode, '')) as line_name",
-                'groupField' => 'mm.shopcode,mm.linecode'
+                'sourceField' => "COALESCE(COALESCE(mm.shopcode, '--') || '-' || COALESCE(mm.linecode, '--'), '--') as code",
+                'targetQuery' => "COALESCE(COALESCE(MAX(mm.shopname), '--') || '-' || COALESCE(mm.linecode, '--'), '--') as line_name",
+                'groupField' => "COALESCE(mm.shopcode, \'--\'),COALESCE(mm.linecode, '--')"
             ],
             3 => [
-                'sourceField' => "SUBSTRING(r.machineno, 1, 3) as code",
-                'targetQuery' => "SUBSTRING(r.machineno, 1, 3) as machine_header",
-                'groupField' => "SUBSTRING(r.machineno, 1, 3)"
+                'sourceField' => "COALESCE(SUBSTRING(COALESCE(r.machineno, '--'), 1, 3), '--') as code",
+                'targetQuery' => "COALESCE(SUBSTRING(COALESCE(r.machineno, '--'), 1, 3), '--') as machine_header",
+                'groupField' => "COALESCE(SUBSTRING(COALESCE(r.machineno, '--'), 1, 3), '--')"
             ],
             4 => [
-                'sourceField' => 'r.machineno as code',
-                'targetQuery' => "(SELECT machinename FROM mas_machine mm1 WHERE mm1.machineno = r.machineno) as machine_no",
-                'groupField' => 'r.machineno'
+                'sourceField' => "COALESCE(r.machineno, '--') as code",
+                'targetQuery' => "MAX(COALESCE((SELECT machinename FROM mas_machine mm1 WHERE mm1.machineno = r.machineno), '--')) as machine_no",
+                'groupField' => "COALESCE(r.machineno, '--')"
             ],
             5 => [
-                'sourceField' => 'situationcode as code',
-                'targetQuery' => "(SELECT situationname FROM mas_situation ms2 WHERE ms2.situationcode = r.situationcode) as uraian_masalah",
-                'groupField' => 'r.situationcode'
+                'sourceField' => "COALESCE(situationcode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT situationname
+                    FROM mas_situation ms2
+                    WHERE ms2.situationcode = r.situationcode
+                ), '--')) as uraian_masalah",
+                'groupField' => "COALESCE(r.situationcode, '--')"
             ],
             6 => [
-                'sourceField' => 'factorcode as code',
-                'targetQuery' => "(SELECT factorname FROM mas_factor mf1 WHERE mf1.factorcode = r.factorcode) as penyebab",
-                'groupField' => 'r.factorcode'
+                'sourceField' => "COALESCE(factorcode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT factorname
+                    FROM mas_factor mf1
+                    WHERE mf1.factorcode = r.factorcode
+                ), '--')) as penyebab",
+                'groupField' => "COALESCE(r.factorcode, '--')"
             ],
             7 => [
-                'sourceField' => 'measurecode as code',
-                'targetQuery' => "(SELECT measurename FROM mas_measure mm2 WHERE mm2.measurecode = r.measurecode) as tindakan",
-                'groupField' => 'r.measurecode'
+                'sourceField' => "COALESCE(measurecode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT measurename
+                    FROM mas_measure mm2
+                    WHERE mm2.measurecode = r.measurecode
+                ), '--')) as tindakan",
+                'groupField' => "COALESCE(r.measurecode, '--')"
             ],
             8 => [
-                'sourceField' => 'preventioncode as code',
-                'targetQuery' => "(SELECT preventionname FROM mas_prevention mv1 WHERE mv1.preventioncode = r.preventioncode) as solution",
-                'groupField' => 'r.preventioncode'
+                'sourceField' => "COALESCE(preventioncode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT preventionname
+                    FROM mas_prevention mv1
+                    WHERE mv1.preventioncode = r.preventioncode
+                ), '--')) as solution",
+                'groupField' => "COALESCE(r.preventioncode, '--')"
             ],
             9 => [
-                'sourceField' => 'ltfactorcode as code',
-                'targetQuery' => "(SELECT ltfactorname FROM mas_ltfactor mf2 WHERE mf2.ltfactorcode = r.ltfactorcode) as stop_panjang",
-                'groupField' => 'r.ltfactorcode'
+                'sourceField' => "COALESCE(ltfactorcode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT ltfactorname
+                    FROM mas_ltfactor mf2
+                    WHERE mf2.ltfactorcode = r.ltfactorcode
+                ), '--')) as stop_panjang",
+                'groupField' => "COALESCE(r.ltfactorcode, '--')"
             ],
             10 => [
-                'sourceField' => 'mm.makercode as code',
-                'targetQuery' => "(SELECT COALESCE(makername,'') FROM mas_maker mm1 WHERE mm1.makercode = mm.makercode) as maker_name",
-                'groupField' => 'mm.makercode'
+                'sourceField' => "COALESCE(mm.makercode, '--') as code",
+                'targetQuery' => "MAX(COALESCE((
+                    SELECT makername
+                    FROM mas_maker mm1
+                    WHERE mm1.makercode = mm.makercode
+                ), '--')) as maker_name",
+                'groupField' => "COALESCE(mm.makercode, '--')"
             ]
         ];
 
-        return $configs[$targetIndex] ?? null;
+        if (!isset($configs[$targetIndex])) {
+            return $defaultConfig;
+        }
+
+        $config = $configs[$targetIndex];
+
+        // Handle null or empty values for each field
+        return [
+            'sourceField' => !empty($config['sourceField']) ? $config['sourceField'] : $defaultConfig['sourceField'],
+            'targetQuery' => !empty($config['targetQuery']) ? $config['targetQuery'] : $defaultConfig['targetQuery'],
+            'groupField' => !empty($config['groupField']) ? $config['groupField'] : $defaultConfig['groupField']
+        ];
     }
 
     private function getSumConfig($sumIndex)
