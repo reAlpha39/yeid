@@ -63,7 +63,8 @@ class HistoryActivityController extends Controller
                 });
             }
 
-            $query->orderBy('model')
+            $query->orderBy('updatetime', 'desc')
+                ->orderBy('model')
                 ->orderBy('dieno')
                 ->orderBy('partcode');
 
