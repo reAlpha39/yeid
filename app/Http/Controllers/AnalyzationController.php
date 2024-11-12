@@ -128,12 +128,17 @@ class AnalyzationController extends Controller
                 $query->limit($validatedData['maxRow']);
             }
 
-            $results = $query->get()->map(function ($item) {
-                // Convert all null values to '--' in the result set
-                return collect($item)->map(function ($value) {
-                    return $value === null ? '--' : $value;
-                })->toArray();
-            });
+            // $results = $query->get()->map(function ($item) {
+            //     // Convert all null values to '--' in the result set
+            //     return collect($item)->map(function ($value) {
+            //         return $value === null ? '--' : $value;
+            //     })->toArray();
+            // });
+
+            $results = $query->get()->filter(function ($item) {
+                // Remove any item that has at least one null value
+                return !collect($item)->contains(null);
+            })->values();
 
             return response()->json([
                 'success' => true,
