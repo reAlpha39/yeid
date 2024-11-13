@@ -48,7 +48,8 @@ class ExchangeDataController extends Controller
                         ->orWhere('serialno', 'ILIKE', "{$search}%")
                         ->orWhere('reason', 'ILIKE', "{$search}%")
                         ->orWhere('employeecode', 'ILIKE', "{$search}%")
-                        ->orWhere('employeename', 'ILIKE', "{$search}%");
+                        ->orWhere('employeename', 'ILIKE', "{$search}%")
+                        ->orWhere('partcode', 'ILIKE', "{$search}%");
                 });
             }
 
