@@ -201,13 +201,13 @@ onMounted(() => {
         />
       </div> -->
 
-      <div style="inline-size: 15.625rem">
+      <!-- <div style="inline-size: 15.625rem">
         <AppTextField
           v-model="searchQuery"
           placeholder="Search"
           v-on:input="fetchData()"
         />
-      </div>
+      </div> -->
 
       <VSpacer />
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
