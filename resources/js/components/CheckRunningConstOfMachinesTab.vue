@@ -254,6 +254,6 @@ onMounted(() => {
 
 .cost-column {
   min-width: 120px;
-  text-align: right;
+  /* text-align: right; */
 }
 </style>
