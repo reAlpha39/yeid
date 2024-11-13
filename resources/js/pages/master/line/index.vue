@@ -171,7 +171,7 @@ onMounted(() => {
   <!-- 👉 products -->
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
-      <div class="me-3 d-flex gap-3">
+      <!-- <div class="me-3 d-flex gap-3">
         <AppSelect
           :model-value="itemsPerPage"
           :items="[
@@ -184,7 +184,7 @@ onMounted(() => {
           style="inline-size: 6.25rem"
           @update:model-value="itemsPerPage = parseInt($event, 10)"
         />
-      </div>
+      </div> -->
       <AppAutocomplete
         v-model="shopQuery"
         placeholder="Select Shop"
