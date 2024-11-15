@@ -11,6 +11,7 @@ import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
 import { themeConfig } from "@themeConfig";
 import { useToast } from "vue-toastification";
 import { VForm } from "vuetify/components/VForm";
+import { useAbility } from '@casl/vue'
 
 const authThemeImg = useGenerateImageVariant(
   authV2LoginIllustrationLight,

@@ -1,4 +1,5 @@
 <script setup>
+import { useAbility } from "@casl/vue";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 
 const router = useRouter();
@@ -127,7 +128,7 @@ const userProfileList = [
             </template>
 
             <VListItemTitle class="font-weight-medium">
-              {{ userData.fullName || userData.username }}
+              {{ userData.name }}
             </VListItemTitle>
             <VListItemSubtitle>{{ userData.role }}</VListItemSubtitle>
           </VListItem>

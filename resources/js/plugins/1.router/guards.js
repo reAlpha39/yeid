@@ -1,53 +1,75 @@
+import { useAbility } from '@casl/vue';
 import { canNavigate } from '@layouts/plugins/casl';
 
+/**
+ * Check if route requires permissions check
+ */
+const requiresPermission = route => {
+  return route.meta?.action && route.meta?.subject;
+};
+
+/**
+ * Check user authentication status
+ */
+const isAuthenticated = () => {
+  return !!(useCookie('userData').value && useCookie('accessToken').value);
+};
+
+/**
+ * Setup navigation guards
+ */
 export const setupGuards = router => {
-  // 👉 router.beforeEach
-  // Docs: https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
-  router.beforeEach(to => {
-    /*
-         * If it's a public route, continue navigation. This kind of pages are allowed to visited by login & non-login users. Basically, without any restrictions.
-         * Examples of public routes are, 404, under maintenance, etc.
-         */
+  router.beforeEach(async (to) => {
+    // Allow public routes without any checks
     if (to.meta.public)
-      return
+      return;
 
-    /**
-         * Check if user is logged in by checking if token & user data exists in local storage
-         * Feel free to update this logic to suit your needs
-         */
-    const ability = useAbility();
-    if ((useCookie('userData').value?.id ?? 0) !== 6) {
-      useCookie("accessToken").value = null;
-      useCookie('userData').value = null;
-      useCookie("userAbilityRules").value = null;
-      ability.update([]);
-    }
+    const isLoggedIn = isAuthenticated();
 
-    const isLoggedIn = !!(useCookie('userData').value && useCookie('accessToken').value)
-
-    /*
-          If user is logged in and is trying to access login like page, redirect to home
-          else allow visiting the page
-          (WARN: Don't allow executing further by return statement because next code will check for permissions)
-         */
+    // Handle unauthenticated-only routes (like login page)
     if (to.meta.unauthenticatedOnly) {
       if (isLoggedIn)
-        return '/'
-      else
-        return undefined
+        return '/';
+      return undefined;
     }
-    if (!canNavigate(to) && to.matched.length) {
-      /* eslint-disable indent */
-            return isLoggedIn
-                ? { name: 'not-authorized' }
-                : {
-                    name: 'login',
-                    query: {
-                        ...to.query,
-                        to: to.fullPath !== '/' ? to.path : undefined,
-                    },
-                }
-            /* eslint-enable indent */
+
+    // If route requires authentication and user is not logged in
+    if (!isLoggedIn) {
+      return {
+        name: 'login',
+        query: {
+          ...to.query,
+          to: to.fullPath !== '/' ? to.path : undefined,
+        },
+      };
     }
-  })
-}
+
+    // Check permissions if route requires them
+    if (to.matched.some(requiresPermission)) {
+      if (!canNavigate(to)) {
+        return { name: 'not-authorized' };
+      }
+    }
+
+    // Load user permissions if they haven't been loaded yet
+    const ability = useAbility();
+    const storedRules = useCookie('userAbilityRules').value;
+
+    if (isLoggedIn && storedRules && !ability.rules.length) {
+      ability.update(storedRules);
+    }
+
+    return undefined;
+  });
+
+  // Optional: Add afterEach hook for analytics or other post-navigation tasks
+  router.afterEach((to) => {
+    // Reset scroll position, update page title, etc.
+    window.scrollTo(0, 0);
+
+    // Update document title if meta title is set
+    if (to.meta.title) {
+      document.title = to.meta.title;
+    }
+  });
+};

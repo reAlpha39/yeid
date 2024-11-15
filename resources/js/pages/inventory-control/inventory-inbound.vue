@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useToast } from "vue-toastification";
 
+const { can } = usePermissions();
 const toast = useToast();
 
 const isDeleteDialogVisible = ref(false);
@@ -288,7 +289,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="create-inbound">
+        <VBtn
+          v-if="can('create', 'inventoryInbound')"
+          prepend-icon="tabler-plus"
+          to="create-inbound"
+        >
           Create In-Bound
         </VBtn>
       </div>

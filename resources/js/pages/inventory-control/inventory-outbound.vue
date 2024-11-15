@@ -1,6 +1,7 @@
 <script setup>
 import axios from "axios";
 import { useToast } from "vue-toastification";
+const { can } = usePermissions();
 
 const toast = useToast();
 
@@ -285,7 +286,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="create-outbound">
+        <VBtn
+          v-if="can('create', 'inventoryOutbound')"
+          prepend-icon="tabler-plus"
+          to="create-outbound"
+        >
           Create Out-Bound
         </VBtn>
       </div>

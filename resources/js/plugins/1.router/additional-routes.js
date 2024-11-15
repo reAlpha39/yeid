@@ -10,25 +10,26 @@ export const redirects = [
     redirect: to => {
       // TODO: Get type from backend
       const userData = useCookie('userData')
-      const userRole = userData.value?.role
-      if (userRole === 'admin')
+      const userRole = userData.value?.role_access
+      if (userRole === '3')
         return { name: 'dashboards-crm' }
-      if (userRole === 'client')
-        return { name: 'access-control' }
-      
+      if (userRole === '2')
+        return { name: 'dashboards-crm' }
+      if (userRole === '1')
+        return { name: 'dashboards-crm' }
       return { name: 'login', query: to.query }
     },
   },
-  {
-    path: '/pages/user-profile',
-    name: 'pages-user-profile',
-    redirect: () => ({ name: 'pages-user-profile-tab', params: { tab: 'profile' } }),
-  },
-  {
-    path: '/pages/account-settings',
-    name: 'pages-account-settings',
-    redirect: () => ({ name: 'pages-account-settings-tab', params: { tab: 'account' } }),
-  },
+  // {
+  //   path: '/pages/user-profile',
+  //   name: 'pages-user-profile',
+  //   redirect: () => ({ name: 'pages-user-profile-tab', params: { tab: 'profile' } }),
+  // },
+  // {
+  //   path: '/pages/account-settings',
+  //   name: 'pages-account-settings',
+  //   redirect: () => ({ name: 'pages-account-settings-tab', params: { tab: 'account' } }),
+  // },
 ]
 export const routes = [
   // Email filter
@@ -61,6 +62,10 @@ export const routes = [
   {
     path: '/dashboards/academy',
     name: 'dashboards-academy',
+    meta: {
+      action: 'view',
+      subject: 'part',
+    },
     component: () => import('@/pages/apps/academy/dashboard.vue'),
   },
   {
