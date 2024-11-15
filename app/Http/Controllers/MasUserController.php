@@ -175,17 +175,16 @@ class MasUserController extends Controller
                 ], 404);
             }
 
-            $validated = $request->validate([
+            $validationRules = [
                 'name' => 'required|string|max:64',
                 'email' => [
                     'required',
                     'string',
                     'max:64',
-                    // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) use ($id) {
                         $exists = DB::table('mas_user')
                             ->where('email', $value)
-                            ->where('id', '<>', $id) // Exclude the current user's ID
+                            ->where('id', '<>', $id)
                             ->exists();
 
                         if ($exists) {
@@ -196,7 +195,6 @@ class MasUserController extends Controller
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
-                    // Custom rule to check existence in the department table
                     function ($attribute, $value, $fail) {
                         $exists = DB::table('mas_department')
                             ->where('id', $value)
@@ -210,7 +208,17 @@ class MasUserController extends Controller
                 'role_access' => 'required|string|max:1',
                 'status' => 'required|string|max:1',
                 'control_access' => 'required|json',
-            ]);
+                'password' => 'nullable|string',
+            ];
+
+            $validated = $request->validate($validationRules);
+
+            // Remove password from validated data if it's empty
+            if (empty($validated['password'])) {
+                unset($validated['password']);
+            } else {
+                $validated['password'] = Hash::make($validated['password']);
+            }
 
             $user->update($validated);
 

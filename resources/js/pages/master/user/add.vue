@@ -322,10 +322,11 @@ onMounted(() => {
             <AppTextField
               v-model="password"
               label="Password"
-              :rules="[requiredValidator]"
+              :rules="isEdit ? [] : [requiredValidator]"
               placeholder="Input password"
               outlined
               maxlength="64"
+              :hint="isEdit ? 'Leave empty to keep current password' : ''"
             />
           </VCol>
           <VCol>
