@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\MasUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
 use Exception;
@@ -85,45 +88,42 @@ class MasUserController extends Controller
                     'required',
                     'string',
                     'max:64',
-                    // Custom rule to check uniqueness
-                    function ($attribute, $value, $fail) {
-                        $exists = DB::table('mas_user')
-                            ->where('email', $value)
-                            ->whereNull('deleted_at')
-                            ->exists();
-
-                        if ($exists) {
-                            $fail('Email has already been taken.');
-                        }
-                    }
+                    Rule::unique('mas_user')->whereNull('deleted_at')
                 ],
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
-                    // Custom rule to check existence in the department table
-                    function ($attribute, $value, $fail) {
-                        $exists = DB::table('mas_department')
-                            ->where('id', $value)
-                            ->whereNull('deleted_at')
-                            ->exists();
-
-                        if (!$exists) {
-                            $fail('The selected department is invalid.');
-                        }
-                    },
+                    Rule::exists('mas_department', 'id')->whereNull('deleted_at')
                 ],
                 'role_access' => 'required|string|max:1',
                 'status' => 'required|string|max:1',
                 'control_access' => 'required|json',
+                'password' => 'required|string',
+                // 'c_password' => 'required|same:password'
             ]);
 
+            // Remove confirmation password and hash the password
+            // unset($validated['c_password']);
+            $validated['password'] = Hash::make($validated['password']);
+
             $user = MasUser::create($validated);
+
+            // Generate token
+            $tokenResult = $user->createToken('Personal Access Token');
+            $token = $tokenResult->plainTextToken;
 
             return response()->json([
                 'success' => true,
                 'message' => 'User created successfully!',
-                'data'    => $user
+                'data'    => $user,
+                'accessToken' => $token
             ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $e->errors()
+            ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

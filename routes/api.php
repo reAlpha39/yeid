@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MasShopController;
 use App\Http\Controllers\MasVendorController;
@@ -25,194 +26,208 @@ use App\Http\Controllers\HistoryActivityController;
 use App\Http\Controllers\SparePartReferringController;
 use App\Http\Controllers\PressPartController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Route::get('/user', function (Request $request) {
+//     return $request->user();
+// })->middleware('auth:sanctum');
 
-// Inventory Control
-Route::get('/invControl', [App\Http\Controllers\InventoryControlController::class, 'getRecords']);
-Route::get('/invControl/export', [App\Http\Controllers\InventoryControlController::class, 'export']);
-Route::get('/getPartInfo', [App\Http\Controllers\InventoryControlController::class, 'getPartInfo']);
-Route::get('/getVendor', [App\Http\Controllers\InventoryControlController::class, 'getVendor']);
-Route::get('/getStaff', [App\Http\Controllers\InventoryControlController::class, 'getStaff']);
-Route::get('/getMachines', [App\Http\Controllers\InventoryControlController::class, 'getMachines']);
-Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController::class, 'storeInvRecord']);
-Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);
+Route::group(['prefix' => 'auth'], function () {
+    Route::post('login', [AuthController::class, 'login']);
+    // Route::post('register', [AuthController::class, 'register']);
 
-// Master Part
-Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
-Route::get('/master/part-list/export', [App\Http\Controllers\MasterPartController::class, 'export']);
-Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
-Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
+    Route::group(['middleware' => 'auth:sanctum'], function () {
+        Route::get('logout', [AuthController::class, 'logout']);
+        Route::get('user', [AuthController::class, 'user']);
+    });
+});
 
-// Master Machine
-Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);
+Route::group(['middleware' => 'auth:sanctum'], function () {
 
-// Master Shop
-Route::get('/master/shops', [MasShopController::class, 'index']);
-Route::get('/master/shops/export', [MasShopController::class, 'export']);
-Route::get('/master/shops/{shopCode}', [MasShopController::class, 'show']);
-Route::post('/master/shops', [MasShopController::class, 'store']);
-Route::put('/master/shops/{shopCode}', [MasShopController::class, 'update']);
-Route::delete('/master/shops/{shopCode}', [MasShopController::class, 'destroy']);
+    // Inventory Control
+    Route::get('/invControl', [App\Http\Controllers\InventoryControlController::class, 'getRecords']);
+    Route::get('/invControl/export', [App\Http\Controllers\InventoryControlController::class, 'export']);
+    Route::get('/getPartInfo', [App\Http\Controllers\InventoryControlController::class, 'getPartInfo']);
+    Route::get('/getVendor', [App\Http\Controllers\InventoryControlController::class, 'getVendor']);
+    Route::get('/getStaff', [App\Http\Controllers\InventoryControlController::class, 'getStaff']);
+    Route::get('/getMachines', [App\Http\Controllers\InventoryControlController::class, 'getMachines']);
+    Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController::class, 'storeInvRecord']);
+    Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);
 
-// Master Vendor
-Route::get('/master/vendors', [MasVendorController::class, 'index']);
-Route::get('/master/vendors/export', [MasVendorController::class, 'export']);
-Route::get('/master/vendors/{vendorCode}', [MasVendorController::class, 'show']);
-Route::post('/master/vendors', [MasVendorController::class, 'store']);
-Route::put('/master/vendors/{vendorCode}', [MasVendorController::class, 'update']);
-Route::delete('/master/vendors/{vendorCode}', [MasVendorController::class, 'destroy']);
+    // Master Part
+    Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
+    Route::get('/master/part-list/export', [App\Http\Controllers\MasterPartController::class, 'export']);
+    Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
+    Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
 
-// Master Maker
-Route::get('/master/makers', [MasMakerController::class, 'index']);
-Route::get('/master/makers/export', [MasMakerController::class, 'export']);
-Route::get('/master/makers/{makerCode}', [MasMakerController::class, 'show']);
-Route::post('/master/makers', [MasMakerController::class, 'store']);
-Route::put('/master/makers/{makerCode}', [MasMakerController::class, 'update']);
-Route::delete('/master/makers/{makerCode}', [MasMakerController::class, 'destroy']);
+    // Master Machine
+    Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);
 
-// Master Machine
-Route::get('/master/machines', [MasMachineController::class, 'index']);
-Route::get('/master/machines/export', [MasMachineController::class, 'export']);
-Route::get('/master/machines/{machineNo}', [MasMachineController::class, 'show']);
-Route::post('/master/machines', [MasMachineController::class, 'store']);
-Route::put('/master/machines/{machineNo}', [MasMachineController::class, 'update']);
-Route::delete('/master/machines/{machineNo}', [MasMachineController::class, 'destroy']);
+    // Master Shop
+    Route::get('/master/shops', [MasShopController::class, 'index']);
+    Route::get('/master/shops/export', [MasShopController::class, 'export']);
+    Route::get('/master/shops/{shopCode}', [MasShopController::class, 'show']);
+    Route::post('/master/shops', [MasShopController::class, 'store']);
+    Route::put('/master/shops/{shopCode}', [MasShopController::class, 'update']);
+    Route::delete('/master/shops/{shopCode}', [MasShopController::class, 'destroy']);
 
-// Master Situation
-Route::get('/master/situations', [MasSituationController::class, 'index']);
-Route::get('/master/situations/export', [MasSituationController::class, 'export']);
-Route::get('/master/situations/{situationCode}', [MasSituationController::class, 'show']);
-Route::post('/master/situations', [MasSituationController::class, 'store']);
-Route::put('/master/situations/{situationCode}', [MasSituationController::class, 'update']);
-Route::delete('/master/situations/{situationCode}', [MasSituationController::class, 'destroy']);
+    // Master Vendor
+    Route::get('/master/vendors', [MasVendorController::class, 'index']);
+    Route::get('/master/vendors/export', [MasVendorController::class, 'export']);
+    Route::get('/master/vendors/{vendorCode}', [MasVendorController::class, 'show']);
+    Route::post('/master/vendors', [MasVendorController::class, 'store']);
+    Route::put('/master/vendors/{vendorCode}', [MasVendorController::class, 'update']);
+    Route::delete('/master/vendors/{vendorCode}', [MasVendorController::class, 'destroy']);
 
-// Master Line
-Route::get('/master/lines', [MasLineController::class, 'index']);
-Route::get('/master/lines/export', [MasLineController::class, 'export']);
-Route::get('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'show']);
-Route::post('/master/lines', [MasLineController::class, 'store']);
-Route::put('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'update']);
-Route::delete('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'destroy']);
+    // Master Maker
+    Route::get('/master/makers', [MasMakerController::class, 'index']);
+    Route::get('/master/makers/export', [MasMakerController::class, 'export']);
+    Route::get('/master/makers/{makerCode}', [MasMakerController::class, 'show']);
+    Route::post('/master/makers', [MasMakerController::class, 'store']);
+    Route::put('/master/makers/{makerCode}', [MasMakerController::class, 'update']);
+    Route::delete('/master/makers/{makerCode}', [MasMakerController::class, 'destroy']);
 
-// Mas Factor
-Route::get('/master/factors', [MasFactorController::class, 'index']);
-Route::get('/master/factors/export', [MasFactorController::class, 'export']);
-Route::get('/master/factors/{factorCode}', [MasFactorController::class, 'show']);
-Route::post('/master/factors', [MasFactorController::class, 'store']);
-Route::put('/master/factors/{factorCode}', [MasFactorController::class, 'update']);
-Route::delete('/master/factors/{factorCode}', [MasFactorController::class, 'destroy']);
+    // Master Machine
+    Route::get('/master/machines', [MasMachineController::class, 'index']);
+    Route::get('/master/machines/export', [MasMachineController::class, 'export']);
+    Route::get('/master/machines/{machineNo}', [MasMachineController::class, 'show']);
+    Route::post('/master/machines', [MasMachineController::class, 'store']);
+    Route::put('/master/machines/{machineNo}', [MasMachineController::class, 'update']);
+    Route::delete('/master/machines/{machineNo}', [MasMachineController::class, 'destroy']);
 
-// Mas LTFactor
-Route::get('/master/ltfactors', [MasLTFactorController::class, 'index']);
-Route::get('/master/ltfactors/export', [MasLTFactorController::class, 'export']);
-Route::get('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'show']);
-Route::post('/master/ltfactors', [MasLTFactorController::class, 'store']);
-Route::put('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'update']);
-Route::delete('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'destroy']);
+    // Master Situation
+    Route::get('/master/situations', [MasSituationController::class, 'index']);
+    Route::get('/master/situations/export', [MasSituationController::class, 'export']);
+    Route::get('/master/situations/{situationCode}', [MasSituationController::class, 'show']);
+    Route::post('/master/situations', [MasSituationController::class, 'store']);
+    Route::put('/master/situations/{situationCode}', [MasSituationController::class, 'update']);
+    Route::delete('/master/situations/{situationCode}', [MasSituationController::class, 'destroy']);
 
-// Mas Measure
-Route::get('/master/measures', [MasMeasureController::class, 'index']);
-Route::get('/master/measures/export', [MasMeasureController::class, 'export']);
-Route::get('/master/measures/{measureCode}', [MasMeasureController::class, 'show']);
-Route::post('/master/measures', [MasMeasureController::class, 'store']);
-Route::put('/master/measures/{measureCode}', [MasMeasureController::class, 'update']);
-Route::delete('/master/measures/{measureCode}', [MasMeasureController::class, 'destroy']);
+    // Master Line
+    Route::get('/master/lines', [MasLineController::class, 'index']);
+    Route::get('/master/lines/export', [MasLineController::class, 'export']);
+    Route::get('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'show']);
+    Route::post('/master/lines', [MasLineController::class, 'store']);
+    Route::put('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'update']);
+    Route::delete('/master/lines/{shopCode}/{lineCode}', [MasLineController::class, 'destroy']);
 
-// Mas Prevention
-Route::get('/master/preventions', [MasPreventionController::class, 'index']);
-Route::get('/master/preventions/export', [MasPreventionController::class, 'export']);
-Route::get('/master/preventions/{preventionCode}', [MasPreventionController::class, 'show']);
-Route::post('/master/preventions', [MasPreventionController::class, 'store']);
-Route::put('/master/preventions/{preventionCode}', [MasPreventionController::class, 'update']);
-Route::delete('/master/preventions/{preventionCode}', [MasPreventionController::class, 'destroy']);
+    // Mas Factor
+    Route::get('/master/factors', [MasFactorController::class, 'index']);
+    Route::get('/master/factors/export', [MasFactorController::class, 'export']);
+    Route::get('/master/factors/{factorCode}', [MasFactorController::class, 'show']);
+    Route::post('/master/factors', [MasFactorController::class, 'store']);
+    Route::put('/master/factors/{factorCode}', [MasFactorController::class, 'update']);
+    Route::delete('/master/factors/{factorCode}', [MasFactorController::class, 'destroy']);
 
-// Master System
-Route::get('/master/systems', [MasSystemController::class, 'index']);
-Route::get('/master/systems/export', [MasSystemController::class, 'export']);
-Route::get('/master/systems/{year}', [MasSystemController::class, 'show']);
-Route::post('/master/systems', [MasSystemController::class, 'store']);
-Route::put('/master/systems/{year}', [MasSystemController::class, 'update']);
-Route::delete('/master/systems/{year}', [MasSystemController::class, 'destroy']);
+    // Mas LTFactor
+    Route::get('/master/ltfactors', [MasLTFactorController::class, 'index']);
+    Route::get('/master/ltfactors/export', [MasLTFactorController::class, 'export']);
+    Route::get('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'show']);
+    Route::post('/master/ltfactors', [MasLTFactorController::class, 'store']);
+    Route::put('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'update']);
+    Route::delete('/master/ltfactors/{ltFactorCode}', [MasLTFactorController::class, 'destroy']);
 
-// Master Employee
-Route::get('/master/employees', [MasEmployeeController::class, 'index']);
-Route::get('/master/employees/export', [MasEmployeeController::class, 'export']);
-Route::get('/master/employees/{employeeCode}', [MasEmployeeController::class, 'show']);
-Route::post('/master/employees', [MasEmployeeController::class, 'store']);
-Route::put('/master/employees/{employeeCode}', [MasEmployeeController::class, 'update']);
-Route::delete('/master/employees/{employeeCode}', [MasEmployeeController::class, 'destroy']);
+    // Mas Measure
+    Route::get('/master/measures', [MasMeasureController::class, 'index']);
+    Route::get('/master/measures/export', [MasMeasureController::class, 'export']);
+    Route::get('/master/measures/{measureCode}', [MasMeasureController::class, 'show']);
+    Route::post('/master/measures', [MasMeasureController::class, 'store']);
+    Route::put('/master/measures/{measureCode}', [MasMeasureController::class, 'update']);
+    Route::delete('/master/measures/{measureCode}', [MasMeasureController::class, 'destroy']);
 
-// Master Department
-Route::get('/master/departments', [MasDepartmentController::class, 'index']);
-Route::get('/master/departments/export', [MasDepartmentController::class, 'export']);
-Route::get('/master/departments/{departmentCode}', [MasDepartmentController::class, 'show']);
-Route::post('/master/departments', [MasDepartmentController::class, 'store']);
-Route::put('/master/departments/{departmentCode}', [MasDepartmentController::class, 'update']);
-Route::delete('/master/departments/{departmentCode}', [MasDepartmentController::class, 'destroy']);
-Route::post('/master/departments/{id}/restore', [MasDepartmentController::class, 'restore']);
+    // Mas Prevention
+    Route::get('/master/preventions', [MasPreventionController::class, 'index']);
+    Route::get('/master/preventions/export', [MasPreventionController::class, 'export']);
+    Route::get('/master/preventions/{preventionCode}', [MasPreventionController::class, 'show']);
+    Route::post('/master/preventions', [MasPreventionController::class, 'store']);
+    Route::put('/master/preventions/{preventionCode}', [MasPreventionController::class, 'update']);
+    Route::delete('/master/preventions/{preventionCode}', [MasPreventionController::class, 'destroy']);
 
-// Master User
-Route::get('/master/users', [MasUserController::class, 'index']);
-Route::get('/master/users/export', [MasUserController::class, 'export']);
-Route::get('/master/users/{id}', [MasUserController::class, 'show']);
-Route::post('/master/users', [MasUserController::class, 'store']);
-Route::put('/master/users/{id}', [MasUserController::class, 'update']);
-Route::put('/master/users/{id}/status', [MasUserController::class, 'updateStatus']);
-Route::delete('/master/users/{id}', [MasUserController::class, 'destroy']);
-Route::post('/master/users/{id}/restore', [MasUserController::class, 'restore']);
+    // Master System
+    Route::get('/master/systems', [MasSystemController::class, 'index']);
+    Route::get('/master/systems/export', [MasSystemController::class, 'export']);
+    Route::get('/master/systems/{year}', [MasSystemController::class, 'show']);
+    Route::post('/master/systems', [MasSystemController::class, 'store']);
+    Route::put('/master/systems/{year}', [MasSystemController::class, 'update']);
+    Route::delete('/master/systems/{year}', [MasSystemController::class, 'destroy']);
 
-// Department Request
-Route::get('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'index']);
-Route::get('/maintenance-database-system/department-requests/export', [MaintenanceRequestController::class, 'export']);
-Route::get('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'show']);
-Route::post('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'store']);
-Route::put('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'update']);
-Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);
-Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
-Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
-Route::get('/maintenance-database-system/maintenance-report/export', [MaintenanceRequestController::class, 'exportMaintenanceReports']);
-Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
+    // Master Employee
+    Route::get('/master/employees', [MasEmployeeController::class, 'index']);
+    Route::get('/master/employees/export', [MasEmployeeController::class, 'export']);
+    Route::get('/master/employees/{employeeCode}', [MasEmployeeController::class, 'show']);
+    Route::post('/master/employees', [MasEmployeeController::class, 'store']);
+    Route::put('/master/employees/{employeeCode}', [MasEmployeeController::class, 'update']);
+    Route::delete('/master/employees/{employeeCode}', [MasEmployeeController::class, 'destroy']);
 
-// Request to Workshop
-Route::get('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'index']);
-Route::get('/maintenance-database-system/request-workshop/export', [RequestWorkshopController::class, 'export']);
-Route::get('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'show']);
-Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'store']);
-Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);
-Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
+    // Master Department
+    Route::get('/master/departments', [MasDepartmentController::class, 'index']);
+    Route::get('/master/departments/export', [MasDepartmentController::class, 'export']);
+    Route::get('/master/departments/{departmentCode}', [MasDepartmentController::class, 'show']);
+    Route::post('/master/departments', [MasDepartmentController::class, 'store']);
+    Route::put('/master/departments/{departmentCode}', [MasDepartmentController::class, 'update']);
+    Route::delete('/master/departments/{departmentCode}', [MasDepartmentController::class, 'destroy']);
+    Route::post('/master/departments/{id}/restore', [MasDepartmentController::class, 'restore']);
 
-// Spare Parts Referring
-Route::get('/maintenance-database-system/spare-part-referring/cost-summary', [SparePartReferringController::class, 'getCostSummary']);
-Route::get('/maintenance-database-system/spare-part-referring/inventory-summary', [SparePartReferringController::class, 'getInventorySummary']);
-Route::get('/maintenance-database-system/spare-part-referring/parts-cost', [SparePartReferringController::class, 'getPartsCost']);
-Route::get('/maintenance-database-system/spare-part-referring/machines-cost', [SparePartReferringController::class, 'getMachinesCost']);
-Route::get('/maintenance-database-system/spare-part-referring/inventory-change-cost', [SparePartReferringController::class, 'getInventoryChangeCost']);
+    // Master User
+    Route::get('/master/users', [MasUserController::class, 'index']);
+    Route::get('/master/users/export', [MasUserController::class, 'export']);
+    Route::get('/master/users/{id}', [MasUserController::class, 'show']);
+    Route::post('/master/users', [MasUserController::class, 'store']);
+    Route::put('/master/users/{id}', [MasUserController::class, 'update']);
+    Route::put('/master/users/{id}/status', [MasUserController::class, 'updateStatus']);
+    Route::delete('/master/users/{id}', [MasUserController::class, 'destroy']);
+    Route::post('/master/users/{id}/restore', [MasUserController::class, 'restore']);
 
-// Database Analyzation
-Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
+    // Department Request
+    Route::get('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'index']);
+    Route::get('/maintenance-database-system/department-requests/export', [MaintenanceRequestController::class, 'export']);
+    Route::get('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'show']);
+    Route::post('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'store']);
+    Route::put('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'update']);
+    Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);
+    Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
+    Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
+    Route::get('/maintenance-database-system/maintenance-report/export', [MaintenanceRequestController::class, 'exportMaintenanceReports']);
+    Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
 
-// Press Part
-Route::get('/press-shot/parts', [PressPartController::class, 'index']);
-Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
+    // Request to Workshop
+    Route::get('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'index']);
+    Route::get('/maintenance-database-system/request-workshop/export', [RequestWorkshopController::class, 'export']);
+    Route::get('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'show']);
+    Route::post('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'store']);
+    Route::put('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'update']);
+    Route::delete('/maintenance-database-system/request-workshop/{wsrid}', [RequestWorkshopController::class, 'destroy']);
 
-// Exchange Data
-Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
-Route::get('/press-shot/exchange/model-dies', [ExchangeDataController::class, 'indexModelDie']);
-Route::get('/press-shot/exchange/machines-no', [ExchangeDataController::class, 'indexMachineNo']);
-Route::get('/press-shot/exchange/die-units', [ExchangeDataController::class, 'indexDieUnit']);
-Route::get('/press-shot/exchange/qty-per-die', [ExchangeDataController::class, 'showQtyPerDie']);
-Route::get('/press-shot/exchanges/{id}', [ExchangeDataController::class, 'show']);
-Route::post('/press-shot/exchanges', [ExchangeDataController::class, 'store']);
+    // Spare Parts Referring
+    Route::get('/maintenance-database-system/spare-part-referring/cost-summary', [SparePartReferringController::class, 'getCostSummary']);
+    Route::get('/maintenance-database-system/spare-part-referring/inventory-summary', [SparePartReferringController::class, 'getInventorySummary']);
+    Route::get('/maintenance-database-system/spare-part-referring/parts-cost', [SparePartReferringController::class, 'getPartsCost']);
+    Route::get('/maintenance-database-system/spare-part-referring/machines-cost', [SparePartReferringController::class, 'getMachinesCost']);
+    Route::get('/maintenance-database-system/spare-part-referring/inventory-change-cost', [SparePartReferringController::class, 'getInventoryChangeCost']);
 
-// Production Data
-Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
-Route::get('/press-shot/production', [ProductionDataController::class, 'show']);
-Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
+    // Database Analyzation
+    Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
 
-// History Activity
-Route::get('/press-shot/history-activity', [HistoryActivityController::class, 'index']);
+    // Press Part
+    Route::get('/press-shot/parts', [PressPartController::class, 'index']);
+    Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
+
+    // Exchange Data
+    Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
+    Route::get('/press-shot/exchange/model-dies', [ExchangeDataController::class, 'indexModelDie']);
+    Route::get('/press-shot/exchange/machines-no', [ExchangeDataController::class, 'indexMachineNo']);
+    Route::get('/press-shot/exchange/die-units', [ExchangeDataController::class, 'indexDieUnit']);
+    Route::get('/press-shot/exchange/qty-per-die', [ExchangeDataController::class, 'showQtyPerDie']);
+    Route::get('/press-shot/exchanges/{id}', [ExchangeDataController::class, 'show']);
+    Route::post('/press-shot/exchanges', [ExchangeDataController::class, 'store']);
+
+    // Production Data
+    Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
+    Route::get('/press-shot/production', [ProductionDataController::class, 'show']);
+    Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
+
+    // History Activity
+    Route::get('/press-shot/history-activity', [HistoryActivityController::class, 'index']);
+});
+
 
 // Work
 // Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);

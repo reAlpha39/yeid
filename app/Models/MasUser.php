@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class MasUser extends Model
+class MasUser extends Authenticatable
 {
-    use SoftDeletes;
+    use SoftDeletes, HasApiTokens, HasFactory, Notifiable;
 
     // Specify the table name
     protected $table = 'mas_user';
@@ -24,13 +27,21 @@ class MasUser extends Model
         'role_access',
         'status',
         'control_access',
+        'password',
+        'remember_token',
+        'email_verified_at'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     // Enable timestamps management (created_at, updated_at)
     public $timestamps = true;
 
     // Set default date format for the model
-    protected $dates = ['created_at', 'updated_at', 'deleted_at'];
+    protected $dates = ['created_at', 'updated_at', 'deleted_at', 'email_verified_at'];
 
     // Define the relationship with the MasDepartment model
     public function department()

@@ -1,6 +1,5 @@
 <!-- ❗Errors in the form are set on line 60 -->
 <script setup>
-import AuthProvider from "@/views/pages/authentication/AuthProvider.vue";
 import { useGenerateImageVariant } from "@core/composable/useGenerateImageVariant";
 import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png";
 import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png";
@@ -10,6 +9,7 @@ import authV2MaskDark from "@images/pages/misc-mask-dark.png";
 import authV2MaskLight from "@images/pages/misc-mask-light.png";
 import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
 import { themeConfig } from "@themeConfig";
+import { useToast } from "vue-toastification";
 import { VForm } from "vuetify/components/VForm";
 
 const authThemeImg = useGenerateImageVariant(
@@ -31,6 +31,7 @@ definePage({
 const isPasswordVisible = ref(false);
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 const ability = useAbility();
 
 const errors = ref({
@@ -49,26 +50,31 @@ const rememberMe = ref(false);
 
 const login = async () => {
   try {
-    const res = await $api("/auth/login", {
+    const data = await $api("/auth/login", {
       method: "POST",
       body: {
         email: credentials.value.email,
         password: credentials.value.password,
+        remember_me: rememberMe.value,
       },
       onResponseError({ response }) {
-        errors.value = response._data.errors;
+        toast.error(response._data.message);
       },
     });
 
-    const { accessToken, userData, userAbilityRules } = res;
+    const { token, user } = data;
 
-    useCookie("userAbilityRules").value = userAbilityRules;
-    ability.update(userAbilityRules);
-    useCookie("userData").value = userData;
-    useCookie("accessToken").value = accessToken;
+    console.log(token + " " + user.control_access);
+
+    const caslPermissions = convertPermissions(data.user.control_access);
+    useCookie("userAbilityRules").value = caslPermissions;
+    ability.update(caslPermissions);
+    useCookie("userData").value = user;
+    useCookie("accessToken").value = token;
     await nextTick(() => {
       router.replace(route.query.to ? String(route.query.to) : "/");
     });
+
   } catch (err) {
     console.error(err);
   }
@@ -123,13 +129,11 @@ const onSubmit = () => {
       <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-4">
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Welcome to
+            Welcome
             <span class="text-capitalize"> {{ themeConfig.app.title }} </span>!
             👋🏻
           </h4>
-          <p class="mb-0">
-            Please sign-in to your account and start the adventure
-          </p>
+          <p class="mb-0">Please sign-in to your account</p>
         </VCardText>
         <!-- <VCardText>
           <VAlert color="primary" variant="tonal">
@@ -162,6 +166,7 @@ const onSubmit = () => {
               <!-- password -->
               <VCol cols="12">
                 <AppTextField
+                  class="mb-6"
                   v-model="credentials.password"
                   label="Password"
                   placeholder="············"
@@ -174,7 +179,7 @@ const onSubmit = () => {
                   @click:append-inner="isPasswordVisible = !isPasswordVisible"
                 />
 
-                <div
+                <!-- <div
                   class="d-flex align-center flex-wrap justify-space-between my-6"
                 >
                   <VCheckbox v-model="rememberMe" label="Remember me" />
@@ -184,13 +189,13 @@ const onSubmit = () => {
                   >
                     Forgot Password?
                   </RouterLink>
-                </div>
+                </div> -->
 
                 <VBtn block type="submit"> Login </VBtn>
               </VCol>
 
               <!-- create account -->
-              <VCol cols="12" class="text-center">
+              <!-- <VCol cols="12" class="text-center">
                 <span>New on our platform?</span>
                 <RouterLink
                   class="text-primary ms-1"
@@ -203,12 +208,12 @@ const onSubmit = () => {
                 <VDivider />
                 <span class="mx-4">or</span>
                 <VDivider />
-              </VCol>
+              </VCol> -->
 
               <!-- auth providers -->
-              <VCol cols="12" class="text-center">
+              <!-- <VCol cols="12" class="text-center">
                 <AuthProvider />
-              </VCol>
+              </VCol> -->
             </VRow>
           </VForm>
         </VCardText>
