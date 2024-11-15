@@ -19,6 +19,7 @@ const fullName = ref();
 const email = ref();
 const phone = ref();
 const status = ref("Active");
+const password = ref();
 const controlAccess = ref({
   machine: { view: false, create: false, update: false, delete: false },
   part: { view: false, create: false, update: false, delete: false },
@@ -108,6 +109,7 @@ async function addData() {
           department_id: selectedDepartment.value.id,
           status: convertStatus(status.value),
           control_access: controlAccessJson,
+          password: password.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -294,7 +296,7 @@ onMounted(() => {
         </VRow>
 
         <VRow>
-          <VCol cols="12" sm="6">
+          <VCol>
             <AppAutocomplete
               v-model="selectedDepartment"
               label="Department"
@@ -306,7 +308,7 @@ onMounted(() => {
               outlined
             />
           </VCol>
-          <VCol cols="12" sm="3">
+          <VCol>
             <AppSelect
               v-model="selectedRoleAccess"
               label="Role Access"
@@ -316,7 +318,17 @@ onMounted(() => {
               outlined
             />
           </VCol>
-          <VCol cols="3">
+          <VCol>
+            <AppTextField
+              v-model="password"
+              label="Password"
+              :rules="[requiredValidator]"
+              placeholder="Input password"
+              outlined
+              maxlength="64"
+            />
+          </VCol>
+          <VCol>
             <VLabel style="color: #43404f; font-size: 13px">Status</VLabel>
             <VSwitch
               v-model="status"
