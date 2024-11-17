@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\MasUser;
 
 class AuthController extends Controller
 {
@@ -22,14 +23,41 @@ class AuthController extends Controller
             'remember_me' => 'boolean'
         ]);
 
-        $credentials = request(['email', 'password']);
-        if (!Auth::attempt($credentials)) {
+        $user = MasUser::where('email', $request->email)->first();
+
+        // Check if user exists
+        if (!$user) {
             return response()->json([
+                'success' => false,
                 'message' => 'Wrong email or password'
             ], 401);
         }
 
-        $user = $request->user();
+        // Check if user is deleted
+        if ($user->deleted_at !== null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This account has been deleted'
+            ], 403);
+        }
+
+        // Check if user is deactivated
+        if ($user->status === "0") {
+            return response()->json([
+                'success' => false,
+                'message' => 'This account has been deactivated'
+            ], 403);
+        }
+
+        // Attempt authentication
+        $credentials = request(['email', 'password']);
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Wrong email or password'
+            ], 401);
+        }
+
         $tokenResult = $user->createToken('PersonalApiToken');
         $token = $tokenResult->plainTextToken;
 
