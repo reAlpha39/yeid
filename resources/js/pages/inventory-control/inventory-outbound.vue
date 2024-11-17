@@ -3,6 +3,13 @@ import axios from "axios";
 import { useToast } from "vue-toastification";
 const { can } = usePermissions();
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "inventoryOutbound",
+  },
+});
+
 const toast = useToast();
 
 const isDeleteDialogVisible = ref(false);
@@ -368,7 +375,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDeleteDialog(item)">
+          <IconBtn
+            v-if="can('delete', 'inventoryOutbound')"
+            @click="openDeleteDialog(item)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

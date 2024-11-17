@@ -3,6 +3,13 @@ import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { VRow } from "vuetify/lib/components/index.mjs";
 
+definePage({
+  meta: {
+    action: "create",
+    subject: "inventoryOutbound",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 

@@ -2,6 +2,13 @@
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "create",
+    subject: "inventoryInbound",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 

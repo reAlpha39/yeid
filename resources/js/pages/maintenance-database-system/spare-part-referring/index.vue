@@ -1,4 +1,11 @@
 <script setup>
+definePage({
+  meta: {
+    action: "view",
+    subject: "maintenanceReport",
+  },
+});
+
 const currentTab = ref("window1");
 </script>
 

@@ -4,6 +4,13 @@ import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 import { VCardText } from "vuetify/lib/components/index.mjs";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "user",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 

@@ -3,6 +3,13 @@ import moment from "moment";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "pressShot",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 

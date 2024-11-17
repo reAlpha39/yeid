@@ -3,6 +3,13 @@ import { onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "create, update",
+    subject: "part",
+  },
+});
+
 const isSelectInventoryVendorDialogVisible = ref(false);
 const isSelectMachineDialogVisible = ref(false);
 const isDeleteSelectedMachineDialogVisible = ref(false);

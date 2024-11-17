@@ -2,6 +2,13 @@
 import axios from "axios";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "inventoryInbound",
+  },
+});
+
 const { can } = usePermissions();
 const toast = useToast();
 

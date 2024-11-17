@@ -3,6 +3,13 @@ import axios from "axios";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "maintenanceReport",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 

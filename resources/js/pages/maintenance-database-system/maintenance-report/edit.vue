@@ -6,6 +6,13 @@ import { VCardTitle } from "vuetify/lib/components/index.mjs";
 
 import AddWorkTimeDialog from "@/components/dialogs/AddWorkTimeDialog.vue";
 
+definePage({
+  meta: {
+    action: "create",
+    subject: "maintenanceReport",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();

@@ -2,6 +2,13 @@
 import axios from "axios";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "machine",
+  },
+});
+
 const toast = useToast();
 
 const isDeleteDialogVisible = ref(false);

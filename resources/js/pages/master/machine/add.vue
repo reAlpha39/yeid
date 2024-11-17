@@ -2,6 +2,13 @@
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "create",
+    subject: "machine",
+  },
+});
+
 const toast = useToast();
 const router = useRouter();
 const route = useRoute();

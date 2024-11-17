@@ -3,6 +3,13 @@ import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import moment from "moment";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "pressShot",
+  },
+});
+
 const toast = useToast();
 
 // Data table options

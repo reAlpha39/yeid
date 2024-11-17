@@ -3,6 +3,13 @@ import axios from "axios";
 import AddPreventionDrawer from "@/components/drawers/AddPreventionDrawer.vue";
 import { useToast } from "vue-toastification";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "machine",
+  },
+});
+
 const toast = useToast();
 
 const isDeleteDialogVisible = ref(false);

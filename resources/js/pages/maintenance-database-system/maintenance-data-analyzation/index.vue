@@ -9,6 +9,13 @@ import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
 
+definePage({
+  meta: {
+    action: "view",
+    subject: "maintenanceReport",
+  },
+});
+
 const toast = useToast();
 const vuetifyTheme = useTheme();
 
