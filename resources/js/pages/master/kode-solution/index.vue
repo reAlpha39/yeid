@@ -1,6 +1,6 @@
 <script setup>
-import axios from "axios";
 import AddPreventionDrawer from "@/components/drawers/AddPreventionDrawer.vue";
+import axios from "axios";
 import { useToast } from "vue-toastification";
 
 definePage({
@@ -188,7 +188,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" @click="isDrawerOpen = !isDrawerOpen">
+        <VBtn
+          v-if="$can('create', 'machine')"
+          prepend-icon="tabler-plus"
+          @click="isDrawerOpen = !isDrawerOpen"
+        >
           Add New Kode Solution
         </VBtn>
       </div>
@@ -231,10 +235,16 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.preventioncode)">
+          <IconBtn
+            v-if="$can('update', 'machine')"
+            @click="openEditPartPage(item.preventioncode)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.preventioncode)">
+          <IconBtn
+            v-if="$can('delete', 'machine')"
+            @click="openDeleteDialog(item.preventioncode)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

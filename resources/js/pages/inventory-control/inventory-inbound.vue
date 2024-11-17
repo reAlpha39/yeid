@@ -378,7 +378,10 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openDeleteDialog(item)">
+          <IconBtn
+            v-if="$can('delete', 'inventoryInbound')"
+            @click="openDeleteDialog(item)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

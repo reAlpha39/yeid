@@ -246,7 +246,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="department-request/add">
+        <VBtn
+          v-if="$can('create', 'maintenanceReport')"
+          prepend-icon="tabler-plus"
+          to="department-request/add"
+        >
           Add Department Request
         </VBtn>
       </div>
@@ -334,10 +338,16 @@ onMounted(() => {
           <IconBtn @click="openDetailPage(item.recordid)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <IconBtn @click="openEditPage(item.recordid)">
+          <IconBtn
+            v-if="$can('update', 'maintenanceReport')"
+            @click="openEditPage(item.recordid)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.recordid)">
+          <IconBtn
+            v-if="$can('delete', 'maintenanceReport')"
+            @click="openDeleteDialog(item.recordid)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

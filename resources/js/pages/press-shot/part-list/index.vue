@@ -176,7 +176,6 @@ const rowClasses = computed(() => {
   }));
 });
 
-
 const getRowClass = (item, index) => {
   const classes = rowClasses.value[index];
   return Object.keys(classes)
@@ -465,7 +464,10 @@ onMounted(() => {
           <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
-          <IconBtn @click="openEditPage(item.exchangedatetime)">
+          <IconBtn
+            v-if="$can('update', 'pressShot')"
+            @click="openEditPage(item.exchangedatetime)"
+          >
             <VIcon icon="tabler-exchange" />
           </IconBtn>
         </div>

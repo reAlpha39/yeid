@@ -188,7 +188,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" @click="isDrawerOpen = !isDrawerOpen">
+        <VBtn
+          v-if="$can('create', 'machine')"
+          prepend-icon="tabler-plus"
+          @click="isDrawerOpen = !isDrawerOpen"
+        >
           Add New Kode Temporary
         </VBtn>
       </div>
@@ -231,10 +235,16 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPartPage(item.measurecode)">
+          <IconBtn
+            v-if="$can('update', 'machine')"
+            @click="openEditPartPage(item.measurecode)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.measurecode)">
+          <IconBtn
+            v-if="$can('delete', 'machine')"
+            @click="openDeleteDialog(item.measurecode)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

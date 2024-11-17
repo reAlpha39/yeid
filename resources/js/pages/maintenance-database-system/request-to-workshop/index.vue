@@ -242,7 +242,11 @@ onMounted(() => {
           Export
         </VBtn>
 
-        <VBtn prepend-icon="tabler-plus" to="request-to-workshop/add">
+        <VBtn
+          v-if="$can('create', 'maintenanceReport')"
+          prepend-icon="tabler-plus"
+          to="request-to-workshop/add"
+        >
           Add Request
         </VBtn>
       </div>
@@ -309,10 +313,16 @@ onMounted(() => {
           <IconBtn @click="openDetailPage(item.wsrid)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <IconBtn @click="openEditPage(item.wsrid)">
+          <IconBtn
+            v-if="$can('update', 'maintenanceReport')"
+            @click="openEditPage(item.wsrid)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.wsrid)">
+          <IconBtn
+            v-if="$can('delete', 'maintenanceReport')"
+            @click="openDeleteDialog(item.wsrid)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

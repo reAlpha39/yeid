@@ -273,7 +273,11 @@ onMounted(() => {
 
         <VBtn variant="tonal" prepend-icon="tabler-list"> Log </VBtn>
 
-        <VBtn prepend-icon="tabler-edit" to="production-data/add">
+        <VBtn
+          v-if="$can('create', 'pressShot')"
+          prepend-icon="tabler-edit"
+          to="production-data/add"
+        >
           Create Production Data
         </VBtn>
       </div>

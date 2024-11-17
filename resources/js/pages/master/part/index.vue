@@ -331,7 +331,13 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="part/add"> Add New Part </VBtn>
+        <VBtn
+          v-if="$can('create', 'part')"
+          prepend-icon="tabler-plus"
+          to="part/add"
+        >
+          Add New Part
+        </VBtn>
       </div>
     </VCardText>
 
@@ -401,13 +407,22 @@ onMounted(() => {
           <div class="d-flex justify-center align-center">
             <div class="status-indicator mr-2" :class="getStatusColor(item)" />
           </div>
-          <IconBtn @click="openEditPartPage(item.partcode)">
+          <IconBtn
+            v-if="$can('update', 'part')"
+            @click="openEditPartPage(item.partcode)"
+          >
             <VIcon icon="tabler-edit" size="small" />
           </IconBtn>
-          <IconBtn @click="openUpdateDialog(item.partcode)">
+          <IconBtn
+            v-if="$can('update', 'part')"
+            @click="openUpdateDialog(item.partcode)"
+          >
             <VIcon icon="tabler-adjustments" size="small" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.partcode)">
+          <IconBtn
+            v-if="$can('delete', 'part')"
+            @click="openDeleteDialog(item.partcode)"
+          >
             <VIcon icon="tabler-trash" size="small" />
           </IconBtn>
         </div>

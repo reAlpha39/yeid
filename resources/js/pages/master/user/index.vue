@@ -28,7 +28,7 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 
 const departments = ref([]);
-const roleAccesses = ["Operator", "Supervisor", "Manager"];
+const roleAccesses = ["1", "2", "3"];
 const statuses = ["Active", "Inactive"];
 
 // headers
@@ -170,11 +170,11 @@ function convertStatus(category) {
 
 function convertRoleAccess(id) {
   switch (id) {
-    case "Operator":
+    case "1":
       return "1";
-    case "Supervisor":
+    case "2":
       return "2";
-    case "Manager":
+    case "3":
       return "3";
     default:
       return "";
@@ -192,19 +192,6 @@ function statusType(category) {
       return "Inactive";
     case "1":
       return "Active";
-    default:
-      return "";
-  }
-}
-
-function roleAccessType(id) {
-  switch (id) {
-    case "O":
-      return "Operator";
-    case "S":
-      return "Supervisor";
-    case "M":
-      return "Manager";
     default:
       return "";
   }
@@ -331,7 +318,13 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" to="user/add"> Add New User </VBtn>
+        <VBtn
+          v-if="$can('create', 'user')"
+          prepend-icon="tabler-plus"
+          to="user/add"
+        >
+          Add New User
+        </VBtn>
       </div>
     </VCardText>
 
@@ -384,16 +377,19 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPage(item.id)">
+          <IconBtn v-if="$can('update', 'user')" @click="openEditPage(item.id)">
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.id)">
+          <IconBtn
+            v-if="$can('delete', 'user')"
+            @click="openDeleteDialog(item.id)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
           <VMenu v-model="item.menu">
             <!-- Each row has its own menu state -->
             <template #activator="{ props }">
-              <IconBtn v-bind="props">
+              <IconBtn v-if="$can('update', 'user')" v-bind="props">
                 <VIcon icon="tabler-dots-vertical" />
               </IconBtn>
             </template>

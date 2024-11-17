@@ -185,7 +185,11 @@ onMounted(() => {
         </VBtn>
 
         <!-- 👉 Add button -->
-        <VBtn prepend-icon="tabler-plus" @click="isDrawerOpen = !isDrawerOpen">
+        <VBtn
+          v-if="$can('create', 'machine')"
+          prepend-icon="tabler-plus"
+          @click="isDrawerOpen = !isDrawerOpen"
+        >
           Add New Vendor
         </VBtn>
       </div>
@@ -221,10 +225,16 @@ onMounted(() => {
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="align-center">
-          <IconBtn @click="openEditPage(item.vendorcode)">
+          <IconBtn
+            v-if="$can('update', 'machine')"
+            @click="openEditPage(item.vendorcode)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
-          <IconBtn @click="openDeleteDialog(item.vendorcode)">
+          <IconBtn
+            v-if="$can('delete', 'machine')"
+            @click="openDeleteDialog(item.vendorcode)"
+          >
             <VIcon icon="tabler-trash" />
           </IconBtn>
         </div>

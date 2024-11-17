@@ -292,7 +292,10 @@ onMounted(() => {
           <IconBtn @click="openDetailPage(item.recordid)">
             <VIcon icon="tabler-eye" />
           </IconBtn>
-          <IconBtn @click="openEditPage(item.recordid)">
+          <IconBtn
+            v-if="$can('update', 'maintenanceReport')"
+            @click="openEditPage(item.recordid)"
+          >
             <VIcon icon="tabler-edit" />
           </IconBtn>
         </div>
