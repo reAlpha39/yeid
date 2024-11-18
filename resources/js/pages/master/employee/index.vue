@@ -6,7 +6,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "machine",
+    subject: "user",
   },
 });
 
@@ -246,13 +246,13 @@ onMounted(() => {
       <template #item.actions="{ item }">
         <div class="align-center">
           <IconBtn
-            v-if="$can('update', 'machine')"
+            v-if="$can('update', 'user')"
             @click="openEditPartPage(item.employeecode)"
           >
             <VIcon icon="tabler-edit" />
           </IconBtn>
           <IconBtn
-            v-if="$can('delete', 'machine')"
+            v-if="$can('delete', 'user')"
             @click="openDeleteDialog(item.employeecode)"
           >
             <VIcon icon="tabler-trash" />

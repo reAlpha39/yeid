@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "part",
+    subject: "masterData",
   },
 });
 
@@ -332,7 +332,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="$can('create', 'part')"
+          v-if="$can('create', 'masterData')"
           prepend-icon="tabler-plus"
           to="part/add"
         >
@@ -408,19 +408,19 @@ onMounted(() => {
             <div class="status-indicator mr-2" :class="getStatusColor(item)" />
           </div>
           <IconBtn
-            v-if="$can('update', 'part')"
+            v-if="$can('update', 'masterData')"
             @click="openEditPartPage(item.partcode)"
           >
             <VIcon icon="tabler-edit" size="small" />
           </IconBtn>
           <IconBtn
-            v-if="$can('update', 'part')"
+            v-if="$can('update', 'masterData')"
             @click="openUpdateDialog(item.partcode)"
           >
             <VIcon icon="tabler-adjustments" size="small" />
           </IconBtn>
           <IconBtn
-            v-if="$can('delete', 'part')"
+            v-if="$can('delete', 'masterData')"
             @click="openDeleteDialog(item.partcode)"
           >
             <VIcon icon="tabler-trash" size="small" />
