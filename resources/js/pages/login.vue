@@ -1,26 +1,11 @@
 <!-- ❗Errors in the form are set on line 60 -->
 <script setup>
-import { useGenerateImageVariant } from "@core/composable/useGenerateImageVariant";
-import authV2LoginIllustrationBorderedDark from "@images/pages/auth-v2-login-illustration-bordered-dark.png";
-import authV2LoginIllustrationBorderedLight from "@images/pages/auth-v2-login-illustration-bordered-light.png";
-import authV2LoginIllustrationDark from "@images/pages/auth-v2-login-illustration-dark.png";
-import authV2LoginIllustrationLight from "@images/pages/auth-v2-login-illustration-light.png";
-import authV2MaskDark from "@images/pages/misc-mask-dark.png";
-import authV2MaskLight from "@images/pages/misc-mask-light.png";
-import { VNodeRenderer } from "@layouts/components/VNodeRenderer";
-import { themeConfig } from "@themeConfig";
+import { useAbility } from "@casl/vue";
+import authLoginIllustration from "@images/pages/auth_login_illustration.png";
+import logoImage from "@images/pages/logo.png";
 import { useToast } from "vue-toastification";
 import { VForm } from "vuetify/components/VForm";
-import { useAbility } from '@casl/vue'
-
-const authThemeImg = useGenerateImageVariant(
-  authV2LoginIllustrationLight,
-  authV2LoginIllustrationDark,
-  authV2LoginIllustrationBorderedLight,
-  authV2LoginIllustrationBorderedDark,
-  true
-);
-const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark);
+import { VImg } from "vuetify/lib/components/index.mjs";
 
 definePage({
   meta: {
@@ -34,6 +19,7 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const ability = useAbility();
+const valid = ref(false);
 
 const errors = ref({
   email: undefined,
@@ -75,7 +61,6 @@ const login = async () => {
     await nextTick(() => {
       router.replace(route.query.to ? String(route.query.to) : "/");
     });
-
   } catch (err) {
     console.error(err);
   }
@@ -89,140 +74,149 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <RouterLink to="/">
-    <div class="auth-logo d-flex align-center gap-x-3">
-      <VNodeRenderer :nodes="themeConfig.app.logo" />
-      <h1 class="auth-title">
-        {{ themeConfig.app.title }}
-      </h1>
+  <div class="login-wrapper">
+    <div class="background-container">
+      <VImg :src="authLoginIllustration" class="background-image" cover />
     </div>
-  </RouterLink>
 
-  <VRow no-gutters class="auth-wrapper bg-surface">
-    <VCol md="8" class="d-none d-md-flex">
-      <div class="position-relative bg-background w-100 me-0">
-        <div
-          class="d-flex align-center justify-center w-100 h-100"
-          style="padding-inline: 6.25rem"
-        >
-          <VImg
-            max-width="613"
-            :src="authThemeImg"
-            class="auth-illustration mt-16 mb-2"
-          />
-        </div>
-
-        <img
-          class="auth-footer-mask"
-          :src="authThemeMask"
-          alt="auth-footer-mask"
-          height="280"
-          width="100"
-        />
-      </div>
-    </VCol>
-
-    <VCol
-      cols="12"
-      md="4"
-      class="auth-card-v2 d-flex align-center justify-center"
+    <VContainer
+      class="d-flex align-center justify-center"
+      style="min-height: 100vh"
     >
-      <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-4">
-        <VCardText>
-          <h4 class="text-h4 mb-1">
-            Welcome
-            <span class="text-capitalize"> {{ themeConfig.app.title }} </span>!
-            👋🏻
-          </h4>
-          <p class="mb-0">Please sign-in to your account</p>
-        </VCardText>
-        <!-- <VCardText>
-          <VAlert color="primary" variant="tonal">
-            <p class="text-sm mb-2">
-              Admin Email: <strong>admin@demo.com</strong> / Pass:
-              <strong>admin</strong>
-            </p>
-            <p class="text-sm mb-0">
-              Client Email: <strong>client@demo.com</strong> / Pass:
-              <strong>client</strong>
-            </p>
-          </VAlert>
-        </VCardText> -->
-        <VCardText>
-          <VForm ref="refVForm" @submit.prevent="onSubmit">
-            <VRow>
-              <!-- email -->
-              <VCol cols="12">
-                <AppTextField
-                  v-model="credentials.email"
-                  label="Email"
-                  placeholder="johndoe@email.com"
-                  type="email"
-                  autofocus
-                  :rules="[requiredValidator, emailValidator]"
-                  :error-messages="errors.email"
-                />
-              </VCol>
+      <div class="d-flex flex-column align-center" style="max-width: 500px">
+        <div class="logo-container text-center mb-4">
+          <RouterLink to="/">
+            <VImg :src="logoImage" :width="200" class="logo-image" contain />
+          </RouterLink>
+        </div>
+        <h2 class="text-center mb-2">
+          Welcome to Yamaha Electronic Motor Indonesia
+        </h2>
+        <p class="text-center mb-6">
+          Please sign in to your account using your email address and password.
+        </p>
+        <VCard class="login-card pa-8 w-100" elevation="4" rounded="lg">
+          <!-- Login Form -->
+          <VForm ref="refVForm" v-model="valid" @submit.prevent="onSubmit">
+            <VTextField
+              v-model="credentials.email"
+              label="Email"
+              placeholder="Input email"
+              variant="outlined"
+              :rules="[requiredValidator, emailValidator]"
+              :error-messages="errors.email"
+              class="mb-4"
+            />
 
-              <!-- password -->
-              <VCol cols="12">
-                <AppTextField
-                  class="mb-6"
-                  v-model="credentials.password"
-                  label="Password"
-                  placeholder="············"
-                  :rules="[requiredValidator]"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  :error-messages="errors.password"
-                  :append-inner-icon="
-                    isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
-                  "
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible"
-                />
+            <VTextField
+              v-model="credentials.password"
+              label="Password"
+              placeholder="Input password"
+              variant="outlined"
+              :rules="[requiredValidator]"
+              :error-messages="errors.password"
+              :type="isPasswordVisible ? 'text' : 'password'"
+              :append-inner-icon="
+                isPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
+              "
+              @click:append-inner="isPasswordVisible = !isPasswordVisible"
+              class="mb-6"
+            />
 
-                <!-- <div
-                  class="d-flex align-center flex-wrap justify-space-between my-6"
-                >
-                  <VCheckbox v-model="rememberMe" label="Remember me" />
-                  <RouterLink
-                    class="text-primary ms-2 mb-1"
-                    :to="{ name: 'forgot-password' }"
-                  >
-                    Forgot Password?
-                  </RouterLink>
-                </div> -->
-
-                <VBtn block type="submit"> Login </VBtn>
-              </VCol>
-
-              <!-- create account -->
-              <!-- <VCol cols="12" class="text-center">
-                <span>New on our platform?</span>
-                <RouterLink
-                  class="text-primary ms-1"
-                  :to="{ name: 'register' }"
-                >
-                  Create an account
-                </RouterLink>
-              </VCol>
-              <VCol cols="12" class="d-flex align-center">
-                <VDivider />
-                <span class="mx-4">or</span>
-                <VDivider />
-              </VCol> -->
-
-              <!-- auth providers -->
-              <!-- <VCol cols="12" class="text-center">
-                <AuthProvider />
-              </VCol> -->
-            </VRow>
+            <VBtn block color="error" size="large" type="submit" class="mb-6">
+              Sign in
+            </VBtn>
           </VForm>
-        </VCardText>
-      </VCard>
-    </VCol>
-  </VRow>
+
+          <!-- Footer -->
+          <div class="text-center text-body-2 text-medium-emphasis">
+            PT.Yamaha Electronic Motor Indonesia
+            <div class="mt-1">2024</div>
+          </div>
+        </VCard>
+      </div>
+    </VContainer>
+  </div>
 </template>
 
-<style lang="scss">
-@use "@core-scss/template/pages/page-auth.scss";
+<style lang="scss" scoped>
+.login-wrapper {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  object-fit: cover;
+  object-position: center;
+}
+
+:deep(.v-img__img) {
+  height: 100vh !important;
+  width: 100vw !important;
+  object-fit: cover !important;
+}
+
+:deep(.v-img__content) {
+  height: 100vh !important;
+  width: 100vw !important;
+}
+
+.logo-container {
+  z-index: 2;
+  position: relative;
+  width: 200px;
+
+  a {
+    display: block;
+    text-decoration: none;
+  }
+}
+
+.logo-image {
+  width: 100%;
+  height: auto;
+
+  :deep(.v-img__img) {
+    height: auto !important;
+    width: 100% !important;
+    object-fit: contain !important;
+  }
+
+  :deep(.v-img__content),
+  :deep(.v-responsive__content) {
+    height: auto !important;
+    width: 100% !important;
+  }
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.v-container {
+  position: relative;
+  z-index: 1;
+}
 </style>
