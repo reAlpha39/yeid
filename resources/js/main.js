@@ -1,4 +1,5 @@
 import App from '@/App.vue';
+import piniaPlugin from '@/plugins/2.pinia.js';
 import { registerPlugins } from '@core/utils/plugins';
 import axios from 'axios';
 import 'moment/locale/id';
@@ -19,10 +20,10 @@ import caslPlugin from './plugins/casl';
 const app = createApp(App);
 
 const options = {
-    // You can set your default options here
+  // You can set your default options here
 };
 
-app.use(Toast, options, caslPlugin);
+app.use(Toast, options, caslPlugin, piniaPlugin);
 
 // Register plugins
 registerPlugins(app);

@@ -1,36 +1,39 @@
+import { useAuthStore } from '@/stores/auth'
+
 const emailRouteComponent = () => import('@/pages/apps/email/index.vue')
 
 // 👉 Redirects
 export const redirects = [
-  // ℹ️ We are redirecting to different pages based on role.
-  // NOTE: Role is just for UI purposes. ACL is based on abilities.
   {
     path: '/',
     name: 'index',
     redirect: to => {
-      // TODO: Get type from backend
-      const userData = useCookie('userData')
-      const userRole = userData.value?.role_access
-      if (userRole === '3')
-        return { name: 'dashboards-crm' }
-      if (userRole === '2')
-        return { name: 'dashboards-crm' }
-      if (userRole === '1')
-        return { name: 'dashboards-crm' }
-      return { name: 'login', query: to.query }
+      const authStore = useAuthStore()
+
+      // If not authenticated, redirect to login
+      if (!authStore.isAuthenticated) {
+        return { name: 'login', query: to.query }
+      }
+
+      // Get user role from store
+      const userRole = authStore.userData?.role_access
+
+      console.log('Redirect - User Role:', userRole)
+
+      // Define redirects based on role
+      switch (userRole) {
+        case '3':
+        case '2':
+        case '1':
+          return { name: 'dashboards-crm' }
+        default:
+          console.warn('Unknown user role:', userRole)
+          return { name: 'login', query: to.query }
+      }
     },
   },
-  // {
-  //   path: '/pages/user-profile',
-  //   name: 'pages-user-profile',
-  //   redirect: () => ({ name: 'pages-user-profile-tab', params: { tab: 'profile' } }),
-  // },
-  // {
-  //   path: '/pages/account-settings',
-  //   name: 'pages-account-settings',
-  //   redirect: () => ({ name: 'pages-account-settings-tab', params: { tab: 'account' } }),
-  // },
 ]
+
 export const routes = [
   // Email filter
   {

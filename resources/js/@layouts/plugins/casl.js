@@ -1,4 +1,4 @@
-import { useAbility } from '@casl/vue'
+import { useAbility } from '@casl/vue';
 
 /**
  * Returns ability result if ACL is configured or else just return true
@@ -11,13 +11,15 @@ import { useAbility } from '@casl/vue'
  * @param {string} subject CASL Subject // https://casl.js.org/v4/en/guide/intro#basics
  */
 export const can = (action, subject) => {
-  const vm = getCurrentInstance()
-  if (!vm)
-    return false
-  const localCan = vm.proxy && '$can' in vm.proxy
+  const vm = getCurrentInstance();
 
-  return localCan ? vm.proxy?.$can(action, subject) : true
-}
+  if (!vm) return false;
+
+  const localCan = vm.proxy && '$can' in vm.proxy;
+  if (!localCan) return true; // Fallback for when CASL isn't configured
+
+  return vm.proxy.$can(action, subject);
+};
 
 /**
  * Check if user can view item based on it's ability
@@ -34,9 +36,23 @@ export const canViewNavMenuGroup = item => {
 
   return can(item.action, item.subject) && hasAnyVisibleChild
 }
+
 export const canNavigate = to => {
   const route = useRoute();
   const ability = useAbility()
 
   return to.matched.some(route => ability.can(route.meta.action, route.meta.subject))
 }
+
+// check @/plugin/casl/composable/useAbility.js
+//
+// export const usePermissions = () => {
+//   const ability = useAbility();
+
+//   return {
+//     can: (action, subject) => ability.can(action, subject),
+//     cannot: (action, subject) => ability.cannot(action, subject),
+//     hasAnyPermission: (subject, actions = ['view', 'create', 'update', 'delete']) =>
+//       actions.some(action => ability.can(action, subject)),
+//   };
+// };

@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/auth';
 import { useAbility } from '@casl/vue';
 import { canNavigate } from '@layouts/plugins/casl';
 
@@ -9,32 +10,25 @@ const requiresPermission = route => {
 };
 
 /**
- * Check user authentication status
- */
-const isAuthenticated = () => {
-  return !!(useCookie('userData').value && useCookie('accessToken').value);
-};
-
-/**
  * Setup navigation guards
  */
 export const setupGuards = router => {
   router.beforeEach(async (to) => {
+    const authStore = useAuthStore()
+
     // Allow public routes without any checks
     if (to.meta.public)
       return;
 
-    const isLoggedIn = isAuthenticated();
-
     // Handle unauthenticated-only routes (like login page)
     if (to.meta.unauthenticatedOnly) {
-      if (isLoggedIn)
+      if (authStore.isAuthenticated)
         return '/';
       return undefined;
     }
 
     // If route requires authentication and user is not logged in
-    if (!isLoggedIn) {
+    if (!authStore.isAuthenticated) {
       return {
         name: 'login',
         query: {
@@ -53,9 +47,9 @@ export const setupGuards = router => {
 
     // Load user permissions if they haven't been loaded yet
     const ability = useAbility();
-    const storedRules = useCookie('userAbilityRules').value;
+    const storedRules = authStore.getAbilityRules;
 
-    if (isLoggedIn && storedRules && !ability.rules.length) {
+    if (authStore.isAuthenticated && storedRules && !ability.rules.length) {
       ability.update(storedRules);
     }
 
