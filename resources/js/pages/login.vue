@@ -1,6 +1,5 @@
 <!-- ❗Errors in the form are set on line 60 -->
 <script setup>
-import { useAuthStore } from "@/stores/auth";
 import { useAbility } from "@casl/vue";
 import authLoginIllustration from "@images/pages/auth_login_illustration.png";
 import logoImage from "@images/pages/logo.png";
@@ -15,7 +14,6 @@ definePage({
   },
 });
 
-const authStore = useAuthStore();
 const isPasswordVisible = ref(false);
 const route = useRoute();
 const router = useRouter();
@@ -39,17 +37,27 @@ const rememberMe = ref(false);
 
 const login = async () => {
   try {
-    const { success, error } = await authStore.login({
-      email: credentials.value.email,
-      password: credentials.value.password,
-      remember_me: rememberMe.value,
+    const data = await $api("/auth/login", {
+      method: "POST",
+      body: {
+        email: credentials.value.email,
+        password: credentials.value.password,
+        remember_me: rememberMe.value,
+      },
+      onResponseError({ response }) {
+        toast.error(response._data.message);
+      },
     });
 
-    if (!success) {
-      toast.error(error.message);
-      return;
-    }
+    const { token, user } = data;
 
+    console.log(token + " " + user.control_access);
+
+    const caslPermissions = convertPermissions(data.user.control_access);
+    useCookie("userAbilityRules").value = caslPermissions;
+    ability.update(caslPermissions);
+    useCookie("userData").value = user;
+    useCookie("accessToken").value = token;
     await nextTick(() => {
       router.replace(route.query.to ? String(route.query.to) : "/");
     });

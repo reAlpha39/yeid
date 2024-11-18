@@ -1,10 +1,12 @@
-import { useAuthStore } from '@/stores/auth';
-import { createMongoAbility } from '@casl/ability';
-import { abilitiesPlugin } from '@casl/vue';
+import { createMongoAbility } from '@casl/ability'
+import { abilitiesPlugin } from '@casl/vue'
 
 export default function (app) {
-  const authStore = useAuthStore();
-  const initialAbility = createMongoAbility(authStore.getAbilityRules ?? []);
+  const userAbilityRules = useCookie('userAbilityRules')
+  const initialAbility = createMongoAbility(userAbilityRules.value ?? [])
+
+  // Sync initial abilities from cookie
+  // syncAbilityWithCookie()
 
   app.use(abilitiesPlugin, initialAbility, {
     useGlobalProperties: true,
