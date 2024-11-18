@@ -85,7 +85,7 @@ async function addData() {
   }
 
   try {
-    convertSuperAdmin(status.value);
+    convertSuperAdmin(superAdmin.value);
 
     let controlAccessJson = JSON.stringify(controlAccess.value);
 
