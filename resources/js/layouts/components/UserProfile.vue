@@ -1,28 +1,41 @@
 <script setup>
-import { useAuthStore } from "@/stores/auth";
-import { useRouter } from "vue-router";
+import { useAbility } from "@casl/vue";
 import { useToast } from "vue-toastification";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 
 const router = useRouter();
 const toast = useToast();
-const auth = useAuthStore();
+const ability = useAbility();
 
 // TODO: Get type from backend
-const userData = computed(() => auth.userData);
+const userData = useCookie("userData");
 
 const logout = async () => {
   try {
-    const { success, error } = await auth.logout();
+    const data = await $api("/auth/logout", {
+      onResponseError({ response }) {
+        toast.error(response._data.message);
+      },
+    });
 
-    if (!success) {
-      toast.error(error.message);
-      return;
-    }
+    // Remove "accessToken" from cookie
+    useCookie("accessToken").value = null;
 
+    // Remove "userData" from cookie
+    userData.value = null;
+
+    // Redirect to login page
     await router.push("/login");
-  } catch (error) {
-    console.error("Logout error:", error);
+
+    // ℹ️ We had to remove abilities in then block because if we don't nav menu items mutation is visible while redirecting user to login page
+
+    // Remove "userAbilities" from cookie
+    useCookie("userAbilityRules").value = null;
+
+    // Reset ability to initial ability
+    ability.update([]);
+  } catch (err) {
+    console.error(err);
   }
 };
 

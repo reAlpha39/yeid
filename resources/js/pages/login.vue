@@ -51,7 +51,7 @@ const login = async () => {
 
     const { token, user } = data;
 
-    console.log(token + " " + user.control_access);
+    // console.log(token + " " + user.control_access);
 
     const caslPermissions = convertPermissions(data.user.control_access);
     useCookie("userAbilityRules").value = caslPermissions;
