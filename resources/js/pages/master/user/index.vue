@@ -348,26 +348,6 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- date -->
-      <template #item.email="{ item }">
-        <div class="d-flex align-center">
-          {{ item.email }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.department="{ item }">
-        <div class="d-flex align-center">
-          {{ item.department }}
-        </div>
-      </template>
-
-      <template #item.role_access="{ item }">
-        <div class="d-flex align-center">
-          {{ item.role_access }}
-        </div>
-      </template>
-
       <template #item.status="{ item }">
         <div class="d-flex align-center">
           {{ statusType(item.status) }}

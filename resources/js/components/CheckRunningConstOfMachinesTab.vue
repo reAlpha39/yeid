@@ -189,7 +189,7 @@ onMounted(() => {
     </div>
 
     <VCard v-else variant="outlined" class="ma-4">
-      <VTable height="700" fixed-header class="text-no-wrap machine-cost-table">
+      <VTable height="600" fixed-header class="text-no-wrap machine-cost-table">
         <thead>
           <tr>
             <th class="no-column">NO.</th>
