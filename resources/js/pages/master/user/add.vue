@@ -26,10 +26,10 @@ const fullName = ref();
 const email = ref();
 const phone = ref();
 const status = ref("Active");
+const superAdmin = ref("No");
 const password = ref();
 const controlAccess = ref({
-  machine: { view: false, create: false, update: false, delete: false },
-  part: { view: false, create: false, update: false, delete: false },
+  masterData: { view: false, create: false, update: false, delete: false },
   user: { view: false, create: false, update: false, delete: false },
   maintenanceSchedule: {
     view: false,
@@ -85,6 +85,8 @@ async function addData() {
   }
 
   try {
+    convertSuperAdmin(status.value);
+
     let controlAccessJson = JSON.stringify(controlAccess.value);
 
     if (isEdit.value) {
@@ -175,6 +177,28 @@ async function fetchDataDepartment(id) {
   }
 }
 
+function convertSuperAdmin(val) {
+  if (val === "Yes") {
+    controlAccess.value.user.view = true;
+    controlAccess.value.user.create = true;
+    controlAccess.value.user.update = true;
+    controlAccess.value.user.delete = true;
+  } else {
+    controlAccess.value.user.view = false;
+    controlAccess.value.user.create = false;
+    controlAccess.value.user.update = false;
+    controlAccess.value.user.delete = false;
+  }
+}
+
+function superAdminType(val) {
+  if (val) {
+    return "Yes";
+  } else {
+    return "No";
+  }
+}
+
 function convertStatus(val) {
   if (val === "Active") {
     return "1";
@@ -233,6 +257,7 @@ async function applyData() {
   status.value = statusType(data.status);
   selectedRoleAccess.value = roleAccessType(data.role_access);
   controlAccess.value = JSON.parse(data.control_access);
+  superAdmin.value = superAdminType(controlAccess.value.user.view);
 }
 
 onMounted(() => {
@@ -346,6 +371,16 @@ onMounted(() => {
               true-value="Active"
             ></VSwitch>
           </VCol>
+          <VCol>
+            <VLabel style="color: #43404f; font-size: 13px">Super Admin</VLabel>
+            <VSwitch
+              v-model="superAdmin"
+              :rules="[requiredValidator]"
+              :label="superAdmin"
+              false-value="No"
+              true-value="Yes"
+            ></VSwitch>
+          </VCol>
         </VRow>
       </VCardText>
 
@@ -364,98 +399,28 @@ onMounted(() => {
           "
         >
           <text class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Machine</strong>
+            <strong>Master Data</strong>
           </text>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.machine.view"
+            v-model="controlAccess.masterData.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.machine.create"
+            v-model="controlAccess.masterData.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.machine.update"
+            v-model="controlAccess.masterData.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.machine.delete"
-          />
-        </VRow>
-
-        <VRow
-          style="
-            border-top: 1px solid #ccc;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            display: flex;
-            align-items: center;
-          "
-        >
-          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Part</strong>
-          </div>
-
-          <VCheckbox
-            class="pr-2"
-            label="View"
-            v-model="controlAccess.part.view"
-          />
-          <VCheckbox
-            class="pr-2"
-            label="Create"
-            v-model="controlAccess.part.create"
-          />
-          <VCheckbox
-            class="pr-2"
-            label="Update"
-            v-model="controlAccess.part.update"
-          />
-          <VCheckbox
-            class="pr-7"
-            label="Delete"
-            v-model="controlAccess.part.delete"
-          />
-        </VRow>
-
-        <VRow
-          style="
-            border-top: 1px solid #ccc;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            display: flex;
-            align-items: center;
-          "
-        >
-          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>User</strong>
-          </div>
-
-          <VCheckbox
-            class="pr-2"
-            label="View"
-            v-model="controlAccess.user.view"
-          />
-          <VCheckbox
-            class="pr-2"
-            label="Create"
-            v-model="controlAccess.user.create"
-          />
-          <VCheckbox
-            class="pr-2"
-            label="Update"
-            v-model="controlAccess.user.update"
-          />
-          <VCheckbox
-            class="pr-7"
-            label="Delete"
-            v-model="controlAccess.user.delete"
+            v-model="controlAccess.masterData.delete"
           />
         </VRow>
 
