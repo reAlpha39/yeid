@@ -68,6 +68,7 @@ const measures = ref([]);
 const preventions = ref([]);
 
 const prevData = ref();
+const user = ref();
 const selectedMachine = ref();
 const isEdit = ref(false);
 
@@ -80,6 +81,39 @@ const selectedPart = ref(null);
 const addedChangedPart = ref([]);
 
 const exchangeRate = ref();
+
+const approval = ref({
+  operator: false,
+  supervisor: false,
+  manager: false,
+});
+
+function approvalId(initial = 0) {
+  // Mask for the bits to modify (bits 4-6)
+  const mask = 0b1110000; // Binary 1110000 (112 in decimal)
+
+  // Clear only the bits to modify (bits 4-6)
+  let result = initial & ~mask;
+
+  const positions = {
+    operator: 4, // bit 4
+    supervisor: 5, // bit 5
+    manager: 6, // bit 6
+  };
+
+  // Set new values for our bits
+  if (approval.value.operator) {
+    result |= 1 << positions.operator; // 16 (0010000)
+  }
+  if (approval.value.supervisor) {
+    result |= 1 << positions.supervisor; // 32 (0100000)
+  }
+  if (approval.value.manager) {
+    result |= 1 << positions.manager; // 64 (1000000)
+  }
+
+  return result;
+}
 
 function handleAddedChangedPart(data) {
   let newData = { ...data };
@@ -211,6 +245,8 @@ async function fetchDataEdit(id) {
       "/maintenance-database-system/department-requests/" + id
     );
     prevData.value = response.data;
+
+    // console.log(prevData.value);
   } catch (err) {
     console.log(err);
   }
@@ -266,6 +302,13 @@ async function initEditData(id) {
   commentNote.value = data.comments;
   totalWorkTime.value = data.totalrepairsum;
   totalPartCost.value = data.partcostsum;
+
+  // Use masks for the leftmost bits
+  approval.value = {
+    operator: (parseInt(data.approval) & 16) === 16, // 1000000 = 16
+    supervisor: (parseInt(data.approval) & 32) === 32, // 0100000 = 32
+    manager: (parseInt(data.approval) & 64) === 64, // 0010000 = 64
+  };
 
   await fetchDataMachine(data.machineno);
 
@@ -443,6 +486,13 @@ async function fetchPrevention(id) {
   }
 }
 
+async function fetchUser() {
+  const response = await $api("/auth/user");
+  user.value = response;
+
+  // console.log(user.value);
+}
+
 async function addData() {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
@@ -504,6 +554,7 @@ async function addData() {
       partcostsum: totalPartCost.value,
       workdata: addedWorkTime.value,
       partdata: addedChangedPart.value,
+      approval: approvalId(parseInt(prevData.value.approval)),
     };
 
     console.log(requestData);
@@ -592,6 +643,7 @@ function resetDate() {
 }
 
 onMounted(() => {
+  fetchUser();
   initEditData(route.query.record_id);
   fetchLtfactors();
   fetchSituations();
@@ -1049,6 +1101,28 @@ onMounted(() => {
             </VCard>
           </VCol>
         </VRow>
+        <VCol>
+          <VLabel style="color: #43404f; font-size: 13px">Approval</VLabel>
+          <VRow>
+            <VCol cols="2">
+              <VCheckbox label="Operator" v-model="approval.operator" />
+            </VCol>
+            <VCol cols="2">
+              <VCheckbox
+                label="Supervisor"
+                v-model="approval.supervisor"
+                :disabled="!['2', '3'].includes(user?.role_access)"
+              />
+            </VCol>
+            <VCol cols="2">
+              <VCheckbox
+                label="Manager"
+                v-model="approval.manager"
+                :disabled="user?.role_access !== '3'"
+              />
+            </VCol>
+          </VRow>
+        </VCol>
       </VCardTitle>
     </VCard>
 

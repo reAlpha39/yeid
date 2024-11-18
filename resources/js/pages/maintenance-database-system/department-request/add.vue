@@ -43,12 +43,52 @@ const finishedDate = ref("");
 const qty = ref();
 const jenisPekerjaanRadio = ref("1");
 const selectedMachine = ref();
+const approval = ref({
+  operator: false,
+  supervisor: false,
+  manager: false,
+});
 
 const prevData = ref();
+const user = ref();
 const isEdit = ref(false);
 
 function handleMachinesSelected(items) {
   selectedMachine.value = items;
+}
+
+function approvalId(initial = 0) {
+  // Mask for the bits to modify (bits 0-2)
+  const mask = 0b111; // Binary 111 (7 in decimal)
+
+  // Clear only the bits to modify (bits 0-2)
+  let result = initial & ~mask;
+
+  const positions = {
+    operator: 0,
+    supervisor: 1,
+    manager: 2,
+  };
+
+  // Set new values for our bits
+  if (approval.value.operator) {
+    result |= 1 << positions.operator;
+  }
+  if (approval.value.supervisor) {
+    result |= 1 << positions.supervisor;
+  }
+  if (approval.value.manager) {
+    result |= 1 << positions.manager;
+  }
+
+  return result;
+}
+
+async function fetchUser() {
+  const response = await $api("/auth/user");
+  user.value = response;
+
+  // console.log(user.value);
 }
 
 async function addData() {
@@ -73,6 +113,7 @@ async function addData() {
       orderfinishdate: finishedDate.value,
       orderjobtype: jenisPekerjaanRadio.value,
       orderqtty: qty.value,
+      approval: approvalId(parseInt(prevData.value.approval)),
     };
 
     if (isEdit.value) {
@@ -158,6 +199,10 @@ async function fetchDataShop(id) {
 async function fetchDataEmployee(id) {
   try {
     if (id) {
+      if (id.trim() === "") {
+        return;
+      }
+
       const response = await $api("/master/employees/" + id, {
         onResponseError({ response }) {
           // errors.value = response._data.errors;
@@ -223,6 +268,13 @@ async function applyData() {
   finishedDate.value = data.orderfinishdate;
   qty.value = data.orderqtty;
   jenisPekerjaanRadio.value = data.orderjobtype;
+
+  // Convert to approval object
+  approval.value = {
+    operator: (parseInt(data.approval) & 1) === 1, // 111 & 001 = 1
+    supervisor: (parseInt(data.approval) & 2) === 2, // 111 & 010 = 2
+    manager: (parseInt(data.approval) & 4) === 4, // 111 & 100 = 4
+  };
 }
 
 function isNumber(evt) {
@@ -236,6 +288,7 @@ function isNumber(evt) {
 
 onMounted(() => {
   // fetchData();
+  fetchUser();
   fetchDataShop();
   fetchDataEmployee();
 
@@ -337,16 +390,16 @@ onMounted(() => {
 
         <VRow>
           <VCol cols="12" sm="3">
-            <AppDateTimePicker
+            <AppTextField
               v-model="finishedDate"
-              :rules="[requiredValidator]"
               label="Minta Tanggal Selesai"
-              placeholder="31-01-2024"
-              :config="{ dateFormat: 'd-m-Y' }"
-              append-inner-icon="tabler-calendar"
+              :rules="[requiredValidator]"
+              placeholder="Input tanggal selesai"
+              outlined
+              maxlength="20"
             />
           </VCol>
-          <VCol cols="12" sm="3">
+          <VCol cols="12" sm="2">
             <AppTextField
               v-model="qty"
               label="Jumlah"
@@ -357,7 +410,7 @@ onMounted(() => {
               @keypress="isNumber($event)"
             />
           </VCol>
-          <VCol>
+          <VCol sm="2">
             <VLabel style="color: #43404f; font-size: 13px"
               >Jenis Pekerjaan</VLabel
             >
@@ -365,6 +418,28 @@ onMounted(() => {
               <VRadio label="Baru" value="1" />
               <VRadio label="Repair" value="2" />
             </VRadioGroup>
+          </VCol>
+          <VCol>
+            <VLabel style="color: #43404f; font-size: 13px">Approval</VLabel>
+            <VRow>
+              <VCol>
+                <VCheckbox label="Operator" v-model="approval.operator" />
+              </VCol>
+              <VCol>
+                <VCheckbox
+                  label="Supervisor"
+                  v-model="approval.supervisor"
+                  :disabled="!['2', '3'].includes(user?.role_access)"
+                />
+              </VCol>
+              <VCol>
+                <VCheckbox
+                  label="Manager"
+                  v-model="approval.manager"
+                  :disabled="user?.role_access !== '3'"
+                />
+              </VCol>
+            </VRow>
           </VCol>
         </VRow>
       </VCardText>
