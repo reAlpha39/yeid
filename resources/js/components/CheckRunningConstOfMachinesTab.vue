@@ -143,7 +143,6 @@ onMounted(() => {
           :items="shops"
           clear-icon="tabler-x"
           outlined
-          maxlength="4"
           return-object
           clearable
           @update:model-value="fetchData()"
@@ -157,7 +156,6 @@ onMounted(() => {
           :items="machines"
           clear-icon="tabler-x"
           outlined
-          maxlength="4"
           return-object
           clearable
           @update:model-value="fetchData()"

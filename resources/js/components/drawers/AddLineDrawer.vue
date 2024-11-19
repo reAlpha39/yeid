@@ -208,7 +208,6 @@ watch(
                   item-title="title"
                   :items="shops"
                   outlined
-                  maxlength="4"
                   :readonly="isUpdate"
                   return-object
                 />

@@ -199,7 +199,6 @@ onMounted(() => {
         :items="shops"
         outlined
         clearable
-        maxlength="4"
         @update:model-value="fetchData()"
       />
       <VSpacer />
