@@ -29,6 +29,8 @@ class MasSystemController extends Controller
                 });
             }
 
+            $query->orderByDesc('year');
+
             $systems = $query->get();
 
             return response()->json([
