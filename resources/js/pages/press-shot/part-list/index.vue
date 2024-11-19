@@ -167,22 +167,6 @@ function getStatusColor(item) {
   return "status-green";
 }
 
-const rowClasses = computed(() => {
-  return data.value.map((item) => ({
-    "bg-red":
-      (item.counter > 0 && item.counter > item.makerlimit) ||
-      (item.minstock > 0 && item.minstock > item.currentstock),
-    "bg-yellow": item.counter > 0 && item.counter > item.companylimit,
-  }));
-});
-
-const getRowClass = (item, index) => {
-  const classes = rowClasses.value[index];
-  return Object.keys(classes)
-    .filter((key) => classes[key])
-    .join(" ");
-};
-
 // headers
 const headers = [
   {
@@ -374,105 +358,106 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :row-class="getRowClass"
-      class="text-no-wrap"
-    >
-      <template #item.employeecode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.employeename ?? "-" }}</span
-            >
-            <small>{{ item.employeecode ?? "-" }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.employeecode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.employeename ?? "-" }}</span
+              >
+              <small>{{ item.employeecode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.part="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.partname ?? "-" }}</span
-            >
-            <small>{{ item.partcode ?? "-" }}</small>
+        <template #item.part="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.partname ?? "-" }}</span
+              >
+              <small>{{ item.partcode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
+        <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
 
-      <template v-slot:header.serialno> SERIAL<br />NO </template>
+        <template v-slot:header.serialno> SERIAL<br />NO </template>
 
-      <template #item.counter="{ item }">
-        {{ formatNumber.format(item.counter) }}
-      </template>
+        <template #item.counter="{ item }">
+          {{ formatNumber.format(item.counter) }}
+        </template>
 
-      <template #item.companylimit="{ item }">
-        {{ formatNumber.format(item.companylimit) }}
-      </template>
+        <template #item.companylimit="{ item }">
+          {{ formatNumber.format(item.companylimit) }}
+        </template>
 
-      <template #item.makerlimit="{ item }">
-        {{ formatNumber.format(item.makerlimit) }}
-      </template>
+        <template #item.makerlimit="{ item }">
+          {{ formatNumber.format(item.makerlimit) }}
+        </template>
 
-      <template v-slot:header.exchangedatetime>
-        LAST EXCHANGE<br />DATE
-      </template>
+        <template v-slot:header.exchangedatetime>
+          LAST EXCHANGE<br />DATE
+        </template>
 
-      <template #item.exchangedatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
-            >
-            <small>{{
-              formatDateTime(item.exchangedatetime).formattedTime
-            }}</small>
+        <template #item.exchangedatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
+              >
+              <small>{{
+                formatDateTime(item.exchangedatetime).formattedTime
+              }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template v-slot:header.minstock> MIN<br />STOCK </template>
+        <template v-slot:header.minstock> MIN<br />STOCK </template>
 
-      <template #item.minstock="{ item }">
-        {{ formatNumber.format(item.minstock) }}
-      </template>
+        <template #item.minstock="{ item }">
+          {{ formatNumber.format(item.minstock) }}
+        </template>
 
-      <template v-slot:header.currentstock> ACTUAL<br />STOCK </template>
+        <template v-slot:header.currentstock> ACTUAL<br />STOCK </template>
 
-      <template #item.currentstock="{ item }">
-        {{ formatNumber.format(item.currentstock) }}
-      </template>
+        <template #item.currentstock="{ item }">
+          {{ formatNumber.format(item.currentstock) }}
+        </template>
 
-      <template #item.unitprice="{ item }">
-        {{ formatCurrency(item.currency, item.unitprice) }}
-      </template>
+        <template #item.unitprice="{ item }">
+          {{ formatCurrency(item.currency, item.unitprice) }}
+        </template>
 
-      <template v-slot:header.origin> IMPORT/<br />LOCAL </template>
+        <template v-slot:header.origin> IMPORT/<br />LOCAL </template>
 
-      <template #item.actions="{ item }">
-        <div class="d-flex justify-center gap-2">
-          <div class="status-indicator mx-2" :class="getStatusColor(item)" />
-          <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <div class="status-indicator mx-2" :class="getStatusColor(item)" />
+            <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
-          <IconBtn
-            v-if="$can('update', 'pressShot')"
-            @click="openEditPage(item.exchangedatetime)"
-          >
-            <VIcon icon="tabler-exchange" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+            <IconBtn
+              v-if="$can('update', 'pressShot')"
+              @click="openEditPage(item.exchangedatetime)"
+            >
+              <VIcon icon="tabler-exchange" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <DetailExchangeDataDialog
@@ -482,23 +467,6 @@ onMounted(() => {
 </template>
 
 <style>
-.bg-red {
-  background-color: rgb(255, 0, 0, 0.1) !important;
-}
-
-.bg-yellow {
-  background-color: rgb(255, 255, 0, 0.1) !important;
-}
-
-/* Optional: Add hover effect to maintain visibility of the row color */
-.bg-red:hover {
-  background-color: rgb(255, 0, 0, 0.2) !important;
-}
-
-.bg-yellow:hover {
-  background-color: rgb(255, 255, 0, 0.2) !important;
-}
-
 .status-indicator {
   width: 14px;
   height: 14px;
@@ -516,54 +484,5 @@ onMounted(() => {
 
 .status-green {
   background-color: #4caf50;
-}
-
-table > tbody > tr > td.fixed:nth-last-child(1),
-table > thead > tr > th.fixed:nth-last-child(1) {
-  position: sticky !important;
-  position: -webkit-sticky !important;
-  right: 0;
-  z-index: 9998;
-  background: white;
-  -webkit-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-  -moz-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-  box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-}
-
-table > thead > tr > th.fixed:nth-last-child(1) {
-  z-index: 9999;
-}
-
-.flatpickr-monthSelect-months {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 10px;
-}
-
-.flatpickr-monthSelect-month {
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 4px;
-}
-
-.flatpickr-monthSelect-month:hover {
-  background: #e0e0e0;
-}
-
-.flatpickr-monthSelect-month.selected {
-  background: #fa0202;
-  color: white;
-}
-
-.flatpickr-monthSelect-month.flatpickr-disabled {
-  color: #999;
-  cursor: not-allowed;
-  background: #f0f0f0;
-}
-
-.flatpickr-monthSelect-month.flatpickr-disabled:hover {
-  background: #f0f0f0;
 }
 </style>
