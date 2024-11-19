@@ -26,6 +26,28 @@ const selectedVendors = ref();
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 const currency = ref();
 
+let formatNumber = new Intl.NumberFormat();
+
+let idr = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+});
+
+let usd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "USD",
+});
+
+let sgd = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "SGD",
+});
+
+let jpy = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "JPY",
+});
+
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -73,6 +95,21 @@ const formatDate = (date) => {
 
   return `${year}${month}${day}`;
 };
+
+function formatCurrency(currency, price) {
+  switch (currency) {
+    case "IDR":
+      return idr.format(parseFloat(price));
+    case "USD":
+      return usd.format(parseFloat(price));
+    case "SDG":
+      return sgd.format(parseFloat(price));
+    case "JPY":
+      return jpy.format(parseFloat(price));
+    default:
+      return "-";
+  }
+}
 
 async function fetchData() {
   try {
@@ -356,8 +393,7 @@ onMounted(() => {
         <template #item.currency="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-row ms-3">
-              {{ item.currency }}
-              {{ item.unitprice.toLocaleString() }}
+              {{ formatCurrency(item.currency, item.unitprice) }}
             </div>
           </div>
         </template>
@@ -366,8 +402,7 @@ onMounted(() => {
         <template #item.total="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-row ms-3">
-              {{ item.currency }}
-              {{ item.total.toLocaleString() }}
+              {{ formatCurrency(item.currency, item.total) }}
             </div>
           </div>
         </template>
