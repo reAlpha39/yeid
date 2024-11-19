@@ -19,6 +19,7 @@ const part = ref();
 
 const data = ref(null);
 const machine = ref(null);
+const userData = ref(null);
 
 const form = ref(null);
 const now = new Date();
@@ -68,8 +69,8 @@ async function addExchangeData() {
         exchange_qty: parseInt(exchangeQty.value),
         reason: reason.value,
         // TODO: update login user
-        login_user_code: "",
-        login_user_name: "",
+        login_user_code: userData.value?.id,
+        login_user_name: userData.value?.name,
       },
     });
 
@@ -83,6 +84,16 @@ async function addExchangeData() {
 
 function fetchDataQtyPerDie() {
   exchangeQty.value = data.value?.qttyperdie;
+}
+
+async function fetchUserData() {
+  try {
+    const response = await $api("/auth/user");
+
+    userData.value = response.user;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function fetchDataMachine(id) {
@@ -114,6 +125,7 @@ function isNumber(evt) {
 
 onMounted(() => {
   initEditData(route.query.exchangeid);
+  fetchUserData();
 });
 </script>
 

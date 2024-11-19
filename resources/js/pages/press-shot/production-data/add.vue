@@ -18,6 +18,7 @@ const modelDieData = ref([]);
 const machineNoData = ref([]);
 const machines = ref([]);
 const dieUnits = ref([]);
+const userData = ref(null);
 
 const now = new Date();
 const form = ref(null);
@@ -48,8 +49,8 @@ async function addProductionData() {
       end_datetime: moment(endDate.value).format("YYYYMMDDHHmmss"),
       reason: reason.value,
       // TODO: update user code and name based on login
-      login_user_code: "-",
-      login_user_name: "-",
+      login_user_code: userData.value?.id,
+      login_user_name: userData.value?.name,
     };
 
     const response = await $api("/press-shot/productions", {
@@ -61,6 +62,16 @@ async function addProductionData() {
     await router.push("/press-shot/production-data");
   } catch (err) {
     toast.error("Failed to store data");
+    console.log(err);
+  }
+}
+
+async function fetchUserData() {
+  try {
+    const response = await $api("/auth/user");
+
+    userData.value = response.user;
+  } catch (err) {
     console.log(err);
   }
 }
@@ -137,6 +148,7 @@ function isNumber(evt) {
 }
 
 onMounted(() => {
+  fetchUserData();
   fetchDataModelDie();
   fetchDataMachineNo();
   fetchDataDieUnit();
