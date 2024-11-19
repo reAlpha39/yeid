@@ -83,12 +83,15 @@
     table {
       thead {
         tr {
+          border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+
           th:last-child {
             position: sticky !important;
             right: 0 !important;
             background: rgb(var(--v-theme-surface)) !important;
             z-index: 2 !important;
             box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+            border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
           }
         }
       }
@@ -104,6 +107,9 @@
           }
         }
       }
+    }
+    .v-data-table__header {
+      border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
     }
   }
 }
