@@ -223,16 +223,23 @@ async function handleExport() {
   }
 }
 
+function getApprovalIdColor(approval) {
+  let approvalId = parseInt(approval);
+  if ((approvalId & 64) === 64) {
+    return "status-white";
+  } else if ((approvalId & 16) === 16 && (approvalId & 32) === 32) {
+    return "status-blue";
+  } else if ((approvalId & 16) === 16) {
+    return "status-light-blue";
+  }
+}
+
 function getApprovalColor(approval) {
   let approvalId = parseInt(approval);
   if (approvalId >= 64) {
     return "status-indigo";
-  } else if ((approvalId & 64) === 64) {
+  } else if (approvalId >= 4) {
     return "status-green";
-  } else if (approvalId >= 48 && approvalId <= 55) {
-    return "status-blue";
-  } else if (approvalId >= 16 && approvalId <= 23) {
-    return "status-light-blue";
   } else if (approvalId < 4) {
     return "status-orange";
   }
@@ -268,6 +275,14 @@ onMounted(() => {
   <!-- 👉 products -->
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
+      <div style="inline-size: 15.625rem">
+        <AppTextField
+          v-model="searchQuery"
+          placeholder="Search"
+          v-on:input="fetchData()"
+        />
+      </div>
+
       <div style="inline-size: 10rem">
         <AppDateTimePicker
           v-model="date"
@@ -287,14 +302,6 @@ onMounted(() => {
           }"
           append-inner-icon="tabler-calendar"
           @update:modelValue="fetchData()"
-        />
-      </div>
-
-      <div style="inline-size: 15.625rem">
-        <AppTextField
-          v-model="searchQuery"
-          placeholder="Search"
-          v-on:input="fetchData()"
         />
       </div>
 
@@ -391,6 +398,10 @@ onMounted(() => {
         <template #item.approval="{ item }">
           <div class="d-flex align-center">
             {{ convertApproval(item.approval) }}
+            <div
+              class="status-indicator mx-2"
+              :class="getApprovalIdColor(item.approval)"
+            />
           </div>
         </template>
 
@@ -489,7 +500,7 @@ onMounted(() => {
 }
 
 .status-indigo {
-  background-color: #8692d0;
+  background-color: #a59fb2;
 }
 
 .status-white {
