@@ -29,8 +29,8 @@ const errors = ref({
 const refVForm = ref();
 
 const credentials = ref({
-  email: "admin@demo.com",
-  password: "admin",
+  email: "",
+  password: "",
 });
 
 const rememberMe = ref(false);
