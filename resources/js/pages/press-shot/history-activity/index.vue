@@ -275,69 +275,71 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <template #item.employeecode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.employeename ?? "-" }}</span
-            >
-            <small>{{ item.employeecode ?? "-" }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.employeecode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.employeename ?? "-" }}</span
+              >
+              <small>{{ item.employeecode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.datetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.datetime).formattedDate }}</span
-            >
-            <small>{{ formatDateTime(item.datetime).formattedTime }}</small>
+        <template #item.datetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.datetime).formattedDate }}</span
+              >
+              <small>{{ formatDateTime(item.datetime).formattedTime }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.partcode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.partname ?? "-" }}</span
-            >
-            <small>{{ item.partcode ?? "-" }}</small>
+        <template #item.partcode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.partname ?? "-" }}</span
+              >
+              <small>{{ item.partcode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.updatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.updatetime).formattedDate }}</span
-            >
-            <small>{{ formatDateTime(item.updatetime).formattedTime }}</small>
+        <template #item.updatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.updatetime).formattedDate }}</span
+              >
+              <small>{{ formatDateTime(item.updatetime).formattedTime }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <IconBtn @click="openDetailPage(item)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <DetailHistoryActivityDialog

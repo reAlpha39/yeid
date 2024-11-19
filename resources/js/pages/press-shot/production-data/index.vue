@@ -285,82 +285,86 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <template #item.employeecode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.employeename ?? "-" }}</span
-            >
-            <small>{{ item.employeecode ?? "-" }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.employeecode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.employeename ?? "-" }}</span
+              >
+              <small>{{ item.employeecode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.startdatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.startdatetime).formattedDate }}</span
-            >
-            <small>{{
-              formatDateTime(item.startdatetime).formattedTime
-            }}</small>
+        <template #item.startdatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.startdatetime).formattedDate }}</span
+              >
+              <small>{{
+                formatDateTime(item.startdatetime).formattedTime
+              }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.enddatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.enddatetime).formattedDate }}</span
-            >
-            <small>{{ formatDateTime(item.enddatetime).formattedTime }}</small>
+        <template #item.enddatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.enddatetime).formattedDate }}</span
+              >
+              <small>{{
+                formatDateTime(item.enddatetime).formattedTime
+              }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
+        <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
 
-      <template v-slot:header.shotcount> SHOT<br />COUNT </template>
+        <template v-slot:header.shotcount> SHOT<br />COUNT </template>
 
-      <template #item.shotcount="{ item }">
-        {{ Intl.NumberFormat().format(item.shotcount) }}
-      </template>
+        <template #item.shotcount="{ item }">
+          {{ Intl.NumberFormat().format(item.shotcount) }}
+        </template>
 
-      <template #item.updatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.updatetime).formattedDate }}</span
-            >
-            <small>{{ formatDateTime(item.updatetime).formattedTime }}</small>
+        <template #item.updatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.updatetime).formattedDate }}</span
+              >
+              <small>{{ formatDateTime(item.updatetime).formattedTime }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-          <!-- <IconBtn @click="openDeleteDialog(item.makercode)">
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <IconBtn @click="openDetailPage(item)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+            <!-- <IconBtn @click="openDeleteDialog(item.makercode)">
             <VIcon icon="tabler-trash" />
           </IconBtn> -->
-        </div>
-      </template>
-    </VDataTable>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <DetailProductionDataDialog

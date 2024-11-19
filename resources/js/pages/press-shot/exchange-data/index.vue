@@ -286,69 +286,69 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <template #item.exchangedatetime="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
-            >
-            <small>{{
-              formatDateTime(item.exchangedatetime).formattedTime
-            }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.exchangedatetime="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ formatDateTime(item.exchangedatetime).formattedDate }}</span
+              >
+              <small>{{
+                formatDateTime(item.exchangedatetime).formattedTime
+              }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.employeecode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.employeename ?? "-" }}</span
-            >
-            <small>{{ item.employeecode ?? "-" }}</small>
+        <template #item.employeecode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.employeename ?? "-" }}</span
+              >
+              <small>{{ item.employeecode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.part="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.partname ?? "-" }}</span
-            >
-            <small>{{ item.partcode ?? "-" }}</small>
+        <template #item.part="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.partname ?? "-" }}</span
+              >
+              <small>{{ item.partcode ?? "-" }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template v-slot:header.dieunitno="{ headers }">
-        DIE<br />UNIT NO#
-      </template>
+        <template v-slot:header.dieunitno> DIE<br />UNIT NO# </template>
 
-      <template v-slot:header.serialno="{ headers }"> SERIAL<br />NO </template>
+        <template v-slot:header.serialno> SERIAL<br />NO </template>
 
-      <template #item.exchangeshotno="{ item }">
-        {{ Intl.NumberFormat().format(item.exchangeshotno) }}
-      </template>
+        <template #item.exchangeshotno="{ item }">
+          {{ Intl.NumberFormat().format(item.exchangeshotno) }}
+        </template>
 
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item.exchangedatetime)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <IconBtn @click="openDetailPage(item.exchangedatetime)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <DetailExchangeDataDialog

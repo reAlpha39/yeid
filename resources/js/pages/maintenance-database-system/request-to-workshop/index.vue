@@ -254,80 +254,81 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <template #item.request="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span class="d-block text-high-emphasis text-truncate">
-              {{ item.wsrid }}
-            </span>
-            <small>{{ item.requestdate }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.request="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span class="d-block text-high-emphasis text-truncate">
+                {{ item.wsrid }}
+              </span>
+              <small>{{ item.requestdate }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.title="{ item }">
-        <div class="limited-title">
-          {{ item.title }}
-        </div>
-      </template>
+        <template #item.title="{ item }">
+          <div class="limited-title">
+            {{ item.title }}
+          </div>
+        </template>
 
-      <template #item.ordername="{ item }">
-        <div class="d-flex align-center">
-          {{ item.ordername }}
-        </div>
-      </template>
+        <template #item.ordername="{ item }">
+          <div class="d-flex align-center">
+            {{ item.ordername }}
+          </div>
+        </template>
 
-      <template v-slot:header.reqfinishdate="{ headers }">
-        REQ.<br />FINISH DATE
-      </template>
+        <template v-slot:header.reqfinishdate="{ headers }">
+          REQ.<br />FINISH DATE
+        </template>
 
-      <template #item.reqfinishdate="{ item }">
-        <div class="d-flex align-center">
-          {{ item.reqfinishdate }}
-        </div>
-      </template>
+        <template #item.reqfinishdate="{ item }">
+          <div class="d-flex align-center">
+            {{ item.reqfinishdate }}
+          </div>
+        </template>
 
-      <template #item.category="{ item }">
-        <div class="d-flex align-center">
-          {{ convertAsapFlagId(item.asapflag) }}
-        </div>
-      </template>
+        <template #item.category="{ item }">
+          <div class="d-flex align-center">
+            {{ convertAsapFlagId(item.asapflag) }}
+          </div>
+        </template>
 
-      <template #item.status="{ item }">
-        <div class="d-flex align-center">
-          {{ item.status }}
-        </div>
-      </template>
+        <template #item.status="{ item }">
+          <div class="d-flex align-center">
+            {{ item.status }}
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item.wsrid)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'maintenanceReport')"
-            @click="openEditPage(item.wsrid)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'maintenanceReport')"
-            @click="openDeleteDialog(item.wsrid)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <IconBtn @click="openDetailPage(item.wsrid)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('update', 'maintenanceReport')"
+              @click="openEditPage(item.wsrid)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'maintenanceReport')"
+              @click="openDeleteDialog(item.wsrid)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->

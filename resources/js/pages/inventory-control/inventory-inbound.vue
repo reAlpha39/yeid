@@ -308,85 +308,86 @@ onMounted(() => {
 
     <VDivider class="mt-4" />
 
-    <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <!-- part name -->
-      <template #item.partcode="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column ms-3">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.partname }}</span
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <!-- part name -->
+        <template #item.partcode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column ms-3">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.partname }}</span
+              >
+              <small>{{ item.partcode }}</small>
+            </div>
+          </div>
+        </template>
+
+        <!-- date -->
+        <template #item.date="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column ms-3">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.brand }}</span
+              >
+              <small>{{ item.vendorcode }}</small>
+            </div>
+          </div>
+        </template>
+
+        <!-- vendor -->
+        <template #item.vendor="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.brand }}</span
+              >
+              <small>{{ item.vendorcode }}</small>
+            </div>
+          </div>
+        </template>
+
+        <!-- unit price -->
+        <template #item.currency="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-row ms-3">
+              {{ item.currency }}
+              {{ item.unitprice.toLocaleString() }}
+            </div>
+          </div>
+        </template>
+
+        <!-- unit price -->
+        <template #item.total="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-row ms-3">
+              {{ item.currency }}
+              {{ item.total.toLocaleString() }}
+            </div>
+          </div>
+        </template>
+
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <IconBtn
+              v-if="$can('delete', 'inventoryInbound')"
+              @click="openDeleteDialog(item)"
             >
-            <small>{{ item.partcode }}</small>
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
           </div>
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.date="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column ms-3">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.brand }}</span
-            >
-            <small>{{ item.vendorcode }}</small>
-          </div>
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.vendor="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.brand }}</span
-            >
-            <small>{{ item.vendorcode }}</small>
-          </div>
-        </div>
-      </template>
-
-      <!-- unit price -->
-      <template #item.currency="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-row ms-3">
-            {{ item.currency }}
-            {{ item.unitprice.toLocaleString() }}
-          </div>
-        </div>
-      </template>
-
-      <!-- unit price -->
-      <template #item.total="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-row ms-3">
-            {{ item.currency }}
-            {{ item.total.toLocaleString() }}
-          </div>
-        </div>
-      </template>
-
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn
-            v-if="$can('delete', 'inventoryInbound')"
-            @click="openDeleteDialog(item)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
