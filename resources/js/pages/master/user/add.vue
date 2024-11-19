@@ -295,7 +295,7 @@ onMounted(() => {
     <VCard>
       <VCardText>
         <VRow>
-          <VCol cols="12" sm="6">
+          <VCol>
             <AppTextField
               v-model="fullName"
               label="Full Name"
@@ -305,7 +305,7 @@ onMounted(() => {
               maxlength="64"
             />
           </VCol>
-          <VCol cols="12" sm="3">
+          <VCol>
             <AppTextField
               v-model="email"
               label="Email Address"
@@ -315,7 +315,7 @@ onMounted(() => {
               maxlength="64"
             />
           </VCol>
-          <VCol cols="12" sm="3">
+          <VCol>
             <AppTextField
               v-model="phone"
               label="Phone Number"
@@ -323,6 +323,17 @@ onMounted(() => {
               placeholder="Input phone number"
               outlined
               maxlength="14"
+            />
+          </VCol>
+          <VCol>
+            <AppTextField
+              v-model="password"
+              label="Password"
+              :rules="isEdit ? [] : [requiredValidator]"
+              placeholder="Input password"
+              outlined
+              maxlength="64"
+              :hint="isEdit ? 'Leave empty to keep current password' : ''"
             />
           </VCol>
         </VRow>
@@ -350,17 +361,7 @@ onMounted(() => {
               outlined
             />
           </VCol>
-          <VCol>
-            <AppTextField
-              v-model="password"
-              label="Password"
-              :rules="isEdit ? [] : [requiredValidator]"
-              placeholder="Input password"
-              outlined
-              maxlength="64"
-              :hint="isEdit ? 'Leave empty to keep current password' : ''"
-            />
-          </VCol>
+
           <VCol>
             <VLabel style="color: #43404f; font-size: 13px">Status</VLabel>
             <VSwitch
