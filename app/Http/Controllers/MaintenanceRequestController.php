@@ -15,74 +15,71 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            // Base SQL query for PostgreSQL
-            $sql = "SELECT
-                s.recordid,
-                s.maintenancecode,
-                s.orderdatetime,
-                s.orderempname,
-                s.ordershop,
-                s.machineno,
-                m.machinename,
-                s.ordertitle,
-                s.orderfinishdate,
-                s.orderjobtype,
-                s.orderqtty,
-                s.orderstoptime,
-                s.updatetime,
-                COALESCE(s.planid, 0) AS planid,
-                COALESCE(s.approval, 0) AS approval,
-                COALESCE(s.createempcode, '') AS createempcode,
-                COALESCE(s.createempname, '') AS createempname
-            FROM tbl_spkrecord s
-            LEFT JOIN mas_machine m ON s.machineno = m.machineno
-            WHERE 1=1";
+            $onlyActive = $request->input('only_active', false);
+            $date = $request->input('date');
+            $shopCode = $request->input('shop_code');
+            $machineCode = $request->input('machine_code');
+            $maintenanceCode = $request->input('maintenance_code');
+            $orderName = $request->input('order_name');
+            $search = $request->input('search');
+
+            $query = DB::table('tbl_spkrecord as s')
+                ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
+                ->select([
+                    's.recordid',
+                    's.maintenancecode',
+                    's.orderdatetime',
+                    's.orderempname',
+                    's.ordershop',
+                    's.machineno',
+                    'm.machinename',
+                    's.ordertitle',
+                    's.orderfinishdate',
+                    's.orderjobtype',
+                    's.orderqtty',
+                    's.orderstoptime',
+                    's.updatetime',
+                    DB::raw('COALESCE(s.planid, 0) AS planid'),
+                    DB::raw('COALESCE(s.approval, 0) AS approval'),
+                    DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
+                    DB::raw('COALESCE(s.createempname, \'\') AS createempname')
+                ]);
 
             // Apply filters
-            if ($request->input('only_active') == 'true') {
-                $sql .= " AND COALESCE(s.approval, 0) < 119";
+            if ($onlyActive === 'true') {
+                $query->whereRaw('COALESCE(s.approval, 0) < 119');
             }
 
-            // Add date filter
-            if ($request->input('date')) {
-                $date = $request->input('date'); // Format: "2024-01"
-                $sql .= " AND TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?";
+            if (!empty($date)) {
+                $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);
             }
 
-            // Implement search across multiple fields with proper type casting
-            if ($request->input('search')) {
-                $search = $request->input('search');
-                $sql .= " AND (
-                CAST(s.recordid AS TEXT) ILIKE ? 
-                OR COALESCE(s.maintenancecode, '') ILIKE ? 
-                OR COALESCE(s.orderempname, '') ILIKE ? 
-                OR COALESCE(s.ordershop, '') ILIKE ? 
-                OR COALESCE(s.machineno, '') ILIKE ? 
-                OR COALESCE(m.machinename, '') ILIKE ? 
-                OR COALESCE(s.ordertitle, '') ILIKE ?
-            )";
+            if (!empty($shopCode)) {
+                $query->where('s.ordershop', $shopCode);
             }
 
-            // Order by recordid descending
-            $sql .= " ORDER BY s.recordid DESC";
-
-            // Prepare the bindings array
-            $bindings = [];
-            if ($request->input('date')) {
-                $bindings[] = $request->input('date');
-            }
-            if ($request->input('search')) {
-                $search = $request->input('search') . '%';
-                // Add the search term 7 times for each ILIKE condition
-                for ($i = 0; $i < 7; $i++) {
-                    $bindings[] = $search;
-                }
+            if (!empty($machineCode)) {
+                $query->where('s.machineno', $machineCode);
             }
 
-            // Execute the query with bindings
-            $results = DB::select($sql, $bindings);
+            if (!empty($maintenanceCode)) {
+                $query->where('s.maintenancecode', $maintenanceCode);
+            }
 
-            // Return the data
+            if (!empty($orderName)) {
+                $query->where('s.orderempname', $orderName);
+            }
+
+            if (!empty($search)) {
+                $searchTerm = $search . '%';
+                $query->where(function ($query) use ($searchTerm) {
+                    $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
+                        ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
+                });
+            }
+
+            $results = $query->orderByDesc('s.recordid')->get();
+
             return response()->json([
                 'success' => true,
                 'data' => $results

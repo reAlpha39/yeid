@@ -19,6 +19,11 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
+const activeOnly = ref(true);
+const selectedMachine = ref(null);
+const maintenanceCode = ref(null);
+const selectedStaff = ref(null);
+const selectedShop = ref(null);
 
 const now = new Date();
 const formattedDate = new Intl.DateTimeFormat("en", {
@@ -39,7 +44,7 @@ const page = ref(1);
 const headers = [
   {
     title: "SPK & TGL ORDER",
-    key: "spkNo",
+    key: "recordid",
   },
   {
     title: "APPROVAL",
@@ -74,6 +79,20 @@ const headers = [
 
 // data table
 const data = ref([]);
+const machineNoData = ref([]);
+const staffs = ref([]);
+const shops = ref([]);
+const maintenanceCodes = [
+  "01|UM",
+  "02|BM",
+  "03|TBC",
+  "04|TBA",
+  "05|PvM",
+  "06|FM",
+  "07|CM",
+  "08|CHECH",
+  "09|LAYOUT",
+];
 
 function convertApproval(approval) {
   let result = "";
@@ -91,6 +110,14 @@ async function fetchData() {
         params: {
           search: searchQuery.value,
           date: date.value,
+          only_active: activeOnly.value,
+          shop_code: selectedShop.value?.shopcode,
+          machine_code: selectedMachine.value?.machineno,
+          maintenance_code:
+            maintenanceCode.value !== null
+              ? maintenanceCode.value.split("|")[0]
+              : null,
+          order_name: selectedStaff.value?.employeename,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -99,6 +126,50 @@ async function fetchData() {
     );
 
     data.value = response.data;
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataMachine() {
+  try {
+    const response = await $api("/master/machines");
+
+    machineNoData.value = response.data;
+
+    machineNoData.value.forEach((data) => {
+      data.title = data.machineno + " | " + data.machinename;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataEmployee() {
+  try {
+    const response = await $api("/master/employees");
+
+    staffs.value = response.data;
+    staffs.value.forEach((data) => {
+      data.title = data.employeename;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataShop() {
+  try {
+    const response = await $api("/master/shops");
+
+    shops.value = response.data;
+
+    shops.value.forEach((data) => {
+      data.title = data.shopcode + " | " + data.shopname;
+    });
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -197,6 +268,9 @@ function getApprovalColor(approval, planid) {
 
 onMounted(() => {
   fetchData();
+  fetchDataMachine();
+  fetchDataEmployee();
+  fetchDataShop();
 });
 </script>
 
@@ -220,53 +294,43 @@ onMounted(() => {
   <!-- 👉 products -->
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
-      <!-- <div class="me-3 d-flex gap-3">
-        <AppSelect
-          :model-value="itemsPerPage"
-          :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: '100' },
-            { value: -1, title: 'All' },
-          ]"
-          style="inline-size: 6.25rem"
-          @update:model-value="itemsPerPage = parseInt($event, 10)"
+      <div style="inline-size: 15.625rem">
+        <AppTextField
+          v-model="searchQuery"
+          placeholder="Search"
+          v-on:input="fetchData()"
         />
-      </div> -->
+      </div>
+      <div style="inline-size: 10rem">
+        <AppDateTimePicker
+          v-model="date"
+          placeholder="Select month"
+          :config="{
+            dateFormat: 'Y-m',
+            mode: 'single',
+            enableTime: false,
+            enableSeconds: false,
+            plugins: [
+              new monthSelectPlugin({
+                shorthand: true,
+                dateFormat: 'Y-m',
+                altFormat: 'Y-m',
+              }),
+            ],
+          }"
+          append-inner-icon="tabler-calendar"
+          @update:modelValue="fetchData()"
+        />
+      </div>
+      <VCheckbox
+        class="pr-7"
+        label="Active saja"
+        v-model="activeOnly"
+        @update:modelValue="fetchData()"
+      />
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-        <div style="inline-size: 10rem">
-          <AppDateTimePicker
-            v-model="date"
-            placeholder="Select month"
-            :config="{
-              dateFormat: 'Y-m',
-              mode: 'single',
-              enableTime: false,
-              enableSeconds: false,
-              plugins: [
-                new monthSelectPlugin({
-                  shorthand: true,
-                  dateFormat: 'Y-m',
-                  altFormat: 'Y-m',
-                }),
-              ],
-            }"
-            append-inner-icon="tabler-calendar"
-            @update:modelValue="fetchData()"
-          />
-        </div>
-        <!-- 👉 Search  -->
-        <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-            v-on:input="fetchData()"
-          />
-        </div>
-
         <!-- 👉 Export button -->
         <VBtn
           variant="tonal"
@@ -288,6 +352,63 @@ onMounted(() => {
       </div>
     </VCardText>
 
+    <VDivider class="mt-2" />
+
+    <VCardText class="d-flex flex-wrap gap-4">
+      <VRow>
+        <VCol>
+          <AppAutocomplete
+            v-model="selectedShop"
+            placeholder="Select shop"
+            item-title="title"
+            :items="shops"
+            return-object
+            clearable
+            clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+        <VCol>
+          <AppAutocomplete
+            v-model="selectedMachine"
+            placeholder="Select machine no"
+            :items="machineNoData"
+            item-title="title"
+            return-object
+            clearable
+            clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+        <VCol>
+          <AppAutocomplete
+            v-model="maintenanceCode"
+            placeholder="Select perbaikan"
+            :items="maintenanceCodes"
+            clearable
+            clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+        <VCol>
+          <AppAutocomplete
+            v-model="selectedStaff"
+            placeholder="Select staff"
+            item-title="title"
+            :items="staffs"
+            return-object
+            clearable
+            clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
@@ -297,14 +418,14 @@ onMounted(() => {
         v-model:page="page"
         :items="data"
         :headers="headers"
-        sticky
+        fixed-header
         class="text-no-wrap"
       >
         <!-- part name -->
-        <template v-slot:header.spkNo="{ headers }">
+        <template v-slot:header.recordid="{ headers }">
           SPK NO &<br />TGL ORDER
         </template>
-        <template #item.spkNo="{ item }">
+        <template #item.recordid="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span
