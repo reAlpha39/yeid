@@ -96,7 +96,7 @@ onMounted(() => {
     </div>
 
     <VCard v-else variant="outlined" class="ma-4">
-      <VTable height="600">
+      <VTable height="600" fixed-header>
         <thead>
           <tr>
             <th style="max-width: 300px; min-width: 100px">PART</th>
