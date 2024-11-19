@@ -19,3 +19,105 @@
   }
 }
 
+// Month Picker
+.flatpickr-monthSelect-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.flatpickr-monthSelect-month {
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 4px;
+}
+
+/* Light theme styles */
+.v-theme--light .flatpickr-monthSelect-month:hover {
+  background: #e0e0e0;
+}
+
+.v-theme--light .flatpickr-monthSelect-month.selected {
+  background: #fa0202;
+  color: white;
+}
+
+.v-theme--light .flatpickr-monthSelect-month.flatpickr-disabled {
+  color: #999;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+
+.v-theme--light .flatpickr-monthSelect-month.flatpickr-disabled:hover {
+  background: #f0f0f0;
+}
+
+/* Dark theme styles */
+.v-theme--dark .flatpickr-monthSelect-month:hover {
+  background: #424242;
+}
+
+.v-theme--dark .flatpickr-monthSelect-month.selected {
+  background: #fa0202;
+  color: white;
+}
+
+.v-theme--dark .flatpickr-monthSelect-month.flatpickr-disabled {
+  color: #666;
+  cursor: not-allowed;
+  background: #303030;
+}
+
+.v-theme--dark .flatpickr-monthSelect-month.flatpickr-disabled:hover {
+  background: #303030;
+}
+
+// Sticky Actions Cell
+.sticky-actions-wrapper {
+  .v-table {
+    position: relative;
+    overflow: auto;
+
+    table {
+      thead {
+        tr {
+          th:last-child {
+            position: sticky !important;
+            right: 0 !important;
+            background: rgb(var(--v-theme-surface)) !important;
+            z-index: 2 !important;
+            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          td:last-child {
+            position: sticky !important;
+            right: 0 !important;
+            background: rgb(var(--v-theme-surface)) !important;
+            z-index: 1 !important;
+            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Dark theme support
+.v-theme--dark {
+  .sticky-actions-wrapper {
+    .v-table {
+      thead tr th:last-child,
+      tbody tr td:last-child {
+        background: rgb(var(--v-theme-surface)) !important;
+        box-shadow: -4px 0 6px -4px rgba(255, 255, 255, 0.1) !important;
+      }
+    }
+  }
+}
+

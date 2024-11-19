@@ -42,6 +42,10 @@ const headers = [
     key: "spkNo",
   },
   {
+    title: "APPROVAL",
+    key: "approval",
+  },
+  {
     title: "PEMOHON",
     key: "pemohon",
   },
@@ -70,6 +74,14 @@ const headers = [
 
 // data table
 const data = ref([]);
+
+function convertApproval(approval) {
+  let result = "";
+  (parseInt(approval) & 1) === 1 ? (result += "S") : (result += "B");
+  (parseInt(approval) & 2) === 2 ? (result += "S") : (result += "B");
+  (parseInt(approval) & 4) === 4 ? (result += "S") : (result += "B");
+  return result;
+}
 
 async function fetchData() {
   try {
@@ -161,6 +173,26 @@ async function handleExport() {
   } finally {
     loadingExport.value = false;
   }
+}
+
+function getApprovalColor(approval, planid) {
+  let approvalId = parseInt(approval);
+  let planId = parseInt(planid);
+  if (approval >= 112) {
+    return "status-indigo";
+  } else if ((approvalId & 4) === 4) {
+    return "status-green";
+  } else if (planId > 0 && approvalId < 4) {
+    return "status-yellow";
+  } else if (planId === 0 && approvalId < 4) {
+    return "status-orange";
+  } else if ((approvalId & 1) === 1) {
+    return "status-light-blue";
+  } else if ((approvalId & 2) === 2) {
+    return "status-blue";
+  }
+
+  return "status-white";
 }
 
 onMounted(() => {
@@ -259,100 +291,109 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <!-- part name -->
-      <template v-slot:header.spkNo="{ headers }">
-        SPK NO &<br />TGL ORDER
-      </template>
-      <template #item.spkNo="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.recordid }}</span
-            >
-            <small>{{ item.orderdatetime }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        sticky
+        class="text-no-wrap"
+      >
+        <!-- part name -->
+        <template v-slot:header.spkNo="{ headers }">
+          SPK NO &<br />TGL ORDER
+        </template>
+        <template #item.spkNo="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.recordid }}</span
+              >
+              <small>{{ item.orderdatetime }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <!-- date -->
-      <template #item.pemohon="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.orderempname }}</span
-            >
-            <small>Shop: {{ item.ordershop }}</small>
+        <template #item.approval="{ item }">
+          <div class="d-flex align-center">
+            {{ convertApproval(item.approval) }}
           </div>
-        </div>
-      </template>
+        </template>
 
-      <!-- vendor -->
-      <template v-slot:header.jenisPerbaikan="{ headers }">
-        JENIS<br />PERBAIKAN
-      </template>
-      <template #item.jenisPerbaikan="{ item }">
-        <div class="d-flex align-center">
-          {{ item.maintenancecode }}
-        </div>
-      </template>
-
-      <template #item.mesin="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span
-              class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >{{ item.machinename }}</span
-            >
-            <small>{{ item.machineno }}</small>
+        <!-- date -->
+        <template #item.pemohon="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.orderempname }}</span
+              >
+              <small>Shop: {{ item.ordershop }}</small>
+            </div>
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template v-slot:header.jenisPekerjaan="{ headers }">
-        JENIS<br />PEKERJAAN
-      </template>
-      <template #item.jenisPekerjaan="{ item }">
-        <div class="d-flex align-center">
-          {{ item.orderjobtype }}
-        </div>
-      </template>
+        <!-- vendor -->
+        <template v-slot:header.jenisPerbaikan> JENIS<br />PERBAIKAN </template>
+        <template #item.jenisPerbaikan="{ item }">
+          <div class="d-flex align-center">
+            {{ item.maintenancecode }}
+          </div>
+        </template>
 
-      <template #item.jumlah="{ item }">
-        <div class="d-flex align-center">
-          {{ item.orderqtty }}
-        </div>
-      </template>
+        <template #item.mesin="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.machinename }}</span
+              >
+              <small>{{ item.machineno }}</small>
+            </div>
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item.recordid)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'maintenanceReport')"
-            @click="openEditPage(item.recordid)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'maintenanceReport')"
-            @click="openDeleteDialog(item.recordid)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <template v-slot:header.jenisPekerjaan> JENIS<br />PEKERJAAN </template>
+        <template #item.jenisPekerjaan="{ item }">
+          <div class="d-flex align-center">
+            {{ item.orderjobtype }}
+          </div>
+        </template>
+
+        <template #item.jumlah="{ item }">
+          <div class="d-flex align-center">
+            {{ item.orderqtty }}
+          </div>
+        </template>
+
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <div
+              class="status-indicator mx-2"
+              :class="getApprovalColor(item.approval, item.planid)"
+            />
+            <IconBtn @click="openDetailPage(item.recordid)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('update', 'maintenanceReport')"
+              @click="openEditPage(item.recordid)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'maintenanceReport')"
+              @click="openDeleteDialog(item.recordid)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
@@ -389,36 +430,38 @@ onMounted(() => {
 </template>
 
 <style>
-.flatpickr-monthSelect-months {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 10px;
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin: auto;
 }
 
-.flatpickr-monthSelect-month {
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 4px;
+.status-green {
+  background-color: #4caf50;
 }
 
-.flatpickr-monthSelect-month:hover {
-  background: #e0e0e0;
+.status-yellow {
+  background-color: #ffeb3b;
 }
 
-.flatpickr-monthSelect-month.selected {
-  background: #fa0202;
-  color: white;
+.status-orange {
+  background-color: #f87d02;
 }
 
-.flatpickr-monthSelect-month.flatpickr-disabled {
-  color: #999;
-  cursor: not-allowed;
-  background: #f0f0f0;
+.status-light-blue {
+  background-color: #c2e9ff;
 }
 
-.flatpickr-monthSelect-month.flatpickr-disabled:hover {
-  background: #f0f0f0;
+.status-blue {
+  background-color: #2d9cdb;
+}
+
+.status-indigo {
+  background-color: #8692d0;
+}
+
+.status-white {
+  background-color: #ffffff;
 }
 </style>

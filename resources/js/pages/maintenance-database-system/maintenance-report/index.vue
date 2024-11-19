@@ -38,7 +38,11 @@ const page = ref(1);
 const headers = [
   {
     title: "SPK NO",
-    key: "spkNo",
+    key: "recordid",
+  },
+  {
+    title: "APPROVAL",
+    key: "approval",
   },
   {
     title: "MESIN",
@@ -46,7 +50,7 @@ const headers = [
   },
   {
     title: "KODE",
-    key: "code",
+    key: "maintenancecode",
   },
   {
     title: "KEADAAN",
@@ -54,12 +58,11 @@ const headers = [
   },
   {
     title: "SHOP",
-    key: "shop",
+    key: "ordershop",
   },
-
   {
     title: "PEMOHON",
-    key: "pemohon",
+    key: "orderempname",
   },
   {
     title: "MENGAPA & BAGAIMANA",
@@ -74,6 +77,14 @@ const headers = [
 
 // data table
 const data = ref([]);
+
+function convertApproval(approval) {
+  let result = "";
+  (parseInt(approval) & 16) === 16 ? (result += "S") : (result += "B");
+  (parseInt(approval) & 32) === 32 ? (result += "S") : (result += "B");
+  (parseInt(approval) & 64) === 64 ? (result += "S") : (result += "B");
+  return result;
+}
 
 async function fetchData() {
   try {
@@ -139,6 +150,23 @@ async function handleExport() {
   } finally {
     loadingExport.value = false;
   }
+}
+
+function getApprovalColor(approval) {
+  let approvalId = parseInt(approval);
+  if (approvalId >= 64) {
+    return "status-indigo";
+  } else if ((approvalId & 64) === 64) {
+    return "status-green";
+  } else if (approvalId >= 48 && approvalId <= 55) {
+    return "status-blue";
+  } else if (approvalId >= 16 && approvalId <= 23) {
+    return "status-light-blue";
+  } else if (approvalId < 4) {
+    return "status-orange";
+  }
+
+  return "status-white";
 }
 
 onMounted(() => {
@@ -229,78 +257,60 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      class="text-no-wrap"
-    >
-      <template #item.spkNo="{ item }">
-        <div class="d-flex align-center">
-          {{ item.recordid }}
-        </div>
-      </template>
-
-      <template #item.machine="{ item }">
-        <div class="d-flex align-center">
-          <div class="d-flex flex-column">
-            <span class="machine-name d-block text-high-emphasis text-truncate">
-              {{ item.machinename }}
-            </span>
-            <small>{{ item.machineno }}</small>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        class="text-no-wrap"
+      >
+        <template #item.approval="{ item }">
+          <div class="d-flex align-center">
+            {{ convertApproval(item.approval) }}
           </div>
-        </div>
-      </template>
+        </template>
 
-      <template #item.code="{ item }">
-        <div class="d-flex align-center">
-          {{ item.maintenancecode }}
-        </div>
-      </template>
+        <template #item.machine="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="machine-name d-block text-high-emphasis text-truncate"
+              >
+                {{ item.machinename }}
+              </span>
+              <small>{{ item.machineno }}</small>
+            </div>
+          </div>
+        </template>
 
-      <template #item.status="{ item }">
-        <div class="d-flex align-center">
-          {{ item.status }}
-        </div>
-      </template>
+        <template v-slot:header> MENGAPA &<br />BAGAIMANA </template>
 
-      <template #item.shop="{ item }">
-        <div class="d-flex align-center">
-          {{ item.ordershop }}
-        </div>
-      </template>
-
-      <template #item.pemohon="{ item }">
-        <div class="d-flex align-center">
-          {{ item.orderempname }}
-        </div>
-      </template>
-
-      <template v-slot:header.ordertitle="{ headers }">
-        MENGAPA &<br />BAGAIMANA
-      </template>
-
-      <template #item.ordertitle="{ item }">
-        <div class="multi-line-ellipsis">
-          {{ item.ordertitle }}
-        </div>
-      </template>
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn @click="openDetailPage(item.recordid)">
-            <VIcon icon="tabler-eye" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'maintenanceReport')"
-            @click="openEditPage(item.recordid)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <template #item.ordertitle="{ item }">
+          <div class="multi-line-ellipsis">
+            {{ item.ordertitle }}
+          </div>
+        </template>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <div
+              class="status-indicator mx-2"
+              :class="getApprovalColor(item.approval, item.planid)"
+            />
+            <IconBtn @click="openDetailPage(item.recordid)">
+              <VIcon icon="tabler-eye" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('update', 'maintenanceReport')"
+              @click="openEditPage(item.recordid)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <DetailDepartmentRequestDialog
@@ -328,36 +338,38 @@ onMounted(() => {
 </style>
 
 <style>
-.flatpickr-monthSelect-months {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 10px;
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin: auto;
 }
 
-.flatpickr-monthSelect-month {
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 4px;
+.status-green {
+  background-color: #4caf50;
 }
 
-.flatpickr-monthSelect-month:hover {
-  background: #e0e0e0;
+.status-yellow {
+  background-color: #ffeb3b;
 }
 
-.flatpickr-monthSelect-month.selected {
-  background: #fa0202;
-  color: white;
+.status-orange {
+  background-color: #f87d02;
 }
 
-.flatpickr-monthSelect-month.flatpickr-disabled {
-  color: #999;
-  cursor: not-allowed;
-  background: #f0f0f0;
+.status-light-blue {
+  background-color: #c2e9ff;
 }
 
-.flatpickr-monthSelect-month.flatpickr-disabled:hover {
-  background: #f0f0f0;
+.status-blue {
+  background-color: #2d9cdb;
+}
+
+.status-indigo {
+  background-color: #8692d0;
+}
+
+.status-white {
+  background-color: #ffffff;
 }
 </style>
