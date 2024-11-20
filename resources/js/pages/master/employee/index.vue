@@ -36,10 +36,6 @@ const headers = [
     key: "mlevel",
   },
   {
-    title: "PASSWORD",
-    key: "password",
-  },
-  {
     title: "ACTIONS",
     key: "actions",
     sortable: false,
@@ -219,26 +215,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.employeecode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.employeename="{ item }">
-        <div class="d-flex align-center">
-          {{ item.employeename }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.mlevel="{ item }">
-        <div class="d-flex align-center">
-          {{ item.mlevel }}
-        </div>
-      </template>
-
-      <template #item.password="{ item }">
-        <div class="d-flex align-center">
-          {{ item.password }}
         </div>
       </template>
 
