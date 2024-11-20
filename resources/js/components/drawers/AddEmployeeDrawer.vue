@@ -207,6 +207,12 @@ watch(
                   :rules="[requiredValidator]"
                   placeholder="Input password"
                   maxlength="20"
+                  type="password"
+                  autocomplete="new-password"
+                  @copy.prevent
+                  @paste.prevent
+                  @cut.prevent
+                  @contextmenu.prevent
                 />
               </VCol>
 
