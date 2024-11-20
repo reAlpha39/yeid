@@ -96,22 +96,24 @@ class PressPartController extends Controller
             }
 
             // Cache results
-            $cacheKey = sprintf(
-                "presspart_query_%s_%s_%s_%s_%s",
-                $year,
-                $machineNo ?? 'all',
-                $model ?? 'all',
-                $dieNo ?? 'all',
-                $partCode ?? 'all'
-            );
+            // $cacheKey = sprintf(
+            //     "presspart_query_%s_%s_%s_%s_%s",
+            //     $year,
+            //     $machineNo ?? 'all',
+            //     $model ?? 'all',
+            //     $dieNo ?? 'all',
+            //     $partCode ?? 'all'
+            // );
 
-            $result = cache()->remember(
-                $cacheKey,
-                now()->addMinutes(30),
-                function () use ($query) {
-                    return $query->get();
-                }
-            );
+            // $result = cache()->remember(
+            //     $cacheKey,
+            //     now()->addMinutes(30),
+            //     function () use ($query) {
+            //         return $query->get();
+            //     }
+            // );
+
+            $result = $query->get();
 
             return response()->json([
                 'success' => true,
