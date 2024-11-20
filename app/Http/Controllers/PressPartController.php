@@ -92,7 +92,8 @@ class PressPartController extends Controller
             }
 
             if ($partCode) {
-                $query->where('m.partcode', 'ilike', $partCode . '%');
+                $query->where('m.partcode', 'ILIKE', "{$partCode}%")
+                    ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
             }
 
             // Cache results
