@@ -16,6 +16,7 @@ const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
 const isUpdateStockQtyDialogVisible = ref(false);
+const barcodeDialogRef = ref(null);
 
 const selectedPartCode = ref("");
 const searchQuery = ref("");
@@ -269,6 +270,10 @@ function getStockStyle(item) {
   return "";
 }
 
+const openBarCodeDialog = (partcode, partname) => {
+  barcodeDialogRef.value.openDialog(partcode, partname);
+};
+
 onMounted(() => {
   fetchData();
 });
@@ -407,6 +412,9 @@ onMounted(() => {
           <div class="d-flex justify-center align-center">
             <div class="status-indicator mr-2" :class="getStatusColor(item)" />
           </div>
+          <IconBtn @click="openBarCodeDialog(item.partcode, item.partname)">
+            <VIcon icon="tabler-printer" size="small" />
+          </IconBtn>
           <IconBtn
             v-if="$can('update', 'masterData')"
             @click="openEditPartPage(item.partcode)"
@@ -462,6 +470,8 @@ onMounted(() => {
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <BarcodeDialog ref="barcodeDialogRef" />
 </template>
 
 <style>
