@@ -113,7 +113,7 @@ async function addData() {
       orderfinishdate: finishedDate.value,
       orderjobtype: jenisPekerjaanRadio.value,
       orderqtty: qty.value,
-      approval: approvalId(parseInt(prevData.value.approval)),
+      approval: approvalId(parseInt(prevData.value?.approval ?? 0)),
     };
 
     if (isEdit.value) {
