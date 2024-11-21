@@ -11,7 +11,7 @@ const props = defineProps({
 
 const dropZoneRef = ref();
 const fileData = ref([]);
-const { open, onChange } = useFileDialog({ accept: "image/*" });
+const { open, onChange } = useFileDialog({ accept: "image/jpeg,image/png" });
 
 // Emits for v-model and remove event
 const emit = defineEmits(["update:modelValue", "remove"]);
@@ -107,7 +107,7 @@ useDropZone(dropZoneRef, onDrop);
           <span class="text-disabled">or</span>
           <VBtn variant="tonal" size="small"> Browse Images </VBtn>
           <div class="text-caption text-disabled mt-2">
-            Maximum file size: 2MB
+            Maximum file size: 2MB, Format ( jpg / jpeg / png )
           </div>
         </div>
 
@@ -151,3 +151,9 @@ useDropZone(dropZoneRef, onDrop);
     </div>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.drop-zone {
+  border: 1px dashed rgba(var(--v-theme-on-surface), var(--v-border-opacity));
+}
+</style>
