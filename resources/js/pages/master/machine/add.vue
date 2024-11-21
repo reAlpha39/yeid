@@ -323,7 +323,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Add New Machine',
+          title: isEdit ? 'Update Machine' : 'Add New Machine',
           class: 'text-h4',
         },
       ]"

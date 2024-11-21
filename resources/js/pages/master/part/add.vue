@@ -314,7 +314,7 @@ onMounted(async () => {
             class: 'text-h4',
           },
           {
-            title: 'Add New Part',
+            title: isEdit ? 'Update Part' : 'Add New Part',
             class: 'text-h4',
           },
         ]"

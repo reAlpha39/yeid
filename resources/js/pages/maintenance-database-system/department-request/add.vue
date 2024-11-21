@@ -315,7 +315,9 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Add Department Request',
+          title: isEdit
+            ? 'Update Department Request'
+            : 'Add Department Request',
           class: 'text-h4',
         },
       ]"

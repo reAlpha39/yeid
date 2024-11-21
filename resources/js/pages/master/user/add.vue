@@ -286,7 +286,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Add New User',
+          title: isEdit ? 'Update User' : 'Add New User',
           class: 'text-h4',
         },
       ]"

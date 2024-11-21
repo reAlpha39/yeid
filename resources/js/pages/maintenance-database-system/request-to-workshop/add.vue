@@ -241,7 +241,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Add Request',
+          title: isEdit ? 'Update Request' : 'Add Request',
           class: 'text-h4',
         },
       ]"
