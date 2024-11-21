@@ -39,6 +39,9 @@ const initialStockTF = ref();
 const noteTF = ref();
 const minStockTF = ref();
 const minOrderTF = ref();
+const selectedFile = ref(null);
+const existingImage = ref(null);
+const isImageDeleted = ref(false);
 
 const machines = ref([]);
 const indexMachineDelete = ref();
@@ -75,6 +78,14 @@ function deleteSelectedMachine() {
   isDeleteSelectedMachineDialogVisible.value = false;
 }
 
+// Listen for file removal from DropZone
+function handleFileRemoval() {
+  console.log("Image removal triggered");
+  selectedFile.value = null;
+  existingImage.value = null;
+  isImageDeleted.value = true;
+}
+
 async function addMasterPart() {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
@@ -82,41 +93,49 @@ async function addMasterPart() {
   }
 
   try {
-    var machineData = [];
+    const machineData = machines.value.map((e) => ({
+      machine_no: e.machineno,
+    }));
 
-    for (const e of machines.value) {
-      machineData.push({
-        machine_no: e.machineno,
-      });
+    // Create FormData instance for multipart/form-data
+    const formData = new FormData();
+
+    // Append all form fields
+    formData.append("part_code", partCodeTF.value);
+    formData.append("part_name", partNameTF.value);
+    formData.append("category", convertCategory(categoryTF.value));
+    formData.append("specification", specificationTF.value);
+    formData.append("ean_code", barcodeTF.value);
+    formData.append("brand", brandTF.value);
+    formData.append("used_flag", convertSwitch(usedPartSwitch.value));
+    formData.append("address", addressTF.value);
+    formData.append("vendor_code", vendorTF.value.split(" | ")[0]);
+    formData.append("unit_price", unitPriceTF.value);
+    formData.append("currency", currencyTF.value);
+    formData.append("min_stock", minStockTF.value);
+    formData.append("min_order", minOrderTF.value);
+    formData.append("note", noteTF.value);
+    formData.append("last_stock_number", initialStockTF.value);
+    formData.append("order_part_code", orderPartCodeTF.value);
+    formData.append("no_order_flag", convertSwitch(orderSwitch.value));
+    formData.append("machines", JSON.stringify(machineData));
+
+    // Handle image cases
+    if (selectedFile.value) {
+      // New image uploaded
+      formData.append("image", selectedFile.value);
+    } else if (isImageDeleted.value) {
+      // Existing image was deleted
+      formData.append("delete_image", "1");
     }
-
-    console.log(machineData);
 
     const result = await $api("/master/add-part", {
       method: "POST",
-      body: {
-        part_code: partCodeTF.value,
-        part_name: partNameTF.value,
-        category: convertCategory(categoryTF.value),
-        specification: specificationTF.value,
-        ean_code: barcodeTF.value,
-        brand: brandTF.value,
-        used_flag: convertSwitch(usedPartSwitch.value),
-        address: addressTF.value,
-        vendor_code: vendorTF.value.split(" | ")[0],
-        unit_price: unitPriceTF.value,
-        currency: currencyTF.value,
-        min_stock: minStockTF.value,
-        min_order: minOrderTF.value,
-        note: noteTF.value,
-        last_stock_number: initialStockTF.value,
-        order_part_code: orderPartCodeTF.value,
-        no_order_flag: convertSwitch(orderSwitch.value),
-        machines: machineData,
+      body: formData,
+      headers: {
+        Accept: "application/json",
       },
-
       onResponseError({ response }) {
-        // toast.error("Failed to save data");
         errors.value = response._data.errors;
       },
     });
@@ -129,6 +148,16 @@ async function addMasterPart() {
   }
 }
 
+async function fetchPartImage(partCode) {
+  try {
+    const response = await $api("/master/part/image/" + partCode);
+    existingImage.value = response.data.image_url;
+    isImageDeleted.value = false;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 async function fetchDataEdit(partCode) {
   try {
     const response = await $api("/master/part-list", {
@@ -137,7 +166,7 @@ async function fetchDataEdit(partCode) {
         max_rows: 1,
       },
     });
-    console.log(response.data);
+    // console.log(response.data);
     prevData.value = response.data[0];
   } catch (err) {
     console.log(err);
@@ -223,6 +252,7 @@ function convertSwitch(val) {
 }
 
 async function initEditData(partCode) {
+  await fetchPartImage(partCode);
   await fetchDataEdit(partCode);
   applyData();
   await fetchVendor(vendorTF.value);
@@ -250,7 +280,7 @@ function applyData() {
   minOrderTF.value = data.minorder;
 }
 
-onMounted(() => {
+onMounted(async () => {
   const partCode = route.query.part_code;
   console.log("Fetching data for part_code:", partCode);
   if (partCode) {
@@ -449,6 +479,20 @@ onMounted(() => {
           ></VSwitch>
         </VCol>
       </VRow>
+    </VCard>
+
+    <VCard class="mt-8 pa-4">
+      <VCardItem>
+        <template #title> Part Image </template>
+      </VCardItem>
+
+      <VCardText>
+        <DropZone
+          v-model="selectedFile"
+          :existing-image="existingImage"
+          @remove="handleFileRemoval"
+        />
+      </VCardText>
     </VCard>
 
     <VCard class="mt-8 pa-4">

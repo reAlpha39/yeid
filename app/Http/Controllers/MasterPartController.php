@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PartsExport;
 use Exception;
@@ -147,8 +148,10 @@ class MasterPartController extends Controller
 
     public function addMasterPart(Request $request)
     {
+        DB::beginTransaction();
+
         try {
-            // Validate the input
+            // Validate the input including image
             $request->validate([
                 'part_code' => 'required',
                 'part_name' => 'required',
@@ -156,27 +159,40 @@ class MasterPartController extends Controller
                 'specification' => 'nullable|string',
                 'ean_code' => 'nullable|string',
                 'brand' => 'required|string',
-                'used_flag' => 'required|boolean',
+                'used_flag' => 'required|in:true,false,0,1',  // Accept string representations of boolean
                 'location_id' => 'nullable|string',
                 'address' => 'required|string',
                 'vendor_code' => 'nullable|string',
-                'unit_price' => 'required|numeric',
+                'unit_price' => 'required|numeric|regex:/^\d*\.?\d*$/',  //  handle string numbers
                 'currency' => 'required|string',
-                'min_stock' => 'required|numeric',
-                'min_order' => 'required|numeric',
+                'min_stock' => 'nullable|numeric|regex:/^\d*\.?\d*$/',
+                'min_order' => 'nullable|numeric|regex:/^\d*\.?\d*$/',
                 'note' => 'nullable|string',
                 'order_part_code' => 'nullable|string',
-                'no_order_flag' => 'required|boolean',
+                'no_order_flag' => 'required|in:true,false,0,1',  // Accept string representations of boolean
+                'last_stock_number' => 'nullable|numeric|regex:/^\d*\.?\d*$/',
+                'machines' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'is_remove_image' => 'nullable|in:true,false'
             ]);
 
-            // Retrieve data from the request
+
+            // Convert string boolean to database values
+            $usedFlag = in_array($request->input('used_flag'), ['true', '1']) ? 'O' : ' ';
+            $noOrderFlag = in_array($request->input('no_order_flag'), ['true', '1']) ? '1' : '0';
+
+            // Convert string numbers to float/integer
+            $unitPrice = floatval($request->input('unit_price', 0));
+            $minStock = intval($request->input('min_stock', 0));
+            $minOrder = intval($request->input('min_order', 0));
+            $lastStockNumber = intval($request->input('last_stock_number', 0));
+
             $partCode = $request->input('part_code');
             $partName = $request->input('part_name');
             $category = $request->input('category', 'O');  // Default to 'O' if not provided
             $specification = $request->input('specification');
             $eanCode = $request->input('ean_code') ?? str_pad('', 13);
             $brand = $request->input('brand');
-            $usedFlag = $request->input('used_flag', false) ? 'O' : ' ';
             $locationId = $request->input('location_id', 'P');
             $address = $request->input('address');
             $vendorCode = $request->input('vendor_code', null);
@@ -188,113 +204,137 @@ class MasterPartController extends Controller
             $lastStockNumber = $request->input('last_stock_number', 0);
             $lastStockDate = Carbon::now()->format('Ymd');
             $orderPartCode = $request->input('order_part_code', null);
-            $noOrderFlag = $request->input('no_order_flag', false) ? '1' : '0';
             $updateTime = Carbon::now();
 
-            $queryBuilder = DB::table('mas_inventory')->select(
-                'partcode'
-            )->where(
-                'partcode',
-                '=',
-                $partCode
-            );
+            $queryBuilder = DB::table('mas_inventory')->select('partcode')
+                ->where('partcode', '=', $partCode);
 
             $isEmpty = $queryBuilder->get();
 
-            if ($isEmpty->isEmpty()) {
-                // Insert into mas_inventory table
-                DB::table('mas_inventory')->insert([
-                    'partcode' => $partCode,
-                    'partname' => $partName,
-                    'category' => $category,
-                    'specification' => $specification,
-                    'eancode' => $eanCode,
-                    'brand' => $brand,
-                    'usedflag' => $usedFlag,
-                    'locationid' => $locationId,
-                    'address' => $address,
-                    'vendorcode' => $vendorCode,
-                    'unitprice' => $unitPrice,
-                    'currency' => $currency,
-                    'minstock' => $minStock,
-                    'minorder' => $minOrder,
-                    'note' => $note,
-                    'laststocknumber' => $lastStockNumber,
-                    'laststockdate' => $lastStockDate,
-                    'status' => ' ',  // Hardcoded as chr(0) in the VB code
-                    'orderpartcode' => $orderPartCode,
-                    'noorderflag' => $noOrderFlag,
-                    'updatetime' => $updateTime,  // Current timestamp
-                ]);
-            } else {
-                DB::table('mas_inventory')
-                    ->where('partcode', $partCode)
-                    ->update([
-                        'partname' => $partName,
-                        'category' => $category,
-                        'specification' => $specification,
-                        'eancode' => $eanCode,
-                        'brand' => $brand,
-                        'usedflag' => $usedFlag,
-                        'locationid' => $locationId,
-                        'address' => $address,
-                        'vendorcode' => $vendorCode,
-                        'unitprice' => $unitPrice,
-                        'currency' => $currency,
-                        'minstock' => $minStock,
-                        'minorder' => $minOrder,
-                        'note' => $note,
-                        'orderpartcode' => $orderPartCode,
-                        'noorderflag' => $noOrderFlag,
-                        'updatetime' => $updateTime,
-                    ]);
+
+            // Handle image upload
+            $imagePath = null;
+            $shouldDeleteImage = $request->has('delete_image') && $request->input('delete_image') === '1';
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                // Use part_code as the filename
+                $fileName = $request->part_code . '.' . $image->getClientOriginalExtension();
+
+                // Delete existing file with same name if exists (for different extensions)
+                $existingFiles = glob(storage_path('app/public/master_parts/' . $request->part_code . '.*'));
+                foreach ($existingFiles as $file) {
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                }
+
+                $image->storeAs('public/master_parts', $fileName);
+                $imagePath = 'master_parts/' . $fileName;
             }
 
-            // Delete MachineNo
-            $affectedRows = DB::table('mas_invmachine')
+            // Prepare data array for database operations
+            $partData = [
+                'partname' => $partName,
+                'category' => $category,
+                'specification' => $specification,
+                'eancode' => $eanCode,
+                'brand' => $brand,
+                'usedflag' => $usedFlag,
+                'locationid' => $locationId,
+                'address' => $address,
+                'vendorcode' => $vendorCode,
+                'unitprice' => $unitPrice,
+                'currency' => $currency,
+                'minstock' => $minStock,
+                'minorder' => $minOrder,
+                'note' => $note,
+                'orderpartcode' => $orderPartCode,
+                'noorderflag' => $noOrderFlag,
+                'updatetime' => $updateTime,
+            ];
+
+            // Handle image path in database
+            if ($imagePath) {
+                // $partData['image_path'] = $imagePath;
+            } else if ($shouldDeleteImage) {
+                // Delete existing file when explicitly deleting image
+                // $oldImage = DB::table('mas_inventory')
+                //     ->where('partcode', $request->part_code)
+                //     ->value('image_path');
+
+                // if ($oldImage) {
+                //     $existingFiles = glob(storage_path('app/public/master_parts/' . $request->part_code . '.*'));
+                //     foreach ($existingFiles as $file) {
+                //         if (file_exists($file)) {
+                //             unlink($file);
+                //         }
+                //     }
+                // }
+                // $partData['image_path'] = null;
+
+                $existingFiles = glob(storage_path('app/public/master_parts/' . $partCode . '.*'));
+                foreach ($existingFiles as $file) {
+                    if (file_exists($file)) {
+                        unlink($file);
+                    }
+                }
+            }
+
+            if ($isEmpty->isEmpty()) {
+                // For new records, add additional fields
+                $partData['partcode'] = $partCode;
+                $partData['laststocknumber'] = $lastStockNumber;
+                $partData['laststockdate'] = $lastStockDate;
+                $partData['status'] = ' ';
+
+                DB::table('mas_inventory')->insert($partData);
+            } else {
+
+                DB::table('mas_inventory')
+                    ->where('partcode', $partCode)
+                    ->update($partData);
+            }
+
+            // Delete existing MachineNo records
+            DB::table('mas_invmachine')
                 ->where('partcode', $partCode)
                 ->delete();
 
-            // Check if any rows were affected (i.e., if the delete was successful)
-            if ($affectedRows > 0) {
-                // console.log('')
-            }
-
-            $machines = $request->input('machines', []);
-            // 
+            // Process machines - decode JSON string from frontend
+            $machines = json_decode($request->input('machines', '[]'), true);
             foreach ($machines as $machine) {
                 $machineNo = $machine['machine_no'];
 
-                $rows = DB::table('mas_invmachine')->select(
-                    'machineno'
-                )
-                    ->where('partcode', $partCode)
-                    ->where('machineno',  $machineNo)
-                    ->limit(1)
-                    ->get();
-
-                if ($rows->isEmpty()) {
-                    DB::table('mas_invmachine')->insert([
-                        'partcode' => $partCode,
-                        'machineno' => $machineNo,
-                        'updatetime' => $updateTime,
-                    ]);
-                }
+                DB::table('mas_invmachine')->insert([
+                    'partcode' => $partCode,
+                    'machineno' => $machineNo,
+                    'updatetime' => $updateTime,
+                ]);
             }
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'is_update' => $isEmpty->isNotEmpty()
+                    'is_update' => $isEmpty->isNotEmpty(),
+                    'image_path' => $imagePath
                 ],
-                'message' => 'Inventory record inserted successfully!'
+                'message' => 'Inventory record ' . ($isEmpty->isNotEmpty() ? 'updated' : 'inserted') . ' successfully!'
             ], 200);
         } catch (Exception $e) {
-            // Catch any exceptions and return an error response
+            DB::rollBack();
+
+            // If there was an error and we uploaded an image, delete it
+            if (isset($imagePath) && Storage::exists('public/' . $imagePath)) {
+                Storage::delete('public/' . $imagePath);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
-                'error' => $e->getMessage() // You can remove this line in production for security reasons
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -319,6 +359,9 @@ class MasterPartController extends Controller
             $affectedRows += DB::table('mas_invmachine')
                 ->where('partcode', '=', $partCode)
                 ->delete();
+
+            // Delete image related to the part_code
+            $this->deleteImage($partCode);
 
             if ($affectedRows > 0) {
                 // Return success response if deletion was successful
@@ -352,6 +395,53 @@ class MasterPartController extends Controller
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getPartImage($partCode)
+    {
+        try {
+            // Get all files matching the pattern in the storage directory
+            $files = glob(storage_path('app/public/master_parts/' . $partCode . '.*'));
+
+            // If no files found
+            if (empty($files)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Image not found'
+                ], 404);
+            }
+
+            // Get the first matching file
+            $file = $files[0];
+
+            // Extract the relative path and extension
+            $relativePath = 'master_parts/' . basename($file);
+
+            // Return the full URL to the image
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'image_url' => asset('storage/' . $relativePath)
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    private function deleteImage($partCode)
+    {
+        $existingFiles = glob(storage_path('app/public/master_parts/' . $partCode . '.*'));
+        foreach ($existingFiles as $file) {
+            if (file_exists($file)) {
+                unlink($file);
+            }
         }
     }
 }

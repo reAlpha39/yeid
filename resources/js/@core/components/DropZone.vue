@@ -1,129 +1,153 @@
 <script setup>
-import {
-  useDropZone,
-  useFileDialog,
-  useObjectUrl,
-} from '@vueuse/core'
+import { useDropZone, useFileDialog, useObjectUrl } from "@vueuse/core";
 
-const dropZoneRef = ref()
-const fileData = ref([])
-const { open, onChange } = useFileDialog({ accept: 'image/*' })
-function onDrop(DroppedFiles) {
-  DroppedFiles?.forEach(file => {
-    if (file.type.slice(0, 6) !== 'image/') {
+const props = defineProps({
+  existingImage: {
+    type: String,
+    default: null,
+  },
+  modelValue: null,
+});
 
-      // eslint-disable-next-line no-alert
-      alert('Only image files are allowed')
-      
-      return
+const dropZoneRef = ref();
+const fileData = ref([]);
+const { open, onChange } = useFileDialog({ accept: "image/*" });
+
+// Emits for v-model and remove event
+const emit = defineEmits(["update:modelValue", "remove"]);
+
+// Watch for changes in existingImage prop
+watch(
+  () => props.existingImage,
+  (newVal) => {
+    if (newVal) {
+      fileData.value = [
+        {
+          isExisting: true,
+          url: newVal,
+          name: newVal.split("/").pop() || "Existing Image",
+          size: null,
+        },
+      ];
+    } else {
+      fileData.value = [];
     }
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
-  })
+  },
+  { immediate: true }
+);
+
+function onDrop(DroppedFiles) {
+  DroppedFiles?.forEach((file) => {
+    if (file.type.slice(0, 6) !== "image/") {
+      alert("Only image files are allowed");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File size must be less than 2MB");
+      return;
+    }
+    fileData.value = [
+      {
+        file,
+        url: useObjectUrl(file).value ?? "",
+        name: file.name,
+        size: file.size,
+        isExisting: false,
+      },
+    ];
+    emit("update:modelValue", file);
+  });
 }
-onChange(selectedFiles => {
-  if (!selectedFiles)
-    return
-  for (const file of selectedFiles) {
-    fileData.value.push({
-      file,
-      url: useObjectUrl(file).value ?? '',
-    })
+
+onChange((selectedFiles) => {
+  if (!selectedFiles) return;
+  const file = selectedFiles[0];
+  if (file.size > 2 * 1024 * 1024) {
+    alert("File size must be less than 2MB");
+    return;
   }
-})
-useDropZone(dropZoneRef, onDrop)
+  fileData.value = [
+    {
+      file,
+      url: useObjectUrl(file).value ?? "",
+      name: file.name,
+      size: file.size,
+      isExisting: false,
+    },
+  ];
+  emit("update:modelValue", file);
+});
+
+function removeFile(index) {
+  const removedFile = fileData.value[index];
+  fileData.value = [];
+  emit("update:modelValue", null);
+
+  // Emit remove event when removing an existing image
+  if (removedFile.isExisting) {
+    emit("remove");
+  }
+}
+
+useDropZone(dropZoneRef, onDrop);
 </script>
 
 <template>
   <div class="flex">
     <div class="w-full h-auto relative">
-      <div
-        ref="dropZoneRef"
-        class="cursor-pointer"
-        @click="() => open()"
-      >
+      <div ref="dropZoneRef" class="cursor-pointer" @click="() => open()">
         <div
           v-if="fileData.length === 0"
           class="d-flex flex-column justify-center align-center gap-y-2 pa-12 drop-zone rounded"
         >
-          <IconBtn
-            variant="tonal"
-            class="rounded-sm"
-          >
+          <IconBtn variant="tonal" class="rounded-sm">
             <VIcon icon="tabler-upload" />
           </IconBtn>
-          <h4 class="text-h4">
-            Drag and drop your image here.
-          </h4>
+          <h4 class="text-h4">Drag and drop your image here.</h4>
           <span class="text-disabled">or</span>
-
-          <VBtn
-            variant="tonal"
-            size="small"
-          >
-            Browse Images
-          </VBtn>
+          <VBtn variant="tonal" size="small"> Browse Images </VBtn>
+          <div class="text-caption text-disabled mt-2">
+            Maximum file size: 2MB
+          </div>
         </div>
 
-        <div
-          v-else
-          class="d-flex justify-center align-center gap-3 pa-8 drop-zone flex-wrap"
-        >
-          <VRow class="match-height w-100">
-            <template
-              v-for="(item, index) in fileData"
-              :key="index"
+        <div v-else class="justify-center align-center">
+          <template v-for="(item, index) in fileData" :key="index">
+            <VCard
+              class="border-dashed"
+              :ripple="false"
+              variant="outlined"
+              border
             >
-              <VCol
-                cols="12"
-                sm="4"
-              >
-                <VCard
-                  :ripple="false"
-                  border
-                >
-                  <VCardText
-                    class="d-flex flex-column"
-                    @click.stop
-                  >
-                    <VImg
-                      :src="item.url"
-                      width="200px"
-                      height="150px"
-                      class="w-100 mx-auto"
-                    />
+              <VRow class="d-flex align-center">
+                <VCol>
+                  <VCardText @click.stop>
                     <div class="mt-2">
-                      <span class="clamp-text text-wrap">
-                        {{ item.file.name }}
+                      <span class="clamp-text text-wrap text-h5">
+                        {{ item.name }}
                       </span>
-                      <span>
-                        {{ item.file.size / 1000 }} KB
+                      <span v-if="item.size">
+                        {{ (item.size / 1024).toFixed(2) }} KB
                       </span>
+                      <span v-else class="text-caption">Existing image</span>
                     </div>
                   </VCardText>
+                </VCol>
+                <VCol
+                  cols="auto"
+                  class="d-flex align-center justify-center mt-4"
+                >
                   <VCardActions>
-                    <VBtn
-                      variant="text"
-                      block
-                      @click.stop="fileData.splice(index, 1)"
-                    >
+                    <VBtn variant="text" block @click.stop="removeFile(index)">
                       Remove File
                     </VBtn>
                   </VCardActions>
-                </VCard>
-              </VCol>
-            </template>
-          </VRow>
+                </VCol>
+              </VRow>
+            </VCard>
+          </template>
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.drop-zone {
-  border: 1px dashed rgba(var(--v-theme-on-surface), var(--v-border-opacity));
-}
-</style>
