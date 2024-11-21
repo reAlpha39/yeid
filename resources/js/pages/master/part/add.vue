@@ -280,6 +280,15 @@ function applyData() {
   minOrderTF.value = data.minorder;
 }
 
+function isNumber(evt) {
+  const keysAllowed = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."];
+  const keyPressed = evt.key;
+
+  if (!keysAllowed.includes(keyPressed)) {
+    evt.preventDefault();
+  }
+}
+
 onMounted(async () => {
   const partCode = route.query.part_code;
   console.log("Fetching data for part_code:", partCode);
@@ -419,6 +428,7 @@ onMounted(async () => {
             :rules="[requiredValidator]"
             label="Unit Price"
             placeholder="Input unit price"
+            @keypress="isNumber($event)"
           ></AppTextField>
         </VCol>
         <VCol cols="3">
@@ -442,6 +452,8 @@ onMounted(async () => {
             v-model="initialStockTF"
             label="Initial Stock Number"
             placeholder="Input initial stock number"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
           ></AppTextField>
         </VCol>
       </VRow>
@@ -459,6 +471,8 @@ onMounted(async () => {
             v-model="minStockTF"
             label="Minimum Stock"
             placeholder="0"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
           ></AppTextField>
         </VCol>
         <VCol cols="2">
@@ -466,6 +480,8 @@ onMounted(async () => {
             v-model="minOrderTF"
             label="Minimum Order"
             placeholder="0"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
           ></AppTextField>
         </VCol>
 
