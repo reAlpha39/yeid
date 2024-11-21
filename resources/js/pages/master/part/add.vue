@@ -271,13 +271,13 @@ function applyData() {
   barcodeTF.value = data.eancode;
   addressTF.value = data.address;
   vendorTF.value = data.vendorcode;
-  unitPriceTF.value = data.unitprice;
+  unitPriceTF.value = parseInt(data?.unitprice ?? 0);
   currencyTF.value = data.currency;
   orderPartCodeTF.value = data.orderpartcode;
-  initialStockTF.value = data.laststocknumber;
+  initialStockTF.value = parseInt(data?.laststocknumber ?? 0);
   noteTF.value = data.note;
-  minStockTF.value = data.minstock;
-  minOrderTF.value = data.minorder;
+  minStockTF.value = parseInt(data?.minstock ?? 0);
+  minOrderTF.value = parseInt(data?.minorder ?? 0);
 }
 
 function isNumber(evt) {

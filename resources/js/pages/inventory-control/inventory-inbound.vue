@@ -397,6 +397,10 @@ onMounted(() => {
           {{ formatCurrency(item.currency, item.unitprice) }}
         </template>
 
+        <template #item.quantity="{ item }">
+          {{ parseInt(item?.quantity ?? 0) }}
+        </template>
+
         <!-- unit price -->
         <template #item.total="{ item }">
           {{ formatCurrency(item.currency, item.total) }}

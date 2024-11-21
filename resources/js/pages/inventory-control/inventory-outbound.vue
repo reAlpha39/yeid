@@ -398,6 +398,10 @@ onMounted(() => {
           </div>
         </template>
 
+        <template #item.quantity="{ item }">
+          {{ parseInt(item?.quantity ?? 0) }}
+        </template>
+
         <!-- unit price -->
         <template #item.total="{ item }">
           <div class="d-flex align-center">
