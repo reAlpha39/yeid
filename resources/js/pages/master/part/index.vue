@@ -439,27 +439,70 @@ onMounted(() => {
           <div class="d-flex justify-center align-center">
             <div class="status-indicator mr-2" :class="getStatusColor(item)" />
           </div>
-          <IconBtn @click="openBarCodeDialog(item.partcode, item.partname)">
-            <VIcon icon="tabler-printer" size="small" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openEditPartPage(item.partcode)"
-          >
-            <VIcon icon="tabler-edit" size="small" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openUpdateDialog(item.partcode)"
-          >
-            <VIcon icon="tabler-adjustments" size="small" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'masterData')"
-            @click="openDeleteDialog(item.partcode)"
-          >
-            <VIcon icon="tabler-trash" size="small" />
-          </IconBtn>
+
+          <!-- Popup Menu -->
+          <VMenu>
+            <template v-slot:activator="{ props }">
+              <VBtn
+                icon
+                variant="text"
+                v-bind="props"
+                size="small"
+                color="default"
+              >
+                <VIcon icon="tabler-dots-vertical" />
+              </VBtn>
+            </template>
+
+            <VList>
+              <!-- Print Action -->
+              <VListItem
+                @click="openBarCodeDialog(item.partcode, item.partname)"
+                density="compact"
+              >
+                <template v-slot:prepend>
+                  <VIcon icon="tabler-printer" size="small" />
+                </template>
+                <VListItemTitle>Print Barcode</VListItemTitle>
+              </VListItem>
+
+              <!-- Edit Action -->
+              <VListItem
+                v-if="$can('update', 'masterData')"
+                @click="openEditPartPage(item.partcode)"
+                density="compact"
+              >
+                <template v-slot:prepend>
+                  <VIcon icon="tabler-edit" size="small" />
+                </template>
+                <VListItemTitle>Edit</VListItemTitle>
+              </VListItem>
+
+              <!-- Update Action -->
+              <VListItem
+                v-if="$can('update', 'masterData')"
+                @click="openUpdateDialog(item.partcode)"
+                density="compact"
+              >
+                <template v-slot:prepend>
+                  <VIcon icon="tabler-adjustments" size="small" />
+                </template>
+                <VListItemTitle>Update</VListItemTitle>
+              </VListItem>
+
+              <!-- Delete Action -->
+              <VListItem
+                v-if="$can('delete', 'masterData')"
+                @click="openDeleteDialog(item.partcode)"
+                density="compact"
+              >
+                <template v-slot:prepend>
+                  <VIcon icon="tabler-trash" size="small" color="error" />
+                </template>
+                <VListItemTitle class="text-error">Delete</VListItemTitle>
+              </VListItem>
+            </VList>
+          </VMenu>
         </div>
       </template>
     </VDataTable>
