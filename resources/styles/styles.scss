@@ -127,3 +127,37 @@
   }
 }
 
+
+/* Container for the title */
+.custom-title {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+}
+
+/* Actual title content */
+.title-content {
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 12px auto;
+  width: fit-content;
+  min-width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure lightbox container is above other elements */
+.vel-modal {
+  z-index: 9999 !important;
+}
+
+/* Style the toolbar */
+.vel-toolbar {
+  bottom: 20px !important;
+}

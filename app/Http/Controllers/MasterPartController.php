@@ -131,6 +131,25 @@ class MasterPartController extends Controller
             // Execute the query and get results
             $results = $queryBuilder->get();
 
+            // Add image paths to results
+            $results = $results->map(function ($item) {
+                // Check for image file
+                $files = glob(storage_path('app/public/master_parts/' . $item->partcode . '.*'));
+
+                // If files found
+                if (!empty($files)) {
+                    // Get the first matching file
+                    $file = $files[0];
+
+                    // Extract the relative path
+                    $item->partimage = 'master_parts/' . basename($file);
+                } else {
+                    $item->partimage = null;
+                }
+
+                return $item;
+            });
+
             // Return the results as JSON
             return response()->json([
                 'success' => true,

@@ -2,6 +2,7 @@ import App from '@/App.vue';
 import { registerPlugins } from '@core/utils/plugins';
 import axios from 'axios';
 import 'moment/locale/id';
+import VueEasyLightbox from 'vue-easy-lightbox'
 import { createApp } from 'vue';
 
 // Styles
@@ -22,7 +23,7 @@ const options = {
     // You can set your default options here
 };
 
-app.use(Toast, options, caslPlugin);
+app.use(Toast, options, caslPlugin, VueEasyLightbox);
 
 // Register plugins
 registerPlugins(app);

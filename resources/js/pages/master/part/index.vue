@@ -1,6 +1,7 @@
 <script setup>
 import axios from "axios";
 import moment from "moment";
+import VueEasyLightbox from "vue-easy-lightbox";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -23,6 +24,11 @@ const searchQuery = ref("");
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
+
+// State for lightbox
+const isLightboxVisible = ref(false);
+const imgsRef = ref([]);
+const currentItem = ref(null);
 
 // headers
 const headers = [
@@ -49,6 +55,10 @@ const headers = [
   {
     title: "UNIT PRICE",
     key: "unitprice",
+  },
+  {
+    title: "PART IMAGE",
+    key: "partimage",
   },
   {
     title: "ACTIONS",
@@ -274,6 +284,24 @@ const openBarCodeDialog = (partcode, partname) => {
   barcodeDialogRef.value.openDialog(partcode, partname);
 };
 
+// Function to show image in lightbox
+const showImage = (item) => {
+  if (item.partimage) {
+    imgsRef.value = `/storage/${item.partimage}`;
+    currentItem.value = {
+      title: item.partcode + " - " + item.partname,
+      src: imgsRef.value,
+    };
+    isLightboxVisible.value = true;
+  }
+};
+
+// Function to close lightbox
+const closeLightbox = () => {
+  isLightboxVisible.value = false;
+  currentItem.value = null;
+};
+
 onMounted(() => {
   fetchData();
 });
@@ -299,20 +327,6 @@ onMounted(() => {
   <!-- 👉 products -->
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
-      <!-- <div class="me-3 d-flex gap-3">
-        <AppSelect
-          :model-value="itemsPerPage"
-          :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: '100' },
-            { value: -1, title: 'All' },
-          ]"
-          style="inline-size: 6.25rem"
-          @update:model-value="itemsPerPage = parseInt($event, 10)"
-        />
-      </div> -->
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
@@ -406,6 +420,19 @@ onMounted(() => {
         {{ formatCurrency(item.currency, item.unitprice) }}
       </template>
 
+      <template #item.partimage="{ item }">
+        <VBtn
+          v-if="item.partimage"
+          variant="text"
+          color="secondary"
+          @click="showImage(item)"
+          size="small"
+        >
+          Lihat gambar
+        </VBtn>
+        <text v-else>Foto tidak<br />tersedia</text>
+      </template>
+
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="d-flex justify-center gap-2">
@@ -472,6 +499,23 @@ onMounted(() => {
   </VDialog>
 
   <BarcodeDialog ref="barcodeDialogRef" />
+
+  <VueEasyLightbox
+    :visible="isLightboxVisible"
+    :imgs="imgsRef"
+    :index="0"
+    :maxZoom="1"
+    :minZoom="0.5"
+    @hide="closeLightbox"
+  >
+    <template #title>
+      <div class="custom-title" v-if="currentItem">
+        <div class="title-content">
+          {{ currentItem.title }}
+        </div>
+      </div>
+    </template>
+  </VueEasyLightbox>
 </template>
 
 <style>
