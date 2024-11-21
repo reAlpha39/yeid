@@ -1214,37 +1214,6 @@ watch(
 }
 </style>
 
-<style>
-.flatpickr-monthSelect-months {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 10px;
-}
-
-.flatpickr-monthSelect-month {
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  border-radius: 4px;
-}
-
-.flatpickr-monthSelect-month:hover {
-  background: #e0e0e0;
-}
-
-.flatpickr-monthSelect-month.selected {
-  background: #fa0202;
-  color: white;
-}
-
-.flatpickr-monthSelect-month.flatpickr-disabled {
-  color: #999;
-  cursor: not-allowed;
-  background: #f0f0f0;
-}
-
-.flatpickr-monthSelect-month.flatpickr-disabled:hover {
-  background: #f0f0f0;
-}
+<style lang="scss">
+@use "@core-scss/template/libs/apex-chart.scss";
 </style>
