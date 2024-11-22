@@ -157,11 +157,23 @@ function formatCurrency(currency, price) {
 }
 
 function getStatusColor(item) {
-  if (item.counter > 0 && item.counter > item.makerlimit) {
+  // COUNTER -- FIX LIMIT
+  if (
+    parseInt(item?.counter ?? 0) > 0 &&
+    parseInt(item?.counter ?? 0) > parseInt(item?.makerlimit ?? 0)
+  ) {
     return "status-red";
-  } else if (item.counter > 0 && item.counter > item.companylimit) {
+    // COUNTER -- TEMP LIMIT
+  } else if (
+    parseInt(item?.counter ?? 0) > 0 &&
+    parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)
+  ) {
     return "status-yellow";
-  } else if (item.minstock > 0 && item.minstock > item.currentstock) {
+    // MIN STOCK -- ACTUAL STOCK
+  } else if (
+    parseInt(item?.minstock ?? 0) > 0 &&
+    parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)
+  ) {
     return "status-red";
   }
   return "status-green";
