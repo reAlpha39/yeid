@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PressPartHistoryActivityExport;
 use Exception;
 
 class HistoryActivityController extends Controller
@@ -123,6 +125,34 @@ class HistoryActivityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetch data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $targetDate = $request->input('target_date');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $search = $request->input('search');
+
+            return Excel::download(
+                new PressPartHistoryActivityExport(
+                    $targetDate,
+                    $machineNo,
+                    $model,
+                    $dieNo,
+                    $search
+                ),
+                'press_part_history_activity.xlsx'
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

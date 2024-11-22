@@ -1,4 +1,5 @@
 <script setup>
+import axios from "axios";
 import moment from "moment";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
@@ -69,6 +70,41 @@ async function fetchData() {
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
+  }
+}
+
+const loadingExport = ref(false);
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get("/api/press-shot/parts/export", {
+      responseType: "blob",
+      params: {
+        part_code: searchQuery.value,
+        // year: targetDateSplit[0] + targetDateSplit[1],
+        model: selectedModelDie.value?.model,
+        die_no: selectedModelDie.value?.dieno,
+        machine_no: selectedMachineNo.value?.machineno,
+      },
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {},
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "parts.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
   }
 }
 
@@ -358,7 +394,14 @@ onMounted(() => {
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-        <VBtn variant="tonal" prepend-icon="tabler-upload"> Export </VBtn>
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
+          Export
+        </VBtn>
 
         <VBtn variant="tonal" prepend-icon="tabler-list"> Log </VBtn>
 

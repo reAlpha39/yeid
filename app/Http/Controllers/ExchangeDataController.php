@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PressPartExchangeExport;
 use Exception;
 
 class ExchangeDataController extends Controller
@@ -344,6 +346,36 @@ class ExchangeDataController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $search = $request->input('search');
+            $targetDate = $request->input('target_date');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $partCode = $request->input('part_code');
+
+            return Excel::download(
+                new PressPartExchangeExport(
+                    $targetDate,
+                    $machineNo,
+                    $model,
+                    $dieNo,
+                    $partCode,
+                    $search
+                ),
+                'press_part_exchange.xlsx'
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

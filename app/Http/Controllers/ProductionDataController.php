@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\PressPartProductionExport;
 use Exception;
 
 class ProductionDataController extends Controller
@@ -187,6 +188,29 @@ class ProductionDataController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error inserting data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $isSummary = $request->input('is_summary', false);
+            $targetDate = $request->input('target_date');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+
+            $filename = $isSummary ? 'press_part_production_summary.xlsx' : 'press_part_production_detail.xlsx';
+
+            return Excel::download(
+                new PressPartProductionExport($isSummary, $targetDate, $machineNo, $model),
+                $filename
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

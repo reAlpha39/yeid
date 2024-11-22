@@ -209,10 +209,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Press Part
     Route::get('/press-shot/parts', [PressPartController::class, 'index']);
+    Route::get('/press-shot/parts/export', [PressPartController::class, 'export']);
     Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
 
     // Exchange Data
     Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
+    Route::get('/press-shot/exchanges/export', [ExchangeDataController::class, 'export']);
     Route::get('/press-shot/exchange/model-dies', [ExchangeDataController::class, 'indexModelDie']);
     Route::get('/press-shot/exchange/machines-no', [ExchangeDataController::class, 'indexMachineNo']);
     Route::get('/press-shot/exchange/die-units', [ExchangeDataController::class, 'indexDieUnit']);
@@ -222,11 +224,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Production Data
     Route::get('/press-shot/productions', [ProductionDataController::class, 'index']);
+    Route::get('/press-shot/productions/export', [ProductionDataController::class, 'export']);
     Route::get('/press-shot/production', [ProductionDataController::class, 'show']);
     Route::post('/press-shot/productions', [ProductionDataController::class, 'store']);
 
     // History Activity
     Route::get('/press-shot/history-activity', [HistoryActivityController::class, 'index']);
+    Route::get('/press-shot/history-activity/export', [HistoryActivityController::class, 'export']);
 });
 
 
