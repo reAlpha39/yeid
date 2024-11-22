@@ -222,10 +222,16 @@ const loadingExport = ref(false);
 async function handleExport() {
   loadingExport.value = true;
   try {
+    const accessToken = useCookie("accessToken").value;
     const response = await axios.get(
       "/api/maintenance-database-system/department-requests/export",
       {
         responseType: "blob",
+        headers: accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+            }
+          : {},
         params: {
           search: searchQuery.value,
           date: date.value,
