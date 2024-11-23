@@ -188,7 +188,7 @@ const deleteItem = (index) => {
     >
       <div class="pa-6 flex-grow-1">
         <VRow class="me-10">
-          <VCol cols="12" md="3">
+          <VCol cols="12" md="2">
             <h6 class="text-h6">Part</h6>
           </VCol>
           <VCol cols="12" md="2">
@@ -200,7 +200,7 @@ const deleteItem = (index) => {
           <VCol cols="12" md="2">
             <h6 class="text-h6">Unit Price</h6>
           </VCol>
-          <VCol cols="12" md="1">
+          <VCol cols="12" md="2">
             <h6 class="text-h6">Qty</h6>
           </VCol>
           <VCol cols="12" md="2">
@@ -218,7 +218,7 @@ const deleteItem = (index) => {
 
         <VCol class="flex-grow-1 align-center no-gutters">
           <VRow class="pa-4">
-            <VCol cols="12" md="3">
+            <VCol cols="12" md="2">
               <div class="d-flex flex-column">
                 <span
                   class="d-block font-weight-medium text-high-emphasis text-truncate"
@@ -239,7 +239,7 @@ const deleteItem = (index) => {
                 {{ part.unitprice.toLocaleString() }}
               </p>
             </VCol>
-            <VCol cols="12" md="1" sm="4">
+            <VCol cols="12" md="2" sm="4">
               <AppTextField
                 v-model.number="part.quantity"
                 type="number"
