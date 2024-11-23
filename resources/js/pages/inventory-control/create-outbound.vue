@@ -94,24 +94,24 @@ const handlePartSelected = (item) => {
   selectedMachine.value.push();
 
   parts.value.push({
-    locationId: "P",
-    jobCode: "O",
-    jobDate: formatDate(now), // Format date as 'YYYYMMDD'
-    jobTime: formatTime(now), // Format time as 'HHMMSS'
-    partCode: item.partcode,
-    partName: item.partname,
+    locationid: "P",
+    jobcode: "O",
+    jobdate: formatDate(now), // Format date as 'YYYYMMDD'
+    jobtime: formatTime(now), // Format time as 'HHMMSS'
+    partcode: item.partcode,
+    partname: item.partname,
     specification: item.specification,
     brand: item.brand,
-    usedFlag: "",
+    usedflag: "",
     quantity: 1,
-    unitPrice: item.unitprice,
+    unitprice: item.unitprice,
     price: item.unitprice,
     currency: item.currency,
-    vendorCode: item.vendorcode,
-    machineNo: "",
-    machineName: "",
+    vendorcode: item.vendorcode,
+    machineno: "",
+    machinename: "",
     note: "",
-    employeeCode: selectedStaff.value.employeecode,
+    employeecode: selectedStaff.value.employeecode,
     // not used on api
     shopName: "",
     lineCode: "",
@@ -121,10 +121,10 @@ const handlePartSelected = (item) => {
 };
 
 const handleMachineSelected = (index) => {
-  parts.value[index].machineNo = selectedMachine.value[index].machineno;
-  parts.value[index].machineName = selectedMachine.value[index].machinename;
-  parts.value[index].shopName = selectedMachine.value[index].shopname;
-  parts.value[index].lineCode = selectedMachine.value[index].linecode;
+  parts.value[index].machineno = selectedMachine.value[index].machineno;
+  parts.value[index].machinename = selectedMachine.value[index].machinename;
+  parts.value[index].shopname = selectedMachine.value[index].shopname;
+  parts.value[index].linecode = selectedMachine.value[index].linecode;
   // console.log(parts.value[index]);
 };
 
@@ -133,7 +133,7 @@ const handleItemSelected = (item) => {
 };
 
 const calculateTotalPrice = (part) => {
-  return part.quantity * part.unitPrice;
+  return part.quantity * part.unitprice;
 };
 
 const updateQuantity = (index) => {
@@ -249,9 +249,9 @@ const deleteItem = (index) => {
               <div class="d-flex flex-column">
                 <span
                   class="d-block font-weight-medium text-high-emphasis text-truncate"
-                  >{{ part.partName }}</span
+                  >{{ part.partname }}</span
                 >
-                <small>{{ part.partCode }}</small>
+                <small>{{ part.partcode }}</small>
               </div>
             </VCol>
             <!-- 👉 Item Actions -->
@@ -281,7 +281,7 @@ const deleteItem = (index) => {
               <p class="my-2">
                 <span class="text-high-emphasis">
                   {{ part.currency }}
-                  {{ part.unitPrice.toLocaleString() }}</span
+                  {{ part.unitprice.toLocaleString() }}</span
                 >
               </p>
             </VCol>
@@ -325,7 +325,7 @@ const deleteItem = (index) => {
                 <text class="align-left">
                   <span class="text-high-emphasis">
                     Machine No :
-                    {{ part.machineNo }}
+                    {{ part.machineno }}
                   </span>
                 </text>
               </VCol>
@@ -344,9 +344,9 @@ const deleteItem = (index) => {
                 <text class="align-left">
                   <span class="text-high-emphasis">
                     Shop & Line :
-                    {{ part.shopName }}
+                    {{ part.shopname }}
                     &
-                    {{ part.lineCode }}
+                    {{ part.linecode }}
                   </span>
                 </text>
               </VCol>
@@ -354,7 +354,7 @@ const deleteItem = (index) => {
                 <text class="align">
                   <span class="text-high-emphasis">
                     Vendor :
-                    {{ part.vendorCode }}
+                    {{ part.vendorcode }}
                   </span>
                 </text>
               </VCol>

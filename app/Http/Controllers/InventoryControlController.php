@@ -243,24 +243,24 @@ class InventoryControlController extends Controller
             // Validate that the request contains an array of items
             $request->validate([
                 'records' => 'required|array',
-                'records.*.locationId' => 'required',
-                'records.*.jobCode' => 'required',
-                'records.*.jobDate' => 'required|date',
-                'records.*.jobTime' => 'required',
-                'records.*.partCode' => 'required',
-                'records.*.partName' => 'required',
+                'records.*.locationid' => 'required',
+                'records.*.jobcode' => 'required',
+                'records.*.jobdate' => 'required|date',
+                'records.*.jobtime' => 'required',
+                'records.*.partcode' => 'required',
+                'records.*.partname' => 'required',
                 'records.*.specification' => 'nullable',
                 'records.*.brand' => 'nullable',
-                'records.*.usedFlag' => 'nullable',
+                'records.*.usedflag' => 'nullable',
                 'records.*.quantity' => 'required|numeric',
-                'records.*.unitPrice' => 'required|numeric',
+                'records.*.unitprice' => 'required|numeric',
                 'records.*.price' => 'required|numeric',
                 'records.*.currency' => 'required',
-                'records.*.vendorCode' => 'nullable',
-                'records.*.machineNo' => 'nullable',
-                'records.*.machineName' => 'nullable',
+                'records.*.vendorcode' => 'nullable',
+                'records.*.machineno' => 'nullable',
+                'records.*.machinename' => 'nullable',
                 'records.*.note' => 'nullable',
-                'records.*.employeeCode' => 'nullable'
+                'records.*.employeecode' => 'nullable'
             ]);
 
             $records = $request->input('records');
@@ -269,24 +269,24 @@ class InventoryControlController extends Controller
             foreach ($records as $record) {
                 // Extract values for each record
                 $recordId = DB::table('tbl_invrecord')->max('recordid') + 1; // Simulating sequence
-                $locationId = $record['locationId'];
-                $jobCode = $record['jobCode'];
-                $jobDate = $record['jobDate'];
-                $jobTime = $record['jobTime'];
-                $partCode = $record['partCode'];
-                $partName = $record['partName'];
+                $locationId = $record['locationid'];
+                $jobCode = $record['jobcode'];
+                $jobDate = $record['jobdate'];
+                $jobTime = $record['jobtime'];
+                $partCode = $record['partcode'];
+                $partName = $record['partname'];
                 $specification = $record['specification'] ?? ''; // Allow null values
                 $brand = $record['brand'] ?? ''; // Allow null values
-                $usedFlag = $record['usedFlag'] ?? str_pad('', 1);
+                $usedFlag = $record['usedflag'] ?? str_pad('', 1);
                 $quantity = $record['quantity'];
-                $unitPrice = str_replace(',', '', $record['unitPrice']);
+                $unitPrice = str_replace(',', '', $record['unitprice']);
                 $totalPrice = str_replace(',', '', $record['price']);
                 $currency = $record['currency'];
-                $vendorCode = $record['vendorCode'] ?? ''; // Allow null values
-                $machineNo = $record['machineNo'] ?? '';
-                $machineName = $record['machineName'] ?? ''; // Use chr(0) if null
+                $vendorCode = $record['vendorcode'] ?? ''; // Allow null values
+                $machineNo = $record['machineno'] ?? '';
+                $machineName = $record['machinename'] ?? ''; // Use chr(0) if null
                 $note = $record['note'] ?? str_pad('', 128); // Use chr(0) if null
-                $employeeCode = $record['employeeCode'] ?? str_pad('', 8);
+                $employeeCode = $record['employeecode'] ?? str_pad('', 8);
                 $updateTime = now(); // Current timestamp
 
                 // Prepare data for batch insert

@@ -62,24 +62,24 @@ const handlePartSelected = (item) => {
   };
 
   parts.value.push({
-    locationId: "P",
-    jobCode: "I",
-    jobDate: formatDate(now), // Format date as 'YYYYMMDD'
-    jobTime: formatTime(now), // Format time as 'HHMMSS'
-    partCode: item.partcode,
-    partName: item.partname,
+    locationid: "P",
+    jobcode: "I",
+    jobdate: formatDate(now), // Format date as 'YYYYMMDD'
+    jobtime: formatTime(now), // Format time as 'HHMMSS'
+    partcode: item.partcode,
+    partname: item.partname,
     specification: item.specification,
     brand: item.brand,
-    usedFlag: "",
+    usedflag: "",
     quantity: 1,
-    unitPrice: item.unitprice,
+    unitprice: item.unitprice,
     price: item.unitprice,
     currency: item.currency,
-    vendorCode: selectedVendor.value.vendorcode,
-    machineNo: "",
-    machineName: "",
+    vendorcode: selectedVendor.value.vendorcode,
+    machineno: "",
+    machinename: "",
     note: "",
-    employeeCode: "",
+    employeecode: "",
   });
 };
 
@@ -88,7 +88,7 @@ const handleItemSelected = (item) => {
 };
 
 const calculateTotalPrice = (part) => {
-  return part.quantity * part.unitPrice;
+  return part.quantity * part.unitprice;
 };
 
 const updateQuantity = (index) => {
@@ -222,9 +222,9 @@ const deleteItem = (index) => {
               <div class="d-flex flex-column">
                 <span
                   class="d-block font-weight-medium text-high-emphasis text-truncate"
-                  >{{ part.partName }}</span
+                  >{{ part.partname }}</span
                 >
-                <small>{{ part.partCode }}</small>
+                <small>{{ part.partcode }}</small>
               </div>
             </VCol>
             <VCol cols="12" md="2" sm="4">
@@ -236,7 +236,7 @@ const deleteItem = (index) => {
             <VCol cols="12" md="2">
               <p class="my-2">
                 {{ part.currency }}
-                {{ part.unitPrice.toLocaleString() }}
+                {{ part.unitprice.toLocaleString() }}
               </p>
             </VCol>
             <VCol cols="12" md="1" sm="4">
