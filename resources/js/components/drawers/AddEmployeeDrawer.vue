@@ -43,6 +43,7 @@ async function add() {
 
       onResponseError({ response }) {
         // errors.value = response._data.errors;
+        toast.error(response._data.error);
       },
     });
 
@@ -67,7 +68,7 @@ async function update() {
       },
 
       onResponseError({ response }) {
-        // errors.value = response._data.errors;
+        toast.error(response._data.error);
       },
     });
 
@@ -85,7 +86,7 @@ async function fetchData(id) {
   try {
     const response = await $api("/master/employees/" + id, {
       onResponseError({ response }) {
-        // errors.value = response._data.errors;
+        toast.error(response._data.error);
       },
     });
 
@@ -96,7 +97,7 @@ async function fetchData(id) {
     password.value = data.password;
     // console.log(response.data);
   } catch (err) {
-    toast.error("Failed to fetch data");
+    // toast.error("Failed to fetch data");
     console.log(err);
   }
 }
@@ -193,7 +194,13 @@ watch(
                 <AppTextField
                   v-model="mlevel"
                   label="mlevel"
-                  :rules="[requiredValidator]"
+                  :rules="[
+                    requiredValidator,
+                    (v) =>
+                      !v ||
+                      (parseInt(v) >= 1 && parseInt(v) <= 3) ||
+                      'Level must be between 1 and 3',
+                  ]"
                   placeholder="Input mlevel"
                   maxlength="1"
                   @keypress="isNumber($event)"
