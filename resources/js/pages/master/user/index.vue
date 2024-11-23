@@ -72,9 +72,9 @@ async function fetchData() {
         status: convertStatus(selectedStatus.value),
         roleAccess: convertRoleAccess(selectedRoleAccess.value),
       },
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
+      // onResponseError({ response }) {
+      //   errors.value = response._data.errors;
+      // },
     });
 
     data.value = response.data;
