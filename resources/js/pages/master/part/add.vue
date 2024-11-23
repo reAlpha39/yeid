@@ -393,6 +393,7 @@ onMounted(async () => {
             :rules="[requiredValidator]"
             label="Address"
             placeholder="Input address"
+            maxlength="6"
           ></AppTextField>
         </VCol>
         <VCol cols="3">
