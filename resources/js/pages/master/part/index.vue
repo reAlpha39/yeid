@@ -20,10 +20,13 @@ const isUpdateStockQtyDialogVisible = ref(false);
 const barcodeDialogRef = ref(null);
 
 const selectedPartCode = ref("");
-const searchQuery = ref("");
 // Data table options
+const loading = ref(false);
+const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
+const data = ref([]);
+const searchQuery = ref("");
 
 // State for lightbox
 const isLightboxVisible = ref(false);
@@ -69,15 +72,16 @@ const headers = [
   },
 ];
 
-// data table
-const data = ref([]);
-
-async function fetchData() {
+async function fetchData(options = {}) {
+  loading.value = true;
   try {
     const response = await $api("/master/part-list", {
       params: {
         search: searchQuery.value,
         category: "",
+        page: page.value,
+        per_page: itemsPerPage.value,
+        ...options,
       },
       onResponseError({ response }) {
         toast.error("Failed to fetch data");
@@ -85,11 +89,14 @@ async function fetchData() {
       },
     });
 
+    // Update data and pagination info
     data.value = response.data;
-    // console.log(data.value);
+    totalItems.value = response.pagination.total;
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -311,6 +318,19 @@ const closeLightbox = () => {
 onMounted(() => {
   fetchData();
 });
+
+// Handle options update from VDataTableServer
+const handleOptionsUpdate = (options) => {
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+  fetchData(options);
+};
+
+// Watch for search query changes
+watch(searchQuery, () => {
+  page.value = 1; // Reset to first page when search changes
+  fetchData();
+});
 </script>
 
 <template>
@@ -369,12 +389,15 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
+    <VDataTableServer
       v-model:items-per-page="itemsPerPage"
       v-model:page="page"
-      :items="data"
+      :items-length="totalItems"
+      :loading="loading"
       :headers="headers"
+      :items="data"
       class="text-no-wrap"
+      @update:options="handleOptionsUpdate"
     >
       <!-- part code -->
       <template #item.partcode="{ item }">
@@ -511,7 +534,16 @@ onMounted(() => {
           </VMenu>
         </div>
       </template>
-    </VDataTable>
+    </VDataTableServer>
+
+    <!-- Pagination Controls -->
+    <template #bottom>
+      <TablePagination
+        v-model:page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+      />
+    </template>
   </VCard>
 
   <UpdatePartStockQtyDialog

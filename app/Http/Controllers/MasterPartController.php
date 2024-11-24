@@ -30,7 +30,10 @@ class MasterPartController extends Controller
             $vendorNameText = $request->input('vendor_name_text', '');
             $minusFlag = $request->input('minus_flag', false);
             $orderFlag = $request->input('order_flag', false);
-            $maxRows = $request->input('max_rows', 0);
+
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10); // Default 10 items per page
+            $page = $request->input('page', 1); // Get the current page
 
             // Build the query
             $queryBuilder = DB::table('mas_inventory as m')
@@ -61,18 +64,18 @@ class MasterPartController extends Controller
                     DB::raw("COALESCE(m.etddate, ' ') as etddate")
                 )
                 ->leftJoin(DB::raw('(
-                        select
-                            t.partcode,
-                            sum(case
-                                when t.jobcode = \'O\' then -t.quantity
-                                when t.jobcode = \'I\' then t.quantity
-                                when t.jobcode = \'A\' then t.quantity
-                                else 0 end) as sum_quantity
-                        from tbl_invrecord as t
-                        left join mas_inventory as minv on t.partcode = minv.partcode
-                        where t.updatetime > minv.updatetime
-                        group by t.partcode
-                    ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                    select
+                        t.partcode,
+                        sum(case
+                            when t.jobcode = \'O\' then -t.quantity
+                            when t.jobcode = \'I\' then t.quantity
+                            when t.jobcode = \'A\' then t.quantity
+                            else 0 end) as sum_quantity
+                    from tbl_invrecord as t
+                    left join mas_inventory as minv on t.partcode = minv.partcode
+                    where t.updatetime > minv.updatetime
+                    group by t.partcode
+                ) as gi'), 'm.partcode', '=', 'gi.partcode')
                 ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
                 ->where('m.status', '<>', 'D');
 
@@ -123,16 +126,17 @@ class MasterPartController extends Controller
             if ($orderFlag) {
                 $queryBuilder->where(DB::raw('COALESCE(m.posentdate, \' \')'), '<>', ' ');
             }
-            if ($maxRows > 0) {
-                $queryBuilder->limit($maxRows);
-            }
+
             $queryBuilder->orderBy('partcode');
 
-            // Execute the query and get results
-            $results = $queryBuilder->get();
+            // Execute pagination
+            $results = $queryBuilder->paginate($perPage, ['*'], 'page', $page);
+
+            // Get the items as an array
+            $items = $results->items();
 
             // Add image paths to results
-            $results = $results->map(function ($item) {
+            $items = array_map(function ($item) {
                 // Check for image file
                 $files = glob(storage_path('app/public/master_parts/' . $item->partcode . '.*'));
 
@@ -140,7 +144,6 @@ class MasterPartController extends Controller
                 if (!empty($files)) {
                     // Get the first matching file
                     $file = $files[0];
-
                     // Extract the relative path
                     $item->partimage = 'master_parts/' . basename($file);
                 } else {
@@ -148,12 +151,22 @@ class MasterPartController extends Controller
                 }
 
                 return $item;
-            });
+            }, $items);
 
-            // Return the results as JSON
+            // Return the paginated results as JSON
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $items,
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             // Catch any exceptions and return an error response
