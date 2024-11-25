@@ -35,8 +35,16 @@ export const canViewNavMenuGroup = item => {
   return can(item.action, item.subject) && hasAnyVisibleChild
 }
 export const canNavigate = to => {
-  const route = useRoute();
-  const ability = useAbility()
+  const ability = useAbility();
 
-  return to.matched.some(route => ability.can(route.meta.action, route.meta.subject))
+  return to.matched.some(route => {
+    // If route has multiple actions, check if user has ANY of them
+    if (Array.isArray(route.meta.action)) {
+      return route.meta.action.some(action =>
+        ability.can(action, route.meta.subject)
+      );
+    }
+    // Single action case
+    return ability.can(route.meta.action, route.meta.subject);
+  });
 }
