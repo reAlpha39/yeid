@@ -31,6 +31,7 @@ const password = ref();
 const controlAccess = ref({
   masterData: { view: false, create: false, update: false, delete: false },
   user: { view: false, create: false, update: false, delete: false },
+  part: { view: false, create: false, update: false, delete: false },
   maintenanceSchedule: {
     view: false,
     create: false,
@@ -422,6 +423,41 @@ onMounted(() => {
             class="pr-7"
             label="Delete"
             v-model="controlAccess.masterData.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <text class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Part</strong>
+          </text>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.part.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.part.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.part.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.part.delete"
           />
         </VRow>
 

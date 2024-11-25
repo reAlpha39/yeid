@@ -8,7 +8,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "masterData",
+    subject: "part",
   },
 });
 
@@ -377,7 +377,7 @@ watch(searchQuery, () => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="$can('create', 'masterData')"
+          v-if="$can('create', 'part')"
           prepend-icon="tabler-plus"
           to="part/add"
         >
@@ -497,7 +497,7 @@ watch(searchQuery, () => {
 
               <!-- Edit Action -->
               <VListItem
-                v-if="$can('update', 'masterData')"
+                v-if="$can('update', 'part')"
                 @click="openEditPartPage(item.partcode)"
                 density="compact"
               >
@@ -509,7 +509,7 @@ watch(searchQuery, () => {
 
               <!-- Update Action -->
               <VListItem
-                v-if="$can('update', 'masterData')"
+                v-if="$can('update', 'part')"
                 @click="openUpdateDialog(item.partcode)"
                 density="compact"
               >
@@ -521,7 +521,7 @@ watch(searchQuery, () => {
 
               <!-- Delete Action -->
               <VListItem
-                v-if="$can('delete', 'masterData')"
+                v-if="$can('delete', 'part')"
                 @click="openDeleteDialog(item.partcode)"
                 density="compact"
               >

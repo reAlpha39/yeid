@@ -30,7 +30,7 @@ export default [
       {
         title: 'Part',
         to: 'master-part',
-        subject: 'masterData',
+        subject: 'part',
         action: 'view',
       },
       {
