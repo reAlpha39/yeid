@@ -5,7 +5,7 @@ import { VRow } from "vuetify/lib/components/index.mjs";
 
 definePage({
   meta: {
-    action: "create",
+    action: ["create", "update"],
     subject: "inventoryOutbound",
   },
 });
