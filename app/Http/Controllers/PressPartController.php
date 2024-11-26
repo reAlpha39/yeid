@@ -11,7 +11,7 @@ use Exception;
 
 class PressPartController extends Controller
 {
-    public function index(Request $request)
+    public function indexParts(Request $request)
     {
         try {
             $year = $request->input('year');
@@ -132,6 +132,112 @@ class PressPartController extends Controller
         }
     }
 
+    public function indexMaster(Request $request)
+    {
+        // Get input parameters
+        $year = $request->input('year');
+        $machineNo = $request->input('machine_no');
+        $model = $request->input('model');
+        $dieNo = $request->input('die_no');
+        $partCode = $request->input('part_code');
+
+        $query = DB::table('mas_presspart as m')
+            ->leftJoin('mas_inventory as i', function ($join) {
+                $join->whereRaw('substring(m.partcode, 1, 8) = substring(i.partcode, 1, 8)');
+            })
+            ->leftJoin('mas_machine as c', 'm.machineno', '=', 'c.machineno')
+            ->leftJoin(
+                DB::raw('(SELECT exchangedatetime, reason FROM tbl_exchangework) as e'),
+                'm.exchangedatetime',
+                '=',
+                'e.exchangedatetime'
+            )
+            ->leftJoin('mas_vendor as v', 'i.vendorcode', '=', 'v.vendorcode')
+            ->leftJoin(DB::raw('(
+                SELECT 
+                    partcode,
+                    sum(CASE WHEN jobcode = \'O\' THEN -quantity ELSE quantity END) as total_quantity
+                FROM tbl_invrecord
+                WHERE jobdate > (SELECT laststockdate FROM mas_inventory WHERE partcode = tbl_invrecord.partcode)
+                GROUP BY partcode
+            ) as t'), 'i.partcode', '=', 't.partcode')
+            ->select([
+                'm.machineno',
+                'm.model',
+                'm.dieno',
+                'm.dieunitno',
+                'm.processname',
+                'm.partcode',
+                'm.partname',
+                'm.category',
+                'm.companylimit',
+                'm.makerlimit',
+                'm.autoflag',
+                'm.qttyperdie',
+                'm.drawingno',
+                'm.note',
+                'm.exchangedatetime',
+                'e.reason as exchangereason',
+                'm.minstock',
+                DB::raw('COALESCE(i.laststocknumber + COALESCE(t.total_quantity, 0), 0) as currentstock'),
+                DB::raw('COALESCE(i.unitprice, 0) as unitprice'),
+                DB::raw('COALESCE(i.currency, \'-\') as currency'),
+                'i.brand',
+                DB::raw('COALESCE(v.vendorname, \'-\') as supplier'),
+                DB::raw('CASE
+                    WHEN substring(m.partcode, 2, 1) = \'I\' THEN \'Import\'
+                    WHEN substring(m.partcode, 2, 1) = \'L\' THEN \'Local\'
+                    ELSE \'-\'
+                END as origin'),
+                'i.address',
+                'c.machinename',
+                'm.employeecode',
+                'm.employeename',
+                'm.reason'
+            ])
+            ->where('m.status', '<>', 'D');
+
+        // Apply filters based on input parameters
+        if (!empty($machineNo)) {
+            $query->where('m.machineno', $machineNo);
+        }
+
+        if (!empty($model) && !empty($dieNo)) {
+            $query->where('m.model', $model)
+                ->where('m.dieno', $dieNo);
+        }
+
+        if ($partCode) {
+            $query->where('m.partcode', 'ILIKE', "{$partCode}%")
+                ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
+        }
+
+        // Add year filter if provided
+        if (!empty($year)) {
+            $query->whereYear('m.exchangedatetime', $year);
+        }
+
+        $query->orderBy('m.machineno')
+            ->orderBy('m.model')
+            ->orderBy('m.dieno')
+            ->orderBy('m.partcode');
+
+        try {
+            $results = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $results
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching parts data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getProcessNames()
     {
         try {
@@ -238,6 +344,48 @@ class PressPartController extends Controller
         }
     }
 
+    public function showMaster(Request $request)
+    {
+        // Get input parameters
+        $machineNo = $request->input('machine_no');
+        $model = $request->input('model');
+        $dieNo = $request->input('die_no');
+        $processName = $request->input('process_name');
+        $partCode = $request->input('part_code');
+
+        $query = DB::table('mas_presspart')->select();
+
+        // Apply filters based on input parameters
+        $query->where('machineno', $machineNo)
+            ->where('processname', $processName)
+            ->where('partcode', $partCode)
+            ->where('model', $model)
+            ->where('dieno', $dieNo);
+
+
+        try {
+            $result = $query->first();
+
+            if (!$result) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Part not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $result
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching parts data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -259,8 +407,8 @@ class PressPartController extends Controller
             $note = $request->input('note');
             $exchangeDateTime = $request->input('exchange_datetime');
             $minStock = $request->input('min_stock');
-            $loginUserCode = $request->input('employee_code');
-            $loginUserName = $request->input('employee_name');
+            $loginUserCode = $request->input('login_user_code');
+            $loginUserName = $request->input('login_user_name');
             $reason = $request->input('reason', '');
 
             $currentDateTime = now();
@@ -365,8 +513,8 @@ class PressPartController extends Controller
             $note = $request->input('note');
             $exchangeDateTime = $request->input('exchange_datetime');
             $minStock = $request->input('min_stock');
-            $loginUserCode = $request->input('employee_code');
-            $loginUserName = $request->input('employee_name');
+            $loginUserCode = $request->input('login_user_code');
+            $loginUserName = $request->input('login_user_name');
             $reason = $request->input('reason', '');
 
             $currentDateTime = now();
@@ -442,6 +590,67 @@ class PressPartController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error updating press part',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $processName = $request->input('process_name');
+            $partCode = $request->input('part_code');
+            $partName = $request->input('part_name');
+            $qttyPerDie = $request->input('qtty_per_die');
+            $loginUserCode = $request->input('employee_code');
+            $loginUserName = $request->input('employee_name');
+            $reason = $request->input('reason', '');
+            $currentDateTime = now();
+
+            $affectedRows =   DB::table('mas_presspart')
+                ->where('machineno', $machineNo)
+                ->where('model', $model)
+                ->where('dieno', $dieNo)
+                ->where('partcode', $partCode)
+                ->delete();
+
+            if ($affectedRows > 0) {
+                // Insert into activity log
+                DB::table('tbl_activity')->insert([
+                    'datetime' => $currentDateTime->format('YmdHis'),
+                    'machineno' => $machineNo,
+                    'model' => $model,
+                    'dieno' => $dieNo,
+                    'processname' => $processName,
+                    'partcode' => $partCode,
+                    'partname' => $partName,
+                    'qty' => $qttyPerDie,
+                    'employeecode' => $loginUserCode,
+                    'employeename' => $loginUserName,
+                    'mainform' => 'Delete Part',
+                    'submenu' => 'Delete master part',
+                    'reason' => $reason,
+                    'updatetime' => $currentDateTime
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Press Part deleted successfully!'
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
                 'error' => $e->getMessage()
             ], 500);
         }

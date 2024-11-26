@@ -22,6 +22,12 @@ export default [
         action: 'view',
       },
       {
+        title: 'Master Part',
+        to: 'press-shot-master-part',
+        subject: 'pressShot',
+        action: 'view',
+      },
+      {
         title: 'History Activity',
         to: 'press-shot-history-activity',
         subject: 'pressShot',

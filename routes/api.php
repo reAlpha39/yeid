@@ -208,8 +208,14 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
 
     // Press Part
-    Route::get('/press-shot/parts', [PressPartController::class, 'index']);
+    Route::get('/press-shot/parts', [PressPartController::class, 'indexParts']);
     Route::get('/press-shot/parts/export', [PressPartController::class, 'export']);
+    Route::get('/press-shot/master-parts', [PressPartController::class, 'indexMaster']);
+    Route::get('/press-shot/process-names', [PressPartController::class, 'getProcessNames']);
+    Route::post('/press-shot/master-parts', [PressPartController::class, 'store']);
+    Route::put('/press-shot/master-parts', [PressPartController::class, 'update']);
+    Route::delete('/press-shot/master-parts', [PressPartController::class, 'destroy']);
+    Route::get('/press-shot/master-part', [PressPartController::class, 'showMaster']);
     Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
 
     // Exchange Data
