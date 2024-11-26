@@ -67,6 +67,10 @@ const headers = [
     key: "vendor",
   },
   {
+    title: "SPECIFICATION",
+    key: "specification",
+  },
+  {
     title: "UNIT PRICE",
     key: "currency",
   },
@@ -77,6 +81,10 @@ const headers = [
   {
     title: "TOTAL PRICE",
     key: "total",
+  },
+  {
+    title: "NOTE",
+    key: "note",
   },
   {
     title: "ACTIONS",
@@ -368,19 +376,6 @@ onMounted(() => {
                 >{{ item.partname }}</span
               >
               <small>{{ item.partcode }}</small>
-            </div>
-          </div>
-        </template>
-
-        <!-- date -->
-        <template #item.date="{ item }">
-          <div class="d-flex align-center">
-            <div class="d-flex flex-column ms-3">
-              <span
-                class="d-block font-weight-medium text-high-emphasis text-truncate"
-                >{{ item.brand }}</span
-              >
-              <small>{{ item.vendorcode }}</small>
             </div>
           </div>
         </template>
