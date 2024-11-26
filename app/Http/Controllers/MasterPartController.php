@@ -31,6 +31,23 @@ class MasterPartController extends Controller
             $minusFlag = $request->input('minus_flag', false);
             $orderFlag = $request->input('order_flag', false);
 
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'asc');
+
+            // If sortBy is a JSON string, decode it
+            if (
+                $sortBy && is_string($sortBy) && str_contains($sortBy, '{')
+            ) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'asc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use the original value
+                }
+            }
+
             // Pagination parameters
             $perPage = $request->input('per_page', 10); // Default 10 items per page
             $page = $request->input('page', 1); // Get the current page
@@ -127,7 +144,19 @@ class MasterPartController extends Controller
                 $queryBuilder->where(DB::raw('COALESCE(m.posentdate, \' \')'), '<>', ' ');
             }
 
-            $queryBuilder->orderBy('partcode');
+            // Apply sorting
+            if ($sortBy) {
+                // Handle special case for totalstock which is a computed column
+                if ($sortBy === 'totalstock') {
+                    $queryBuilder->orderBy(DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0)'), $sortDirection);
+                } else {
+                    // Add table alias for normal columns
+                    $queryBuilder->orderBy("m.{$sortBy}", $sortDirection);
+                }
+            } else {
+                // Default sorting
+                $queryBuilder->orderBy('m.partcode');
+            }
 
             // Execute pagination
             $results = $queryBuilder->paginate($perPage, ['*'], 'page', $page);

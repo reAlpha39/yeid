@@ -27,6 +27,8 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
+const sortBy = ref([]);
+const sortDesc = ref([]);
 
 // State for lightbox
 const isLightboxVisible = ref(false);
@@ -75,17 +77,31 @@ const headers = [
 async function fetchData(options = {}) {
   loading.value = true;
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     const response = await $api("/master/part-list", {
       params: {
         search: searchQuery.value,
         category: "",
         page: page.value,
         per_page: itemsPerPage.value,
+        ...sortParams,
         ...options,
       },
       onResponseError({ response }) {
-        toast.error("Failed to fetch data");
-        errors.value = response._data.errors;
+        toast.error(response._data.message);
+        // errors.value = response._data.errors;
       },
     });
 
@@ -93,7 +109,7 @@ async function fetchData(options = {}) {
     data.value = response.data;
     totalItems.value = response.pagination.total;
   } catch (err) {
-    toast.error("Failed to fetch data");
+    // toast.error("Failed to fetch data");
     console.log(err);
   } finally {
     loading.value = false;
@@ -122,6 +138,19 @@ async function deletePart() {
     isDeleteDialogVisible.value = true;
     console.log(err);
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+
+  // Fetch the data with new options
+  fetchData(options);
 }
 
 function openDeleteDialog(partCode) {
@@ -319,13 +348,6 @@ onMounted(() => {
   fetchData();
 });
 
-// Handle options update from VDataTableServer
-const handleOptionsUpdate = (options) => {
-  page.value = options.page;
-  itemsPerPage.value = options.itemsPerPage;
-  fetchData(options);
-};
-
 // Watch for search query changes
 watch(searchQuery, () => {
   page.value = 1; // Reset to first page when search changes
@@ -396,6 +418,8 @@ watch(searchQuery, () => {
       :loading="loading"
       :headers="headers"
       :items="data"
+      :sort-by="sortBy"
+      :sort-desc="sortDesc"
       class="text-no-wrap"
       @update:options="handleOptionsUpdate"
     >
