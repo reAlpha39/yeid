@@ -70,7 +70,7 @@ async function fetchUserData() {
   try {
     const response = await $api("/auth/user");
 
-    userData.value = response.user;
+    userData.value = response.data;
   } catch (err) {
     console.log(err);
   }
@@ -322,7 +322,7 @@ onMounted(() => {
 
     <VCol v-if="selectedMachine">
       <div class="d-flex justify-start">
-        <VBtn type="submit" color="primary" class="mr-4"> Add </VBtn>
+        <VBtn type="submit" color="success" class="mr-4"> Add </VBtn>
         <VBtn variant="outlined" color="error" to="/press-shot/production-data"
           >Cancel</VBtn
         >

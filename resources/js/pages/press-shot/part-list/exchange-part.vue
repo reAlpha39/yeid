@@ -90,7 +90,7 @@ async function fetchUserData() {
   try {
     const response = await $api("/auth/user");
 
-    userData.value = response.user;
+    userData.value = response.data;
   } catch (err) {
     console.log(err);
   }

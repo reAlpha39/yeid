@@ -86,7 +86,7 @@ function approvalId(initial = 0) {
 
 async function fetchUser() {
   const response = await $api("/auth/user");
-  user.value = response;
+  user.value = response.data;
 
   // console.log(user.value);
 }
