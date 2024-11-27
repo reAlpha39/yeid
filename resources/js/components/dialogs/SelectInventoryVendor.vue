@@ -93,7 +93,11 @@ onMounted(() => {
               </td>
 
               <td>
-                <a @click.prevent="handleItemClick(item)">Select</a>
+                <a
+                  @click.prevent="handleItemClick(item)"
+                  style="cursor: pointer"
+                  >Select</a
+                >
               </td>
             </tr>
           </tbody>

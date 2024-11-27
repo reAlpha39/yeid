@@ -179,7 +179,11 @@ onMounted(() => {
               </td>
               <td>
                 <VCol cols="11" md="1">
-                  <a @click.prevent="handleItemClick(item)">Select</a>
+                  <a
+                    @click.prevent="handleItemClick(item)"
+                    style="cursor: pointer"
+                    >Select</a
+                  >
                 </VCol>
               </td>
             </tr>

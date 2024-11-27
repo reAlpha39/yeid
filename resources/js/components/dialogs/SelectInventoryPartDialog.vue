@@ -176,7 +176,9 @@ onMounted(() => {
               <text>{{ item.unitprice.toLocaleString() }}</text>
             </VCol>
             <VCol cols="12" md="1">
-              <a @click.prevent="handleItemClick(item)">Select</a>
+              <a @click.prevent="handleItemClick(item)" style="cursor: pointer"
+                >Select</a
+              >
             </VCol>
           </VRow>
           <VDivider />
