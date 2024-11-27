@@ -122,6 +122,12 @@ async function handleExport() {
   }
 }
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchQuery, () => {
+  debouncedFetchData();
+});
+
 watch(
   () => isAddMakerDrawerOpen.value,
   (newVal) => {
@@ -179,7 +185,6 @@ onMounted(() => {
           <AppTextField
             v-model="searchQuery"
             placeholder="Search"
-            v-on:input="fetchData()"
           />
         </div>
 

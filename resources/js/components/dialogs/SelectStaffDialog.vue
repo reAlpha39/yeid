@@ -39,6 +39,12 @@ async function fetchData() {
   }
 }
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchStaff, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchData();
 });
@@ -66,7 +72,6 @@ onMounted(() => {
         v-model="searchStaff"
         placeholder="Search staff"
         variant="outlined"
-        v-on:input="fetchData()"
       />
 
       <VDivider />

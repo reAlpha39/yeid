@@ -98,6 +98,27 @@ const toggleSelectAll = () => {
   selectAll.value = !selectAll.value; // Toggles the selectAll state
 };
 
+const debouncedFetchData = debounce(fetchMachines, 500);
+
+watch(machineName, () => {
+  debouncedFetchData();
+});
+
+watch(modelName, () => {
+  debouncedFetchData();
+});
+
+watch(makerName, () => {
+  debouncedFetchData();
+});
+
+watch(shopCode, () => {
+  debouncedFetchData();
+});
+
+watch(lineCode, () => {
+  debouncedFetchData();
+});
 watch(
   () => props.isDialogVisible,
   (newVal) => {
@@ -135,7 +156,6 @@ onMounted(() => {
             label="Machine Name"
             placeholder="Input machine mame"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
         <VCol cols="4">
@@ -144,7 +164,6 @@ onMounted(() => {
             label="Model Name"
             placeholder="Input model name"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
         <VCol cols="4">
@@ -153,7 +172,6 @@ onMounted(() => {
             label="Maker"
             placeholder="Input maker"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
       </VRow>
@@ -165,7 +183,6 @@ onMounted(() => {
             label="Shop Code"
             placeholder="Input shop code"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
         <VCol cols="4">
@@ -174,7 +191,6 @@ onMounted(() => {
             label="Line"
             placeholder="Input line"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
       </VRow>

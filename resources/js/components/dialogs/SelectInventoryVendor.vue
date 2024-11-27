@@ -37,6 +37,12 @@ const handleItemClick = (item) => {
   emit("submit", item);
 };
 
+const debouncedFetchData = debounce(fetchVendor, 500);
+
+watch(vendorQuery, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchVendor();
 });
@@ -64,7 +70,6 @@ onMounted(() => {
         v-model="vendorQuery"
         placeholder="Search vendor"
         variant="outlined"
-        v-on:input="fetchVendor()"
       />
 
       <VDivider />

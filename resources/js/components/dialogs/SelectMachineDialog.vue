@@ -79,6 +79,12 @@ const handleItemClick = (item) => {
   emit("submit", item);
 };
 
+const debouncedFetchData = debounce(fetchMachines, 500);
+
+watch(search, () => {
+  debouncedFetchData();
+});
+
 watch(
   () => props.isDialogVisible,
   (newVal) => {
@@ -118,7 +124,6 @@ onMounted(() => {
             label="Search"
             placeholder="Search"
             variant="outlined"
-            v-on:input="fetchMachines()"
           />
         </VCol>
 

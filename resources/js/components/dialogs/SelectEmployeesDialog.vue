@@ -91,6 +91,12 @@ watch(
   }
 );
 
+const debouncedFetchData = debounce(fetchEmployees, 500);
+
+watch(search, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchEmployees();
 });
@@ -115,7 +121,6 @@ onMounted(() => {
         v-model="search"
         placeholder="Search staff"
         variant="outlined"
-        v-on:input="fetchEmployees()"
       />
 
       <VDivider />

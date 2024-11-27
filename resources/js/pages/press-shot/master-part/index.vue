@@ -359,6 +359,12 @@ const headers = [
   },
 ];
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchQuery, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchData();
   fetchDataModelDie();
@@ -404,7 +410,6 @@ onMounted(() => {
         <AppTextField
           v-model="searchQuery"
           placeholder="Search part"
-          v-on:input="fetchData()"
         />
       </div>
 

@@ -344,13 +344,15 @@ const closeLightbox = () => {
   currentItem.value = null;
 };
 
-onMounted(() => {
-  fetchData();
-});
+const debouncedFetchData = debounce(fetchData, 500); 
 
 // Watch for search query changes
 watch(searchQuery, () => {
   page.value = 1; // Reset to first page when search changes
+  debouncedFetchData();
+});
+
+onMounted(() => {
   fetchData();
 });
 </script>
@@ -380,11 +382,7 @@ watch(searchQuery, () => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-            v-on:input="fetchData()"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

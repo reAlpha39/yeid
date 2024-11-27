@@ -118,6 +118,12 @@ async function handleExport() {
   }
 }
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchQuery, () => {
+  debouncedFetchData();
+});
+
 watch(
   () => isDrawerOpen.value,
   (newVal) => {
@@ -172,11 +178,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-            v-on:input="fetchData()"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

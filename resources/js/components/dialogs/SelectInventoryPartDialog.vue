@@ -68,6 +68,12 @@ async function fetchDataVendor(id) {
   }
 }
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchPart, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchData();
   fetchDataVendor();
@@ -95,7 +101,6 @@ onMounted(() => {
             v-model="searchPart"
             placeholder="Search part"
             variant="outlined"
-            v-on:input="fetchData()"
           />
         </VCol>
         <VCol md="4">

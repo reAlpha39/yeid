@@ -279,6 +279,12 @@ function getApprovalColor(approval, planid) {
   return "status-white";
 }
 
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch(searchQuery, () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   fetchData();
   fetchDataMachine();
@@ -311,7 +317,6 @@ onMounted(() => {
         <AppTextField
           v-model="searchQuery"
           placeholder="Search"
-          v-on:input="fetchData()"
         />
       </div>
       <div style="inline-size: 10rem">
