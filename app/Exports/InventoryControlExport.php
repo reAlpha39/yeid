@@ -34,9 +34,12 @@ class InventoryControlExport implements FromCollection, WithHeadings, WithMappin
                 'i.partcode',
                 'i.jobdate',
                 'i.vendorcode as vendor',
+                'i.brand',
+                'i.specification',
                 'i.currency',
                 'i.quantity',
-                'i.total'
+                'i.total',
+                'i.note'
             )
             ->whereBetween('i.jobdate', [$this->startDate, $this->endDate])
             ->where('i.jobcode', $this->jobCode);
@@ -67,10 +70,13 @@ class InventoryControlExport implements FromCollection, WithHeadings, WithMappin
         return [
             'PART',
             'DATE',
-            'VENDOR',
+            'VENDOR CODE',
+            'BRAND',
+            'SPECIFICATION',
             'UNIT PRICE',
             'QTY',
-            'TOTAL PRICE'
+            'TOTAL PRICE',
+            'NOTE'
         ];
     }
 
@@ -80,9 +86,12 @@ class InventoryControlExport implements FromCollection, WithHeadings, WithMappin
             $record->partcode,
             $record->jobdate,
             $record->vendor,
+            $record->brand,
+            $record->specification,
             $record->currency,
             $record->quantity,
-            $record->total
+            $record->total,
+            $record->note,
         ];
     }
 }
