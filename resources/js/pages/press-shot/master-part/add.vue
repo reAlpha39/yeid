@@ -14,6 +14,14 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
+const machines = ref([
+  "MP13K-101",
+  "MP13K-102",
+  "NC1-3000",
+  "NS2-1500",
+  "NC2-3000",
+]);
+
 const categories = [
   "Process Parts",
   "Maker Standard Parts",
@@ -22,18 +30,16 @@ const categories = [
   "Other",
 ];
 const modelDieData = ref([]);
-const machines = ref([]);
 const processNames = ref([]);
 const userData = ref(null);
 
 const form = ref(null);
-const isSelectMachineDialogVisible = ref(false);
 
 // previous data for edit
 const prevData = ref();
 const isEdit = ref(false);
 
-const selectedMachine = ref(null);
+const machine = ref(null);
 const modelDie = ref(null);
 const dieNo = ref(null);
 const processName = ref(null);
@@ -58,7 +64,7 @@ async function submitData() {
 
   try {
     let body = {
-      machine_no: selectedMachine.value.machineno,
+      machine_no: machine.value,
       model: modelDie.value.model,
       die_no: modelDie.value.dieno,
       die_unit_no: dieNo.value,
@@ -82,7 +88,7 @@ async function submitData() {
       login_user_name: userData.value?.name,
     };
 
-    if (isEdit) {
+    if (isEdit.value) {
       const response = await $api("/press-shot/master-parts", {
         method: "PUT",
         body: body,
@@ -137,21 +143,6 @@ async function fetchDataProcessName() {
   }
 }
 
-async function fetchDataMachine() {
-  try {
-    const result = await $api("/master/machines/" + route.query.machine_no, {
-      method: "GET",
-    });
-
-    console.log(result.data);
-
-    // machines.value.push(result["data"]);
-    selectedMachine.value = result.data;
-  } catch (err) {
-    console.log(err);
-  }
-}
-
 async function fetchUserData() {
   try {
     const response = await $api("/auth/user");
@@ -183,16 +174,11 @@ async function fetchDataEdit() {
 async function initEditData() {
   await fetchDataEdit(partCode);
   applyData();
-  await fetchDataMachine(route.query.part_code);
 }
 
 function applyData() {
   const data = prevData.value;
-  modelDie.value = {
-    model: data.model,
-    dieno: data.dieno,
-    title: data.model + " | " + data.dieno,
-  };
+
   const dateStr = data.exchangedatetime;
   const year = dateStr.substring(0, 4);
   const month = dateStr.substring(4, 6);
@@ -200,6 +186,12 @@ function applyData() {
   const hour = dateStr.substring(8, 10);
   const minute = dateStr.substring(10, 12);
 
+  machine.value = data.machineno;
+  modelDie.value = {
+    model: data.model,
+    dieno: data.dieno,
+    title: data.model + " | " + data.dieno,
+  };
   dieNo.value = data.dieno;
   processName.value = { processname: data.processname };
   partCode.value = data.partcode;
@@ -251,18 +243,6 @@ function categoryType(category) {
   }
 }
 
-function convertSwitch(val) {
-  if (val === "Active") {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function handleMachinesSelected(items) {
-  selectedMachine.value = items;
-}
-
 function isNumber(evt) {
   const keysAllowed = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."];
   const keyPressed = evt.key;
@@ -306,66 +286,20 @@ onMounted(async () => {
   </div>
 
   <VForm ref="form" @submit.prevent="submitData">
-    <VCard class="py-6 px-0 mb-6">
-      <VRow class="d-flex justify-space-between align-center mb-4">
-        <VCol cols="6">
-          <VCardTitle> Machine </VCardTitle>
-          <small class="ml-4"
-            >Machine is required, please select one machine</small
-          >
-        </VCol>
-        <VCol class="mr-2" cols="auto">
-          <VBtn
-            v-if="selectedMachine === null"
-            prepend-icon="tabler-plus"
-            @click="
-              isSelectMachineDialogVisible = !isSelectMachineDialogVisible
-            "
-          >
-            Add Machine
-          </VBtn>
-        </VCol>
-      </VRow>
-
-      <VCard
-        v-if="selectedMachine"
-        variant="outlined"
-        class="py-4 px-4 mb-4 mx-4"
-        style="background-color: #e8776814"
-      >
-        <VRow class="d-flex justify-space-between align-center">
-          <VCol cols="6">
-            <VRow no-gutters>
-              <VCol cols="12">
-                <VCardTitle>{{
-                  selectedMachine?.machinename ?? "-"
-                }}</VCardTitle>
-              </VCol>
-            </VRow>
-            <VRow class="ml-4" no-gutters>
-              <VCol cols="12">
-                <small>{{ selectedMachine?.machineno ?? "-" }}</small>
-              </VCol>
-            </VRow>
-          </VCol>
-          <VCol cols="auto" class="mr-4">
-            <VBtn
-              v-if="isEdit === false"
-              prepend-icon="tabler-edit"
-              @click="
-                isSelectMachineDialogVisible = !isSelectMachineDialogVisible
-              "
-            >
-              Change Machine
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VCard>
-    </VCard>
-
-    <VCard v-if="selectedMachine" class="py-6 px-4 mb-6">
+    <VCard class="py-6 px-4 mb-6">
       <VRow>
-        <VCol cols="6">
+        <VCol cols="3">
+          <AppAutocomplete
+            v-model="machine"
+            label="Machine No"
+            placeholder="Select machine no"
+            :rules="[requiredValidator]"
+            :items="machines"
+            :readonly="isEdit"
+            outlined
+          />
+        </VCol>
+        <VCol cols="3">
           <AppAutocomplete
             v-model="modelDie"
             label="Model"
@@ -544,17 +478,11 @@ onMounted(async () => {
       </VRow>
     </VCard>
 
-    <div v-if="selectedMachine" class="d-flex justify-start">
+    <div class="d-flex justify-start">
       <VBtn type="submit" color="success" class="mr-4"> Add </VBtn>
       <VBtn variant="outlined" color="error" to="/press-shot/master-part"
         >Cancel</VBtn
       >
     </div>
   </VForm>
-
-  <SelectMachineDialog
-    v-model:isDialogVisible="isSelectMachineDialogVisible"
-    v-model:items="machines"
-    @submit="handleMachinesSelected"
-  />
 </template>
