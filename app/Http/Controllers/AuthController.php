@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\MasUser;
 use App\Services\ActivityLogger;
 
@@ -105,6 +106,56 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Successfully logged out'
+        ]);
+    }
+
+
+    /**
+     * Change user password
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|same:new_password_confirmation',
+            'new_password_confirmation' => 'required|string'
+        ]);
+
+        $user = $request->user();
+
+        // Check if current password matches
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Current password is incorrect'
+            ], 401);
+        }
+
+        // Update password
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Log the password change
+        ActivityLogger::log(
+            'change_password',
+            'user-password-change',
+            'User changed password id: ' . $user->id
+        );
+
+        // Revoke all tokens
+        $user->tokens()->delete();
+
+        // Create new token
+        $tokenResult = $user->createToken('PersonalApiToken');
+        $token = $tokenResult->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password successfully changed',
+            'token' => $token
         ]);
     }
 }

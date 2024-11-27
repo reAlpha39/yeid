@@ -47,6 +47,7 @@ declare module 'vue' {
     CardStatisticsHorizontal: typeof import('./resources/js/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./resources/js/@core/components/cards/CardStatisticsVertical.vue')['default']
     CardStatisticsVerticalSimple: typeof import('./resources/js/@core/components/CardStatisticsVerticalSimple.vue')['default']
+    ChangePasswordDialog: typeof import('./resources/js/components/dialogs/ChangePasswordDialog.vue')['default']
     CheckRunningConstOfMachinesTab: typeof import('./resources/js/components/CheckRunningConstOfMachinesTab.vue')['default']
     ConfirmDialog: typeof import('./resources/js/components/dialogs/ConfirmDialog.vue')['default']
     ControlConstSparePartsTab: typeof import('./resources/js/components/ControlConstSparePartsTab.vue')['default']

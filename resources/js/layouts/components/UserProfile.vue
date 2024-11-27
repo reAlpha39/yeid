@@ -7,6 +7,8 @@ const router = useRouter();
 const toast = useToast();
 const ability = useAbility();
 
+const isChangePasswordDialogOpen = ref(false);
+
 // TODO: Get type from backend
 const userData = useCookie("userData");
 
@@ -142,6 +144,15 @@ const userProfileList = [
             <VListItemTitle class="font-weight-medium">
               {{ userData.name }}
             </VListItemTitle>
+            <VListItemTitle>
+              <a
+                @click="
+                  isChangePasswordDialogOpen = !isChangePasswordDialogOpen
+                "
+                style="cursor: pointer"
+                >Change Password
+              </a>
+            </VListItemTitle>
             <VListItemSubtitle>{{ userData.role }}</VListItemSubtitle>
           </VListItem>
 
@@ -163,4 +174,6 @@ const userProfileList = [
       <!-- !SECTION -->
     </VAvatar>
   </VBadge>
+
+  <ChangePasswordDialog v-model:isDialogVisible="isChangePasswordDialogOpen" />
 </template>
