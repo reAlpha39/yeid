@@ -677,4 +677,26 @@ class PressPartController extends Controller
             ], 500);
         }
     }
+
+    public function pressPartMasterPartExport(Request $request)
+    {
+        try {
+            $year = $request->input('year');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $partCode = $request->input('part_code');
+
+            return Excel::download(
+                new PressPartExport($year, $machineNo, $model, $dieNo, $partCode),
+                'press_master_parts.xlsx'
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

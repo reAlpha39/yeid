@@ -114,7 +114,7 @@ async function handleExport() {
   loadingExport.value = true;
   try {
     const accessToken = useCookie("accessToken").value;
-    const response = await axios.get("/api/press-shot/parts/export", {
+    const response = await axios.get("/api/press-shot/parts/exportMaster", {
       responseType: "blob",
       params: {
         part_code: searchQuery.value,
@@ -407,10 +407,7 @@ onMounted(() => {
       </div> -->
 
       <div style="inline-size: 15.625rem">
-        <AppTextField
-          v-model="searchQuery"
-          placeholder="Search part"
-        />
+        <AppTextField v-model="searchQuery" placeholder="Search part" />
       </div>
 
       <VSpacer />

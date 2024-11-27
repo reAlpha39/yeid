@@ -210,6 +210,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Press Part
     Route::get('/press-shot/parts', [PressPartController::class, 'indexParts']);
     Route::get('/press-shot/parts/export', [PressPartController::class, 'export']);
+    Route::get('/press-shot/parts/exportMaster', [PressPartController::class, 'pressPartMasterPartExport']);
+
     Route::get('/press-shot/master-parts', [PressPartController::class, 'indexMaster']);
     Route::get('/press-shot/process-names', [PressPartController::class, 'getProcessNames']);
     Route::post('/press-shot/master-parts', [PressPartController::class, 'store']);
