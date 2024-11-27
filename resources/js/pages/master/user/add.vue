@@ -13,7 +13,7 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
-const roleAccesses = ["1", "2", "3"];
+const roleAccesses = ["1 (Operator)", "2 (Supervisor)", "3 (Manager)"];
 
 const departments = ref([]);
 
@@ -103,7 +103,7 @@ async function addData() {
           control_access: controlAccessJson,
         },
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to save user data");
         },
       });
 
@@ -122,7 +122,7 @@ async function addData() {
           password: password.value,
         },
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to save user data");
         },
       });
 
@@ -130,7 +130,6 @@ async function addData() {
     }
     await router.push("/master/user");
   } catch (err) {
-    toast.error("Failed to save user data");
     console.log(err);
   }
 }
@@ -139,7 +138,7 @@ async function fetchDataEdit(id) {
   try {
     userId.value = id;
     const response = await $api("/master/users/" + id);
-    console.log(response.data);
+    // console.log(response.data);
     prevData.value = response.data;
   } catch (err) {
     console.log(err);
@@ -151,18 +150,22 @@ async function fetchDataDepartment(id) {
     if (id) {
       const response = await $api("/master/departments/" + id, {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(
+            response._data.message ?? "Failed to fetch department data"
+          );
         },
       });
 
       selectedDepartment.value = response.data;
-      console.log(response.data);
+      // console.log(response.data);
       selectedDepartment.value.title =
         response.data.code + " | " + response.data.name;
     } else {
       const response = await $api("/master/departments", {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(
+            response._data.message ?? "Failed to fetch department data"
+          );
         },
       });
 
@@ -173,7 +176,6 @@ async function fetchDataDepartment(id) {
       });
     }
   } catch (err) {
-    toast.error("Failed to fetch department data");
     console.log(err);
   }
 }
@@ -218,11 +220,11 @@ function statusType(val) {
 
 function convertRoleAccess(id) {
   switch (id) {
-    case "1": // Operator
+    case "1 (Operator)": // Operator
       return "1";
-    case "2": // Supervisor
+    case "2 (Supervisor)": // Supervisor
       return "2";
-    case "3": //  Manager
+    case "3 (Manager)": //  Manager
       return "3";
     default:
       return "";
@@ -232,11 +234,11 @@ function convertRoleAccess(id) {
 function roleAccessType(id) {
   switch (id) {
     case "1":
-      return "1";
+      return "1 (Operator)";
     case "2":
-      return "2";
+      return "2 (Supervisor)";
     case "3":
-      return "3";
+      return "3 (Manager)";
     default:
       return "";
   }
@@ -265,7 +267,7 @@ onMounted(() => {
   fetchDataDepartment();
 
   const id = route.query.id;
-  console.log("Fetching data for id:", id);
+  // console.log("Fetching data for id:", id);
   if (id) {
     isEdit.value = true;
     initEditData(route.query.id);
