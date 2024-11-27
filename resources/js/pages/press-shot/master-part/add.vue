@@ -295,7 +295,7 @@ onMounted(async () => {
             placeholder="Select machine no"
             :rules="[requiredValidator]"
             :items="machines"
-            :readonly="isEdit"
+            :disabled="isEdit"
             outlined
           />
         </VCol>
@@ -306,7 +306,7 @@ onMounted(async () => {
             placeholder="Select model"
             :rules="[requiredValidator]"
             :items="modelDieData"
-            :readonly="isEdit"
+            :disabled="isEdit"
             item-title="title"
             return-object
             outlined
@@ -317,7 +317,7 @@ onMounted(async () => {
             v-model="dieNo"
             label="Die No."
             :rules="[requiredValidator]"
-            :readonly="isEdit"
+            :disabled="isEdit"
             placeholder="Input die no"
             outlined
             maxlength="8"
@@ -330,7 +330,7 @@ onMounted(async () => {
             placeholder="Select process name"
             :rules="[requiredValidator]"
             :items="processNames"
-            :readonly="isEdit"
+            :disabled="isEdit"
             item-title="processname"
             return-object
             outlined
@@ -343,7 +343,7 @@ onMounted(async () => {
             v-model="partCode"
             label="Part Code"
             :rules="[requiredValidator]"
-            :readonly="isEdit"
+            :disabled="isEdit"
             placeholder="Input part code"
             outlined
             maxlength="16"
