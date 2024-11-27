@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MasUser;
+use App\Services\ActivityLogger;
 
 class AuthController extends Controller
 {
@@ -61,6 +62,12 @@ class AuthController extends Controller
         $tokenResult = $user->createToken('PersonalApiToken');
         $token = $tokenResult->plainTextToken;
 
+        ActivityLogger::log(
+            'login',
+            'user-login',
+            'User login id: ' . $user->id
+        );
+
         return response()->json([
             'success' => true,
             'user' => $user,
@@ -89,6 +96,12 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
+
+        ActivityLogger::log(
+            'logout',
+            'user-logout',
+            'User logout id: ' . $request->user()->id
+        );
 
         return response()->json([
             'message' => 'Successfully logged out'

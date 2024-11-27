@@ -358,6 +358,7 @@
     "can": true,
     "canNavigate": true,
     "canViewNavMenuGroup": true,
-    "debounce": true
+    "debounce": true,
+    "useActivityLog": true
   }
 }

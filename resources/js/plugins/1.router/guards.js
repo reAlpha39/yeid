@@ -59,6 +59,26 @@ export const setupGuards = router => {
       ability.update(storedRules);
     }
 
+    console.log('aaa ' + to.meta.subject)
+
+    // Check if the route is pressShot related
+    if (to.meta.subject === 'pressShot') {
+      try {
+
+        await $api('/log-activity', {
+          method: 'POST',
+          body: {
+            page: to.name || to.path,
+            action: 'pressShot_page_visit',
+            description: `Accessed PressShot page: ${to.name || to.path}`
+          }
+        })
+
+      } catch (error) {
+        console.error('Failed to log activity:', error)
+      }
+    }
+
     return undefined;
   });
 

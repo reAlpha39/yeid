@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartExport;
+use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
 
@@ -472,6 +473,12 @@ class PressPartController extends Controller
                 'updatetime' => $currentDateTime
             ]);
 
+            ActivityLogger::log(
+                'press-shot-master-part',
+                'insert_master_part',
+                'data: ' . json_encode($request->all())
+            );
+
             DB::commit();
 
             return response()->json([
@@ -578,6 +585,12 @@ class PressPartController extends Controller
                 'updatetime' => $currentDateTime
             ]);
 
+            ActivityLogger::log(
+                'press-shot-master-part',
+                'update_master_part',
+                'data: ' . json_encode($request->all())
+            );
+
             DB::commit();
 
             return response()->json([
@@ -639,6 +652,12 @@ class PressPartController extends Controller
                 ]);
             }
 
+            ActivityLogger::log(
+                'press-shot-master-part',
+                'delete_master_part',
+                'data: ' . json_encode($request->all())
+            );
+
             DB::commit();
 
             return response()->json([
@@ -665,6 +684,12 @@ class PressPartController extends Controller
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
 
+            ActivityLogger::log(
+                'press-shot-master-part',
+                'export_part_list',
+                'data: ' . json_encode($request->all())
+            );
+
             return Excel::download(
                 new PressPartExport($year, $machineNo, $model, $dieNo, $partCode),
                 'press_parts.xlsx'
@@ -686,6 +711,12 @@ class PressPartController extends Controller
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
+
+            ActivityLogger::log(
+                'press-shot-master-part',
+                'export_master_part',
+                'data: ' . json_encode($request->all())
+            );
 
             return Excel::download(
                 new PressPartExport($year, $machineNo, $model, $dieNo, $partCode),

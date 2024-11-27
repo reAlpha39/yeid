@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartProductionExport;
+use App\Services\ActivityLogger;
 use Exception;
 
 class ProductionDataController extends Controller
@@ -176,6 +177,12 @@ class ProductionDataController extends Controller
                 'updatetime' => $currentDateTime,
             ]);
 
+            ActivityLogger::log(
+                'press-shot-production-data',
+                'store_production-data',
+                'data: ' . json_encode($request->all())
+            );
+
             DB::commit();
 
             return response()->json([
@@ -202,6 +209,12 @@ class ProductionDataController extends Controller
             $model = $request->input('model');
 
             $filename = $isSummary ? 'press_part_production_summary.xlsx' : 'press_part_production_detail.xlsx';
+
+            ActivityLogger::log(
+                'press-shot-production-data',
+                'export_production_data',
+                'data: ' . json_encode($request->all())
+            );
 
             return Excel::download(
                 new PressPartProductionExport($isSummary, $targetDate, $machineNo, $model),

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartExchangeExport;
+use App\Services\ActivityLogger;
 use Exception;
 
 class ExchangeDataController extends Controller
@@ -334,6 +335,12 @@ class ExchangeDataController extends Controller
                 'updatetime' => $updateTime
             ]);
 
+            ActivityLogger::log(
+                'press-shot-exchange-data',
+                'insert_exchange-data',
+                'data: ' . json_encode($request->all())
+            );
+
             DB::commit();
 
             return response()->json([
@@ -360,6 +367,12 @@ class ExchangeDataController extends Controller
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
+
+            ActivityLogger::log(
+                'press-shot-exchange-data',
+                'export_exchange-data',
+                'data: ' . json_encode($request->all())
+            );
 
             return Excel::download(
                 new PressPartExchangeExport(

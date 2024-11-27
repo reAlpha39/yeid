@@ -143,6 +143,42 @@ async function handleExport() {
   }
 }
 
+const loadingDownload = ref(false);
+
+async function handleLogDownload() {
+  loadingDownload.value = true;
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get("/api/download-today-log", {
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {},
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    const today = new Date();
+    const filename =
+      today.getFullYear() +
+      String(today.getMonth() + 1).padStart(2, "0") +
+      String(today.getDate()).padStart(2, "0") +
+      ".log";
+
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Log download failed:", error);
+  } finally {
+    loadingDownload.value = false;
+  }
+}
+
 async function fetchUserData() {
   try {
     const response = await $api("/auth/user");
@@ -450,7 +486,14 @@ onMounted(() => {
           Export
         </VBtn>
 
-        <VBtn variant="tonal" prepend-icon="tabler-list"> Log </VBtn>
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-list"
+          @click="handleLogDownload"
+          :loading="loadingDownload"
+        >
+          Log
+        </VBtn>
 
         <VBtn
           v-if="$can('create', 'pressShot')"

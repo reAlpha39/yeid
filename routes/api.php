@@ -25,6 +25,7 @@ use App\Http\Controllers\ProductionDataController;
 use App\Http\Controllers\HistoryActivityController;
 use App\Http\Controllers\SparePartReferringController;
 use App\Http\Controllers\PressPartController;
+use App\Http\Controllers\ActivityLogController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -239,6 +240,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // History Activity
     Route::get('/press-shot/history-activity', [HistoryActivityController::class, 'index']);
     Route::get('/press-shot/history-activity/export', [HistoryActivityController::class, 'export']);
+
+    // Log Activity
+    Route::post('/log-activity', [ActivityLogController::class, 'store']);
+    Route::get('/download-today-log', [ActivityLogController::class, 'downloadTodayLog']);
 });
 
 
