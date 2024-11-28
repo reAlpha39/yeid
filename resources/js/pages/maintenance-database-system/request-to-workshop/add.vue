@@ -37,6 +37,7 @@ const inspector = ref(null);
 
 const prevData = ref();
 const isEdit = ref(false);
+const isLoadingEditData = ref(false);
 
 async function addData() {
   try {
@@ -176,25 +177,30 @@ async function fetchDataEdit(id) {
 }
 
 async function initEditData(id) {
-  await fetchDataEdit(id);
+  isLoadingEditData.value = true;
+  try {
+    await fetchDataEdit(id);
 
-  const data = prevData.value;
-  await fetchDataEmployee(data.employeecode, true);
-  await fetchDataShop(data.shopcode);
+    const data = prevData.value;
+    await fetchDataEmployee(data.employeecode, true);
+    await fetchDataShop(data.shopcode);
 
-  title.value = data.title;
-  requestDate.value = data.requestdate;
-  orderName.value = data.ordername;
-  reason.value = data.reason;
-  reqFinishDate.value = data.reqfinishdate;
-  deliveryPlace.value = data.deliveryplace;
-  categoryRadio.value = data.asapflag;
-  note.value = data.note;
-  statusRadio.value = data.status;
-  finishDate.value = data.finishdate;
-  inspector.value = data.inspector;
+    title.value = data.title;
+    requestDate.value = data.requestdate;
+    orderName.value = data.ordername;
+    reason.value = data.reason;
+    reqFinishDate.value = data.reqfinishdate;
+    deliveryPlace.value = data.deliveryplace;
+    categoryRadio.value = data.asapflag;
+    note.value = data.note;
+    statusRadio.value = data.status;
+    finishDate.value = data.finishdate;
+    inspector.value = data.inspector;
 
-  revertStaffNames(data.staffnames);
+    revertStaffNames(data.staffnames);
+  } finally {
+    isLoadingEditData.value = false;
+  }
 }
 
 async function revertStaffNames(data) {
@@ -228,27 +234,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <VBreadcrumbs
-      class="px-0 pb-2 pt-0"
-      :items="[
-        {
-          title: 'Maintenance Database System',
-          class: 'text-h4',
-        },
-        {
-          title: 'Request to Workshop',
-          class: 'text-h4',
-        },
-        {
-          title: isEdit ? 'Update Request' : 'Add Request',
-          class: 'text-h4',
-        },
-      ]"
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0"
+    :items="[
+      {
+        title: 'Maintenance Database System',
+        class: 'text-h4',
+      },
+      {
+        title: 'Request to Workshop',
+        class: 'text-h4',
+      },
+      {
+        title: isEdit ? 'Update Request' : 'Add Request',
+        class: 'text-h4',
+      },
+    ]"
+  />
+
+  <div
+    v-if="isLoadingEditData"
+    class="d-flex flex-column align-center justify-center my-12"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="48"
+      width="4"
+      class="mb-2"
     />
+    <VCardText class="text-center text-body-1 text-medium-emphasis">
+      Loading data, please wait...
+    </VCardText>
   </div>
 
-  <VForm ref="form" lazy-validation>
+  <VForm v-else ref="form" lazy-validation>
     <VCard class="mb-6 px-6 py-4">
       <VRow>
         <VCol cols="3">

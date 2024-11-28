@@ -44,6 +44,7 @@ const installDateMenu = ref(false);
 
 const prevData = ref();
 const isEdit = ref(false);
+const isLoadingEditData = ref(false);
 
 async function addData() {
   const { valid, errors } = await form.value?.validate();
@@ -77,7 +78,7 @@ async function addData() {
           updatetime: now,
         },
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to save machine data");
         },
       });
 
@@ -106,7 +107,7 @@ async function addData() {
           updatetime: now,
         },
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to save machine data");
         },
       });
 
@@ -114,7 +115,6 @@ async function addData() {
     }
     await router.push("/master/machine");
   } catch (err) {
-    toast.error("Failed to save machine data");
     console.log(err);
   }
 }
@@ -122,7 +122,7 @@ async function addData() {
 async function fetchDataEdit(id) {
   try {
     const response = await $api("/master/machines/" + id);
-    console.log(response.data);
+    // console.log(response.data);
     prevData.value = response.data;
   } catch (err) {
     console.log(err);
@@ -134,7 +134,7 @@ async function fetchDataMaker(id) {
     if (id) {
       const response = await $api("/master/makers/" + id, {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch maker data");
         },
       });
 
@@ -144,7 +144,7 @@ async function fetchDataMaker(id) {
     } else {
       const response = await $api("/master/makers", {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch maker data");
         },
       });
 
@@ -155,7 +155,6 @@ async function fetchDataMaker(id) {
       });
     }
   } catch (err) {
-    toast.error("Failed to fetch maker data");
     console.log(err);
   }
 }
@@ -165,7 +164,7 @@ async function fetchDataShop(id) {
     if (id) {
       const response = await $api("/master/shops/" + id, {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch data");
         },
       });
 
@@ -175,7 +174,7 @@ async function fetchDataShop(id) {
     } else {
       const response = await $api("/master/shops", {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch data");
         },
       });
 
@@ -186,7 +185,6 @@ async function fetchDataShop(id) {
       });
     }
   } catch (err) {
-    toast.error("Failed to fetch data");
     console.log(err);
   }
 }
@@ -199,7 +197,7 @@ async function fetchDataLine(id) {
           search: id,
         },
         onResponseError({ response }) {
-          // errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch data");
         },
       });
 
@@ -210,7 +208,7 @@ async function fetchDataLine(id) {
     } else {
       const response = await $api("/master/lines", {
         onResponseError({ response }) {
-          // errors.value = response._data.errors;
+          toast.error(response._data.message ?? "Failed to fetch data");
         },
       });
 
@@ -220,7 +218,6 @@ async function fetchDataLine(id) {
       });
     }
   } catch (err) {
-    toast.error("Failed to fetch data");
     console.log(err);
   }
 }
@@ -266,8 +263,13 @@ function isNumber(evt) {
 }
 
 async function initEditData(id) {
-  await fetchDataEdit(id);
-  applyData();
+  isLoadingEditData.value = true;
+  try {
+    await fetchDataEdit(id);
+    applyData();
+  } finally {
+    isLoadingEditData.value = false;
+  }
   // await fetchVendor(vendorTF.value);
   // await getMachines(partCodeTF.value);
 }
@@ -282,13 +284,12 @@ async function applyData() {
   machineNo.value = data.machineno;
   machineName.value = data.machinename;
   plantNo.value = data.plantcode;
-  selectedLine.value.linecode = data.linecode;
   modelName.value = data.modelname;
   serialNo.value = data.serialno;
   currency.value = data.currency;
   price.value = data.machineprice;
   purchaseRoot.value = data.purchaseroot;
-  installDate.value = data.installdate;
+  installDate.value = data.installdate?.trim();
   note.value = data.note;
   status.value = statusType(data.status);
   rank.value = data.rank;
@@ -301,7 +302,7 @@ onMounted(() => {
   fetchDataLine();
 
   const id = route.query.machine_no;
-  console.log("Fetching data for machine_no:", id);
+  // console.log("Fetching data for machine_no:", id);
   if (id) {
     isEdit.value = true;
     initEditData(route.query.machine_no);
@@ -310,25 +311,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <VForm ref="form" lazy-validation>
-    <VBreadcrumbs
-      class="px-0 pb-2 pt-0"
-      :items="[
-        {
-          title: 'Master',
-          class: 'text-h4',
-        },
-        {
-          title: 'Machine',
-          class: 'text-h4',
-        },
-        {
-          title: isEdit ? 'Update Machine' : 'Add New Machine',
-          class: 'text-h4',
-        },
-      ]"
-    />
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0"
+    :items="[
+      {
+        title: 'Master',
+        class: 'text-h4',
+      },
+      {
+        title: 'Machine',
+        class: 'text-h4',
+      },
+      {
+        title: isEdit ? 'Update Machine' : 'Add New Machine',
+        class: 'text-h4',
+      },
+    ]"
+  />
 
+  <div
+    v-if="isLoadingEditData"
+    class="d-flex flex-column align-center justify-center my-12"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="48"
+      width="4"
+      class="mb-2"
+    />
+    <VCardText class="text-center text-body-1 text-medium-emphasis">
+      Loading data, please wait...
+    </VCardText>
+  </div>
+
+  <VForm v-else ref="form" lazy-validation>
     <VCard>
       <VCardText>
         <VRow>

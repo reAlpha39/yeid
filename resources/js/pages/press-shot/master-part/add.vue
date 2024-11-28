@@ -34,6 +34,7 @@ const processNames = ref([]);
 const userData = ref(null);
 
 const form = ref(null);
+const isLoadingEditData = ref(false);
 
 // previous data for edit
 const prevData = ref();
@@ -172,8 +173,13 @@ async function fetchDataEdit() {
 }
 
 async function initEditData() {
-  await fetchDataEdit(partCode);
-  applyData();
+  isLoadingEditData.value = true;
+  try {
+    await fetchDataEdit(partCode);
+    applyData();
+  } finally {
+    isLoadingEditData.value = false;
+  }
 }
 
 function applyData() {
@@ -265,27 +271,41 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div>
-    <VBreadcrumbs
-      class="px-0 pb-2 pt-0"
-      :items="[
-        {
-          title: 'Press Shot',
-          class: 'text-h4',
-        },
-        {
-          title: 'Master Part',
-          class: 'text-h4',
-        },
-        {
-          title: isEdit ? 'Update Part' : 'Add New Part',
-          class: 'text-h4',
-        },
-      ]"
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0"
+    :items="[
+      {
+        title: 'Press Shot',
+        class: 'text-h4',
+      },
+      {
+        title: 'Master Part',
+        class: 'text-h4',
+      },
+      {
+        title: isEdit ? 'Update Part' : 'Add New Part',
+        class: 'text-h4',
+      },
+    ]"
+  />
+
+  <div
+    v-if="isLoadingEditData"
+    class="d-flex flex-column align-center justify-center my-12"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="48"
+      width="4"
+      class="mb-2"
     />
+    <VCardText class="text-center text-body-1 text-medium-emphasis">
+      Loading data, please wait...
+    </VCardText>
   </div>
 
-  <VForm ref="form" @submit.prevent="submitData">
+  <VForm v-else ref="form" @submit.prevent="submitData">
     <VCard class="py-6 px-4 mb-6">
       <VRow>
         <VCol cols="3">

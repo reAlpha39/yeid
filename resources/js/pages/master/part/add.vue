@@ -49,6 +49,7 @@ const indexMachineDelete = ref();
 // previous data for edit
 const prevData = ref();
 const isEdit = ref(false);
+const isLoadingEditData = ref(false);
 
 const categories = ["Machine", "Facility", "Jig", "Other"];
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
@@ -252,11 +253,16 @@ function convertSwitch(val) {
 }
 
 async function initEditData(partCode) {
-  await fetchPartImage(partCode);
-  await fetchDataEdit(partCode);
-  applyData();
-  await fetchVendor(vendorTF.value);
-  await getMachines(partCodeTF.value);
+  isLoadingEditData.value = true;
+  try {
+    await fetchPartImage(partCode);
+    await fetchDataEdit(partCode);
+    applyData();
+    await fetchVendor(vendorTF.value);
+    await getMachines(partCodeTF.value);
+  } finally {
+    isLoadingEditData.value = false;
+  }
 }
 
 function applyData() {
@@ -300,27 +306,41 @@ onMounted(async () => {
 </script>
 
 <template>
-  <VForm ref="form" lazy-validation>
-    <div>
-      <VBreadcrumbs
-        class="px-0 pb-2 pt-0"
-        :items="[
-          {
-            title: 'Master',
-            class: 'text-h4',
-          },
-          {
-            title: 'Part',
-            class: 'text-h4',
-          },
-          {
-            title: isEdit ? 'Update Part' : 'Add New Part',
-            class: 'text-h4',
-          },
-        ]"
-      />
-    </div>
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0"
+    :items="[
+      {
+        title: 'Master',
+        class: 'text-h4',
+      },
+      {
+        title: 'Part',
+        class: 'text-h4',
+      },
+      {
+        title: isEdit ? 'Update Part' : 'Add New Part',
+        class: 'text-h4',
+      },
+    ]"
+  />
 
+  <div
+    v-if="isLoadingEditData"
+    class="d-flex flex-column align-center justify-center my-12"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="48"
+      width="4"
+      class="mb-2"
+    />
+    <VCardText class="text-center text-body-1 text-medium-emphasis">
+      Loading data, please wait...
+    </VCardText>
+  </div>
+
+  <VForm v-else ref="form" lazy-validation>
     <VCard class="pa-8 mt-4">
       <VRow>
         <VCol cols="6">

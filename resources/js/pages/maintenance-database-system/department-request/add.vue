@@ -52,6 +52,7 @@ const approval = ref({
 const prevData = ref();
 const user = ref();
 const isEdit = ref(false);
+const isLoadingEditData = ref(false);
 
 function handleMachinesSelected(items) {
   selectedMachine.value = items;
@@ -249,8 +250,13 @@ async function fetchDataMachine(id) {
 }
 
 async function initEditData(id) {
-  await fetchDataEdit(id);
-  applyData();
+  isLoadingEditData.value = true;
+  try {
+    await fetchDataEdit(id);
+    applyData();
+  } finally {
+    isLoadingEditData.value = false;
+  }
 }
 
 async function applyData() {
@@ -302,27 +308,41 @@ onMounted(() => {
 </script>
 
 <template>
-  <VForm ref="form" lazy-validation>
-    <VBreadcrumbs
-      class="px-0 pb-2 pt-0"
-      :items="[
-        {
-          title: 'Maintenance Database System',
-          class: 'text-h4',
-        },
-        {
-          title: 'Department Request',
-          class: 'text-h4',
-        },
-        {
-          title: isEdit
-            ? 'Update Department Request'
-            : 'Add Department Request',
-          class: 'text-h4',
-        },
-      ]"
-    />
+  <VBreadcrumbs
+    class="px-0 pb-2 pt-0"
+    :items="[
+      {
+        title: 'Maintenance Database System',
+        class: 'text-h4',
+      },
+      {
+        title: 'Department Request',
+        class: 'text-h4',
+      },
+      {
+        title: isEdit ? 'Update Department Request' : 'Add Department Request',
+        class: 'text-h4',
+      },
+    ]"
+  />
 
+  <div
+    v-if="isLoadingEditData"
+    class="d-flex flex-column align-center justify-center my-12"
+  >
+    <VProgressCircular
+      indeterminate
+      color="primary"
+      size="48"
+      width="4"
+      class="mb-2"
+    />
+    <VCardText class="text-center text-body-1 text-medium-emphasis">
+      Loading data, please wait...
+    </VCardText>
+  </div>
+
+  <VForm v-else ref="form" lazy-validation>
     <VCard class="mb-6">
       <VCardText>
         <VRow>
