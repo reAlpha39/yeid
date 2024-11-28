@@ -205,7 +205,7 @@ const headers = [
   },
   {
     title: "PART",
-    key: "part",
+    key: "partcode",
   },
   {
     title: "MACHINE NO",
@@ -410,7 +410,7 @@ onMounted(() => {
           </div>
         </template>
 
-        <template #item.part="{ item }">
+        <template #item.partcode="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span
