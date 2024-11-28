@@ -156,6 +156,8 @@ class ProductionDataController extends Controller
                 'startdatetime' => $startDateTime,
                 'enddatetime' => $endDateTime,
                 'reason' => $reason,
+                'employeecode' => $loginUserCode,
+                'employeename' => $loginUserName,
                 'updatetime' => $currentDateTime
             ]);
 

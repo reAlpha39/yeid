@@ -301,6 +301,8 @@ class ExchangeDataController extends Controller
                     'exchangeshotno' => $exchangeShotNo,
                     'exchangeqtty' => $exchangeQty,
                     'reason' => $reason,
+                    'employeecode' => $loginUserCode,
+                    'employeename' => $loginUserName,
                     'updatetime' => $updateTime
                 ]);
             }
