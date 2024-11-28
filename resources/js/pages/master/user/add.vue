@@ -288,12 +288,12 @@ async function applyData() {
       update: false,
       delete: false,
     },
-    part: prevControlAccess.maintenanceSchedule || {
+    part: prevControlAccess.part || {
       view: false,
       create: false,
       update: false,
       delete: false,
-    }, // New part property
+    },
     maintenanceSchedule: prevControlAccess.maintenanceSchedule || {
       view: false,
       create: false,
