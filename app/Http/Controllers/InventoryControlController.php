@@ -13,20 +13,34 @@ class InventoryControlController extends Controller
     public function getRecords(Request $request)
     {
         try {
-            // Fetch parameters from the request, set default values if not provided
+            // Basic filters
             $search = $request->input('search');
             $startDate = $request->input('startDate', '20240417');
             $endDate = $request->input('endDate', '20240516');
             $jobCode = $request->input('jobCode', 'I');
-            $limit = $request->input('limit');
             $vendorCode = $request->input('vendorcode');
             $currency = $request->input('currency');
 
-            // Validate and set orderBy parameters, default to 'jobdate' and 'jobtime' descending
-            $orderByColumn = $request->input('orderBy', 'jobdate');
-            $orderByDirection = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
 
-            // Perform the query with join, filters, and ordering
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'desc');
+
+            // Handle Vuetify sorting format
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'desc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use original value
+                }
+            }
+
+            // Build the query
             $query = DB::table('tbl_invrecord AS i')
                 ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno')
                 ->select(
@@ -53,12 +67,15 @@ class InventoryControlController extends Controller
                 ->whereBetween('i.jobdate', [$startDate, $endDate])
                 ->where('i.jobcode', $jobCode);
 
+            // Apply search filter
             if ($search) {
-                $query->where('i.partcode', 'ILIKE', "{$search}%")
-                    ->orWhere('i.partname', 'ILIKE', "{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('i.partcode', 'ILIKE', "{$search}%")
+                        ->orWhere('i.partname', 'ILIKE', "{$search}%");
+                });
             }
 
-
+            // Apply additional filters
             if ($vendorCode) {
                 $query->where('i.vendorcode', $vendorCode);
             }
@@ -67,17 +84,53 @@ class InventoryControlController extends Controller
                 $query->where('i.currency', $currency);
             }
 
-            // Apply the limit only if provided
-            if ($limit) {
-                $query->limit($limit);
+            // Apply sorting
+            if ($sortBy) {
+                // Handle special cases for computed/joined columns
+                switch ($sortBy) {
+                    case 'shopname':
+                        $query->orderBy(DB::raw('COALESCE(m.shopname, \'-\')'), $sortDirection);
+                        break;
+                    case 'linecode':
+                        $query->orderBy(DB::raw('COALESCE(m.linecode, \'-\')'), $sortDirection);
+                        break;
+                    default:
+                        // For regular columns, determine the table prefix
+                        $prefix = in_array($sortBy, [
+                            'shopname',
+                            'linecode'
+                        ]) ? 'm.' : 'i.';
+                        $query->orderBy($prefix . $sortBy, $sortDirection);
+                }
+
+                // Add secondary sort if primary sort isn't jobdate/jobtime
+                if ($sortBy !== 'jobdate' && $sortBy !== 'jobtime') {
+                    $query->orderBy('i.jobdate', 'desc')
+                        ->orderBy('i.jobtime', 'desc');
+                }
+            } else {
+                // Default sorting
+                $query->orderBy('i.jobdate', 'desc')
+                    ->orderBy('i.jobtime', 'desc');
             }
 
-            $query->orderBy($orderByColumn, $orderByDirection)
-                ->orderBy('i.jobtime', $orderByDirection);
+            // Execute pagination
+            $results = $query->paginate($perPage, ['*'], 'page', $page);
 
-            $records = $query->get();
-
-            return response()->json($records);
+            return response()->json([
+                'success' => true,
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

@@ -20,7 +20,6 @@ const oneYearAgo = new Date(now);
 oneYearAgo.setFullYear(now.getFullYear() - 1);
 
 const selectedDate = ref(null);
-const searchQuery = ref();
 const vendors = ref([]);
 const selectedVendors = ref();
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
@@ -49,8 +48,14 @@ let jpy = new Intl.NumberFormat("id-ID", {
 });
 
 // Data table options
+const loading = ref(false);
+const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
+const data = ref([]);
+const searchQuery = ref("");
+const sortBy = ref([]);
+const sortDesc = ref([]);
 
 // headers
 const headers = [
@@ -93,9 +98,6 @@ const headers = [
   },
 ];
 
-// data table
-const data = ref([]);
-
 const formatDate = (date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -119,8 +121,22 @@ function formatCurrency(currency, price) {
   }
 }
 
-async function fetchData() {
+async function fetchData(options = {}) {
+  loading.value = true;
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     const response = await $api("/invControl", {
       params: {
         search: searchQuery.value,
@@ -132,18 +148,39 @@ async function fetchData() {
         direction: "desc",
         vendorcode: selectedVendors.value?.vendorcode,
         currency: currency.value,
+        page: page.value,
+        per_page: itemsPerPage.value,
+        ...sortParams,
+        ...options,
       },
       onResponseError({ response }) {
-        toast.error("Failed to fetch data");
-        errors.value = response._data.errors;
+        toast.error(response._data.message);
+        // errors.value = response._data.errors;
       },
     });
 
-    data.value = response;
+    // Update data and pagination info
+    data.value = response.data;
+    totalItems.value = response.pagination.total;
   } catch (err) {
-    toast.error("Failed to fetch data");
+    // toast.error("Failed to fetch data");
     console.log(err);
+  } finally {
+    loading.value = false;
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+
+  // Fetch the data with new options
+  fetchData(options);
 }
 
 async function deleteRecord() {
@@ -332,10 +369,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->
@@ -362,17 +396,22 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <div class="sticky-actions-wrapper">
-      <VDataTable
+      <VDataTableServer
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
-        :items="data"
+        :items-length="totalItems"
+        :loading="loading"
         :headers="headers"
+        :items="data"
+        :sort-by="sortBy"
+        :sort-desc="sortDesc"
         class="text-no-wrap"
+        @update:options="handleOptionsUpdate"
       >
         <!-- part name -->
         <template #item.partcode="{ item }">
           <div class="d-flex align-center">
-            <div class="d-flex flex-column ms-3">
+            <div class="d-flex flex-column">
               <span
                 class="d-block font-weight-medium text-high-emphasis text-truncate"
                 >{{ item.partname }}</span
@@ -385,7 +424,7 @@ onMounted(() => {
         <!-- vendor -->
         <template #item.vendor="{ item }">
           <div class="d-flex align-center">
-            <div class="d-flex flex-column ms-3">
+            <div class="d-flex flex-column">
               <span
                 class="d-block font-weight-medium text-high-emphasis text-truncate"
                 >{{ item.brand }}</span
@@ -398,7 +437,7 @@ onMounted(() => {
         <!-- unit price -->
         <template #item.currency="{ item }">
           <div class="d-flex align-center">
-            <div class="d-flex flex-row ms-3">
+            <div class="d-flex flex-row">
               {{ formatCurrency(item.currency, item.unitprice) }}
             </div>
           </div>
@@ -411,7 +450,7 @@ onMounted(() => {
         <!-- unit price -->
         <template #item.total="{ item }">
           <div class="d-flex align-center">
-            <div class="d-flex flex-row ms-3">
+            <div class="d-flex flex-row">
               {{ formatCurrency(item.currency, item.total) }}
             </div>
           </div>
@@ -428,8 +467,17 @@ onMounted(() => {
             </IconBtn>
           </div>
         </template>
-      </VDataTable>
+      </VDataTableServer>
     </div>
+
+    <!-- Pagination Controls -->
+    <template #bottom>
+      <TablePagination
+        v-model:page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+      />
+    </template>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
