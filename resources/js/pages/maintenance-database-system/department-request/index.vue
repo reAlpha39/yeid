@@ -52,23 +52,23 @@ const headers = [
   },
   {
     title: "PEMOHON",
-    key: "pemohon",
+    key: "orderempname",
   },
   {
     title: "JENIS PERBAIKAN",
-    key: "jenisPerbaikan",
+    key: "maintenancecode",
   },
   {
     title: "MESIN",
-    key: "mesin",
+    key: "machineno",
   },
   {
     title: "JENIS PEKERJAAN",
-    key: "jenisPekerjaan",
+    key: "orderjobtype",
   },
   {
     title: "JUMLAH",
-    key: "jumlah",
+    key: "orderqtty",
   },
   {
     title: "ACTIONS",
@@ -464,7 +464,7 @@ onMounted(() => {
         </template>
 
         <!-- date -->
-        <template #item.pemohon="{ item }">
+        <template #item.orderempname="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span
@@ -477,14 +477,16 @@ onMounted(() => {
         </template>
 
         <!-- vendor -->
-        <template v-slot:header.jenisPerbaikan> JENIS<br />PERBAIKAN </template>
-        <template #item.jenisPerbaikan="{ item }">
+        <template v-slot:header.maintenancecode>
+          JENIS<br />PERBAIKAN
+        </template>
+        <template #item.maintenancecode="{ item }">
           <div class="d-flex align-center">
             {{ item.maintenancecode }}
           </div>
         </template>
 
-        <template #item.mesin="{ item }">
+        <template #item.machineno="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span
@@ -496,14 +498,14 @@ onMounted(() => {
           </div>
         </template>
 
-        <template v-slot:header.jenisPekerjaan> JENIS<br />PEKERJAAN </template>
-        <template #item.jenisPekerjaan="{ item }">
+        <template v-slot:header.orderjobtype> JENIS<br />PEKERJAAN </template>
+        <template #item.orderjobtype="{ item }">
           <div class="d-flex align-center">
             {{ item.orderjobtype }}
           </div>
         </template>
 
-        <template #item.jumlah="{ item }">
+        <template #item.orderqtty="{ item }">
           <div class="d-flex align-center">
             {{ item.orderqtty }}
           </div>

@@ -51,7 +51,7 @@ const headers = [
   },
   {
     title: "MESIN",
-    key: "machine",
+    key: "machineno",
   },
   {
     title: "KODE",
@@ -416,7 +416,7 @@ onMounted(() => {
           </div>
         </template>
 
-        <template #item.machine="{ item }">
+        <template #item.machineno="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span

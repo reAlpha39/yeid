@@ -98,7 +98,7 @@ function convertAsapFlagId(id) {
 const headers = [
   {
     title: "REQUEST",
-    key: "request",
+    key: "wsrid",
   },
   {
     title: "TITLE",
@@ -115,7 +115,7 @@ const headers = [
 
   {
     title: "CATEGORY",
-    key: "category",
+    key: "asapflag",
   },
   {
     title: "STATUS",
@@ -271,7 +271,7 @@ onMounted(() => {
         :headers="headers"
         class="text-no-wrap"
       >
-        <template #item.request="{ item }">
+        <template #item.wsrid="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
               <span class="d-block text-high-emphasis text-truncate">
@@ -304,7 +304,7 @@ onMounted(() => {
           </div>
         </template>
 
-        <template #item.category="{ item }">
+        <template #item.asapflag="{ item }">
           <div class="d-flex align-center">
             {{ convertAsapFlagId(item.asapflag) }}
           </div>

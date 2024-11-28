@@ -64,6 +64,7 @@ const headers = [
   {
     title: "PART IMAGE",
     key: "partimage",
+    sortable: false,
   },
   {
     title: "ACTIONS",
@@ -344,7 +345,7 @@ const closeLightbox = () => {
   currentItem.value = null;
 };
 
-const debouncedFetchData = debounce(fetchData, 500); 
+const debouncedFetchData = debounce(fetchData, 500);
 
 // Watch for search query changes
 watch(searchQuery, () => {
