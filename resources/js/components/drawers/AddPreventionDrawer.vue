@@ -56,17 +56,20 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/preventions/" + preventionCode.value, {
-      method: "PUT",
-      body: {
-        preventionname: preventionName.value,
-        remark: remark.value,
-      },
+    const result = await $api(
+      "/master/preventions/" + encodeURIComponent(preventionCode.value),
+      {
+        method: "PUT",
+        body: {
+          preventionname: preventionName.value,
+          remark: remark.value,
+        },
 
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update kode solution success");
@@ -80,11 +83,14 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/preventions/" + id, {
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+    const response = await $api(
+      "/master/preventions/" + encodeURIComponent(id),
+      {
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     const data = response.data;
     preventionCode.value = data.preventioncode;

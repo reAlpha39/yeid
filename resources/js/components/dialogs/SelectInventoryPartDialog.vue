@@ -48,7 +48,7 @@ async function fetchData() {
 async function fetchDataVendor(id) {
   try {
     if (id) {
-      const response = await $api("/master/vendors/" + id);
+      const response = await $api("/master/vendors/" + encodeURIComponent(id));
 
       selectedVendors.value = response.data;
       selectedVendors.value.title =

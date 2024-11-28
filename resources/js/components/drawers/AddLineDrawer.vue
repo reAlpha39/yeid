@@ -62,7 +62,10 @@ async function add() {
 async function update() {
   try {
     const result = await $api(
-      "/master/lines/" + shopCode.value.shopcode + "/" + lineCode.value,
+      "/master/lines/" +
+        encodeURIComponent(shopCode.value.shopcode) +
+        "/" +
+        encodeURIComponent(lineCode.value),
       {
         method: "PUT",
         body: {
@@ -90,11 +93,17 @@ async function update() {
 
 async function fetchData(lineC, shopC) {
   try {
-    const response = await $api("/master/lines/" + shopC + "/" + lineC, {
-      onResponseError({ response }) {
-        toast.error(response._data.error);
-      },
-    });
+    const response = await $api(
+      "/master/lines/" +
+        encodeURIComponent(shopC) +
+        "/" +
+        encodeURIComponent(lineC),
+      {
+        onResponseError({ response }) {
+          toast.error(response._data.error);
+        },
+      }
+    );
 
     const data = response.data;
     lineCode.value = data.linecode;
@@ -111,7 +120,7 @@ async function fetchData(lineC, shopC) {
 async function fetchDataShop(id) {
   try {
     if (id) {
-      const response = await $api("/master/shops/" + id, {
+      const response = await $api("/master/shops/" + encodeURIComponent(id), {
         onResponseError({ response }) {
           toast.error(response._data.error);
         },

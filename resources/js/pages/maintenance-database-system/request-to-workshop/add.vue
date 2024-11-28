@@ -67,7 +67,8 @@ async function addData() {
 
     if (isEdit.value) {
       const response = await $api(
-        "/maintenance-database-system/request-workshop/" + route.query.wsrid,
+        "/maintenance-database-system/request-workshop/" +
+          encodeURIComponent(route.query.wsrid),
         {
           method: "PUT",
           body: requestData,
@@ -106,7 +107,9 @@ function formatStaffNames() {
 async function fetchDataEmployee(id, isSelectPemohon) {
   try {
     if (id) {
-      const response = await $api("/master/employees/" + id);
+      const response = await $api(
+        "/master/employees/" + encodeURIComponent(id)
+      );
 
       let data = response.data;
 
@@ -131,7 +134,7 @@ async function fetchDataEmployee(id, isSelectPemohon) {
 async function fetchDataShop(id) {
   try {
     if (id) {
-      const response = await $api("/master/shops/" + id);
+      const response = await $api("/master/shops/" + encodeURIComponent(id));
 
       selectedShop.value = response.data;
       selectedShop.value.title =
@@ -167,7 +170,7 @@ function handleMachinesSelected(items) {
 async function fetchDataEdit(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/request-workshop/" + id
+      "/maintenance-database-system/request-workshop/" + encodeURIComponent(id)
     );
     prevData.value = response.data;
   } catch (err) {

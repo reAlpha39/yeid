@@ -17,7 +17,7 @@ const props = defineProps({
 async function fetchData(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" + id
+      "/maintenance-database-system/department-requests/" + encodeURIComponent(id)
     );
 
     data.value = response.data;

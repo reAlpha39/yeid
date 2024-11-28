@@ -56,31 +56,36 @@ async function addData() {
 
   try {
     if (isEdit.value) {
-      const response = await $api("/master/machines/" + machineNo.value, {
-        method: "PUT",
-        body: {
-          machinename: machineName.value,
-          plantcode: plantNo.value,
-          shopcode: selectedShop.value.shopcode,
-          shopname: selectedShop.value.shopname,
-          linecode: selectedLine.value.linecode,
-          modelname: modelName.value,
-          makercode: selectedMaker.value.makercode,
-          makername: selectedMaker.value.makername,
-          serialno: serialNo.value,
-          currency: currency.value,
-          machineprice: price.value,
-          purchaseroot: purchaseRoot.value,
-          installdate: installDate.value,
-          note: note.value,
-          status: convertStatus(status.value),
-          rank: rank.value,
-          updatetime: now,
-        },
-        onResponseError({ response }) {
-          toast.error(response._data.message ?? "Failed to save machine data");
-        },
-      });
+      const response = await $api(
+        "/master/machines/" + encodeURIComponent(machineNo.value),
+        {
+          method: "PUT",
+          body: {
+            machinename: machineName.value,
+            plantcode: plantNo.value,
+            shopcode: selectedShop.value.shopcode,
+            shopname: selectedShop.value.shopname,
+            linecode: selectedLine.value.linecode,
+            modelname: modelName.value,
+            makercode: selectedMaker.value.makercode,
+            makername: selectedMaker.value.makername,
+            serialno: serialNo.value,
+            currency: currency.value,
+            machineprice: price.value,
+            purchaseroot: purchaseRoot.value,
+            installdate: installDate.value,
+            note: note.value,
+            status: convertStatus(status.value),
+            rank: rank.value,
+            updatetime: now,
+          },
+          onResponseError({ response }) {
+            toast.error(
+              response._data.message ?? "Failed to save machine data"
+            );
+          },
+        }
+      );
 
       toast.success("Edit machine success");
     } else {
@@ -121,7 +126,11 @@ async function addData() {
 
 async function fetchDataEdit(id) {
   try {
-    const response = await $api("/master/machines/" + id);
+    const response = await $api("/master/machines/" + encodeURIComponent(id), {
+      onResponseError({ response }) {
+        toast.error(response._data.message ?? "Failed to fetch data");
+      },
+    });
     // console.log(response.data);
     prevData.value = response.data;
   } catch (err) {
@@ -132,7 +141,7 @@ async function fetchDataEdit(id) {
 async function fetchDataMaker(id) {
   try {
     if (id) {
-      const response = await $api("/master/makers/" + id, {
+      const response = await $api("/master/makers/" + encodeURIComponent(id), {
         onResponseError({ response }) {
           toast.error(response._data.message ?? "Failed to fetch maker data");
         },
@@ -162,7 +171,7 @@ async function fetchDataMaker(id) {
 async function fetchDataShop(id) {
   try {
     if (id) {
-      const response = await $api("/master/shops/" + id, {
+      const response = await $api("/master/shops/" + encodeURIComponent(id), {
         onResponseError({ response }) {
           toast.error(response._data.message ?? "Failed to fetch data");
         },
@@ -302,7 +311,7 @@ onMounted(() => {
   fetchDataLine();
 
   const id = route.query.machine_no;
-  // console.log("Fetching data for machine_no:", id);
+  console.log("Fetching data for machine_no:", id);
   if (id) {
     isEdit.value = true;
     initEditData(route.query.machine_no);

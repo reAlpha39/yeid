@@ -85,13 +85,16 @@ async function fetchData() {
 
 async function deletePart() {
   try {
-    const result = await $api("/master/machines/" + selectedItem.value, {
-      method: "DELETE",
+    const result = await $api(
+      "/master/machines/" + encodeURIComponent(selectedItem.value),
+      {
+        method: "DELETE",
 
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     selectedItem.value = "";
     isDeleteDialogVisible.value = false;
@@ -209,10 +212,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

@@ -35,7 +35,7 @@ async function initEditData(id) {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/press-shot/parts/" + id);
+    const response = await $api("/press-shot/parts/" + encodeURIComponent(id));
 
     data.value = response.data;
   } catch (err) {
@@ -98,7 +98,7 @@ async function fetchUserData() {
 
 async function fetchDataMachine(id) {
   try {
-    const response = await $api("/master/machines/" + id);
+    const response = await $api("/master/machines/" + encodeURIComponent(id));
 
     machine.value = response.data;
   } catch (err) {

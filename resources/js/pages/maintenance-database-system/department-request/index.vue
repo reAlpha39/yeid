@@ -179,7 +179,8 @@ async function fetchDataShop() {
 async function deletePart() {
   try {
     const result = await $api(
-      "/maintenance-database-system/department-requests/" + selectedItem.value,
+      "/maintenance-database-system/department-requests/" +
+        encodeURIComponent(selectedItem.value),
       {
         method: "DELETE",
 
@@ -314,10 +315,7 @@ onMounted(() => {
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
       <div style="inline-size: 15.625rem">
-        <AppTextField
-          v-model="searchQuery"
-          placeholder="Search"
-        />
+        <AppTextField v-model="searchQuery" placeholder="Search" />
       </div>
       <div style="inline-size: 10rem">
         <AppDateTimePicker

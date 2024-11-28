@@ -70,7 +70,10 @@ async function fetchData() {
 async function deleteItem() {
   try {
     const result = await $api(
-      "/master/lines/" + selectedShopCode.value + "/" + selectedLineCode.value,
+      "/master/lines/" +
+        encodeURIComponent(selectedShopCode.value) +
+        "/" +
+        encodeURIComponent(selectedLineCode.value),
       {
         method: "DELETE",
 
@@ -218,10 +221,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

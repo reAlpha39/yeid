@@ -57,18 +57,21 @@ async function addShop() {
 
 async function updateShop() {
   try {
-    const result = await $api("/master/shops/" + shopCode.value, {
-      method: "PUT",
-      body: {
-        shopname: shopName.value,
-        planttype: "M",
-        countflag: countFlag.value ? "1" : "0",
-      },
+    const result = await $api(
+      "/master/shops/" + encodeURIComponent(shopCode.value),
+      {
+        method: "PUT",
+        body: {
+          shopname: shopName.value,
+          planttype: "M",
+          countflag: countFlag.value ? "1" : "0",
+        },
 
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Add shop success");
@@ -82,7 +85,7 @@ async function updateShop() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/shops/" + id, {
+    const response = await $api("/master/shops/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         errors.value = response._data.errors;
       },

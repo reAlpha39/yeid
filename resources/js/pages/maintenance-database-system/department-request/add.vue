@@ -121,7 +121,7 @@ async function addData() {
       // Update the existing maintenance record
       const response = await $api(
         "/maintenance-database-system/department-requests/" +
-          prevData.value.recordid,
+          encodeURIComponent(prevData.value.recordid),
         {
           method: "PUT",
           body: requestData,
@@ -157,7 +157,8 @@ async function addData() {
 async function fetchDataEdit(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" + id
+      "/maintenance-database-system/department-requests/" +
+        encodeURIComponent(id)
     );
     // console.log(response.data);
     prevData.value = response.data;
@@ -169,7 +170,7 @@ async function fetchDataEdit(id) {
 async function fetchDataShop(id) {
   try {
     if (id) {
-      const response = await $api("/master/shops/" + id, {
+      const response = await $api("/master/shops/" + encodeURIComponent(id), {
         onResponseError({ response }) {
           errors.value = response._data.errors;
         },
@@ -204,11 +205,14 @@ async function fetchDataEmployee(id) {
         return;
       }
 
-      const response = await $api("/master/employees/" + id, {
-        onResponseError({ response }) {
-          // errors.value = response._data.errors;
-        },
-      });
+      const response = await $api(
+        "/master/employees/" + encodeURIComponent(id),
+        {
+          onResponseError({ response }) {
+            // errors.value = response._data.errors;
+          },
+        }
+      );
 
       let data = response.data;
 

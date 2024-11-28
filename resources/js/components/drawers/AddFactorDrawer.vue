@@ -56,17 +56,20 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/factors/" + factorCode.value, {
-      method: "PUT",
-      body: {
-        factorname: factorName.value,
-        remark: remark.value,
-      },
+    const result = await $api(
+      "/master/factors/" + encodeURIComponent(factorCode.value),
+      {
+        method: "PUT",
+        body: {
+          factorname: factorName.value,
+          remark: remark.value,
+        },
 
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update factor success");
@@ -80,7 +83,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/factors/" + id, {
+    const response = await $api("/master/factors/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         // errors.value = response._data.errors;
       },

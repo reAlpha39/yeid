@@ -91,13 +91,16 @@ async function fetchData() {
 
 async function deletePart() {
   try {
-    const result = await $api("/master/users/" + selectedItem.value, {
-      method: "DELETE",
+    const result = await $api(
+      "/master/users/" + encodeURIComponent(selectedItem.value),
+      {
+        method: "DELETE",
 
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     selectedItem.value = "";
     isDeleteDialogVisible.value = false;
@@ -112,15 +115,18 @@ async function deletePart() {
 
 async function updateStatus(id, status) {
   try {
-    const response = await $api("/master/users/" + id + "/status", {
-      method: "PUT",
-      body: {
-        status: status,
-      },
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+    const response = await $api(
+      "/master/users/" + encodeURIComponent(id) + "/status",
+      {
+        method: "PUT",
+        body: {
+          status: status,
+        },
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     menu.value = false;
     toast.success("Update status success");
@@ -312,10 +318,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

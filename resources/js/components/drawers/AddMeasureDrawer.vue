@@ -56,17 +56,20 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/measures/" + measureCode.value, {
-      method: "PUT",
-      body: {
-        measurename: measureName.value,
-        remark: remark.value,
-      },
+    const result = await $api(
+      "/master/measures/" + encodeURIComponent(measureCode.value),
+      {
+        method: "PUT",
+        body: {
+          measurename: measureName.value,
+          remark: remark.value,
+        },
 
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update kode temporary success");
@@ -80,7 +83,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/measures/" + id, {
+    const response = await $api("/master/measures/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         // errors.value = response._data.errors;
       },

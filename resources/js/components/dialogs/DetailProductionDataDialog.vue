@@ -65,7 +65,7 @@ async function fetchData() {
 
 async function fetchDataMachine(id) {
   try {
-    const response = await $api("/master/machines/" + id);
+    const response = await $api("/master/machines/" + encodeURIComponent(id));
 
     machine.value = response.data;
   } catch (err) {

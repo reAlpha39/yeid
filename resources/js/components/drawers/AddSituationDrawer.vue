@@ -56,7 +56,7 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/situations/" + situationCode.value, {
+    const result = await $api("/master/situations/" + encodeURIComponent(situationCode.value) , {
       method: "PUT",
       body: {
         situationname: situationName.value,
@@ -80,7 +80,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/situations/" + id, {
+    const response = await $api("/master/situations/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         errors.value = response._data.errors;
       },

@@ -151,7 +151,9 @@ async function addMasterPart() {
 
 async function fetchPartImage(partCode) {
   try {
-    const response = await $api("/master/part/image/" + partCode);
+    const response = await $api(
+      "/master/part/image/" + encodeURIComponent(partCode)
+    );
     existingImage.value = response.data.image_url;
     isImageDeleted.value = false;
   } catch (err) {

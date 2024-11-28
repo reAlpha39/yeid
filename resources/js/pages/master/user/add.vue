@@ -92,21 +92,24 @@ async function addData() {
     let controlAccessJson = JSON.stringify(controlAccess.value);
 
     if (isEdit.value) {
-      const response = await $api("/master/users/" + userId.value, {
-        method: "PUT",
-        body: {
-          name: fullName.value,
-          email: email.value,
-          phone: phone.value,
-          role_access: convertRoleAccess(selectedRoleAccess.value),
-          department_id: selectedDepartment.value.id,
-          status: convertStatus(status.value),
-          control_access: controlAccessJson,
-        },
-        onResponseError({ response }) {
-          toast.error(response._data.message ?? "Failed to save user data");
-        },
-      });
+      const response = await $api(
+        "/master/users/" + encodeURIComponent(userId.value),
+        {
+          method: "PUT",
+          body: {
+            name: fullName.value,
+            email: email.value,
+            phone: phone.value,
+            role_access: convertRoleAccess(selectedRoleAccess.value),
+            department_id: selectedDepartment.value.id,
+            status: convertStatus(status.value),
+            control_access: controlAccessJson,
+          },
+          onResponseError({ response }) {
+            toast.error(response._data.message ?? "Failed to save user data");
+          },
+        }
+      );
 
       toast.success("Edit user success");
     } else {
@@ -138,7 +141,7 @@ async function addData() {
 async function fetchDataEdit(id) {
   try {
     userId.value = id;
-    const response = await $api("/master/users/" + id);
+    const response = await $api("/master/users/" + encodeURIComponent(id));
     // console.log(response.data);
     prevData.value = response.data;
   } catch (err) {
@@ -149,13 +152,16 @@ async function fetchDataEdit(id) {
 async function fetchDataDepartment(id) {
   try {
     if (id) {
-      const response = await $api("/master/departments/" + id, {
-        onResponseError({ response }) {
-          toast.error(
-            response._data.message ?? "Failed to fetch department data"
-          );
-        },
-      });
+      const response = await $api(
+        "/master/departments/" + encodeURIComponent(id),
+        {
+          onResponseError({ response }) {
+            toast.error(
+              response._data.message ?? "Failed to fetch department data"
+            );
+          },
+        }
+      );
 
       selectedDepartment.value = response.data;
       // console.log(response.data);

@@ -37,7 +37,7 @@ async function fetchMachines() {
 async function fetchDataMaker(id) {
   try {
     if (id) {
-      const response = await $api("/master/makers/" + id, {
+      const response = await $api("/master/makers/" + encodeURIComponent(id), {
         onResponseError({ response }) {
           errors.value = response._data.errors;
         },

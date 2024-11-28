@@ -55,16 +55,19 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/vendors/" + vendorCode.value, {
-      method: "PUT",
-      body: {
-        vendorname: vendorName.value,
-      },
+    const result = await $api(
+      "/master/vendors/" + encodeURIComponent(vendorCode.value),
+      {
+        method: "PUT",
+        body: {
+          vendorname: vendorName.value,
+        },
 
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Add vendor success");
@@ -78,7 +81,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/vendors/" + id, {
+    const response = await $api("/master/vendors/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         errors.value = response._data.errors;
       },

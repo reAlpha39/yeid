@@ -74,19 +74,22 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/systems/" + year.value, {
-      method: "PUT",
-      body: {
-        usd2idr: usd2idr.value.toString(),
-        jpy2idr: jpy2idr.value.toString(),
-        eur2idr: eur2idr.value.toString(),
-        sgd2idr: sgd2idr.value.toString(),
-      },
+    const result = await $api(
+      "/master/systems/" + encodeURIComponent(year.value),
+      {
+        method: "PUT",
+        body: {
+          usd2idr: usd2idr.value.toString(),
+          jpy2idr: jpy2idr.value.toString(),
+          eur2idr: eur2idr.value.toString(),
+          sgd2idr: sgd2idr.value.toString(),
+        },
 
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update exchange rate success");
@@ -100,7 +103,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/systems/" + id, {
+    const response = await $api("/master/systems/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         // errors.value = response._data.errors;
       },

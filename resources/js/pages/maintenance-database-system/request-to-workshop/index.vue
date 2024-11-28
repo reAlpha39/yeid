@@ -59,7 +59,8 @@ async function fetchData() {
 async function deletePart() {
   try {
     const result = await $api(
-      "/maintenance-database-system/request-workshop/" + selectedItem.value,
+      "/maintenance-database-system/request-workshop/" +
+        encodeURIComponent(selectedItem.value),
       {
         method: "DELETE",
 
@@ -237,10 +238,7 @@ onMounted(() => {
         />
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

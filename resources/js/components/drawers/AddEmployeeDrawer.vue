@@ -59,18 +59,21 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/employees/" + employeeCode.value, {
-      method: "PUT",
-      body: {
-        employeename: employeeName.value,
-        mlevel: mlevel.value.toString(),
-        password: password.value,
-      },
+    const result = await $api(
+      "/master/employees/" + encodeURIComponent(employeeCode.value),
+      {
+        method: "PUT",
+        body: {
+          employeename: employeeName.value,
+          mlevel: mlevel.value.toString(),
+          password: password.value,
+        },
 
-      onResponseError({ response }) {
-        toast.error(response._data.error);
-      },
-    });
+        onResponseError({ response }) {
+          toast.error(response._data.error);
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update employee success");
@@ -84,7 +87,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/employees/" + id, {
+    const response = await $api("/master/employees/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         toast.error(response._data.error);
       },

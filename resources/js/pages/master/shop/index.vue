@@ -73,14 +73,17 @@ async function fetchData() {
 
 async function deletePart() {
   try {
-    const result = await $api("/master/shops/" + selectedShopCode.value, {
-      method: "DELETE",
+    const result = await $api(
+      "/master/shops/" + encodeURIComponent(selectedShopCode.value),
+      {
+        method: "DELETE",
 
-      onResponseError({ response }) {
-        toast.error("Failed to delete data");
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          toast.error("Failed to delete data");
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     selectedShopCode.value = "";
     isDeleteDialogVisible.value = false;
@@ -190,10 +193,7 @@ onMounted(() => {
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
-          <AppTextField
-            v-model="searchQuery"
-            placeholder="Search"
-          />
+          <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
         <!-- 👉 Export button -->

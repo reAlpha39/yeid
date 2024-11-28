@@ -22,7 +22,8 @@ const addedChangedPart = ref([]);
 async function fetchDataDetail(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" + id
+      "/maintenance-database-system/department-requests/" +
+        encodeURIComponent(id)
     );
     report.value = response.data;
   } catch (err) {
@@ -33,7 +34,9 @@ async function fetchDataDetail(id) {
 
 async function fetchWorks(id) {
   try {
-    const response = await $api("/maintenance-database-system/work/" + id);
+    const response = await $api(
+      "/maintenance-database-system/work/" + encodeURIComponent(id)
+    );
 
     addedWorkTime.value = response.data;
   } catch (err) {
@@ -46,7 +49,9 @@ async function fetchWorks(id) {
 
 async function fetchParts(id) {
   try {
-    const response = await $api("/maintenance-database-system/part/" + id);
+    const response = await $api(
+      "/maintenance-database-system/part/" + encodeURIComponent(id)
+    );
 
     addedChangedPart.value = response.data;
   } catch (err) {

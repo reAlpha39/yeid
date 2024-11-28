@@ -61,13 +61,16 @@ async function fetchData() {
 
 async function deleteItem() {
   try {
-    const result = await $api("/master/departments/" + selectedId.value, {
-      method: "DELETE",
+    const result = await $api(
+      "/master/departments/" + encodeURIComponent(selectedId.value),
+      {
+        method: "DELETE",
 
-      onResponseError({ response }) {
-        // errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          // errors.value = response._data.errors;
+        },
+      }
+    );
 
     selectedId.value = "";
     isDeleteDialogVisible.value = false;

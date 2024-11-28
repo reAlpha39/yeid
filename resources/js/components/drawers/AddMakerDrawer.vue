@@ -56,17 +56,20 @@ async function add() {
 
 async function update() {
   try {
-    const result = await $api("/master/makers/" + makerCode.value, {
-      method: "PUT",
-      body: {
-        makername: makerName.value,
-        remark: remark.value,
-      },
+    const result = await $api(
+      "/master/makers/" + encodeURIComponent(makerCode.value),
+      {
+        method: "PUT",
+        body: {
+          makername: makerName.value,
+          remark: remark.value,
+        },
 
-      onResponseError({ response }) {
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      }
+    );
 
     // console.log(result);
     toast.success("Update maker success");
@@ -80,7 +83,7 @@ async function update() {
 
 async function fetchData(id) {
   try {
-    const response = await $api("/master/makers/" + id, {
+    const response = await $api("/master/makers/" + encodeURIComponent(id), {
       onResponseError({ response }) {
         errors.value = response._data.errors;
       },

@@ -242,7 +242,8 @@ function calculateTotalWorkTime() {
 async function fetchDataEdit(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" + id
+      "/maintenance-database-system/department-requests/" +
+        encodeURIComponent(id)
     );
     prevData.value = response.data;
 
@@ -335,7 +336,9 @@ async function initEditData(id) {
 
 async function fetchWorks(id) {
   try {
-    const response = await $api("/maintenance-database-system/work/" + id);
+    const response = await $api(
+      "/maintenance-database-system/work/" + encodeURIComponent(id)
+    );
 
     addedWorkTime.value = response.data;
   } catch (err) {
@@ -348,7 +351,9 @@ async function fetchWorks(id) {
 
 async function fetchParts(id) {
   try {
-    const response = await $api("/maintenance-database-system/part/" + id);
+    const response = await $api(
+      "/maintenance-database-system/part/" + encodeURIComponent(id)
+    );
 
     addedChangedPart.value = response.data;
   } catch (err) {
@@ -362,7 +367,7 @@ async function fetchParts(id) {
 async function fetchExchangeRate() {
   try {
     const year = new Date().getFullYear();
-    const response = await $api("/master/systems/" + year);
+    const response = await $api("/master/systems/" + encodeURIComponent(year));
 
     exchangeRate.value = response.data;
   } catch (err) {
@@ -374,7 +379,9 @@ async function fetchExchangeRate() {
 async function fetchLtfactors(id) {
   try {
     if (id) {
-      const response = await $api("/master/ltfactors/" + id);
+      const response = await $api(
+        "/master/ltfactors/" + encodeURIComponent(id)
+      );
 
       selectedltfactor.value = response.data;
       selectedltfactor.value.title =
@@ -397,7 +404,9 @@ async function fetchLtfactors(id) {
 async function fetchSituations(id) {
   try {
     if (id) {
-      const response = await $api("/master/situations/" + id);
+      const response = await $api(
+        "/master/situations/" + encodeURIComponent(id)
+      );
 
       selectedSituation.value = response.data;
       selectedSituation.value.title =
@@ -420,7 +429,7 @@ async function fetchSituations(id) {
 async function fetchFactor(id) {
   try {
     if (id) {
-      const response = await $api("/master/factors/" + id);
+      const response = await $api("/master/factors/" + encodeURIComponent(id));
 
       selectedFactor.value = response.data;
       selectedFactor.value.title =
@@ -443,7 +452,7 @@ async function fetchFactor(id) {
 async function fetchMeasure(id) {
   try {
     if (id) {
-      const response = await $api("/master/measures/" + id);
+      const response = await $api("/master/measures/" + encodeURIComponent(id));
 
       selectedMeasure.value = response.data;
       selectedMeasure.value.title =
@@ -466,7 +475,9 @@ async function fetchMeasure(id) {
 async function fetchPrevention(id) {
   try {
     if (id) {
-      const response = await $api("/master/preventions/" + id);
+      const response = await $api(
+        "/master/preventions/" + encodeURIComponent(id)
+      );
 
       selectedPrevention.value = response.data;
       selectedPrevention.value.title =
@@ -561,7 +572,7 @@ async function addData() {
 
     const response = await $api(
       "/maintenance-database-system/maintenance-report/" +
-        route.query.record_id,
+        encodeURIComponent(route.query.record_id),
       {
         method: "PUT",
         body: requestData,
