@@ -54,7 +54,7 @@ const minStock = ref(null);
 const category = ref(null);
 const lastExchangeDate = ref(null);
 const drawingNo = ref(null);
-const autoDetection = ref(null);
+const autoDetection = ref(false);
 const reason = ref(null);
 
 async function submitData() {
@@ -477,7 +477,6 @@ onMounted(async () => {
           >
           <VSwitch
             v-model="autoDetection"
-            :rules="[requiredValidator]"
             :label="autoDetection"
             false-value="Inactive"
             true-value="Active"
