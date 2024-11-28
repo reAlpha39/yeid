@@ -166,13 +166,20 @@ class MasterPartController extends Controller
 
             // Add image paths to results
             $items = array_map(function ($item) {
-                // Check for image file
-                $files = glob(storage_path('app/public/master_parts/' . $item->partcode . '.*'));
+                // Check for specific image file extensions
+                $filePatterns = [
+                    storage_path('app/public/master_parts/' . $item->partcode . '.jpg'),
+                    storage_path('app/public/master_parts/' . $item->partcode . '.jpeg'),
+                    storage_path('app/public/master_parts/' . $item->partcode . '.png')
+                ];
 
-                // If files found
-                if (!empty($files)) {
+                // Find the first matching file
+                $matchingFiles = array_filter($filePatterns, 'file_exists');
+
+                // If a matching file is found
+                if (!empty($matchingFiles)) {
                     // Get the first matching file
-                    $file = $files[0];
+                    $file = array_values($matchingFiles)[0];
                     // Extract the relative path
                     $item->partimage = 'master_parts/' . basename($file);
                 } else {
@@ -283,12 +290,7 @@ class MasterPartController extends Controller
                 $fileName = $request->part_code . '.' . $image->getClientOriginalExtension();
 
                 // Delete existing file with same name if exists (for different extensions)
-                $existingFiles = glob(storage_path('app/public/master_parts/' . $request->part_code . '.*'));
-                foreach ($existingFiles as $file) {
-                    if (file_exists($file)) {
-                        unlink($file);
-                    }
-                }
+                $this->deleteImage($partCode);
 
                 $image->storeAs('public/master_parts', $fileName);
                 $imagePath = 'master_parts/' . $fileName;
@@ -334,12 +336,7 @@ class MasterPartController extends Controller
                 // }
                 // $partData['image_path'] = null;
 
-                $existingFiles = glob(storage_path('app/public/master_parts/' . $partCode . '.*'));
-                foreach ($existingFiles as $file) {
-                    if (file_exists($file)) {
-                        unlink($file);
-                    }
-                }
+                $this->deleteImage($partCode);
             }
 
             if ($isEmpty->isEmpty()) {
@@ -498,7 +495,14 @@ class MasterPartController extends Controller
 
     private function deleteImage($partCode)
     {
-        $existingFiles = glob(storage_path('app/public/master_parts/' . $partCode . '.*'));
+        $filePatterns = [
+            storage_path('app/public/master_parts/' . $partCode . '.jpg'),
+            storage_path('app/public/master_parts/' . $partCode . '.jpeg'),
+            storage_path('app/public/master_parts/' . $partCode . '.png')
+        ];
+
+        // Find the first matching file
+        $existingFiles = array_filter($filePatterns, 'file_exists');
         foreach ($existingFiles as $file) {
             if (file_exists($file)) {
                 unlink($file);
