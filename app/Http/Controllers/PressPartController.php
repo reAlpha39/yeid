@@ -15,11 +15,31 @@ class PressPartController extends Controller
     public function indexParts(Request $request)
     {
         try {
+            // Basic filters
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
+
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
+
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'asc');
+
+            // If sortBy is a JSON string, decode it
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'asc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use the original value
+                }
+            }
 
             $query = DB::table('mas_presspart as m')
                 ->leftJoin('mas_inventory as i', function ($join) {
@@ -43,14 +63,14 @@ class PressPartController extends Controller
                     'm.partname',
                     'm.category',
                     DB::raw('COALESCE((
-                    SELECT sum(shotcount)
-                    FROM tbl_presswork
-                    WHERE machineno = m.machineno
-                    AND model = m.model
-                    AND dieno = m.dieno
-                    AND dieunitno = m.dieunitno
-                    AND startdatetime > m.exchangedatetime
-                ), 0) as counter'),
+                SELECT sum(shotcount)
+                FROM tbl_presswork
+                WHERE machineno = m.machineno
+                AND model = m.model
+                AND dieno = m.dieno
+                AND dieunitno = m.dieunitno
+                AND startdatetime > m.exchangedatetime
+            ), 0) as counter'),
                     'm.companylimit',
                     'm.makerlimit',
                     'm.qttyperdie',
@@ -59,30 +79,30 @@ class PressPartController extends Controller
                     'm.exchangedatetime',
                     'm.minstock',
                     DB::raw('COALESCE(i.laststocknumber, 0) +
-                    COALESCE((
-                        SELECT sum(CASE
-                            WHEN jobcode = \'O\' THEN -quantity
-                            ELSE quantity
-                        END)
-                        FROM tbl_invrecord
-                        WHERE partcode = i.partcode
-                        AND jobdate > i.laststockdate
-                    ), 0) as currentstock'),
+                COALESCE((
+                    SELECT sum(CASE
+                        WHEN jobcode = \'O\' THEN -quantity
+                        ELSE quantity
+                    END)
+                    FROM tbl_invrecord
+                    WHERE partcode = i.partcode
+                    AND jobdate > i.laststockdate
+                ), 0) as currentstock'),
                     'i.unitprice',
                     'i.currency',
                     'i.brand',
                     DB::raw('COALESCE(v.vendorname, \'-\') as vendorname'),
                     DB::raw('CASE
-                    WHEN m.partcode LIKE \'_I%\' THEN \'Import\'
-                    WHEN m.partcode LIKE \'_L%\' THEN \'Local\'
-                    ELSE \'-\'
-                END as origin'),
+                WHEN m.partcode LIKE \'_I%\' THEN \'Import\'
+                WHEN m.partcode LIKE \'_L%\' THEN \'Local\'
+                ELSE \'-\'
+            END as origin'),
                     'i.address'
                 ])
                 ->where('m.status', '<>', 'D')
-                // Use simple LIKE comparison instead of date extraction
                 ->where('m.exchangedatetime', 'LIKE', $year . '%');
 
+            // Apply filters
             if ($machineNo) {
                 $query->where('m.machineno', $machineNo);
             }
@@ -96,33 +116,83 @@ class PressPartController extends Controller
             }
 
             if ($partCode) {
-                $query->where('m.partcode', 'ILIKE', "{$partCode}%")
-                    ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
+                $query->where(function ($q) use ($partCode) {
+                    $q->where('m.partcode', 'ILIKE', "{$partCode}%")
+                        ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
+                });
             }
 
-            // Cache results
-            // $cacheKey = sprintf(
-            //     "presspart_query_%s_%s_%s_%s_%s",
-            //     $year,
-            //     $machineNo ?? 'all',
-            //     $model ?? 'all',
-            //     $dieNo ?? 'all',
-            //     $partCode ?? 'all'
-            // );
+            // Apply sorting
+            if ($sortBy) {
+                // Handle special cases for computed columns
+                switch ($sortBy) {
+                    case 'counter':
+                        $query->orderBy(DB::raw('COALESCE((
+                        SELECT sum(shotcount)
+                        FROM tbl_presswork
+                        WHERE machineno = m.machineno
+                        AND model = m.model
+                        AND dieno = m.dieno
+                        AND dieunitno = m.dieunitno
+                        AND startdatetime > m.exchangedatetime
+                    ), 0)'), $sortDirection);
+                        break;
+                    case 'currentstock':
+                        $query->orderBy(DB::raw('COALESCE(i.laststocknumber, 0) +
+                        COALESCE((
+                            SELECT sum(CASE
+                                WHEN jobcode = \'O\' THEN -quantity
+                                ELSE quantity
+                            END)
+                            FROM tbl_invrecord
+                            WHERE partcode = i.partcode
+                            AND jobdate > i.laststockdate
+                        ), 0)'), $sortDirection);
+                        break;
+                    case 'origin':
+                        $query->orderBy(DB::raw('CASE
+                        WHEN m.partcode LIKE \'_I%\' THEN \'Import\'
+                        WHEN m.partcode LIKE \'_L%\' THEN \'Local\'
+                        ELSE \'-\'
+                    END'), $sortDirection);
+                        break;
+                    case 'vendorname':
+                        $query->orderBy(DB::raw('COALESCE(v.vendorname, \'-\')'), $sortDirection);
+                        break;
+                    case 'machinename':
+                        $query->orderBy('c.machinename', $sortDirection);
+                        break;
+                    default:
+                        // For regular columns, determine the table prefix
+                        $prefix = in_array($sortBy, [
+                            'unitprice',
+                            'currency',
+                            'brand',
+                            'address'
+                        ]) ? 'i.' : 'm.';
+                        $query->orderBy($prefix . $sortBy, $sortDirection);
+                }
+            } else {
+                // Default sorting
+                $query->orderBy('m.partcode');
+            }
 
-            // $result = cache()->remember(
-            //     $cacheKey,
-            //     now()->addMinutes(30),
-            //     function () use ($query) {
-            //         return $query->get();
-            //     }
-            // );
-
-            $result = $query->get();
+            // Execute pagination
+            $results = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'success' => true,
-                'data' => $result,
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json([
@@ -135,26 +205,46 @@ class PressPartController extends Controller
 
     public function indexMaster(Request $request)
     {
-        // Get input parameters
-        $year = $request->input('year');
-        $machineNo = $request->input('machine_no');
-        $model = $request->input('model');
-        $dieNo = $request->input('die_no');
-        $partCode = $request->input('part_code');
+        try {
+            // Basic filters
+            $year = $request->input('year');
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $partCode = $request->input('part_code');
 
-        $query = DB::table('mas_presspart as m')
-            ->leftJoin('mas_inventory as i', function ($join) {
-                $join->whereRaw('substring(m.partcode, 1, 8) = substring(i.partcode, 1, 8)');
-            })
-            ->leftJoin('mas_machine as c', 'm.machineno', '=', 'c.machineno')
-            ->leftJoin(
-                DB::raw('(SELECT exchangedatetime, reason FROM tbl_exchangework) as e'),
-                'm.exchangedatetime',
-                '=',
-                'e.exchangedatetime'
-            )
-            ->leftJoin('mas_vendor as v', 'i.vendorcode', '=', 'v.vendorcode')
-            ->leftJoin(DB::raw('(
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
+
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'asc');
+
+            // Handle Vuetify sorting format
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'asc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use original value
+                }
+            }
+
+            $query = DB::table('mas_presspart as m')
+                ->leftJoin('mas_inventory as i', function ($join) {
+                    $join->whereRaw('substring(m.partcode, 1, 8) = substring(i.partcode, 1, 8)');
+                })
+                ->leftJoin('mas_machine as c', 'm.machineno', '=', 'c.machineno')
+                ->leftJoin(
+                    DB::raw('(SELECT exchangedatetime, reason FROM tbl_exchangework) as e'),
+                    'm.exchangedatetime',
+                    '=',
+                    'e.exchangedatetime'
+                )
+                ->leftJoin('mas_vendor as v', 'i.vendorcode', '=', 'v.vendorcode')
+                ->leftJoin(DB::raw('(
                 SELECT 
                     partcode,
                     sum(CASE WHEN jobcode = \'O\' THEN -quantity ELSE quantity END) as total_quantity
@@ -162,73 +252,120 @@ class PressPartController extends Controller
                 WHERE jobdate > (SELECT laststockdate FROM mas_inventory WHERE partcode = tbl_invrecord.partcode)
                 GROUP BY partcode
             ) as t'), 'i.partcode', '=', 't.partcode')
-            ->select([
-                'm.machineno',
-                'm.model',
-                'm.dieno',
-                'm.dieunitno',
-                'm.processname',
-                'm.partcode',
-                'm.partname',
-                'm.category',
-                'm.companylimit',
-                'm.makerlimit',
-                'm.autoflag',
-                'm.qttyperdie',
-                'm.drawingno',
-                'm.note',
-                'm.exchangedatetime',
-                'e.reason as exchangereason',
-                'm.minstock',
-                DB::raw('COALESCE(i.laststocknumber + COALESCE(t.total_quantity, 0), 0) as currentstock'),
-                DB::raw('COALESCE(i.unitprice, 0) as unitprice'),
-                DB::raw('COALESCE(i.currency, \'-\') as currency'),
-                'i.brand',
-                DB::raw('COALESCE(v.vendorname, \'-\') as supplier'),
-                DB::raw('CASE
+                ->select([
+                    'm.machineno',
+                    'm.model',
+                    'm.dieno',
+                    'm.dieunitno',
+                    'm.processname',
+                    'm.partcode',
+                    'm.partname',
+                    'm.category',
+                    'm.companylimit',
+                    'm.makerlimit',
+                    'm.autoflag',
+                    'm.qttyperdie',
+                    'm.drawingno',
+                    'm.note',
+                    'm.exchangedatetime',
+                    'e.reason as exchangereason',
+                    'm.minstock',
+                    DB::raw('COALESCE(i.laststocknumber + COALESCE(t.total_quantity, 0), 0) as currentstock'),
+                    DB::raw('COALESCE(i.unitprice, 0) as unitprice'),
+                    DB::raw('COALESCE(i.currency, \'-\') as currency'),
+                    'i.brand',
+                    DB::raw('COALESCE(v.vendorname, \'-\') as supplier'),
+                    DB::raw('CASE
                     WHEN substring(m.partcode, 2, 1) = \'I\' THEN \'Import\'
                     WHEN substring(m.partcode, 2, 1) = \'L\' THEN \'Local\'
                     ELSE \'-\'
                 END as origin'),
-                'i.address',
-                'c.machinename',
-                'm.employeecode',
-                'm.employeename',
-                'm.reason'
-            ])
-            ->where('m.status', '<>', 'D');
+                    'i.address',
+                    'c.machinename',
+                    'm.employeecode',
+                    'm.employeename',
+                    'm.reason'
+                ])
+                ->where('m.status', '<>', 'D');
 
-        // Apply filters based on input parameters
-        if (!empty($machineNo)) {
-            $query->where('m.machineno', $machineNo);
-        }
+            // Apply filters based on input parameters
+            if (!empty($machineNo)) {
+                $query->where('m.machineno', $machineNo);
+            }
 
-        if (!empty($model) && !empty($dieNo)) {
-            $query->where('m.model', $model)
-                ->where('m.dieno', $dieNo);
-        }
+            if (!empty($model) && !empty($dieNo)) {
+                $query->where('m.model', $model)
+                    ->where('m.dieno', $dieNo);
+            }
 
-        if ($partCode) {
-            $query->where('m.partcode', 'ILIKE', "{$partCode}%")
-                ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
-        }
+            if ($partCode) {
+                $query->where(function ($q) use ($partCode) {
+                    $q->where('m.partcode', 'ILIKE', "{$partCode}%")
+                        ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
+                });
+            }
 
-        // Add year filter if provided
-        if (!empty($year)) {
-            $query->whereYear('m.exchangedatetime', $year);
-        }
+            if (!empty($year)) {
+                $query->whereYear('m.exchangedatetime', $year);
+            }
 
-        $query->orderBy('m.machineno')
-            ->orderBy('m.model')
-            ->orderBy('m.dieno')
-            ->orderBy('m.partcode');
+            // Apply sorting
+            if ($sortBy) {
+                // Handle special cases for computed columns and joined tables
+                switch ($sortBy) {
+                    case 'currentstock':
+                        $query->orderBy(DB::raw('COALESCE(i.laststocknumber + COALESCE(t.total_quantity, 0), 0)'), $sortDirection);
+                        break;
+                    case 'supplier':
+                        $query->orderBy(DB::raw('COALESCE(v.vendorname, \'-\')'), $sortDirection);
+                        break;
+                    case 'origin':
+                        $query->orderBy(DB::raw('CASE
+                        WHEN substring(m.partcode, 2, 1) = \'I\' THEN \'Import\'
+                        WHEN substring(m.partcode, 2, 1) = \'L\' THEN \'Local\'
+                        ELSE \'-\'
+                    END'), $sortDirection);
+                        break;
+                    case 'machinename':
+                        $query->orderBy('c.machinename', $sortDirection);
+                        break;
+                    case 'exchangereason':
+                        $query->orderBy('e.reason', $sortDirection);
+                        break;
+                    default:
+                        // For regular columns, determine the table prefix
+                        $prefix = in_array($sortBy, [
+                            'unitprice',
+                            'currency',
+                            'brand',
+                            'address'
+                        ]) ? 'i.' : 'm.';
+                        $query->orderBy($prefix . $sortBy, $sortDirection);
+                }
+            } else {
+                // Default sorting
+                $query->orderBy('m.machineno')
+                    ->orderBy('m.model')
+                    ->orderBy('m.dieno')
+                    ->orderBy('m.partcode');
+            }
 
-        try {
-            $results = $query->get();
+            // Execute pagination
+            $results = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json([

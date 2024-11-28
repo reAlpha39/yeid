@@ -36,7 +36,6 @@ let jpy = new Intl.NumberFormat("id-ID", {
   currency: "JPY",
 });
 
-const searchQuery = ref("");
 const selectedMachineNo = ref(null);
 const selectedModelDie = ref(null);
 const isDetailDialogVisible = ref(false);
@@ -46,17 +45,36 @@ const userData = ref(null);
 const selectedItem = ref("");
 
 // Data table options
+const loading = ref(false);
+const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
+const data = ref([]);
+const searchQuery = ref("");
+const sortBy = ref([]);
+const sortDesc = ref([]);
 
 const date = ref(moment().format("YYYY-MM"));
 
-const data = ref([]);
 const modelDieData = ref([]);
 const machineNoData = ref([]);
 
-async function fetchData() {
+async function fetchData(options = {}) {
+  loading.value = true;
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     let targetDateSplit = date.value.split("-");
     const response = await $api("/press-shot/master-parts", {
       params: {
@@ -65,14 +83,37 @@ async function fetchData() {
         model: selectedModelDie.value?.model,
         die_no: selectedModelDie.value?.dieno,
         machine_no: selectedMachineNo.value?.machineno,
+        page: page.value,
+        per_page: itemsPerPage.value,
+        ...sortParams,
+        ...options,
+      },
+      onResponseError({ response }) {
+        toast.error(response._data.message);
       },
     });
 
+    // Update data and pagination info
     data.value = response.data;
+    totalItems.value = response.pagination.total;
   } catch (err) {
-    toast.error("Failed to fetch data");
-    console.log(err);
+    // console.log(err);
+  } finally {
+    loading.value = false;
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+
+  // Fetch the data with new options
+  fetchData(options);
 }
 
 async function deletePart() {
@@ -508,12 +549,17 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <div class="sticky-actions-wrapper">
-      <VDataTable
+      <VDataTableServer
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
-        :items="data"
+        :items-length="totalItems"
+        :loading="loading"
         :headers="headers"
+        :items="data"
+        :sort-by="sortBy"
+        :sort-desc="sortDesc"
         class="text-no-wrap"
+        @update:options="handleOptionsUpdate"
       >
         <template #item.employeecode="{ item }">
           <div class="d-flex align-center">
@@ -614,8 +660,17 @@ onMounted(() => {
             </IconBtn>
           </div>
         </template>
-      </VDataTable>
+      </VDataTableServer>
     </div>
+
+    <!-- Pagination Controls -->
+    <template #bottom>
+      <TablePagination
+        v-model:page="page"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+      />
+    </template>
   </VCard>
 
   <DetailExchangeDataDialog
