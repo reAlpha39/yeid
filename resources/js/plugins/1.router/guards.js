@@ -59,8 +59,6 @@ export const setupGuards = router => {
       ability.update(storedRules);
     }
 
-    console.log('aaa ' + to.meta.subject)
-
     // Check if the route is pressShot related
     if (to.meta.subject === 'pressShot') {
       try {
