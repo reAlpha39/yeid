@@ -217,6 +217,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'factorcode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->

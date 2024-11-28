@@ -214,6 +214,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'vendorcode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -223,13 +224,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.vendorcode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.partname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.vendorname }}
         </div>
       </template>
 

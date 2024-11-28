@@ -49,7 +49,7 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
-const sortBy = ref([]);
+const sortBy = ref([{ key: 'exchangedatetime', order: 'desc' }]);
 const sortDesc = ref([]);
 
 const date = ref(moment().format("YYYY-MM"));

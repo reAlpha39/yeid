@@ -244,6 +244,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'machineno', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -256,47 +257,10 @@ onMounted(() => {
         </div>
       </template>
 
-      <!-- date -->
-      <template #item.machinename="{ item }">
-        <div class="d-flex align-center">
-          {{ item.machinename }}
-        </div>
-      </template>
-
       <!-- vendor -->
       <template #item.STATUS="{ item }">
         <div class="d-flex align-center">
           {{ statusType(item.status) }}
-        </div>
-      </template>
-
-      <template #item.plantcode="{ item }">
-        <div class="d-flex align-center">
-          {{ item.plantcode }}
-        </div>
-      </template>
-
-      <template #item.shopcode="{ item }">
-        <div class="d-flex align-center">
-          {{ item.shopcode }}
-        </div>
-      </template>
-
-      <template #item.linecode="{ item }">
-        <div class="d-flex align-center">
-          {{ item.linecode }}
-        </div>
-      </template>
-
-      <template #item.modelname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.modelname }}
-        </div>
-      </template>
-
-      <template #item.makername="{ item }">
-        <div class="d-flex align-center">
-          {{ item.makername }}
         </div>
       </template>
 

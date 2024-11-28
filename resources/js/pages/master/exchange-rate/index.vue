@@ -230,6 +230,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'year', order: 'desc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->

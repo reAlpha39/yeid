@@ -217,6 +217,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'ltfactorcode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -226,20 +227,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.ltfactorcode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.ltfactorname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.ltfactorname }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.remark="{ item }">
-        <div class="d-flex align-center">
-          {{ item.remark }}
         </div>
       </template>
 

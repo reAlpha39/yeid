@@ -435,6 +435,7 @@ onMounted(() => {
         :items="data"
         :headers="headers"
         fixed-header
+        :sort-by="[{ key: 'recordid', order: 'desc' }]"
         class="text-no-wrap"
       >
         <!-- part name -->

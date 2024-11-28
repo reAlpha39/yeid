@@ -269,6 +269,7 @@ onMounted(() => {
         v-model:page="page"
         :items="data"
         :headers="headers"
+         :sort-by="[{ key: 'wsrid', order: 'desc' }]"
         class="text-no-wrap"
       >
         <template #item.wsrid="{ item }">

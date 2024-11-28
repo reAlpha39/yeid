@@ -379,6 +379,7 @@ onMounted(() => {
         v-model:page="page"
         :items="data"
         :headers="headers"
+        :sort-by="[{ key: 'startdatetime', order: 'desc' }]"
         class="text-no-wrap"
       >
         <template #item.employeecode="{ item }">

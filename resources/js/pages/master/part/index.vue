@@ -27,7 +27,7 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
-const sortBy = ref([]);
+const sortBy = ref([{ key: "partcode", order: "asc" }]);
 const sortDesc = ref([]);
 
 // State for lightbox

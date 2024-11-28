@@ -217,6 +217,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'preventioncode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -226,20 +227,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.preventioncode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.preventionname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.preventionname }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.remark="{ item }">
-        <div class="d-flex align-center">
-          {{ item.remark }}
         </div>
       </template>
 

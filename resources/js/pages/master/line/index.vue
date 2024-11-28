@@ -60,7 +60,7 @@ async function fetchData() {
     });
 
     data.value = response.data;
-    console.log(data.value);
+    // console.log(data.value);
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -253,6 +253,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'linecode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -262,20 +263,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.linecode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.linename="{ item }">
-        <div class="d-flex align-center">
-          {{ item.linename }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.shopcode="{ item }">
-        <div class="d-flex align-center">
-          {{ item.shopcode }}
         </div>
       </template>
 

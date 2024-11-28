@@ -225,6 +225,7 @@ onMounted(() => {
       v-model:page="page"
       :items="data"
       :headers="headers"
+      :sort-by="[{ key: 'shopcode', order: 'asc' }]"
       class="text-no-wrap"
     >
       <!-- part name -->
@@ -234,27 +235,6 @@ onMounted(() => {
             class="d-block font-weight-medium text-high-emphasis text-truncate"
             >{{ item.shopcode }}</span
           >
-        </div>
-      </template>
-
-      <!-- date -->
-      <template #item.partname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.shopname }}
-        </div>
-      </template>
-
-      <!-- vendor -->
-      <template #item.category="{ item }">
-        <div class="d-flex align-center">
-          {{ item.planttype }}
-        </div>
-      </template>
-
-      <!-- unit price -->
-      <template #item.minstock="{ item }">
-        <div class="d-flex align-center">
-          {{ item.countflag }}
         </div>
       </template>
 
