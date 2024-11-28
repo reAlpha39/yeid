@@ -168,7 +168,7 @@ watch(
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input prevention code"
                   maxlength="3"
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                 />
               </VCol>
 

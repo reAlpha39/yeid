@@ -165,7 +165,7 @@ watch(
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input maker code"
                   maxlength="6"
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                 />
               </VCol>
 

@@ -162,7 +162,7 @@ watch(
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input situation code"
                   maxlength="3"
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                 />
               </VCol>
 

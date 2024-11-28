@@ -162,7 +162,7 @@ watch(
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input vendor code"
                   maxlength="15"
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                 />
               </VCol>
 

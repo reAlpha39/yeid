@@ -472,7 +472,7 @@ onMounted(async () => {
         </VCol>
         <VCol cols="3">
           <AppTextField
-            :readonly="isEdit"
+            :disabled="isEdit"
             v-model="initialStockTF"
             label="Initial Stock Number"
             placeholder="Input initial stock number"

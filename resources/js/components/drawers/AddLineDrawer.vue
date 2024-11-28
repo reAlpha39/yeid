@@ -217,7 +217,7 @@ watch(
                   item-title="title"
                   :items="shops"
                   outlined
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                   return-object
                 />
               </VCol>
@@ -229,7 +229,7 @@ watch(
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input line code"
                   maxlength="2"
-                  :readonly="isUpdate"
+                  :disabled="isUpdate"
                 />
               </VCol>
 
