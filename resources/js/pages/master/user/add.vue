@@ -29,6 +29,7 @@ const phone = ref();
 const status = ref("Active");
 const superAdmin = ref("No");
 const password = ref();
+const allChecked = ref(false);
 const controlAccess = ref({
   masterData: { view: false, create: false, update: false, delete: false },
   user: { view: false, create: false, update: false, delete: false },
@@ -271,9 +272,103 @@ async function applyData() {
   phone.value = data.phone;
   status.value = statusType(data.status);
   selectedRoleAccess.value = roleAccessType(data.role_access);
-  controlAccess.value = JSON.parse(data.control_access);
   superAdmin.value = superAdminType(controlAccess.value.user.view);
+
+  let prevControlAccess = JSON.parse(data.control_access);
+  controlAccess.value = {
+    masterData: prevControlAccess.masterData || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    user: prevControlAccess.user || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    part: prevControlAccess.maintenanceSchedule || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    }, // New part property
+    maintenanceSchedule: prevControlAccess.maintenanceSchedule || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    maintenanceReport: prevControlAccess.maintenanceReport || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    correctiveMaintenance: prevControlAccess.correctiveMaintenance || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    inventoryInbound: prevControlAccess.inventoryInbound || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    inventoryOutbound: prevControlAccess.inventoryOutbound || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    inventoryOpname: prevControlAccess.inventoryOpname || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    pressShot: prevControlAccess.pressShot || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+  };
 }
+
+const isAllChecked = computed(() => {
+  return Object.entries(controlAccess.value).every(([key, value]) => {
+    if (key === "user") return true;
+    return Object.values(value).every((permission) => permission === true);
+  });
+});
+
+function handleCheckAll(newValue) {
+  const isChecked = newValue;
+  allChecked.value = isChecked;
+
+  Object.keys(controlAccess.value).forEach((key) => {
+    if (key !== "user") {
+      controlAccess.value[key] = {
+        view: isChecked,
+        create: isChecked,
+        update: isChecked,
+        delete: isChecked,
+      };
+    }
+  });
+}
+
+watch(
+  controlAccess,
+  () => {
+    allChecked.value = isAllChecked.value;
+  },
+  { deep: true, immediate: true }
+);
 
 onMounted(() => {
   fetchDataDepartment();
@@ -417,9 +512,18 @@ onMounted(() => {
       </VCardText>
 
       <VCard class="mx-6 mb-6" variant="outlined">
-        <VCardTitle class="pb-3 pt-3 mb-3" style="background-color: #8692d014"
-          >Fungsional</VCardTitle
+        <VCardTitle
+          class="pb-3 pt-3 mb-3 d-flex justify-space-between align-center"
+          style="background-color: #8692d014"
         >
+          <div>Fungsional</div>
+          <VCheckbox
+            class="pr-2"
+            label="Check All"
+            v-model="allChecked"
+            @update:model-value="handleCheckAll"
+          />
+        </VCardTitle>
 
         <VRow
           style="
