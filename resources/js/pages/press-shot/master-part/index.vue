@@ -444,6 +444,7 @@ watch(searchQuery, () => {
 
 onMounted(() => {
   fetchData();
+  fetchUserData();
   fetchDataModelDie();
   fetchDataMachineNo();
 });
