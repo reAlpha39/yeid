@@ -26,6 +26,7 @@ use App\Http\Controllers\HistoryActivityController;
 use App\Http\Controllers\SparePartReferringController;
 use App\Http\Controllers\PressPartController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\OrderInventoryController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -53,6 +54,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/getMachines', [App\Http\Controllers\InventoryControlController::class, 'getMachines']);
     Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController::class, 'storeInvRecord']);
     Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);
+    Route::post('/orders', [OrderInventoryController::class, 'processOrder']);
 
     // Master Part
     Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
@@ -60,6 +62,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
     Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
     Route::get('/master/part/image/{partCode}', [App\Http\Controllers\MasterPartController::class, 'getPartImage']);
+    Route::get('/master/part/ordering/{partCode}', [App\Http\Controllers\MasterPartController::class, 'updateOrder']);
 
     // Master Machine
     Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);

@@ -397,6 +397,53 @@ class MasterPartController extends Controller
         }
     }
 
+    public function updateOrder(Request $request, string $partCode)
+    {
+        try {
+            // Check if the record exists
+            $exists = DB::table('mas_inventory')
+            ->where('partcode', $partCode)
+                ->exists();
+
+            if (!$exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Part code not found'
+                ], 404);
+            }
+
+            // Validate request data
+            $validated = $request->validate([
+                'req_quotation_date' => 'required|date',
+                'order_date' => 'required|date',
+                'po_sent_date' => 'required|date',
+                'etd_date' => 'required|date',
+            ]);
+
+            // Update the record
+            $updated = DB::table('mas_inventory')
+            ->where('partcode', $partCode)
+                ->update([
+                    'reqquotationdate' => $validated['req_quotation_date'],
+                    'orderdate' => $validated['order_date'],
+                    'posentdate' => $validated['po_sent_date'],
+                    'etddate' => $validated['etd_date'],
+                    'updatetime' => Carbon::now(),
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record updated successfully'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function deleteMasterPart(Request $request)
     {
         // Validate incoming data
