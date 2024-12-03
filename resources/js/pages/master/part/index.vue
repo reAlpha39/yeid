@@ -215,41 +215,6 @@ async function handleExport() {
   }
 }
 
-let idr = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-});
-
-let usd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "USD",
-});
-
-let sgd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "SGD",
-});
-
-let jpy = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "JPY",
-});
-
-function formatCurrency(currency, price) {
-  switch (currency) {
-    case "IDR":
-      return idr.format(parseFloat(price));
-    case "USD":
-      return usd.format(parseFloat(price));
-    case "SDG":
-      return sgd.format(parseFloat(price));
-    case "JPY":
-      return jpy.format(parseFloat(price));
-    default:
-      return "-";
-  }
-}
-
 function getPartNamePrefix(item) {
   const status = (item.status || "").trim();
   const totalstock = parseStock(item.totalstock);
@@ -260,14 +225,6 @@ function getPartNamePrefix(item) {
     return status === "O" ? "# " : "* ";
   }
   return "";
-}
-
-function formatNumber(value) {
-  if (!value) return "0";
-  return parseFloat(value).toLocaleString("en-US", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
 }
 
 function parseStock(value) {

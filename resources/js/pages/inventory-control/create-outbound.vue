@@ -25,7 +25,7 @@ const parts = ref([]);
 
 const getMachines = async (partCode) => {
   try {
-    const result = await $api("/getMachines", {
+    const response = await $api("/getMachines", {
       method: "GET",
       params: {
         partCode: partCode,
@@ -37,9 +37,13 @@ const getMachines = async (partCode) => {
       },
     });
 
-    // console.log(result["data"]);
+    let machineData = response.data;
 
-    machines.value.push(result["data"]);
+    machineData.forEach((e) => {
+      e.title = e.machineno + " | " + e.machinename;
+    });
+
+    machines.value.push(machineData);
   } catch (err) {
     console.log(err);
   }
@@ -279,36 +283,29 @@ const deleteItem = (index) => {
             </VCol>
             <VCol cols="12" md="5" sm="4">
               <p class="my-2">
-                <span class="text-high-emphasis">
-                  {{ part.currency }}
-                  {{ part.unitprice.toLocaleString() }}</span
-                >
+                {{ formatCurrency(part.currency, part.unitprice) }}
               </p>
             </VCol>
             <VCol cols="12" md="4" sm="4">
               <p class="my-2 align">
-                <span class="text-high-emphasis">
-                  Total Price
-                  {{ part.currency }}
-                  {{ part.price.toLocaleString() }}</span
-                >
+                {{ formatCurrency(part.currency, part.price) }}
               </p>
             </VCol>
           </VRow>
 
           <VRow class="align-center px-2 pb-4">
-            <VCol cols="3" class="d-flex align-center justify-center">
-              <AppSelect
+            <VCol cols="4" class="d-flex align-center justify-center">
+              <AppAutocomplete
                 v-model="selectedMachine[index]"
                 :items="machines[index]"
-                item-title="machineno"
+                item-title="title"
                 label="Machine"
                 placeholder="Select machine"
-                @update:modelValue="handleMachineSelected(index)"
                 return-object
+                @update:modelValue="handleMachineSelected(index)"
               />
             </VCol>
-            <VCol cols="9">
+            <VCol cols="8">
               <AppTextField
                 v-model="part.note"
                 label="Note"
@@ -317,10 +314,8 @@ const deleteItem = (index) => {
             </VCol>
           </VRow>
 
-          <VDivider />
-
-          <div style="background-color: #f9f9f9">
-            <VRow class="align-center px-2 pt-4">
+          <VCard variant="tonal" class="px-4 py-4 ma-2">
+            <VRow class="align-center py-1" no-gutters>
               <VCol cols="6" class="d-flex align-center">
                 <text class="align-left">
                   <span class="text-high-emphasis">
@@ -339,7 +334,7 @@ const deleteItem = (index) => {
               </VCol>
             </VRow>
 
-            <VRow class="align-center px-2">
+            <VRow class="align-center py-1" no-gutters>
               <VCol cols="6" class="d-flex align-center">
                 <text class="align-left">
                   <span class="text-high-emphasis">
@@ -360,7 +355,7 @@ const deleteItem = (index) => {
               </VCol>
             </VRow>
 
-            <VRow class="align-center px-2">
+            <VRow class="align-center py-1" no-gutters>
               <VCol cols="6" class="d-flex align-center">
                 <text class="align-left">
                   <span class="text-high-emphasis">
@@ -378,7 +373,7 @@ const deleteItem = (index) => {
                 </text>
               </VCol>
             </VRow>
-          </div>
+          </VCard>
         </VCol>
       </VCard>
       <br />

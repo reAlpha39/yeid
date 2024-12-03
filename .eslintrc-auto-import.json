@@ -359,6 +359,8 @@
     "canNavigate": true,
     "canViewNavMenuGroup": true,
     "debounce": true,
-    "useActivityLog": true
+    "useActivityLog": true,
+    "formatCurrency": true,
+    "formatNumber": true
   }
 }

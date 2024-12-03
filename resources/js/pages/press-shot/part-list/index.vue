@@ -14,28 +14,6 @@ definePage({
 const toast = useToast();
 const router = useRouter();
 
-let formatNumber = new Intl.NumberFormat();
-
-let idr = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-});
-
-let usd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "USD",
-});
-
-let sgd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "SGD",
-});
-
-let jpy = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "JPY",
-});
-
 const selectedMachineNo = ref(null);
 const selectedModelDie = ref(null);
 const isDetailDialogVisible = ref(false);
@@ -49,7 +27,7 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
-const sortBy = ref([{ key: 'exchangedatetime', order: 'desc' }]);
+const sortBy = ref([{ key: "exchangedatetime", order: "desc" }]);
 const sortDesc = ref([]);
 
 const date = ref(moment().format("YYYY-MM"));
@@ -252,21 +230,6 @@ async function openEditPage(id) {
     path: "/press-shot/part-list/exchange-part",
     query: { exchangeid: id },
   });
-}
-
-function formatCurrency(currency, price) {
-  switch (currency) {
-    case "IDR":
-      return idr.format(parseFloat(price));
-    case "USD":
-      return usd.format(parseFloat(price));
-    case "SDG":
-      return sgd.format(parseFloat(price));
-    case "JPY":
-      return jpy.format(parseFloat(price));
-    default:
-      return "-";
-  }
 }
 
 function getStatusColor(item) {
@@ -541,15 +504,15 @@ onMounted(() => {
         <template v-slot:header.serialno> SERIAL<br />NO </template>
 
         <template #item.counter="{ item }">
-          {{ formatNumber.format(item.counter) }}
+          {{ formatNumber(item.counter) }}
         </template>
 
         <template #item.companylimit="{ item }">
-          {{ formatNumber.format(item.companylimit) }}
+          {{ formatNumber(item.companylimit) }}
         </template>
 
         <template #item.makerlimit="{ item }">
-          {{ formatNumber.format(item.makerlimit) }}
+          {{ formatNumber(item.makerlimit) }}
         </template>
 
         <template v-slot:header.exchangedatetime>
@@ -573,13 +536,13 @@ onMounted(() => {
         <template v-slot:header.minstock> MIN<br />STOCK </template>
 
         <template #item.minstock="{ item }">
-          {{ formatNumber.format(item.minstock) }}
+          {{ formatNumber(item.minstock) }}
         </template>
 
         <template v-slot:header.currentstock> ACTUAL<br />STOCK </template>
 
         <template #item.currentstock="{ item }">
-          {{ formatNumber.format(item.currentstock) }}
+          {{ formatNumber(item.currentstock) }}
         </template>
 
         <template #item.unitprice="{ item }">

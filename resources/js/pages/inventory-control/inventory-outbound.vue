@@ -25,28 +25,6 @@ const selectedVendors = ref();
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 const currency = ref();
 
-let formatNumber = new Intl.NumberFormat();
-
-let idr = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-});
-
-let usd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "USD",
-});
-
-let sgd = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "SGD",
-});
-
-let jpy = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "JPY",
-});
-
 // Data table options
 const loading = ref(false);
 const totalItems = ref(0);
@@ -109,21 +87,6 @@ const formatDate = (date) => {
 
   return `${year}${month}${day}`;
 };
-
-function formatCurrency(currency, price) {
-  switch (currency) {
-    case "IDR":
-      return idr.format(parseFloat(price));
-    case "USD":
-      return usd.format(parseFloat(price));
-    case "SDG":
-      return sgd.format(parseFloat(price));
-    case "JPY":
-      return jpy.format(parseFloat(price));
-    default:
-      return "-";
-  }
-}
 
 async function fetchData(options = {}) {
   loading.value = true;
