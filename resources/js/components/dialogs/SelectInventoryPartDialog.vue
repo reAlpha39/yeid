@@ -83,7 +83,7 @@ onMounted(() => {
 <template>
   <VDialog
     :model-value="props.isDialogVisible"
-    :width="$vuetify.display.smAndDown ? 'auto' : 1200"
+    :width="$vuetify.display.smAndDown ? 'auto' : 900"
     @update:model-value="dialogVisibleUpdate"
   >
     <!-- 👉 Dialog close btn -->

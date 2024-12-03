@@ -22,18 +22,21 @@ class OrderInventoryController extends Controller
                 ], 200);
             }
 
-            // Initialize variables
+            // Initialize arrays
             $vendors = [];
-            $vendor = "";
+            $seenVendors = [];
 
             // Group parts by vendor
             foreach ($parts as $part) {
-                if ($part->vendorcode !== $vendor) {
+                $vendorcode = $part->vendorcode;
+
+                // Only add vendors we haven't seen before
+                if (!isset($seenVendors[$vendorcode])) {
                     $vendors[] = [
-                        'vendorcode' => $part->vendorcode,
+                        'vendorcode' => $vendorcode,
                         'vendorname' => $part->vendorname
                     ];
-                    $vendor = $part->vendorcode;
+                    $seenVendors[$vendorcode] = true;
                 }
             }
 
@@ -103,10 +106,20 @@ class OrderInventoryController extends Controller
                         ->whereRaw('t.jobdate > m.laststockdate');
                 })
                 ->select([
-                    DB::raw("COALESCE(m.vendorcode, 'ZZZZ-ZZ-ZZ-ZZZZ') as vendorcode"),
+                    // Replace null/empty vendor codes with ZZZZ-ZZ-ZZ-ZZZZ
+                    DB::raw("CASE 
+                    WHEN m.vendorcode IS NULL OR TRIM(m.vendorcode) = '' 
+                    THEN 'ZZZZ-ZZ-ZZ-ZZZZ' 
+                    ELSE TRIM(m.vendorcode) 
+                END as vendorcode"),
                     'm.partcode',
-                    DB::raw("COALESCE(m.orderpartcode, m.partcode) as orderpartcode"),
-                    DB::raw("COALESCE(v.vendorname, ' ') as vendorname"),
+                    DB::raw("COALESCE(NULLIF(TRIM(m.orderpartcode), ''), m.partcode) as orderpartcode"),
+                    // For ZZZZ-ZZ-ZZ-ZZZZ, set vendor name to space as in original code
+                    DB::raw("CASE 
+                    WHEN m.vendorcode IS NULL OR TRIM(m.vendorcode) = '' 
+                    THEN ' '
+                    ELSE COALESCE(NULLIF(TRIM(v.vendorname), ''), ' ')
+                END as vendorname"),
                     'm.minstock',
                     DB::raw("(m.laststocknumber + COALESCE(SUM(CASE WHEN t.jobcode = 'O' THEN -t.quantity ELSE t.quantity END), 0)) as currentstock")
                 ])
