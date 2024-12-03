@@ -25,6 +25,15 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         $this->request = $request;
     }
 
+    protected function convertApproval($approval)
+    {
+        $result = "";
+        (intval($approval) & 16) === 16 ? ($result .= "S") : ($result .= "B");
+        (intval($approval) & 32) === 32 ? ($result .= "S") : ($result .= "B");
+        (intval($approval) & 64) === 64 ? ($result .= "S") : ($result .= "B");
+        return $result;
+    }
+
     public function collection()
     {
         try {
@@ -34,26 +43,13 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             $query = DB::table('tbl_spkrecord as s')
                 ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
                 ->select(
-                    's.recordid',
-                    's.maintenancecode',
-                    's.orderdatetime',
-                    's.orderempname',
-                    's.ordershop',
-                    's.machineno',
-                    'm.machinename',
-                    's.ordertitle',
-                    's.orderfinishdate',
-                    's.orderjobtype',
-                    's.orderqtty',
-                    's.orderstoptime',
-                    's.updatetime',
+                    's.*',
                     DB::raw('COALESCE(s.planid, 0) AS planid'),
                     DB::raw('COALESCE(s.approval, 0) AS approval'),
                     DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
                     DB::raw('COALESCE(s.createempname, \'\') AS createempname')
                 );
 
-            // Apply filters
             if ($this->request->input('only_active') == 'true') {
                 $query->whereRaw('COALESCE(s.approval, 0) < 119');
             }
@@ -66,23 +62,21 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             if ($this->request->input('search')) {
                 $search = $this->request->input('search');
                 $query->where(function ($q) use ($search) {
-                    $q->where('s.recordid', 'LIKE', "%$search%")
-                        ->orWhere('s.maintenancecode', 'LIKE', "%$search%")
-                        ->orWhere('s.orderempname', 'LIKE', "%$search%")
-                        ->orWhere('s.ordershop', 'LIKE', "%$search%")
-                        ->orWhere('s.machineno', 'LIKE', "%$search%")
-                        ->orWhere('m.machinename', 'LIKE', "%$search%")
-                        ->orWhere('s.ordertitle', 'LIKE', "%$search%");
+                    $q->where('s.recordid', 'ILIKE', "$search%")
+                        ->orWhere('s.maintenancecode', 'ILIKE', "$search%")
+                        ->orWhere('s.orderempname', 'ILIKE', "$search%")
+                        ->orWhere('s.ordershop', 'ILIKE', "$search%")
+                        ->orWhere('s.machineno', 'ILIKE', "$search%")
+                        ->orWhere('m.machinename', 'ILIKE', "$search%")
+                        ->orWhere('s.ordertitle', 'ILIKE', "$search%");
                 });
             }
 
-            // Process in chunks
             $query->orderBy('s.recordid', 'DESC')
                 ->chunk($this->chunkSize, function ($records) use (&$result) {
                     foreach ($records as $row) {
                         $startRow = $this->rowCount + 1;
 
-                        // Get all work details
                         $workDetails = DB::table('tbl_work')
                             ->select(
                                 'workid',
@@ -100,7 +94,6 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                             ->orderBy('workid')
                             ->get();
 
-                        // Get all part details
                         $partDetails = DB::table('tbl_part')
                             ->select(
                                 'partid',
@@ -126,7 +119,6 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                             $this->rowCount++;
                         }
 
-                        // Store row group information if we have multiple rows
                         if ($maxCount > 1) {
                             $endRow = $this->rowCount;
                             $this->rowGroups[] = [
@@ -147,23 +139,34 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
     {
         return [
             $row->recordid ?? '',
+            $this->convertApproval($row->approval ?? 0),
+            $row->status ?? '',
             $row->maintenancecode ?? '',
-            $row->orderdatetime ?? '',
-            $row->orderempname ?? '',
-            $row->ordershop ?? '',
             $row->machineno ?? '',
-            $row->machinename ?? '',
-            $row->ordertitle ?? '',
-            $row->orderfinishdate ?? '',
-            $row->orderjobtype ?? '',
-            $row->orderqtty ?? '',
-            $row->orderstoptime ?? '',
-            $row->updatetime ?? '',
-            $row->planid ?? 0,
-            $row->approval ?? 0,
             $row->createempcode ?? '',
             $row->createempname ?? '',
-            // Work Details
+            $row->ordershop ?? '',
+            $row->ordertitle ?? '',
+            $row->startdatetime ?? '',
+            $row->enddatetime ?? '',
+            $row->restoredatetime ?? '',
+            $row->machinestoptime ?? '',
+            $row->linestoptime ?? '',
+            $row->makername ?? '',
+            $row->makerservice ?? '',
+            $row->makerparts ?? '',
+            $row->ltfactorcode ?? '',
+            $row->ltfactor ?? '',
+            $row->situationcode ?? '',
+            $row->situation ?? '',
+            $row->factorcode ?? '',
+            $row->factor ?? '',
+            $row->measurecode ?? '',
+            $row->measure ?? '',
+            $row->preventioncode ?? '',
+            $row->prevention ?? '',
+            $row->comments ?? '',
+            $row->updatetime ?? '',
             $workDetail?->workid ?? '',
             $workDetail?->staffname ?? '',
             $workDetail?->inactivetime ?? 0,
@@ -174,7 +177,6 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             $workDetail?->waittime ?? 0,
             $workDetail?->repairtime ?? 0,
             $workDetail?->confirmtime ?? 0,
-            // Part Details
             $partDetail?->partid ?? '',
             $partDetail?->partcode ?? '',
             $partDetail?->partname ?? '',
@@ -218,23 +220,35 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
     public function headings(): array
     {
         return [
-            'Record ID',
-            'Maintenance Code',
-            'Order DateTime',
-            'Order Employee Name',
-            'Order Shop',
-            'Machine No',
-            'Machine Name',
-            'Order Title',
-            'Order Finish Date',
-            'Order Job Type',
-            'Order Quantity',
-            'Order Stop Time',
-            'Update Time',
-            'Plan ID',
+            'SPK NO',
             'Approval',
-            'Create Employee Code',
-            'Create Employee Name',
+            'Keadaan',
+            'Maintenance Code',
+            'Machine No',
+            'Login ID',
+            'Login Name',
+            'Order Shop',
+            'Mengapa dan Bagaimana',
+            'Wkt Mulai',
+            'Wkt Selesai',
+            'Wkt M.J.Prod',
+            'Wkt Mesin Stop',
+            'Wkt Line Stop',
+            'Nama Maker',
+            'Service Fee',
+            'Biaya Ganti Parts',
+            'Kode S.P',
+            'Stop Panjang',
+            'Kode U.M',
+            'Uraian Masalah',
+            'Kode P',
+            'Penyebab',
+            'Kode T.T',
+            'Temporary Tindakan',
+            'Kode S',
+            'Solution',
+            'Komentar',
+            'Wkt Memperbarui',
             // Work Details Headers
             'Work ID',
             'Staff Name',
