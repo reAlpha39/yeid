@@ -1,5 +1,8 @@
 <script setup>
+import { useToast } from "vue-toastification";
 import { VSwitch } from "vuetify/lib/components/index.mjs";
+
+const toast = useToast();
 
 const props = defineProps({
   isDialogVisible: {
@@ -28,8 +31,32 @@ const changePart = ref({
   qtty: 0,
   price: 0,
   currency: undefined,
-  isstock: 0,
+  isstock: "1",
 });
+
+// Initial state for resetting
+const initialChangePart = {
+  partcode: undefined,
+  partname: undefined,
+  specification: undefined,
+  brand: undefined,
+  qtty: 0,
+  price: 0,
+  currency: undefined,
+  isstock: "1",
+};
+
+// Pagination state
+const pagination = ref({
+  total: 0,
+  per_page: 10,
+  current_page: 1,
+  last_page: 1,
+});
+
+// Search state
+const search = ref("");
+const isLoading = ref(false);
 
 async function submitData() {
   const { valid, errors } = await refVForm.value?.validate();
@@ -38,22 +65,12 @@ async function submitData() {
   }
   emit("update:isDialogVisible", false);
   emit("submit", changePart.value);
-
-  selectedPart.value = null;
-
-  changePart.value = {
-    partcode: undefined,
-    partname: undefined,
-    specification: undefined,
-    brand: undefined,
-    qtty: 0,
-    price: 0,
-    currency: undefined,
-    isstock: "1",
-  };
+  resetForm();
 }
 
-function handlePartSelection(val) {
+function handlePartSelection() {
+  let val = selectedPart.value;
+  if (val === null) return;
   changePart.value = {
     partid: changePart.value.partid,
     partcode: val.partcode,
@@ -70,41 +87,96 @@ function handlePartSelection(val) {
 async function fetchPart(id) {
   try {
     if (id) {
-      const response = await $api("/master/part-list", {
+      const response = await $api("/master/part", {
         params: {
-          search: id,
-          max_rows: 1,
+          part_code: id,
         },
       });
 
-      selectedPart.value = response.data[0];
-      selectedPart.value.title =
-        selectedPart.value.partcode + " | " + selectedPart.value.partname;
+      selectedPart.value = response.data;
+      if (selectedPart.value) {
+        selectedPart.value.title =
+          selectedPart.value.partcode + " | " + selectedPart.value.partname;
+      }
     } else {
+      isLoading.value = true;
       const response = await $api("/master/part-list", {
         params: {
-          // max_rows: 100,
+          page: pagination.value.current_page,
+          per_page: pagination.value.per_page,
+          search: search.value,
         },
       });
 
-      parts.value = response.data;
-      parts.value.forEach((data) => {
-        data.title = data.partcode + " | " + data.partname;
-      });
+      if (response.success) {
+        if (Array.isArray(response.data)) {
+          parts.value = response.data;
+          parts.value.forEach((data) => {
+            data.title = data.partcode + " | " + data.partname;
+          });
+        }
+
+        if (response.pagination) {
+          const { total, per_page, current_page, last_page } =
+            response.pagination;
+          pagination.value = {
+            total: total || 0,
+            per_page: per_page || 10,
+            current_page: current_page || 1,
+            last_page: last_page || 1,
+          };
+        }
+      }
     }
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
+  } finally {
+    isLoading.value = false;
   }
 }
 
+// Handle search
+const debouncedSearch = computed(() => {
+  pagination.value.current_page = 1;
+  fetchPart();
+});
+
+watch(
+  search,
+  () => {
+    debouncedSearch.value;
+  },
+  { debounce: 300 }
+);
+
 const dialogVisibleUpdate = (val) => {
+  if (!val) {
+    resetForm();
+  }
   emit("update:isDialogVisible", val);
 };
 
 const resetForm = () => {
-  emit("update:isDialogVisible", false);
+  // Reset all form values
   refVForm.value?.reset();
+  selectedPart.value = null;
+  search.value = "";
+  isUpdate.value = false;
+
+  // Reset changePart to initial state
+  changePart.value = { ...initialChangePart };
+
+  // Reset pagination
+  pagination.value = {
+    total: 0,
+    per_page: 10,
+    current_page: 1,
+    last_page: 1,
+  };
+
+  // Clear parts list
+  parts.value = [];
 };
 
 function isNumber(evt) {
@@ -121,15 +193,18 @@ watch(
   (newVal) => {
     if (newVal) {
       fetchPart();
-      console.log("Dialog opened with id:", props.item?.partid);
+      // console.log("Dialog opened with id:", props.item?.partid);
 
       if (props.item?.partid) {
         fetchPart(props.item?.partcode);
-        changePart.value = props.item;
+        changePart.value = { ...props.item };
         isUpdate.value = true;
       } else {
         isUpdate.value = false;
+        changePart.value = { ...initialChangePart };
       }
+    } else {
+      resetForm();
     }
   }
 );
@@ -142,11 +217,11 @@ watch(
     @update:model-value="dialogVisibleUpdate"
   >
     <VForm ref="refVForm" @submit.prevent="submitData">
-      <DialogCloseBtn @click="$emit('update:isDialogVisible', false)" />
+      <DialogCloseBtn @click="dialogVisibleUpdate(false)" />
 
       <VCard class="share-project-dialog pa-2 pa-sm-10">
         <VCardText>
-          <h4 class="text-h4 text-center mb-2">Parts yang Diganti</h4>
+          <h4 class="text-h4 text-center">Parts yang Diganti</h4>
         </VCardText>
 
         <VCardText>
@@ -164,6 +239,7 @@ watch(
           placeholder="Pilih kode part"
           item-title="title"
           :items="parts"
+          :loading="isLoading"
           outlined
           return-object
           @update:model-value="handlePartSelection"
@@ -231,9 +307,10 @@ watch(
           </VCol>
           <VCol cols="4">
             <AppTextField
-              v-model="changePart.qtty"
+              v-model.number="changePart.qtty"
               label="Quantity"
               placeholder="0"
+              @keypress="isNumber($event)"
             />
           </VCol>
         </VRow>
@@ -268,7 +345,11 @@ watch(
           </VCol>
 
           <VCol cols="6">
-            <VBtn color="error" variant="tonal" @click="resetForm">
+            <VBtn
+              color="error"
+              variant="tonal"
+              @click="dialogVisibleUpdate(false)"
+            >
               Discard
             </VBtn>
           </VCol>
