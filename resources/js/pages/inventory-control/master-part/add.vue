@@ -299,7 +299,7 @@ function isNumber(evt) {
 
 onMounted(async () => {
   const partCode = route.query.part_code;
-  console.log("Fetching data for part_code:", partCode);
+  // console.log("Fetching data for part_code:", partCode);
   if (partCode) {
     isEdit.value = true;
     initEditData(route.query.part_code);
@@ -600,7 +600,12 @@ onMounted(async () => {
     <VRow class="d-flex justify-start py-8">
       <VCol>
         <VBtn color="success" class="me-4" @click="addMasterPart">Save</VBtn>
-        <VBtn variant="outlined" color="error" to="/master/part">Cancel</VBtn>
+        <VBtn
+          variant="outlined"
+          color="error"
+          to="/inventory-control/master-part"
+          >Cancel</VBtn
+        >
       </VCol>
     </VRow>
   </VForm>

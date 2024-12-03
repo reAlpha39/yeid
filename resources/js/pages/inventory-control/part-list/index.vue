@@ -15,7 +15,6 @@ definePage({
 const toast = useToast();
 const router = useRouter();
 
-const isDeleteDialogVisible = ref(false);
 const isUpdateStockQtyDialogVisible = ref(false);
 const isSelectInventoryVendorDialogVisible = ref(false);
 const barcodeDialogRef = ref(null);
@@ -119,30 +118,6 @@ async function fetchData(options = {}) {
   }
 }
 
-async function deletePart() {
-  try {
-    const result = await $api("/master/delete-part", {
-      method: "DELETE",
-      body: {
-        part_code: selectedPartCode.value,
-      },
-
-      onResponseError({ response }) {
-        toast.error("Failed to delete data");
-        errors.value = response._data.errors;
-      },
-    });
-
-    selectedPartCode.value = "";
-    isDeleteDialogVisible.value = false;
-    toast.success("Delete success");
-    fetchData();
-  } catch (err) {
-    isDeleteDialogVisible.value = true;
-    console.log(err);
-  }
-}
-
 function handleOptionsUpdate(options) {
   // Update the sorting values
   sortBy.value = options.sortBy || [];
@@ -156,20 +131,10 @@ function handleOptionsUpdate(options) {
   fetchData(options);
 }
 
-function openDeleteDialog(partCode) {
-  selectedPartCode.value = partCode;
-  isDeleteDialogVisible.value = true;
-}
-
-function openUpdateDialog(partCode) {
-  selectedPartCode.value = partCode;
-  isUpdateStockQtyDialogVisible.value = true;
-}
-
 async function openEditPartPage(partCode) {
   // selectedPartCode.value = partCode;
   await router.push({
-    path: "/inventory-control/master-part/add",
+    path: "/inventory-control/part-list/ordering",
     query: { part_code: partCode },
   });
 }
@@ -558,31 +523,7 @@ onMounted(() => {
                 <template v-slot:prepend>
                   <VIcon icon="tabler-edit" size="small" />
                 </template>
-                <VListItemTitle>Edit</VListItemTitle>
-              </VListItem>
-
-              <!-- Update Action -->
-              <VListItem
-                v-if="$can('update', 'part')"
-                @click="openUpdateDialog(item.partcode)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-adjustments" size="small" />
-                </template>
-                <VListItemTitle>Update</VListItemTitle>
-              </VListItem>
-
-              <!-- Delete Action -->
-              <VListItem
-                v-if="$can('delete', 'part')"
-                @click="openDeleteDialog(item.partcode)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-trash" size="small" color="error" />
-                </template>
-                <VListItemTitle class="text-error">Delete</VListItemTitle>
+                <VListItemTitle>Ordering</VListItemTitle>
               </VListItem>
             </VList>
           </VMenu>

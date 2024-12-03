@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PartsExport;
 use Exception;
@@ -214,6 +215,113 @@ class MasterPartController extends Controller
         }
     }
 
+    public function show(Request $request)
+    {
+        try {
+            $partCode = $request->input('part_code', '');
+
+            // Build the query
+            $queryBuilder = DB::table('mas_inventory as m')
+                ->select([
+                    'm.partcode',
+                    'm.partname',
+                    'm.category',
+                    'm.specification',
+                    'm.brand',
+                    'm.eancode',
+                    'm.usedflag',
+                    'm.vendorcode',
+                    'm.address',
+                    'm.unitprice',
+                    'm.currency',
+                    DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0) as totalstock'),
+                    'm.minstock',
+                    'm.minorder',
+                    'm.orderpartcode',
+                    'm.noorderflag',
+                    'm.laststocknumber',
+                    DB::raw("COALESCE(m.status, '-') as status"),
+                    DB::raw("COALESCE(m.noorderflag, '0') as noorderflag"),
+                    DB::raw("COALESCE(m.note, 'N/A') as note"),
+                    DB::raw("COALESCE(m.reqquotationdate, '') as reqquotationdate"),
+                    DB::raw("COALESCE(m.orderdate, '') as orderdate"),
+                    DB::raw("COALESCE(m.posentdate, '') as posentdate"),
+                    DB::raw("COALESCE(m.etddate, '') as etddate")
+                ])
+                ->leftJoin(DB::raw('(
+                SELECT
+                    t.partcode,
+                    SUM(CASE
+                        WHEN t.jobcode = \'O\' THEN -t.quantity
+                        WHEN t.jobcode IN (\'I\', \'A\') THEN t.quantity
+                        ELSE 0
+                    END) as sum_quantity
+                FROM tbl_invrecord as t
+                LEFT JOIN mas_inventory as minv ON t.partcode = minv.partcode
+                WHERE t.updatetime > minv.updatetime
+                GROUP BY t.partcode
+            ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
+                ->where('m.status', '<>', 'D');
+
+            if (!empty($partCode)) {
+                $queryBuilder->where(function ($q) use ($partCode) {
+                    $q->where('m.partcode', $partCode)
+                        ->orWhere(DB::raw('UPPER(m.partname)'), 'LIKE', '%' . strtoupper($partCode) . '%');
+                });
+            }
+
+            // Execute query and get the first result
+            $item = $queryBuilder->first();
+
+            if (!$item) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Item not found'
+                ], 404);
+            }
+
+            // Add image path to the item
+            $item->partimage = $this->findPartImage($item->partcode);
+
+            return response()->json([
+                'success' => true,
+                'data' => $item
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Inventory show error: ' . $e->getMessage(), [
+                'part_code' => $request->input('part_code'),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving the inventory item'
+            ], 500);
+        }
+    }
+
+    /**
+     * Find the image path for a given part code
+     *
+     * @param string $partCode
+     * @return string|null
+     */
+    private function findPartImage(string $partCode): ?string
+    {
+        $extensions = ['jpg', 'jpeg', 'png'];
+        $basePath = 'master_parts/';
+
+        foreach ($extensions as $ext) {
+            $path = storage_path('app/public/' . $basePath . $partCode . '.' . $ext);
+            if (file_exists($path)) {
+                return $basePath . $partCode . '.' . $ext;
+            }
+        }
+
+        return null;
+    }
+
     public function addMasterPart(Request $request)
     {
         DB::beginTransaction();
@@ -397,12 +505,23 @@ class MasterPartController extends Controller
         }
     }
 
-    public function updateOrder(Request $request, string $partCode)
+    public function updateOrder(Request $request)
     {
         try {
+            // Validate request data
+            $validated = $request->validate([
+                'part_code' => 'required',
+                'req_quotation_date' => 'nullable|string',
+                'order_date' => 'nullable|string',
+                'po_sent_date' => 'nullable|string',
+                'etd_date' => 'nullable|string',
+            ]);
+
+            $partCode = $request->input('part_code');
+
             // Check if the record exists
             $exists = DB::table('mas_inventory')
-            ->where('partcode', $partCode)
+                ->where('partcode', $partCode)
                 ->exists();
 
             if (!$exists) {
@@ -412,17 +531,9 @@ class MasterPartController extends Controller
                 ], 404);
             }
 
-            // Validate request data
-            $validated = $request->validate([
-                'req_quotation_date' => 'required|date',
-                'order_date' => 'required|date',
-                'po_sent_date' => 'required|date',
-                'etd_date' => 'required|date',
-            ]);
-
             // Update the record
             $updated = DB::table('mas_inventory')
-            ->where('partcode', $partCode)
+                ->where('partcode', $partCode)
                 ->update([
                     'reqquotationdate' => $validated['req_quotation_date'],
                     'orderdate' => $validated['order_date'],
@@ -433,7 +544,7 @@ class MasterPartController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Record updated successfully'
+                'message' => 'Part updated successfully'
             ]);
         } catch (Exception $e) {
             return response()->json([

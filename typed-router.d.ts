@@ -125,6 +125,7 @@ declare module 'vue-router/auto/routes' {
     'inventory-control-master-part': RouteRecordInfo<'inventory-control-master-part', '/inventory-control/master-part', Record<never, never>, Record<never, never>>,
     'inventory-control-master-part-add': RouteRecordInfo<'inventory-control-master-part-add', '/inventory-control/master-part/add', Record<never, never>, Record<never, never>>,
     'inventory-control-part-list': RouteRecordInfo<'inventory-control-part-list', '/inventory-control/part-list', Record<never, never>, Record<never, never>>,
+    'inventory-control-part-list-ordering': RouteRecordInfo<'inventory-control-part-list-ordering', '/inventory-control/part-list/ordering', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-department-request': RouteRecordInfo<'maintenance-database-system-department-request', '/maintenance-database-system/department-request', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-department-request-add': RouteRecordInfo<'maintenance-database-system-department-request-add', '/maintenance-database-system/department-request/add', Record<never, never>, Record<never, never>>,

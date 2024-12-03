@@ -58,11 +58,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Master Part
     Route::get('/master/part-list', [App\Http\Controllers\MasterPartController::class, 'getMasterPartList']);
+    Route::get('/master/part', [App\Http\Controllers\MasterPartController::class, 'show']);
     Route::get('/master/part-list/export', [App\Http\Controllers\MasterPartController::class, 'export']);
     Route::post('/master/add-part', [App\Http\Controllers\MasterPartController::class, 'addMasterPart']);
     Route::delete('/master/delete-part', [App\Http\Controllers\MasterPartController::class, 'deleteMasterPart']);
     Route::get('/master/part/image/{partCode}', [App\Http\Controllers\MasterPartController::class, 'getPartImage']);
-    Route::get('/master/part/ordering/{partCode}', [App\Http\Controllers\MasterPartController::class, 'updateOrder']);
+    Route::post('/master/part/ordering', [App\Http\Controllers\MasterPartController::class, 'updateOrder']);
 
     // Master Machine
     Route::get('/master/machine-search', [App\Http\Controllers\MasMachineController::class, 'searchMachine']);
