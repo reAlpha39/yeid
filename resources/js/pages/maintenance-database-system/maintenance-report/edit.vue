@@ -877,7 +877,6 @@ onMounted(() => {
             class="mx-5"
             v-model="runProdNextStop"
             label="Pengembangan Berikutnya"
-            :rules="[requiredValidator]"
             placeholder="Input pengembangan berikutnya"
             outlined
             maxlength="50"
@@ -895,7 +894,6 @@ onMounted(() => {
           ><AppTextField
             v-model="makerName"
             label="Nama"
-            :rules="[requiredValidator]"
             placeholder="Input nama"
             outlined
             maxlength="50"
@@ -904,7 +902,6 @@ onMounted(() => {
           ><AppTextField
             v-model.number="makerManxJam"
             label="Man x Jam (menit)"
-            :rules="[requiredValidator]"
             placeholder="0"
             outlined
             maxlength="50"
@@ -914,7 +911,6 @@ onMounted(() => {
           ><AppTextField
             v-model.number="makerServiceFee"
             label="Service Fee (IDR)"
-            :rules="[requiredValidator]"
             placeholder="0"
             outlined
             maxlength="50"
@@ -924,7 +920,6 @@ onMounted(() => {
           ><AppTextField
             v-model.number="makerPartPrice"
             label="Biaya Parts"
-            :rules="[requiredValidator]"
             placeholder="0"
             outlined
             maxlength="50"
