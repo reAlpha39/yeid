@@ -45,14 +45,13 @@ const updateQuantity = () => {
 
 async function fetchData() {
   try {
-    const response = await $api("/master/part-list", {
+    const response = await $api("/master/part", {
       params: {
         part_code: props.id,
-        max_rows: 1,
       },
     });
-    console.log(response.data);
-    data.value = response.data[0];
+    // console.log(response.data);
+    data.value = response.data;
   } catch (err) {
     console.log(err);
   }

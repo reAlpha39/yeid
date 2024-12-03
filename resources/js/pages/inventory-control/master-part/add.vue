@@ -163,14 +163,13 @@ async function fetchPartImage(partCode) {
 
 async function fetchDataEdit(partCode) {
   try {
-    const response = await $api("/master/part-list", {
+    const response = await $api("/master/part", {
       params: {
         part_code: partCode,
-        max_rows: 1,
       },
     });
     // console.log(response.data);
-    prevData.value = response.data[0];
+    prevData.value = response.data;
   } catch (err) {
     console.log(err);
   }
