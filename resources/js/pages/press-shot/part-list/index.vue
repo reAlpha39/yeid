@@ -233,26 +233,35 @@ async function openEditPage(id) {
 }
 
 function getStatusColor(item) {
-  // COUNTER -- FIX LIMIT
-  if (
-    parseInt(item?.counter ?? 0) > 0 &&
-    parseInt(item?.counter ?? 0) > parseInt(item?.makerlimit ?? 0)
-  ) {
-    return "status-red";
-    // COUNTER -- TEMP LIMIT
-  } else if (
-    parseInt(item?.counter ?? 0) > 0 &&
-    parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)
-  ) {
-    return "status-yellow";
-    // MIN STOCK -- ACTUAL STOCK
-  } else if (
-    parseInt(item?.minstock ?? 0) > 0 &&
-    parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)
-  ) {
+  if (parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)) {
     return "status-red";
   }
+
+  if (parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)) {
+    return "status-yellow";
+  }
   return "status-green";
+
+  // // COUNTER -- FIX LIMIT
+  // if (
+  //   parseInt(item?.counter ?? 0) > 0 &&
+  //   parseInt(item?.counter ?? 0) > parseInt(item?.makerlimit ?? 0)
+  // ) {
+  //   return "status-red";
+  //   // COUNTER -- TEMP LIMIT
+  // } else if (
+  //   parseInt(item?.counter ?? 0) > 0 &&
+  //   parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)
+  // ) {
+  //   return "status-yellow";
+  //   // MIN STOCK -- ACTUAL STOCK
+  // } else if (
+  //   parseInt(item?.minstock ?? 0) > 0 &&
+  //   parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)
+  // ) {
+  //   return "status-red";
+  // }
+  // return "status-green";
 }
 
 // headers
