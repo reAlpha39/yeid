@@ -267,13 +267,6 @@ async function applyData() {
 
   await fetchDataDepartment(data.department_id);
 
-  fullName.value = data.name;
-  email.value = data.email;
-  phone.value = data.phone;
-  status.value = statusType(data.status);
-  selectedRoleAccess.value = roleAccessType(data.role_access);
-  superAdmin.value = superAdminType(controlAccess.value.user.view);
-
   let prevControlAccess = JSON.parse(data.control_access);
   controlAccess.value = {
     masterData: prevControlAccess.masterData || {
@@ -337,6 +330,13 @@ async function applyData() {
       delete: false,
     },
   };
+
+  fullName.value = data.name;
+  email.value = data.email;
+  phone.value = data.phone;
+  status.value = statusType(data.status);
+  selectedRoleAccess.value = roleAccessType(data.role_access);
+  superAdmin.value = superAdminType(controlAccess.value.user.view);
 }
 
 const isAllChecked = computed(() => {
