@@ -510,6 +510,27 @@ async function addData() {
     return;
   }
 
+  const startDateTime = new Date(
+    `${startDate.value} ${startTime.value}`
+  ).getTime();
+  const finishDateTime = new Date(
+    `${finishedDate.value} ${finishedTime.value}`
+  ).getTime();
+  const runProdDateTime = new Date(
+    `${runProdDate.value} ${runProdTime.value}`
+  ).getTime();
+
+  // console.log(startDateTime);
+  // console.log(finishDateTime);
+  // console.log(runProdDateTime);
+
+  if (startDateTime >= finishDateTime || startDateTime >= runProdDateTime) {
+    toast.error(
+      "Finish date/time and Run Production date/time cannot be earlier than Start date/time"
+    );
+    return;
+  }
+
   try {
     calculateTotalPriceInIDR();
 
@@ -810,7 +831,6 @@ onMounted(() => {
                 :rules="[requiredValidator]"
                 label="Tanggal"
                 placeholder="2024-01-01"
-                :config="disableDateConfig"
                 append-inner-icon="tabler-calendar"
               />
             </VCol>
@@ -853,7 +873,6 @@ onMounted(() => {
                 :rules="[requiredValidator]"
                 label="Tanggal"
                 placeholder="2024-01-01"
-                :config="disableDateConfig"
                 append-inner-icon="tabler-calendar"
               />
             </VCol>
