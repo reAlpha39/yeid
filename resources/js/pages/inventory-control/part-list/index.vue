@@ -204,7 +204,7 @@ async function handleExport() {
     const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = "inventory parts.xlsx";
+    link.download = "inventory_parts.xlsx";
     link.click();
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
