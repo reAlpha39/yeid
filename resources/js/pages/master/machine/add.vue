@@ -360,23 +360,13 @@ onMounted(() => {
         <VRow>
           <VCol cols="12" sm="6">
             <AppTextField
-              v-if="isEdit"
-              v-model="machineNo"
-              label="Machine No"
-              :rules="[requiredValidator]"
-              placeholder="Input machine no"
-              outlined
-              readonly
-              maxlength="12"
-            />
-            <AppTextField
-              v-else
               v-model="machineNo"
               label="Machine No"
               :rules="[requiredValidator]"
               placeholder="Input machine no"
               outlined
               maxlength="12"
+              :disabled="isEdit"
             />
           </VCol>
           <VCol cols="12" sm="6">

@@ -276,6 +276,7 @@ const deleteItem = (index) => {
                 placeholder="5"
                 min="0"
                 v-on:input="updateQuantity(index)"
+                maxlength="8"
               />
             </VCol>
             <VCol cols="12" md="1" sm="4">
@@ -310,6 +311,7 @@ const deleteItem = (index) => {
                 v-model="part.note"
                 label="Note"
                 placeholder="Input note"
+                maxlength="128"
               />
             </VCol>
           </VRow>

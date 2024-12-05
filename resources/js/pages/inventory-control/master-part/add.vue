@@ -346,19 +346,12 @@ onMounted(async () => {
       <VRow>
         <VCol cols="6">
           <AppTextField
-            v-if="isEdit"
             v-model="partCodeTF"
             :rules="[requiredValidator]"
             label="Part Code"
             placeholder="Input part code"
-            readonly
-          ></AppTextField>
-          <AppTextField
-            v-else
-            v-model="partCodeTF"
-            :rules="[requiredValidator]"
-            label="Part Code"
-            placeholder="Input part code"
+            :disabled="isEdit"
+            maxlength="16"
           ></AppTextField>
         </VCol>
         <VCol cols="6">
@@ -367,6 +360,7 @@ onMounted(async () => {
             :rules="[requiredValidator]"
             label="Part Name"
             placeholder="Input part name"
+            maxlength="127"
           ></AppTextField>
         </VCol>
       </VRow>
@@ -378,6 +372,7 @@ onMounted(async () => {
             :rules="[requiredValidator]"
             label="Specification"
             placeholder="Input specification"
+            maxlength="127"
           ></AppTextField>
         </VCol>
         <VCol cols="6">
@@ -386,6 +381,7 @@ onMounted(async () => {
             :rules="[requiredValidator]"
             label="Brand"
             placeholder="Input brand"
+            maxlength="64"
           ></AppTextField>
         </VCol>
       </VRow>
@@ -406,6 +402,7 @@ onMounted(async () => {
             v-model="barcodeTF"
             label="Barcode"
             placeholder="Input barcode"
+            maxlength="13"
           ></AppTextField>
         </VCol>
         <VCol cols="3">
@@ -451,6 +448,7 @@ onMounted(async () => {
             label="Unit Price"
             placeholder="Input unit price"
             @keypress="isNumber($event)"
+            maxlength="12"
           ></AppTextField>
         </VCol>
         <VCol cols="3">
@@ -467,6 +465,7 @@ onMounted(async () => {
             v-model="orderPartCodeTF"
             label="Order Part Code"
             placeholder="Input order part code"
+            maxlength="64"
           ></AppTextField>
         </VCol>
         <VCol cols="3">
@@ -477,6 +476,7 @@ onMounted(async () => {
             placeholder="Input initial stock number"
             :rules="[requiredValidator]"
             @keypress="isNumber($event)"
+            maxlength="8"
           ></AppTextField>
         </VCol>
       </VRow>
@@ -486,6 +486,7 @@ onMounted(async () => {
         class="py-4"
         label="Note"
         placeholder="Input note"
+        maxlength="255"
       ></AppTextField>
 
       <VRow>
@@ -496,6 +497,7 @@ onMounted(async () => {
             placeholder="0"
             :rules="[requiredValidator]"
             @keypress="isNumber($event)"
+            maxlength="8"
           ></AppTextField>
         </VCol>
         <VCol cols="2">
@@ -505,6 +507,7 @@ onMounted(async () => {
             placeholder="0"
             :rules="[requiredValidator]"
             @keypress="isNumber($event)"
+            maxlength="8"
           ></AppTextField>
         </VCol>
 
