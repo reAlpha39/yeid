@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PartsExport;
+use App\Exports\InventoryPartsExport;
 use Exception;
 
 class MasterPartController extends Controller
@@ -605,6 +606,19 @@ class MasterPartController extends Controller
     {
         try {
             return Excel::download(new PartsExport(), 'parts.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function inventoryExport()
+    {
+        try {
+            return Excel::download(new InventoryPartsExport(), 'parts.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

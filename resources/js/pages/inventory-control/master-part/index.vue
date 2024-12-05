@@ -50,6 +50,18 @@ const headers = [
     key: "category",
   },
   {
+    title: "SPECIFICATION",
+    key: "specification",
+  },
+  {
+    title: "BRAND",
+    key: "brand",
+  },
+  {
+    title: "ADDRESS",
+    key: "address",
+  },
+  {
     title: "STOCK QUANTITY",
     key: "totalstock",
   },
@@ -60,6 +72,26 @@ const headers = [
   {
     title: "UNIT PRICE",
     key: "unitprice",
+  },
+  {
+    title: "NOTE",
+    key: "note",
+  },
+  {
+    title: "REQUEST ORDER",
+    key: "reqquotationdate",
+  },
+  {
+    title: "ORDER",
+    key: "orderdate",
+  },
+  {
+    title: "P/O SENT",
+    key: "posentdate",
+  },
+  {
+    title: "ETD",
+    key: "etddate",
   },
   {
     title: "PART IMAGE",
@@ -193,7 +225,7 @@ async function handleExport() {
   loadingExport.value = true;
   try {
     const accessToken = useCookie("accessToken").value;
-    const response = await axios.get("/api/master/part-list/export", {
+    const response = await axios.get("/api/master/part-inventory/export", {
       responseType: "blob",
       headers: accessToken
         ? {

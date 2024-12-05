@@ -7,7 +7,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class PartsExport implements FromCollection, WithHeadings, WithMapping
+class InventoryPartsExport implements FromCollection, WithHeadings, WithMapping
 {
     public function collection()
     {
@@ -63,9 +63,18 @@ class PartsExport implements FromCollection, WithHeadings, WithMapping
             'PART CODE',
             'PART NAME',
             'CATEGORY',
+            'SPECIFICATION',
+            'BRAND',
+            'ADDRESS',
             'STOCK QUANTITY',
             'MINIMUM STOCK',
-            'UNIT PRICE'
+            'UNIT PRICE',
+            'CURRENCY',
+            'NOTE',
+            'REQUEST ORDER',
+            'ORDER',
+            'P/O SENT',
+            'ETD',
         ];
     }
 
@@ -75,9 +84,18 @@ class PartsExport implements FromCollection, WithHeadings, WithMapping
             $part->partcode,
             $part->partname,
             $part->category,
+            $part->specification,
+            $part->brand,
+            $part->address,
             $part->totalstock,
             $part->minstock,
-            $part->unitprices
+            $part->unitprice,
+            $part->currency,
+            $part->note,
+            $part->reqquotationdate,
+            $part->orderdate,
+            $part->posentdate,
+            $part->etddate
         ];
     }
 }
