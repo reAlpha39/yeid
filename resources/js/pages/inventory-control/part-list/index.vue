@@ -545,6 +545,8 @@ onMounted(() => {
     :maxZoom="1"
     :minZoom="0.5"
     @hide="closeLightbox"
+    @on-close="closeLightbox"
+    :escDisabled="false"
   >
     <template #title>
       <div class="custom-title" v-if="currentItem">

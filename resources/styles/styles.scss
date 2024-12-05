@@ -127,18 +127,20 @@
   }
 }
 
-
+// LightBox
 /* Container for the title */
 .custom-title {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 10000;
+  z-index: 2000; 
+  pointer-events: none; 
 }
 
 /* Actual title content */
 .title-content {
+  pointer-events: auto;
   background: rgba(0, 0, 0, 0.6);
   color: white;
   padding: 12px;
@@ -153,8 +155,12 @@
 }
 
 /* Ensure lightbox container is above other elements */
-.vel-modal {
-  z-index: 9999 !important;
+.vel-modal .vel-header {
+  z-index: 2001 !important;
+}
+
+.vel-modal .vel-header .vel-close {
+  z-index: 2002 !important;
 }
 
 /* Style the toolbar */
