@@ -131,7 +131,7 @@ async function addData() {
         },
       });
 
-      toast.success("Save machine success");
+      toast.success("Save user success");
     }
     await router.push("/master/user");
   } catch (err) {
