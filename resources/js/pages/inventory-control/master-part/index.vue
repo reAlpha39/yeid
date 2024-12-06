@@ -389,7 +389,7 @@ onMounted(() => {
         <VBtn
           v-if="$can('create', 'part')"
           prepend-icon="tabler-plus"
-          to="part/add"
+          to="master-part/add"
         >
           Add New Part
         </VBtn>
