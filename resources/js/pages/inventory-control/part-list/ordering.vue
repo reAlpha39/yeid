@@ -138,6 +138,13 @@ async function initEditData(partCode) {
   }
 }
 
+function convertDate(dateStr) {
+  const year = dateStr.substring(0, 4);
+  const month = dateStr.substring(4, 6);
+  const day = dateStr.substring(6, 8);
+  return `${year}-${month}-${day}`;
+}
+
 function applyData() {
   const data = prevData.value;
   usedPartSwitch.value = data.usedflag == "O" ? "Active" : "Inactive";
@@ -157,6 +164,10 @@ function applyData() {
   noteTF.value = data.note;
   minStockTF.value = parseInt(data?.minstock ?? 0);
   minOrderTF.value = parseInt(data?.minorder ?? 0);
+  requestQuotationDate.value = convertDate(data.reqquotationdate);
+  orderDate.value = convertDate(data.orderdate);
+  poSendDate.value = convertDate(data.posentdate);
+  etdDate.value = convertDate(data.etddate);
 }
 
 function isNumber(evt) {
