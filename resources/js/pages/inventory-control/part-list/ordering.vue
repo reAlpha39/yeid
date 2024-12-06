@@ -191,7 +191,7 @@ onMounted(async () => {
         class: 'text-h4',
       },
       {
-        title: isEdit ? 'Update Part' : 'Add New Part',
+        title: 'Ordering',
         class: 'text-h4',
       },
     ]"
@@ -213,242 +213,244 @@ onMounted(async () => {
     </VCardText>
   </div>
 
-  <VCard class="pa-8 mt-4">
-    <VRow>
-      <VCol cols="6">
-        <AppTextField
-          v-model="partCodeTF"
-          :rules="[requiredValidator]"
-          label="Part Code"
-          placeholder="Input part code"
-          disabled
-        />
-      </VCol>
-      <VCol cols="6">
-        <AppTextField
-          v-model="partNameTF"
-          :rules="[requiredValidator]"
-          label="Part Name"
-          placeholder="Input part name"
-          disabled
-        />
-      </VCol>
-    </VRow>
+  <div v-else>
+    <VCard class="pa-8 mt-4">
+      <VRow>
+        <VCol cols="6">
+          <AppTextField
+            v-model="partCodeTF"
+            :rules="[requiredValidator]"
+            label="Part Code"
+            placeholder="Input part code"
+            disabled
+          />
+        </VCol>
+        <VCol cols="6">
+          <AppTextField
+            v-model="partNameTF"
+            :rules="[requiredValidator]"
+            label="Part Name"
+            placeholder="Input part name"
+            disabled
+          />
+        </VCol>
+      </VRow>
 
-    <VRow>
-      <VCol cols="6">
-        <AppTextField
-          v-model="specificationTF"
-          :rules="[requiredValidator]"
-          label="Specification"
-          placeholder="Input specification"
-          disabled
-        />
-      </VCol>
-      <VCol cols="6">
-        <AppTextField
-          v-model="brandTF"
-          :rules="[requiredValidator]"
-          label="Brand"
-          placeholder="Input brand"
-          disabled
-        />
-      </VCol>
-    </VRow>
+      <VRow>
+        <VCol cols="6">
+          <AppTextField
+            v-model="specificationTF"
+            :rules="[requiredValidator]"
+            label="Specification"
+            placeholder="Input specification"
+            disabled
+          />
+        </VCol>
+        <VCol cols="6">
+          <AppTextField
+            v-model="brandTF"
+            :rules="[requiredValidator]"
+            label="Brand"
+            placeholder="Input brand"
+            disabled
+          />
+        </VCol>
+      </VRow>
 
-    <VRow class="align-center">
-      <VCol cols="3">
-        <AppSelect
-          v-model="categoryTF"
-          :rules="[requiredValidator]"
-          label="Category"
-          :items="categories"
-          placeholder="Select category"
-          append-icon="mdi-chevron-down"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <AppTextField
-          v-model="barcodeTF"
-          label="Barcode"
-          placeholder="Input barcode"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <AppTextField
-          v-model="addressTF"
-          :rules="[requiredValidator]"
-          label="Address"
-          placeholder="Input address"
-          maxlength="6"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <VLabel style="color: #43404f; font-size: 13px">Used Parts</VLabel>
-        <VSwitch
-          v-model="usedPartSwitch"
-          :rules="[requiredValidator]"
-          :label="usedPartSwitch"
-          false-value="Inactive"
-          true-value="Active"
-          disabled
-        />
-      </VCol>
-    </VRow>
+      <VRow class="align-center">
+        <VCol cols="3">
+          <AppSelect
+            v-model="categoryTF"
+            :rules="[requiredValidator]"
+            label="Category"
+            :items="categories"
+            placeholder="Select category"
+            append-icon="mdi-chevron-down"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField
+            v-model="barcodeTF"
+            label="Barcode"
+            placeholder="Input barcode"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField
+            v-model="addressTF"
+            :rules="[requiredValidator]"
+            label="Address"
+            placeholder="Input address"
+            maxlength="6"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <VLabel style="color: #43404f; font-size: 13px">Used Parts</VLabel>
+          <VSwitch
+            v-model="usedPartSwitch"
+            :rules="[requiredValidator]"
+            :label="usedPartSwitch"
+            false-value="Inactive"
+            true-value="Active"
+            disabled
+          />
+        </VCol>
+      </VRow>
 
-    <AppTextField
-      readonly
-      class="py-4"
-      v-model="vendorTF"
-      :rules="[requiredValidator]"
-      placeholder="Select vendor"
-      label="Vendor"
-      @click="
-        isSelectInventoryVendorDialogVisible =
-          !isSelectInventoryVendorDialogVisible
-      "
-      disabled
-    />
+      <AppTextField
+        readonly
+        class="py-4"
+        v-model="vendorTF"
+        :rules="[requiredValidator]"
+        placeholder="Select vendor"
+        label="Vendor"
+        @click="
+          isSelectInventoryVendorDialogVisible =
+            !isSelectInventoryVendorDialogVisible
+        "
+        disabled
+      />
 
-    <VRow>
-      <VCol cols="3">
-        <AppTextField
-          v-model="unitPriceTF"
-          :rules="[requiredValidator]"
-          label="Unit Price"
-          placeholder="Input unit price"
-          @keypress="isNumber($event)"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <AppSelect
-          v-model="currencyTF"
-          :rules="[requiredValidator]"
-          label="Currency"
-          :items="currencies"
-          placeholder="Select currency"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <AppTextField
-          v-model="orderPartCodeTF"
-          label="Order Part Code"
-          placeholder="Input order part code"
-          disabled
-        />
-      </VCol>
-      <VCol cols="3">
-        <AppTextField
-          :disabled="isEdit"
-          v-model="initialStockTF"
-          label="Initial Stock Number"
-          placeholder="Input initial stock number"
-          :rules="[requiredValidator]"
-          @keypress="isNumber($event)"
-          disabled
-        />
-      </VCol>
-    </VRow>
+      <VRow>
+        <VCol cols="3">
+          <AppTextField
+            v-model="unitPriceTF"
+            :rules="[requiredValidator]"
+            label="Unit Price"
+            placeholder="Input unit price"
+            @keypress="isNumber($event)"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppSelect
+            v-model="currencyTF"
+            :rules="[requiredValidator]"
+            label="Currency"
+            :items="currencies"
+            placeholder="Select currency"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField
+            v-model="orderPartCodeTF"
+            label="Order Part Code"
+            placeholder="Input order part code"
+            disabled
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField
+            :disabled="isEdit"
+            v-model="initialStockTF"
+            label="Initial Stock Number"
+            placeholder="Input initial stock number"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
+            disabled
+          />
+        </VCol>
+      </VRow>
 
-    <AppTextField
-      v-model="noteTF"
-      class="py-4"
-      label="Note"
-      placeholder="Input note"
-      disabled
-    />
+      <AppTextField
+        v-model="noteTF"
+        class="py-4"
+        label="Note"
+        placeholder="Input note"
+        disabled
+      />
 
-    <VRow>
-      <VCol cols="2">
-        <AppTextField
-          v-model="minStockTF"
-          label="Minimum Stock"
-          placeholder="0"
-          :rules="[requiredValidator]"
-          @keypress="isNumber($event)"
-          disabled
-        />
-      </VCol>
-      <VCol cols="2">
-        <AppTextField
-          v-model="minOrderTF"
-          label="Minimum Order"
-          placeholder="0"
-          :rules="[requiredValidator]"
-          @keypress="isNumber($event)"
-          disabled
-        />
-      </VCol>
+      <VRow>
+        <VCol cols="2">
+          <AppTextField
+            v-model="minStockTF"
+            label="Minimum Stock"
+            placeholder="0"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
+            disabled
+          />
+        </VCol>
+        <VCol cols="2">
+          <AppTextField
+            v-model="minOrderTF"
+            label="Minimum Order"
+            placeholder="0"
+            :rules="[requiredValidator]"
+            @keypress="isNumber($event)"
+            disabled
+          />
+        </VCol>
 
-      <VCol cols="8">
-        <VLabel style="color: #43404f; font-size: 13px">No Order</VLabel>
-        <VSwitch
-          v-model="orderSwitch"
-          :label="orderSwitch"
-          false-value="Inactive"
-          true-value="Active"
-          disabled
-        />
-      </VCol>
-    </VRow>
-  </VCard>
+        <VCol cols="8">
+          <VLabel style="color: #43404f; font-size: 13px">No Order</VLabel>
+          <VSwitch
+            v-model="orderSwitch"
+            :label="orderSwitch"
+            false-value="Inactive"
+            true-value="Active"
+            disabled
+          />
+        </VCol>
+      </VRow>
+    </VCard>
 
-  <VCard class="pa-8 mt-4">
-    <VRow>
+    <VCard class="pa-8 mt-4">
+      <VRow>
+        <VCol>
+          <AppDateTimePicker
+            v-model="requestQuotationDate"
+            :rules="[requiredValidator]"
+            label="Request Quotation Date"
+            placeholder="31-01-2024"
+            :config="{ dateFormat: 'Y-m-d' }"
+            append-inner-icon="tabler-calendar"
+          />
+        </VCol>
+        <VCol>
+          <AppDateTimePicker
+            v-model="orderDate"
+            :rules="[requiredValidator]"
+            label="Order Date"
+            placeholder="31-01-2024"
+            :config="{ dateFormat: 'Y-m-d' }"
+            append-inner-icon="tabler-calendar"
+          />
+        </VCol>
+        <VCol>
+          <AppDateTimePicker
+            v-model="poSendDate"
+            :rules="[requiredValidator]"
+            label="P/O Send Date"
+            placeholder="31-01-2024"
+            :config="{ dateFormat: 'Y-m-d' }"
+            append-inner-icon="tabler-calendar"
+          />
+        </VCol>
+        <VCol>
+          <AppDateTimePicker
+            v-model="etdDate"
+            :rules="[requiredValidator]"
+            label="ETD Date"
+            placeholder="31-01-2024"
+            :config="{ dateFormat: 'Y-m-d' }"
+            append-inner-icon="tabler-calendar"
+          />
+        </VCol>
+      </VRow>
+    </VCard>
+
+    <VRow class="d-flex justify-start py-8">
       <VCol>
-        <AppDateTimePicker
-          v-model="requestQuotationDate"
-          :rules="[requiredValidator]"
-          label="Request Quotation Date"
-          placeholder="31-01-2024"
-          :config="{ dateFormat: 'Y-m-d' }"
-          append-inner-icon="tabler-calendar"
-        />
-      </VCol>
-      <VCol>
-        <AppDateTimePicker
-          v-model="orderDate"
-          :rules="[requiredValidator]"
-          label="Order Date"
-          placeholder="31-01-2024"
-          :config="{ dateFormat: 'Y-m-d' }"
-          append-inner-icon="tabler-calendar"
-        />
-      </VCol>
-      <VCol>
-        <AppDateTimePicker
-          v-model="poSendDate"
-          :rules="[requiredValidator]"
-          label="P/O Send Date"
-          placeholder="31-01-2024"
-          :config="{ dateFormat: 'Y-m-d' }"
-          append-inner-icon="tabler-calendar"
-        />
-      </VCol>
-      <VCol>
-        <AppDateTimePicker
-          v-model="etdDate"
-          :rules="[requiredValidator]"
-          label="ETD Date"
-          placeholder="31-01-2024"
-          :config="{ dateFormat: 'Y-m-d' }"
-          append-inner-icon="tabler-calendar"
-        />
+        <VBtn color="success" class="me-4" @click="updateOrder">Save</VBtn>
+        <VBtn variant="outlined" color="error" to="/inventory-control/part-list"
+          >Cancel</VBtn
+        >
       </VCol>
     </VRow>
-  </VCard>
-
-  <VRow class="d-flex justify-start py-8">
-    <VCol>
-      <VBtn color="success" class="me-4" @click="updateOrder">Save</VBtn>
-      <VBtn variant="outlined" color="error" to="/inventory-control/part-list"
-        >Cancel</VBtn
-      >
-    </VCol>
-  </VRow>
+  </div>
 </template>
