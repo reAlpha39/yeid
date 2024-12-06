@@ -222,7 +222,7 @@ onMounted(async () => {
           label="Part Code"
           placeholder="Input part code"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="6">
         <AppTextField
@@ -231,7 +231,7 @@ onMounted(async () => {
           label="Part Name"
           placeholder="Input part name"
           disabled
-        ></AppTextField>
+        />
       </VCol>
     </VRow>
 
@@ -243,7 +243,7 @@ onMounted(async () => {
           label="Specification"
           placeholder="Input specification"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="6">
         <AppTextField
@@ -252,7 +252,7 @@ onMounted(async () => {
           label="Brand"
           placeholder="Input brand"
           disabled
-        ></AppTextField>
+        />
       </VCol>
     </VRow>
 
@@ -266,7 +266,7 @@ onMounted(async () => {
           placeholder="Select category"
           append-icon="mdi-chevron-down"
           disabled
-        ></AppSelect>
+        />
       </VCol>
       <VCol cols="3">
         <AppTextField
@@ -274,7 +274,7 @@ onMounted(async () => {
           label="Barcode"
           placeholder="Input barcode"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="3">
         <AppTextField
@@ -284,7 +284,7 @@ onMounted(async () => {
           placeholder="Input address"
           maxlength="6"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="3">
         <VLabel style="color: #43404f; font-size: 13px">Used Parts</VLabel>
@@ -295,7 +295,7 @@ onMounted(async () => {
           false-value="Inactive"
           true-value="Active"
           disabled
-        ></VSwitch>
+        />
       </VCol>
     </VRow>
 
@@ -311,8 +311,7 @@ onMounted(async () => {
           !isSelectInventoryVendorDialogVisible
       "
       disabled
-    >
-    </AppTextField>
+    />
 
     <VRow>
       <VCol cols="3">
@@ -323,7 +322,7 @@ onMounted(async () => {
           placeholder="Input unit price"
           @keypress="isNumber($event)"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="3">
         <AppSelect
@@ -333,7 +332,7 @@ onMounted(async () => {
           :items="currencies"
           placeholder="Select currency"
           disabled
-        ></AppSelect>
+        />
       </VCol>
       <VCol cols="3">
         <AppTextField
@@ -341,7 +340,7 @@ onMounted(async () => {
           label="Order Part Code"
           placeholder="Input order part code"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="3">
         <AppTextField
@@ -352,7 +351,7 @@ onMounted(async () => {
           :rules="[requiredValidator]"
           @keypress="isNumber($event)"
           disabled
-        ></AppTextField>
+        />
       </VCol>
     </VRow>
 
@@ -362,7 +361,7 @@ onMounted(async () => {
       label="Note"
       placeholder="Input note"
       disabled
-    ></AppTextField>
+    />
 
     <VRow>
       <VCol cols="2">
@@ -373,7 +372,7 @@ onMounted(async () => {
           :rules="[requiredValidator]"
           @keypress="isNumber($event)"
           disabled
-        ></AppTextField>
+        />
       </VCol>
       <VCol cols="2">
         <AppTextField
@@ -383,7 +382,7 @@ onMounted(async () => {
           :rules="[requiredValidator]"
           @keypress="isNumber($event)"
           disabled
-        ></AppTextField>
+        />
       </VCol>
 
       <VCol cols="8">
@@ -394,7 +393,7 @@ onMounted(async () => {
           false-value="Inactive"
           true-value="Active"
           disabled
-        ></VSwitch>
+        />
       </VCol>
     </VRow>
   </VCard>

@@ -249,18 +249,21 @@ watch(
           v-model="changePart.partname"
           label="Nama Part"
           placeholder="Input nama part"
+          maxlength="50"
         />
 
         <AppTextField
           v-model="changePart.specification"
           label="Spesification"
           placeholder="Input spesifikasi"
+          maxlength="50"
         />
 
         <AppTextField
           v-model="changePart.brand"
           label="Brand"
           placeholder="Masukkan brand"
+          maxlength="50"
         />
 
         <VRow>
@@ -300,7 +303,7 @@ watch(
                   padding-right: 8px;
                   border-radius: 0;
                 "
-                maxlength="18"
+                maxlength="10"
                 @keypress="isNumber($event)"
               />
             </div>
@@ -311,6 +314,7 @@ watch(
               label="Quantity"
               placeholder="0"
               @keypress="isNumber($event)"
+              maxlength="5"
             />
           </VCol>
         </VRow>

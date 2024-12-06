@@ -79,6 +79,7 @@ const dialogVisibleUpdate = (val) => {
             @click:append-inner="
               isCurrentPasswordVisible = !isCurrentPasswordVisible
             "
+            maxlength="64"
           />
           <AppTextField
             class="mb-2"
@@ -91,6 +92,7 @@ const dialogVisibleUpdate = (val) => {
               isNewPasswordVisible ? 'tabler-eye-off' : 'tabler-eye'
             "
             @click:append-inner="isNewPasswordVisible = !isNewPasswordVisible"
+            maxlength="64"
           />
           <AppTextField
             label="Confirm New Password"
@@ -104,6 +106,7 @@ const dialogVisibleUpdate = (val) => {
             @click:append-inner="
               isConfirmPasswordVisible = !isConfirmPasswordVisible
             "
+            maxlength="64"
           />
 
           <VBtn @click="changePassword" class="mt-4">Change Password</VBtn>
