@@ -323,11 +323,11 @@ const headers = [
     key: "category",
   },
   {
-    title: "COMPANY LIMIT",
+    title: "MAX LIMIT",
     key: "companylimit",
   },
   {
-    title: "MAKER LIMIT",
+    title: "FIX LIMIT",
     key: "makerlimit",
   },
   {
