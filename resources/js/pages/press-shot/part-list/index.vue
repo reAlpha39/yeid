@@ -237,6 +237,10 @@ function getStatusColor(item) {
     return "status-red";
   }
 
+  if (parseInt(item?.counter ?? 0) > parseInt(item?.makerlimit ?? 0)) {
+    return "status-blue";
+  }
+
   if (parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)) {
     return "status-yellow";
   }
@@ -609,5 +613,9 @@ onMounted(() => {
 
 .status-green {
   background-color: #4caf50;
+}
+
+.status-blue {
+  background-color: #2d9cdb;
 }
 </style>
