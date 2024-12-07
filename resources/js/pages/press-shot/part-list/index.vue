@@ -303,7 +303,7 @@ const headers = [
     key: "counter",
   },
   {
-    title: "TEMP LIMIT",
+    title: "MAX LIMIT",
     key: "companylimit",
   },
   {
