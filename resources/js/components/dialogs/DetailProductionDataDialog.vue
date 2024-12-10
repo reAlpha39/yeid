@@ -98,7 +98,7 @@ watch(
 
     <VCard class="share-project-dialog pa-2 pa-sm-10">
       <VCardText>
-        <h4 class="text-h4 text-center mb-2">Detail Exchange Part</h4>
+        <h4 class="text-h4 text-center mb-2">Detail Production Data</h4>
       </VCardText>
 
       <VCard variant="outlined" style="background-color: #f9f9f9">
@@ -143,7 +143,7 @@ watch(
               <text>Die Unit No#</text>
             </VCol>
             <VCol>
-              <text>: {{ data?.dienunitno ?? "-" }} </text>
+              <text>: {{ data?.dieunitno ?? "-" }} </text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
