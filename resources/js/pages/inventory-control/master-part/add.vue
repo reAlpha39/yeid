@@ -311,7 +311,7 @@ onMounted(async () => {
     class="px-0 pb-2 pt-0"
     :items="[
       {
-        title: 'Master',
+        title: 'Inventory Control',
         class: 'text-h4',
       },
       {
