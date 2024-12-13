@@ -192,6 +192,8 @@ declare module 'vue-router/auto/routes' {
     'press-shot-production-data': RouteRecordInfo<'press-shot-production-data', '/press-shot/production-data', Record<never, never>, Record<never, never>>,
     'press-shot-production-data-add': RouteRecordInfo<'press-shot-production-data-add', '/press-shot/production-data/add', Record<never, never>, Record<never, never>>,
     'register': RouteRecordInfo<'register', '/register', Record<never, never>, Record<never, never>>,
+    'schedules': RouteRecordInfo<'schedules', '/schedules', Record<never, never>, Record<never, never>>,
+    'schedules-add': RouteRecordInfo<'schedules-add', '/schedules/add', Record<never, never>, Record<never, never>>,
     'tables-data-table': RouteRecordInfo<'tables-data-table', '/tables/data-table', Record<never, never>, Record<never, never>>,
     'tables-simple-table': RouteRecordInfo<'tables-simple-table', '/tables/simple-table', Record<never, never>, Record<never, never>>,
     'wizard-examples-checkout': RouteRecordInfo<'wizard-examples-checkout', '/wizard-examples/checkout', Record<never, never>, Record<never, never>>,

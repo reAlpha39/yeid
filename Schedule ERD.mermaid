@@ -1,0 +1,169 @@
+```mermaid
+erDiagram
+    mas_machine ||--o{ schedule_activities : has
+    schedule_activities ||--o{ schedule_activity_progress : tracks
+    schedule_activities ||--o{ schedule_tasks : contains
+    schedule_tasks ||--o{ schedule_task_execution : tracks
+    schedule_task_execution ||--o{ schedule_user_assignments : assigns
+    mas_user ||--o{ schedule_user_assignments : performs
+
+    %% existing master machine
+    mas_machine {
+        int machineno PK
+        string machine_name
+        string shop_code
+        string line_name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_activities {
+        int activity_id PK
+        int machineno FK
+        string activity_name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_tasks {
+        int task_id PK
+        int activity_id FK
+        string task_name
+        int frequency_times
+        string frequency_period
+        int start_week
+        int duration
+        int manpower_required
+        string pic
+        int cycle_time
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_task_item {
+        int item_id PK
+        int task_id FK
+        date scheduled_date
+        string status
+        date completion_date
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    %% existing master user
+    mas_user {
+        int id PK
+        string name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_user_assignments {
+        int assignment_id PK
+        int user_id FK
+        int task_item_id FK
+        timestamp assigned_date
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+```
+
+
+
+```mermaid
+erDiagram
+    mas_machine ||--o{ schedule_activities : has
+    schedule_activities ||--o{ schedule_activity_progress : tracks
+    schedule_activities ||--o{ schedule_tasks : contains
+    schedule_tasks ||--o{ schedule_task_execution : tracks
+    schedule_task_execution ||--o{ schedule_user_assignments : assigns
+    mas_user ||--o{ schedule_user_assignments : performs
+
+    %% existing master machine
+    mas_machine {
+        int machineno PK
+        string machine_name
+        string shop_code
+        string line_name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_activities {
+        int activity_id PK
+        int machineno FK
+        string activity_name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_activity_progress {
+        int progress_id PK
+        int activity_id FK
+        int month
+        int year
+        int total_tasks
+        int completed_on_time
+        int completed_delayed
+        int not_completed
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_tasks {
+        int task_id PK
+        int activity_id FK
+        string task_name
+        int frequency_times
+        string frequency_period
+        int start_week
+        int duration
+        int manpower_required
+        string pic
+        int cycle_time
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_task_execution {
+        int execution_id PK
+        int task_id FK
+        date scheduled_date
+        string status
+        date completion_date
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    %% existing master user
+    mas_user {
+        int id PK
+        string name
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+    schedule_user_assignments {
+        int assignment_id PK
+        int user_id FK
+        int task_execution_id FK
+        timestamp assigned_date
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
+```

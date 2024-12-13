@@ -69,6 +69,7 @@ declare global {
   const isEmpty: typeof import('./resources/js/@core/utils/helpers.js')['isEmpty']
   const isEmptyArray: typeof import('./resources/js/@core/utils/helpers.js')['isEmptyArray']
   const isNullOrUndefined: typeof import('./resources/js/@core/utils/helpers.js')['isNullOrUndefined']
+  const isNumber: typeof import('./resources/js/utils/inputNumber.js')['isNumber']
   const isObject: typeof import('./resources/js/@core/utils/helpers.js')['isObject']
   const isProxy: typeof import('vue')['isProxy']
   const isReactive: typeof import('vue')['isReactive']
@@ -429,6 +430,7 @@ declare module 'vue' {
     readonly isEmpty: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isEmpty']>
     readonly isEmptyArray: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isEmptyArray']>
     readonly isNullOrUndefined: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isNullOrUndefined']>
+    readonly isNumber: UnwrapRef<typeof import('./resources/js/utils/inputNumber.js')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isObject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
@@ -781,6 +783,7 @@ declare module '@vue/runtime-core' {
     readonly isEmpty: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isEmpty']>
     readonly isEmptyArray: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isEmptyArray']>
     readonly isNullOrUndefined: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isNullOrUndefined']>
+    readonly isNumber: UnwrapRef<typeof import('./resources/js/utils/inputNumber.js')['isNumber']>
     readonly isObject: UnwrapRef<typeof import('./resources/js/@core/utils/helpers.js')['isObject']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>

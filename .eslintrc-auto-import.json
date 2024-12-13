@@ -361,6 +361,7 @@
     "debounce": true,
     "useActivityLog": true,
     "formatCurrency": true,
-    "formatNumber": true
+    "formatNumber": true,
+    "isNumber": true
   }
 }

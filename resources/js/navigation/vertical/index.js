@@ -4,6 +4,7 @@ import inventoryControl from './inventory-control'
 import maintenanceDatabaseSystem from './maintenance-database-system'
 import master from './master'
 import pressShot from './press-shot'
+import schedules from './schedules'
 
 // import appsAndPages from './apps-and-pages'
 // import charts from './charts'
@@ -17,6 +18,7 @@ export default [
     ...inventoryControl,
     ...pressShot,
     ...maintenanceDatabaseSystem,
+    ...schedules,
 
     // ...dashboards,
     // ...appsAndPages,
