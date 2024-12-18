@@ -8,8 +8,8 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('schedule_task_execution', function (Blueprint $table) {
-            $table->id('execution_id');
+        Schema::create('schedule_task_item', function (Blueprint $table) {
+            $table->id('item_id');
             $table->unsignedBigInteger('task_id');
             $table->date('scheduled_date');
             $table->string('status');
