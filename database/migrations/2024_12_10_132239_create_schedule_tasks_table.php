@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('schedule_tasks', function (Blueprint $table) {
             $table->id('task_id');
             $table->unsignedBigInteger('activity_id');
+            $table->string('machine_id');
             $table->string('task_name');
             $table->integer('frequency_times');
             $table->string('frequency_period');
@@ -23,6 +24,7 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->foreign('activity_id')->references('activity_id')->on('schedule_activities');
+            $table->foreign('machine_id')->references('machineno')->on('mas_machine');
         });
     }
 

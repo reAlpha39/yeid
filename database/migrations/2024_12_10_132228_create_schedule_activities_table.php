@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('schedule_activities', function (Blueprint $table) {
             $table->id('activity_id');
-            $table->string('machineno');
+            $table->string('shop_id');
             $table->string('activity_name');
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('machineno')->references('machineno')->on('mas_machine');
+            $table->foreign('shop_id')->references('shopcode')->on('mas_shop');
         });
     }
 

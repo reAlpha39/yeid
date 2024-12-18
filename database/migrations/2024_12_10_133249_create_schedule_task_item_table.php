@@ -13,6 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('task_id');
             $table->date('scheduled_date');
             $table->string('status');
+            $table->string('note');
             $table->date('completion_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
