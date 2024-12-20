@@ -14,13 +14,13 @@ class ScheduleActivity extends Model
     protected $primaryKey = 'activity_id';
 
     protected $fillable = [
-        'machineno',
+        'shop_id',
         'activity_name'
     ];
 
-    public function machine()
+    public function shop()
     {
-        return $this->belongsTo(MasMachine::class, 'machineno', 'machineno');
+        return $this->belongsTo(MasShop::class, 'shop_id', 'shopcode');
     }
 
     public function progress()

@@ -25,11 +25,11 @@ class ScheduleUserAssignment extends Model
 
     public function user()
     {
-        return $this->belongsTo(MasUser::class, 'user_id', 'id');
+        return $this->belongsTo(MasEmployee::class, 'user_id', 'employeecode');
     }
 
     public function taskExecution()
     {
-        return $this->belongsTo(ScheduleTaskExecution::class, 'task_execution_id', 'execution_id');
+        return $this->belongsTo(ScheduleTaskItem::class, 'task_item_id', 'item_id');
     }
 }

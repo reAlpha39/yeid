@@ -15,6 +15,7 @@ class ScheduleTask extends Model
 
     protected $fillable = [
         'activity_id',
+        'machine_id',
         'task_name',
         'frequency_times',
         'frequency_period',
@@ -25,6 +26,11 @@ class ScheduleTask extends Model
         'cycle_time'
     ];
 
+    public function machine()
+    {
+        return $this->belongsTo(MasMachine::class, 'machine_id', 'machineno');
+    }
+
     public function activity()
     {
         return $this->belongsTo(ScheduleActivity::class, 'activity_id');
@@ -32,6 +38,6 @@ class ScheduleTask extends Model
 
     public function executions()
     {
-        return $this->hasMany(ScheduleTaskExecution::class, 'task_id');
+        return $this->hasMany(ScheduleTaskItem::class, 'task_id');
     }
 }

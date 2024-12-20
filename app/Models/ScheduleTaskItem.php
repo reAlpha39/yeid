@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ScheduleTaskExecution extends Model
+class ScheduleTaskItem extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $table = 'schedule_task_execution';
-    protected $primaryKey = 'execution_id';
+    protected $primaryKey = 'item_id';
 
     protected $fillable = [
         'task_id',
@@ -32,6 +32,6 @@ class ScheduleTaskExecution extends Model
 
     public function userAssignments()
     {
-        return $this->hasMany(ScheduleUserAssignment::class, 'task_execution_id');
+        return $this->hasMany(ScheduleUserAssignment::class, 'task_item_id');
     }
 }
