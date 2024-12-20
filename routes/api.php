@@ -27,6 +27,7 @@ use App\Http\Controllers\SparePartReferringController;
 use App\Http\Controllers\PressPartController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\OrderInventoryController;
+use App\Http\Controllers\ScheduleActivityController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -250,6 +251,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Log Activity
     Route::post('/log-activity', [ActivityLogController::class, 'store']);
     Route::get('/download-today-log', [ActivityLogController::class, 'downloadTodayLog']);
+
+    // Schedule Activity
+    Route::get('/schedule/activities', [ScheduleActivityController::class, 'index']);
+    Route::post('/schedule/activities', [ScheduleActivityController::class, 'store']);
+    Route::put('/schedule/activities', [ScheduleActivityController::class, 'update']);
+    Route::delete('/schedule/activities', [ScheduleActivityController::class, 'destroy']);
+    Route::get('/schedule/activities/{id}', [ScheduleActivityController::class, 'show']);
 });
 
 

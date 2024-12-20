@@ -13,16 +13,70 @@ const toast = useToast();
 const router = useRouter();
 const route = useRoute();
 
+const weekOfYear = [
+  { id: 1, title: "Jan Week 1" },
+  { id: 2, title: "Jan Week 2" },
+  { id: 3, title: "Jan Week 3" },
+  { id: 4, title: "Jan Week 4" },
+  { id: 5, title: "Feb Week 1" },
+  { id: 6, title: "Feb Week 2" },
+  { id: 7, title: "Feb Week 3" },
+  { id: 8, title: "Feb Week 4" },
+  { id: 9, title: "Mar Week 1" },
+  { id: 10, title: "Mar Week 2" },
+  { id: 11, title: "Mar Week 3" },
+  { id: 12, title: "Mar Week 4" },
+  { id: 13, title: "Apr Week 1" },
+  { id: 14, title: "Apr Week 2" },
+  { id: 15, title: "Apr Week 3" },
+  { id: 16, title: "Apr Week 4" },
+  { id: 17, title: "May Week 1" },
+  { id: 18, title: "May Week 2" },
+  { id: 19, title: "May Week 3" },
+  { id: 20, title: "May Week 4" },
+  { id: 21, title: "Jun Week 1" },
+  { id: 22, title: "Jun Week 2" },
+  { id: 23, title: "Jun Week 3" },
+  { id: 24, title: "Jun Week 4" },
+  { id: 25, title: "Jul Week 1" },
+  { id: 26, title: "Jul Week 2" },
+  { id: 27, title: "Jul Week 3" },
+  { id: 28, title: "Jul Week 4" },
+  { id: 29, title: "Aug Week 1" },
+  { id: 30, title: "Aug Week 2" },
+  { id: 31, title: "Aug Week 3" },
+  { id: 32, title: "Aug Week 4" },
+  { id: 33, title: "Sep Week 1" },
+  { id: 34, title: "Sep Week 2" },
+  { id: 35, title: "Sep Week 3" },
+  { id: 36, title: "Sep Week 4" },
+  { id: 37, title: "Oct Week 1" },
+  { id: 38, title: "Oct Week 2" },
+  { id: 39, title: "Oct Week 3" },
+  { id: 40, title: "Oct Week 4" },
+  { id: 41, title: "Nov Week 1" },
+  { id: 42, title: "Nov Week 2" },
+  { id: 43, title: "Nov Week 3" },
+  { id: 44, title: "Nov Week 4" },
+  { id: 45, title: "Dec Week 1" },
+  { id: 46, title: "Dec Week 2" },
+  { id: 47, title: "Dec Week 3" },
+  { id: 48, title: "Dec Week 4" },
+];
 const frequencyPeriods = ["week", "month", "year"];
 const users = ref([]);
 const isSelectMachineDialogVisible = ref(false);
+const isSelectScheduleActivityDialogVisible = ref(false);
 const selectedMachine = ref(null);
+const selectedActivity = ref(null);
+const selectedShop = ref(null);
 
 const machines = ref([]);
 const taskItem = ref(null);
 const cycleTime = ref(null);
 const frequencyTimes = ref(null);
 const frequencyPeriod = ref(null);
+const startingWeek = ref(null);
 // Change to array to store multiple user selections
 const userSelections = ref([{ id: 0, selected: null }]);
 
@@ -67,6 +121,11 @@ const getAllSelectedUsers = computed(() => {
     .filter((user) => user !== null);
 });
 
+function handleActivitySelected(item) {
+  selectedActivity.value = item;
+  selectedShop.value = item.shop.shopcode;
+}
+
 onMounted(() => {
   fetchDataUsers();
 });
@@ -90,6 +149,66 @@ onMounted(() => {
   </div>
 
   <VForm>
+    <div class="mb-6">
+      <VCard v-if="selectedActivity">
+        <VRow class="d-flex justify-space-between align-center py-4">
+          <VCol cols="6">
+            <VRow no-gutters>
+              <VCol cols="12">
+                <VCardTitle class="ml-2">{{
+                  selectedActivity?.activity_name ?? "-"
+                }}</VCardTitle>
+              </VCol>
+            </VRow>
+            <VRow class="ml-6" no-gutters>
+              <VCol cols="12">
+                <text>{{ selectedActivity?.shop.shopname ?? "-" }}</text>
+              </VCol>
+            </VRow>
+            <VRow class="ml-6" no-gutters>
+              <VCol cols="12">
+                <small>{{ selectedActivity?.shop_id ?? "-" }}</small>
+              </VCol>
+            </VRow>
+          </VCol>
+          <VCol cols="auto" class="mr-4">
+            <VBtn
+              prepend-icon="tabler-plus"
+              @click="
+                isSelectScheduleActivityDialogVisible =
+                  !isSelectScheduleActivityDialogVisible
+              "
+            >
+              Change Activity
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VCard>
+
+      <VCard v-else>
+        <VRow class="d-flex justify-space-between align-center mb-4 pt-4 pb-2">
+          <VCol cols="6">
+            <VCardTitle class="ml-2"> Activity </VCardTitle>
+            <small class="ml-6"
+              >Activity is required, please select one activity</small
+            >
+          </VCol>
+          <VCol class="mr-4" cols="auto">
+            <VBtn
+              v-if="selectedActivity === null"
+              prepend-icon="tabler-plus"
+              @click="
+                isSelectScheduleActivityDialogVisible =
+                  !isSelectScheduleActivityDialogVisible
+              "
+            >
+              Add Activity
+            </VBtn>
+          </VCol>
+        </VRow>
+      </VCard>
+    </div>
+
     <VCard class="mb-6">
       <VCard
         v-if="selectedMachine"
@@ -169,7 +288,6 @@ onMounted(() => {
         maxlength="255"
       />
 
-      <!-- Replace single AppAutocomplete with dynamic list -->
       <div
         v-for="(selection, index) in userSelections"
         :key="selection.id"
@@ -250,12 +368,29 @@ onMounted(() => {
           </div>
         </VCardText>
       </VCard>
+
+      <AppAutocomplete
+        class="mx-6 mb-6"
+        v-model="startingWeek"
+        placeholder="Select starting week"
+        :rules="[requiredValidator]"
+        :items="weekOfYear"
+        item-title="title"
+        return-object
+        outlined
+      />
     </VCard>
   </VForm>
 
   <SelectMachineDialog
     v-model:isDialogVisible="isSelectMachineDialogVisible"
     v-model:items="machines"
+    v-model:shopcode="selectedShop"
     @submit="handleMachinesSelected"
+  />
+
+  <SelectScheduleActivity
+    v-model:isDialogVisible="isSelectScheduleActivityDialogVisible"
+    @submit="handleActivitySelected"
   />
 </template>

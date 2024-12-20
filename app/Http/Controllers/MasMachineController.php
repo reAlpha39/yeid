@@ -91,6 +91,11 @@ class MasMachineController extends Controller
                 });
             }
 
+            if ($request->query('shopcode')) {
+                $maker = $request->query('shopcode');
+                $query->where('shopcode', $maker);
+            }
+
             if ($request->query('maker')) {
                 $maker = $request->query('maker');
                 $query->where('makercode', $maker);

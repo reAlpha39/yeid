@@ -16,6 +16,10 @@ const props = defineProps({
     type: Object,
     required: false,
   },
+  shopcode: {
+    type: String,
+    required: false,
+  },
 });
 
 async function fetchMachines() {
@@ -25,6 +29,7 @@ async function fetchMachines() {
       params: {
         search: search.value,
         maker: selectedMaker.value?.makercode,
+        shopcode: props.shopcode,
         max_rows: 10,
       },
     });
@@ -91,15 +96,13 @@ watch(
     if (newVal) {
       selectedMachine.value = props.items;
 
+      fetchMachines();
+      fetchDataMaker();
+
       console.log("Dialog opened with items:", props.items);
     }
   }
 );
-
-onMounted(() => {
-  fetchMachines();
-  fetchDataMaker();
-});
 </script>
 
 <template>
