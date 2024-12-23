@@ -415,7 +415,7 @@ onMounted(() => {
           placeholder="Input mengapa dan bagaimana"
           :rules="[requiredValidator]"
           outlined
-          maxlength="50"
+          maxlength="100"
         />
 
         <VRow>
