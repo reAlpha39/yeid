@@ -202,7 +202,7 @@ onMounted(() => {
           <thead>
             <tr>
               <th>Machine Name</th>
-              <th>Model Name</th>
+              <th>Machine No</th>
               <th>Maker</th>
               <th>Shop Code</th>
               <th>Line</th>
@@ -229,7 +229,7 @@ onMounted(() => {
                 {{ item.modelname }}
               </td>
               <td>
-                {{ item.makername }}
+                {{ item.machineno }}
               </td>
               <td>
                 {{ item.shopcode }}
