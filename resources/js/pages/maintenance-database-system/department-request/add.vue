@@ -367,7 +367,11 @@ onMounted(() => {
               :rules="[requiredValidator]"
               label="Tanggal Order"
               placeholder="31-01-2024"
-              :config="{ enableTime: true, dateFormat: 'Y-m-d H:i' }"
+              :config="{
+                enableTime: true,
+                dateFormat: 'Y-m-d H:i',
+                time_24hr: true,
+              }"
               append-inner-icon="tabler-calendar"
             />
           </VCol>

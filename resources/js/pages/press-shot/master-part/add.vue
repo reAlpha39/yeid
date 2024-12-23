@@ -457,6 +457,7 @@ onMounted(async () => {
               enableTime: true,
               dateFormat: 'Y-m-d H:i',
               defaultDate: lastExchangeDate,
+              time_24hr: true,
             }"
             append-inner-icon="tabler-calendar"
           />

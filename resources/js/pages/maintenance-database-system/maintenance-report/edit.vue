@@ -802,6 +802,7 @@ onMounted(() => {
                   enableTime: true,
                   noCalendar: true,
                   dateFormat: 'H:i',
+                  time_24hr: true,
                 }"
                 append-inner-icon="tabler-calendar"
               />
@@ -844,6 +845,7 @@ onMounted(() => {
                   enableTime: true,
                   noCalendar: true,
                   dateFormat: 'H:i',
+                  time_24hr: true,
                 }"
                 append-inner-icon="tabler-calendar"
               />
@@ -886,6 +888,7 @@ onMounted(() => {
                   enableTime: true,
                   noCalendar: true,
                   dateFormat: 'H:i',
+                  time_24hr: true,
                 }"
                 append-inner-icon="tabler-calendar"
               />

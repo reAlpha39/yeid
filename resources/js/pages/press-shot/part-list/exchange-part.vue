@@ -216,7 +216,11 @@ onMounted(() => {
                 label="Exchange Date"
                 :rules="[requiredValidator]"
                 placeholder="2024-01-01 00:00"
-                :config="{ enableTime: true, dateFormat: 'Y-m-d H:i' }"
+                :config="{
+                  enableTime: true,
+                  dateFormat: 'Y-m-d H:i',
+                  time_24hr: true,
+                }"
                 append-inner-icon="tabler-calendar"
               />
               <VRow class="align-center">
