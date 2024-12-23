@@ -12,6 +12,9 @@ const props = defineProps({
 const toast = useToast();
 const emit = defineEmits(["update:isDialogVisible", "submit"]);
 
+const isDialogAddActivityVisible = ref(false);
+const selectedEditActivityId = ref(null);
+
 const data = ref([]);
 const shops = ref([]);
 const shop = ref();
@@ -59,6 +62,11 @@ const dialogVisibleUpdate = (val) => {
   emit("update:isDialogVisible", val);
 };
 
+async function openEditActivityDialog(id) {
+  selectedEditActivityId.value = id;
+  isDialogAddActivityVisible.value = true;
+}
+
 const handleItemClick = (item) => {
   // Process the item data as needed
   // console.log("Selected item:", item);
@@ -73,10 +81,15 @@ watch(search, () => {
   debouncedFetchData();
 });
 
-onMounted(() => {
-  fetchData();
-  fetchDataShop();
-});
+watch(
+  () => props.isDialogVisible,
+  (newVal) => {
+    if (newVal) {
+      fetchData();
+      fetchDataShop();
+    }
+  }
+);
 </script>
 
 <template>
@@ -89,7 +102,18 @@ onMounted(() => {
 
     <VCard class="share-project-dialog pa-2 pa-sm-10">
       <VCardText>
-        <h4 class="text-h4 text-center mb-2">Select Schedule Activity</h4>
+        <VRow>
+          <VCol cols="8">
+            <h4 class="text-h4 mb-2">Select Schedule Activity</h4>
+          </VCol>
+          <VCol cols="4" class="d-flex justify-end">
+            <VBtn
+              @click="isDialogAddActivityVisible = !isDialogAddActivityVisible"
+            >
+              Add New Activity
+            </VBtn>
+          </VCol>
+        </VRow>
       </VCardText>
 
       <VRow class="pb-4">
@@ -147,7 +171,7 @@ onMounted(() => {
                     size="small"
                     variant="text"
                     color="primary"
-                    @click="handleItemClick(item)"
+                    @click="openEditActivityDialog(item.activity_id)"
                     density="comfortable"
                   >
                     Edit
@@ -170,4 +194,10 @@ onMounted(() => {
       </div>
     </VCard>
   </VDialog>
+
+  <AddScheduleActivity
+    v-model:isDialogVisible="isDialogAddActivityVisible"
+    v-model:id="selectedEditActivityId"
+    @submit="fetchData"
+  />
 </template>

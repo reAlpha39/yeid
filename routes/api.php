@@ -255,8 +255,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Schedule Activity
     Route::get('/schedule/activities', [ScheduleActivityController::class, 'index']);
     Route::post('/schedule/activities', [ScheduleActivityController::class, 'store']);
-    Route::put('/schedule/activities', [ScheduleActivityController::class, 'update']);
     Route::delete('/schedule/activities', [ScheduleActivityController::class, 'destroy']);
+    Route::put('/schedule/activities/{id}', [ScheduleActivityController::class, 'update']);
     Route::get('/schedule/activities/{id}', [ScheduleActivityController::class, 'show']);
 });
 
