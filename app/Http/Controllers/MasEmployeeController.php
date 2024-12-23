@@ -51,7 +51,7 @@ class MasEmployeeController extends Controller
                 'employeecode' => [
                     'required',
                     'string',
-                    'max:8',
+                    'max:10',
                     // Custom rule to check uniqueness
                     function ($attribute, $value, $fail) {
                         $exists = DB::table('mas_employee')

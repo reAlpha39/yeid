@@ -178,7 +178,7 @@ watch(
                   label="Employee Code"
                   :rules="isUpdate ? [] : [requiredValidator]"
                   placeholder="Input employee code"
-                  maxlength="8"
+                  maxlength="10"
                   :disabled="isUpdate"
                 />
               </VCol>
