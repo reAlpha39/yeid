@@ -47,6 +47,45 @@ class ScheduleActivityController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     */
+    public function indexTable(Request $request)
+    {
+        try {
+            $year = $request->input('year');
+
+            $query = ScheduleActivity::with(['tasks' => function ($query) use ($year) {
+                if (!empty($year)) {
+                    $query->where('year', $year);
+                }
+                $query->with('pic');
+                // Eager load executions for each task
+                $query->with('executions');
+            }]);
+
+            // If you want to only get activities that have tasks in the specified year
+            if (!empty($year)) {
+                $query->whereHas('tasks', function ($query) use ($year) {
+                    $query->where('year', $year);
+                });
+            }
+
+            $activities = $query->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $activities
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created resource.
      */
     public function store(Request $request)

@@ -10,19 +10,22 @@ class ScheduleTaskItem extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'schedule_task_execution';
+    protected $table = 'schedule_task_item';
     protected $primaryKey = 'item_id';
 
     protected $fillable = [
         'task_id',
-        'scheduled_date',
+        // 'scheduled_date',
+        'scheduled_week',
         'status',
-        'completion_date'
+        'note',
+        // 'completion_date',
+        'completion_week'
     ];
 
     protected $casts = [
-        'scheduled_date' => 'date',
-        'completion_date' => 'date'
+        // 'scheduled_date' => 'date',
+        // 'completion_date' => 'date'
     ];
 
     public function task()

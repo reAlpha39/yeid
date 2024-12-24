@@ -1,6 +1,5 @@
 <script setup>
-// Previous script code remains exactly the same as in your paste.txt
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const months = [
   "JANUARI",
@@ -18,47 +17,102 @@ const months = [
 ];
 
 const weekHeaders = ["I", "II", "III", "IV"];
+const currentYear = new Date().getFullYear();
+const data = ref([]);
 
-const scheduleData = ref([
-  {
-    title: "Schedule Change T-belt",
-    shop: "Ign Coil",
-    items: [
-      {
-        name: "Winding Secondary Line 3 # No 1",
-        progress: "63%",
-        time: "1x/6month",
-        ct: 180,
-        mp: 2,
-        schedule: Array(48).fill("pending"),
-      },
-    ],
-  },
-  {
-    title: "Timing Belt Winding",
-    shop: "Ign Coil",
-    items: Array(4)
-      .fill()
-      .map(() => ({
-        name: "Winding Secondary Line 3 # No 2",
-        progress: "63%",
-        time: "1x/6month",
-        ct: 180,
-        mp: 2,
-        schedule: ["completed", ...Array(47).fill("pending")],
-      })),
-  },
-]);
+// Transform API data into the required format
+const transformApiData = (apiData) => {
+  return apiData
+    .map((activity) => ({
+      title: activity.activity_name,
+      shop: activity.shop_id,
+      // Get unique PICs from tasks
+      pics: [
+        ...new Set(
+          activity.tasks.map((task) => task.pic?.name).filter(Boolean)
+        ),
+      ],
+      items: activity.tasks.map((task) => {
+        // Create a 48-week schedule array with empty strings
+        const schedule = Array(48).fill("");
+
+        // Calculate progress based on completed executions
+        const totalExecutions = task.executions.length;
+        const completedExecutions = task.executions.filter(
+          (execution) => execution.status === "completed"
+        ).length;
+
+        const progress =
+          totalExecutions > 0
+            ? `${Math.round((completedExecutions / totalExecutions) * 100)}%`
+            : "0%";
+
+        // Mark scheduled weeks
+        task.executions.forEach((execution) => {
+          const weekIndex = execution.scheduled_week - 1;
+          if (weekIndex >= 0 && weekIndex < 48) {
+            schedule[weekIndex] = execution.status || "pending";
+          }
+        });
+
+        return {
+          name: task.machine_id,
+          progress, // You might want to calculate this based on completed executions
+          time: `${task.frequency_times}x/${task.frequency_period}`,
+          ct: task.cycle_time,
+          mp: task.manpower_required,
+          schedule: schedule,
+        };
+      }),
+    }))
+    .filter((activity) => activity.items.length > 0); // Only show activities with tasks
+};
 
 const getStatusSymbol = (status) => {
+  if (!status) return ""; // Return empty string for weeks without scheduled tasks
   if (status === "completed") return "●";
   if (status === "inProgress") return "▲";
-  return "△";
+  if (status === "pending") return "△";
+  return ""; // Return empty string for any unknown status
 };
 
 const isOddWeek = (index) => {
   return index % 2 === 0;
 };
+
+const loadingExport = ref(false);
+const scheduleData = ref([]);
+
+async function fetchData() {
+  try {
+    const response = await $api("/schedule/activities/table", {
+      params: {
+        year: currentYear,
+      },
+    });
+
+    scheduleData.value = transformApiData(response.data);
+  } catch (err) {
+    toast.error("Failed to fetch data");
+    console.error(err);
+  }
+}
+
+const handleExport = async () => {
+  loadingExport.value = true;
+  try {
+    // Implement export logic here
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  } catch (err) {
+    toast.error("Export failed");
+  } finally {
+    loadingExport.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchData();
+});
 </script>
 
 <template>
@@ -109,14 +163,20 @@ const isOddWeek = (index) => {
             </div>
           </div>
 
-          <div class="text-caption">PIC: MTC</div>
+          <div
+            class="text-caption"
+            v-if="section.pics && section.pics.length > 0"
+          >
+            PIC: {{ section.pics.join(", ") }}
+          </div>
+          <div class="text-caption" v-else>PIC: -</div>
         </VCardTitle>
 
         <div class="table-wrapper">
           <VTable>
             <thead>
               <tr class="header-row">
-                <th v-if="index === 1" class="item-column" rowspan="2">ITEM</th>
+                <th class="item-column" rowspan="2">ITEM</th>
                 <th rowspan="2">TIME</th>
                 <th rowspan="2">CT</th>
                 <th rowspan="2">MP</th>
@@ -141,7 +201,7 @@ const isOddWeek = (index) => {
             </thead>
             <tbody>
               <tr v-for="(item, itemIndex) in section.items" :key="itemIndex">
-                <td v-if="index === 1" class="item-column">
+                <td class="item-column">
                   {{ item.name }}
                   <VChip size="small" color="grey-lighten-3" class="mt-1">
                     {{ item.progress }}
@@ -175,12 +235,12 @@ const isOddWeek = (index) => {
 
 .v-table {
   border: 1px solid #eee;
-  border-collapse: collapse; /* Ensures borders don't double up */
+  border-collapse: collapse;
 }
 
 .v-table th,
 .v-table td {
-  border: 1px solid #dbdade; /* Add borders to all cells */
+  border: 1px solid #dbdade;
 }
 
 .v-table thead tr th {
@@ -207,22 +267,6 @@ const isOddWeek = (index) => {
   min-width: 100px;
 }
 
-.fixed-column {
-  position: sticky;
-  left: 0;
-  background-color: #fff;
-  z-index: 1;
-}
-
-.fixed-column:nth-child(4) {
-  border-right: 2px solid #eee;
-}
-
-th.fixed-column {
-  background-color: #f5f5f5;
-  z-index: 2;
-}
-
 .month-header {
   border-bottom: 1px solid #dbdade;
   min-width: 120px;
@@ -247,10 +291,4 @@ th.fixed-column {
 .status-symbol {
   font-size: 14px;
 }
-
-/* Ensure borders are visible on fixed columns */
-.fixed-column {
-  border-right: 1px solid #dbdade !important;
-}
 </style>
-s

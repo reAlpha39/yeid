@@ -28,6 +28,7 @@ use App\Http\Controllers\PressPartController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\OrderInventoryController;
 use App\Http\Controllers\ScheduleActivityController;
+use App\Http\Controllers\ScheduleTaskController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -254,10 +255,18 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Schedule Activity
     Route::get('/schedule/activities', [ScheduleActivityController::class, 'index']);
+    Route::get('/schedule/activities/table', [ScheduleActivityController::class, 'indexTable']);
     Route::post('/schedule/activities', [ScheduleActivityController::class, 'store']);
     Route::delete('/schedule/activities', [ScheduleActivityController::class, 'destroy']);
     Route::put('/schedule/activities/{id}', [ScheduleActivityController::class, 'update']);
     Route::get('/schedule/activities/{id}', [ScheduleActivityController::class, 'show']);
+
+    // Schedule Activity Task
+    Route::get('/schedule/tasks', [ScheduleTaskController::class, 'index']);
+    Route::post('/schedule/tasks', [ScheduleTaskController::class, 'store']);
+    Route::delete('/schedule/tasks', [ScheduleTaskController::class, 'destroy']);
+    Route::put('/schedule/tasks/{id}', [ScheduleTaskController::class, 'update']);
+    Route::get('/schedule/tasks/{id}', [ScheduleTaskController::class, 'show']);
 });
 
 

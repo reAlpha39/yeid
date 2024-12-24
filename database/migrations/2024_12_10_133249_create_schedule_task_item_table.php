@@ -11,10 +11,12 @@ return new class extends Migration
         Schema::create('schedule_task_item', function (Blueprint $table) {
             $table->id('item_id');
             $table->unsignedBigInteger('task_id');
-            $table->date('scheduled_date');
+            // $table->date('scheduled_date')->nullable();
+            $table->integer('scheduled_week');
             $table->string('status');
-            $table->string('note');
-            $table->date('completion_date')->nullable();
+            $table->string('note')->nullable();
+            // $table->date('completion_date')->nullable();
+            $table->integer('completion_week')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
@@ -24,6 +26,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('schedule_task_execution');
+        Schema::dropIfExists('schedule_task_item');
     }
 };

@@ -16,19 +16,24 @@ class ScheduleTask extends Model
     protected $fillable = [
         'activity_id',
         'machine_id',
-        'task_name',
+        'dept_id',
         'frequency_times',
         'frequency_period',
         'start_week',
         'duration',
         'manpower_required',
-        'pic',
-        'cycle_time'
+        'cycle_time',
+        'year'
     ];
 
     public function machine()
     {
         return $this->belongsTo(MasMachine::class, 'machine_id', 'machineno');
+    }
+
+    public function pic()
+    {
+        return $this->belongsTo(MasDepartment::class, 'dept_id', 'id');
     }
 
     public function activity()

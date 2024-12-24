@@ -15,7 +15,7 @@ class ScheduleUserAssignment extends Model
 
     protected $fillable = [
         'user_id',
-        'task_execution_id',
+        'task_item_id',
         'assigned_date'
     ];
 

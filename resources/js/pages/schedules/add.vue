@@ -64,13 +64,21 @@ const weekOfYear = [
   { id: 48, title: "Dec Week 4" },
 ];
 const frequencyPeriods = ["week", "month", "year"];
+
+const now = new Date();
+const currentYear = now.getFullYear();
+
+const years = ref([]);
 const users = ref([]);
+const departments = ref([]);
 const isSelectMachineDialogVisible = ref(false);
 const isSelectScheduleActivityDialogVisible = ref(false);
 const selectedMachine = ref(null);
 const selectedActivity = ref(null);
 const selectedShop = ref(null);
 
+const year = ref(currentYear);
+const selectedDepartment = ref(null);
 const machines = ref([]);
 const taskItem = ref(null);
 const cycleTime = ref(null);
@@ -80,9 +88,15 @@ const startingWeek = ref(null);
 // Change to array to store multiple user selections
 const userSelections = ref([{ id: 0, selected: null }]);
 
+function getLastTenYears() {
+  for (let i = 0; i <= 10; i++) {
+    years.value.push(currentYear - i);
+  }
+}
+
 async function fetchDataUsers() {
   try {
-    const response = await $api("/master/users", {
+    const response = await $api("/master/employees", {
       onResponseError({ response }) {
         toast.error(response._data.message);
       },
@@ -91,6 +105,86 @@ async function fetchDataUsers() {
     users.value = response.data;
   } catch (err) {
     toast.error("Failed to fetch data");
+    console.log(err);
+  }
+}
+
+async function fetchDataDepartment() {
+  try {
+    const response = await $api("/master/departments", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    departments.value = response.data;
+
+    departments.value.forEach((maker) => {
+      maker.title = maker.code + " | " + maker.name;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch department data");
+    console.log(err);
+  }
+}
+
+async function submitData() {
+  try {
+    if (!selectedActivity.value || !selectedMachine.value) {
+      toast.error("Activity and Machine is required");
+      return;
+    }
+
+    // Get all selected employee codes
+    const assignedEmployees = userSelections.value
+      .map((selection) => selection.selected?.employeecode)
+      .filter((code) => code);
+
+    const payload = {
+      activity_id: selectedActivity.value.activity_id,
+      machine_id: selectedMachine.value.machineno,
+      dept_id: selectedDepartment.value.id,
+      frequency_times: frequencyTimes.value,
+      frequency_period: frequencyPeriod.value,
+      start_week: startingWeek.value.id, // Using the id from weekOfYear array
+      duration: 1, // If duration is not in the form, defaulting to 1
+      manpower_required: assignedEmployees.length,
+      cycle_time: cycleTime.value,
+      year: year.value,
+      assigned_employees: assignedEmployees,
+    };
+
+    let response;
+    if (route.params.id) {
+      // Update existing task
+      response = await $api(`/schedule/tasks/${route.params.id}`, {
+        method: "PUT",
+        body: payload,
+        onResponseError({ response }) {
+          throw new Error(
+            response._data.message || "Failed to update schedule task"
+          );
+        },
+      });
+      toast.success("Schedule task updated successfully");
+    } else {
+      // Create new task
+      response = await $api("/schedule/tasks", {
+        method: "POST",
+        body: payload,
+        onResponseError({ response }) {
+          throw new Error(
+            response._data.message || "Failed to create schedule task"
+          );
+        },
+      });
+      toast.success("Schedule task created successfully");
+    }
+
+    // Redirect to schedule list or detail page
+    router.push("/schedules");
+  } catch (err) {
+    toast.error(err.message || "Failed to save schedule task");
     console.log(err);
   }
 }
@@ -124,10 +218,13 @@ const getAllSelectedUsers = computed(() => {
 function handleActivitySelected(item) {
   selectedActivity.value = item;
   selectedShop.value = item.shop.shopcode;
+  selectedMachine.value = null;
 }
 
 onMounted(() => {
   fetchDataUsers();
+  fetchDataDepartment();
+  getLastTenYears();
 });
 </script>
 
@@ -148,7 +245,7 @@ onMounted(() => {
     />
   </div>
 
-  <VForm>
+  <VForm ref="form" @submit.prevent="submitData">
     <div class="mb-6">
       <VCard v-if="selectedActivity">
         <VRow class="d-flex justify-space-between align-center py-4">
@@ -209,177 +306,199 @@ onMounted(() => {
       </VCard>
     </div>
 
-    <VCard class="mb-6">
-      <VCard
-        v-if="selectedMachine"
-        variant="outlined"
-        class="ma-6"
-        style="background-color: #e8776814"
-      >
-        <VRow class="d-flex justify-space-between align-center mb-4 pt-4">
-          <VCol cols="6">
-            <VRow no-gutters>
-              <VCol cols="12">
-                <VCardTitle>{{
-                  selectedMachine?.machinename ?? "-"
-                }}</VCardTitle>
-              </VCol>
-            </VRow>
-            <VRow class="ml-4" no-gutters>
-              <VCol cols="12">
-                <small>{{ selectedMachine?.machineno ?? "-" }}</small>
-              </VCol>
-            </VRow>
-            <VRow class="ml-4" no-gutters>
-              <VCol cols="12">
-                <small>Model : {{ selectedMachine?.modelname ?? "=" }}</small>
-              </VCol>
-            </VRow>
-          </VCol>
-          <VCol cols="auto" class="mr-4">
-            <VBtn
-              prepend-icon="tabler-plus"
-              @click="
-                isSelectMachineDialogVisible = !isSelectMachineDialogVisible
-              "
-            >
-              Change Machine
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VCard>
-
-      <VCard
-        v-else
-        variant="outlined"
-        class="ma-6"
-        style="background-color: #8692d014"
-      >
-        <VRow class="d-flex justify-space-between align-center mb-4 pt-4 pb-2">
-          <VCol cols="6">
-            <VCardTitle> Machine </VCardTitle>
-            <small class="ml-4"
-              >Machine is required, please select one machine</small
-            >
-          </VCol>
-          <VCol class="mr-4" cols="auto">
-            <VBtn
-              v-if="selectedMachine === null"
-              prepend-icon="tabler-plus"
-              @click="
-                isSelectMachineDialogVisible = !isSelectMachineDialogVisible
-              "
-            >
-              Add Machine
-            </VBtn>
-          </VCol>
-        </VRow>
-      </VCard>
-
-      <div class="py-4" />
-
-      <VTextarea
-        class="mx-6"
-        label="Task/Item"
-        placeholder="Input task/item"
-        v-model="taskItem"
-        :rules="[requiredValidator]"
-        outlined
-        maxlength="255"
-      />
-
-      <div
-        v-for="(selection, index) in userSelections"
-        :key="selection.id"
-        class="mx-6 my-3"
-      >
-        <div class="d-flex align-center gap-2">
-          <AppAutocomplete
-            v-model="selection.selected"
-            label="Select Man Power"
-            placeholder="Select man power"
-            :rules="[requiredValidator]"
-            :items="users"
-            item-title="name"
-            return-object
-            outlined
-            class="flex-grow-1"
-          />
-
-          <VBtn
-            v-if="index > 0"
-            icon
-            variant="text"
-            color="error"
-            class="mt-3"
-            @click="handleRemoveManPower(index)"
-          >
-            <VIcon>tabler-trash</VIcon>
-          </VBtn>
-        </div>
-      </div>
-
-      <!-- Add Man Power button -->
-      <div class="mx-3">
-        <VBtn
-          variant="text"
-          color="primary"
-          prepend-icon="tabler-plus"
-          @click="handleAddManPower"
-        >
-          Add Man Power
-        </VBtn>
-      </div>
-
-      <div class="py-4" />
-
-      <AppTextField
-        class="mx-6 mb-6"
-        v-model.number="cycleTime"
-        label="Cycle Time (CT)"
-        :rules="[requiredValidator]"
-        placeholder="Input cycle time"
-        outlined
-        maxlength="12"
-        @keypress="isNumber($event)"
-      />
-
-      <VCard variant="outlined" class="mx-6 mb-6">
-        <VCardText> Setup Periode </VCardText>
-        <VCardText>
-          <div class="d-flex align-center gap-4">
-            <span>1x in</span>
-            <AppTextField
-              v-model.number="frequencyTimes"
-              :rules="[requiredValidator]"
-              placeholder="Input frequency times"
-              outlined
-              maxlength="2"
-              @keypress="isNumber($event)"
-            />
+    <div v-if="selectedActivity">
+      <VCard class="mb-6">
+        <VRow class="my-6 mx-4">
+          <VCol cols="3">
             <AppAutocomplete
-              v-model="frequencyPeriod"
-              placeholder="Select frequency period"
+              v-model="year"
+              :items="years"
+              outlined
               :rules="[requiredValidator]"
-              :items="frequencyPeriods"
+            />
+          </VCol>
+          <VCol cols="3">
+            <VAutocomplete
+              v-model="selectedDepartment"
+              placeholder="Select PIC"
+              item-title="title"
+              :items="departments"
+              return-object
+              outlined
+              clearable
+              :rules="[requiredValidator]"
+            />
+          </VCol>
+        </VRow>
+
+        <VCard
+          v-if="selectedMachine"
+          variant="outlined"
+          class="ma-6"
+          style="background-color: #e8776814"
+        >
+          <VRow class="d-flex justify-space-between align-center mb-4 pt-4">
+            <VCol cols="6">
+              <VRow no-gutters>
+                <VCol cols="12">
+                  <VCardTitle>{{
+                    selectedMachine?.machinename ?? "-"
+                  }}</VCardTitle>
+                </VCol>
+              </VRow>
+              <VRow class="ml-4" no-gutters>
+                <VCol cols="12">
+                  <small>{{ selectedMachine?.machineno ?? "-" }}</small>
+                </VCol>
+              </VRow>
+              <VRow class="ml-4" no-gutters>
+                <VCol cols="12">
+                  <small>Model : {{ selectedMachine?.modelname ?? "=" }}</small>
+                </VCol>
+              </VRow>
+            </VCol>
+            <VCol cols="auto" class="mr-4">
+              <VBtn
+                prepend-icon="tabler-plus"
+                @click="
+                  isSelectMachineDialogVisible = !isSelectMachineDialogVisible
+                "
+              >
+                Change Machine
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCard>
+
+        <VCard
+          v-else
+          variant="outlined"
+          class="ma-6"
+          style="background-color: #8692d014"
+        >
+          <VRow
+            class="d-flex justify-space-between align-center mb-4 pt-4 pb-2"
+          >
+            <VCol cols="6">
+              <VCardTitle> Machine </VCardTitle>
+              <small class="ml-4"
+                >Machine is required, please select one machine</small
+              >
+            </VCol>
+            <VCol class="mr-4" cols="auto">
+              <VBtn
+                v-if="selectedMachine === null"
+                prepend-icon="tabler-plus"
+                @click="
+                  isSelectMachineDialogVisible = !isSelectMachineDialogVisible
+                "
+              >
+                Add Machine
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VCard>
+
+        <div
+          v-for="(selection, index) in userSelections"
+          :key="selection.id"
+          class="mx-6 my-3"
+        >
+          <div class="d-flex align-center gap-2">
+            <AppAutocomplete
+              v-model="selection.selected"
+              label="Select Man Power"
+              placeholder="Select man power"
+              :rules="[requiredValidator]"
+              :items="users"
+              item-title="employeename"
+              return-object
               outlined
               class="flex-grow-1"
             />
+
+            <VBtn
+              v-if="index > 0"
+              icon
+              variant="text"
+              color="error"
+              class="mt-3"
+              @click="handleRemoveManPower(index)"
+            >
+              <VIcon>tabler-trash</VIcon>
+            </VBtn>
           </div>
-        </VCardText>
+        </div>
+
+        <!-- Add Man Power button -->
+        <div class="mx-3">
+          <VBtn
+            variant="text"
+            color="primary"
+            prepend-icon="tabler-plus"
+            @click="handleAddManPower"
+          >
+            Add Man Power
+          </VBtn>
+        </div>
+
+        <div class="py-4" />
+
+        <AppTextField
+          class="mx-6 mb-6"
+          v-model.number="cycleTime"
+          label="Cycle Time (CT)"
+          :rules="[requiredValidator]"
+          placeholder="Input cycle time"
+          outlined
+          maxlength="12"
+          @keypress="isNumber($event)"
+        />
+
+        <VCard variant="outlined" class="mx-6 mb-6">
+          <VCardText> Setup Periode </VCardText>
+          <VCardText>
+            <div class="d-flex align-center gap-4">
+              <span>1x in</span>
+              <AppTextField
+                v-model.number="frequencyTimes"
+                :rules="[requiredValidator]"
+                placeholder="Input frequency times"
+                outlined
+                maxlength="2"
+                @keypress="isNumber($event)"
+              />
+              <AppAutocomplete
+                v-model="frequencyPeriod"
+                placeholder="Select frequency period"
+                :rules="[requiredValidator]"
+                :items="frequencyPeriods"
+                outlined
+                class="flex-grow-1"
+              />
+            </div>
+          </VCardText>
+        </VCard>
+
+        <AppAutocomplete
+          class="mx-6 mb-6"
+          v-model="startingWeek"
+          placeholder="Select starting week"
+          :rules="[requiredValidator]"
+          :items="weekOfYear"
+          item-title="title"
+          return-object
+          outlined
+        />
       </VCard>
 
-      <AppAutocomplete
-        class="mx-6 mb-6"
-        v-model="startingWeek"
-        placeholder="Select starting week"
-        :rules="[requiredValidator]"
-        :items="weekOfYear"
-        item-title="title"
-        return-object
-        outlined
-      />
-    </VCard>
+      <VCol v-if="selectedMachine">
+        <div class="d-flex justify-start">
+          <VBtn type="submit" color="success" class="mr-4"> Add </VBtn>
+          <VBtn variant="outlined" color="error" to="/schedules">Cancel</VBtn>
+        </div>
+      </VCol>
+    </div>
   </VForm>
 
   <SelectMachineDialog
