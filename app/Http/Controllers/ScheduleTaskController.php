@@ -34,7 +34,7 @@ class ScheduleTaskController extends Controller
             $tasks = $query->paginate(10);
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'data' => $tasks
             ]);
         } catch (Exception $e) {
@@ -68,7 +68,7 @@ class ScheduleTaskController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -84,14 +84,14 @@ class ScheduleTaskController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'status' => true,
                 'message' => 'Schedule task created successfully',
                 'data' => $task->load(['machine', 'activity', 'executions.userAssignments'])
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
-                'status' => 'error',
+                'status' => false,
                 'message' => 'Failed to create schedule task',
                 'error' => $e->getMessage()
             ], 500);
@@ -108,7 +108,7 @@ class ScheduleTaskController extends Controller
                 ->findOrFail($id);
 
             return response()->json([
-                'status' => 'success',
+                'success' => true,
                 'data' => $task
             ]);
         } catch (Exception $e) {
@@ -140,7 +140,7 @@ class ScheduleTaskController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -167,14 +167,14 @@ class ScheduleTaskController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Schedule task updated successfully',
                 'data' => $task->load(['machine', 'activity', 'executions.userAssignments'])
             ]);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Failed to update schedule task',
                 'error' => $e->getMessage()
             ], 500);
@@ -206,13 +206,13 @@ class ScheduleTaskController extends Controller
             DB::commit();
 
             return response()->json([
-                'status' => 'success',
+                'success' => true,
                 'message' => 'Schedule task and all related data deleted successfully'
             ]);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json([
-                'status' => 'error',
+                'success' => false,
                 'message' => 'Failed to delete schedule task and related data',
                 'error' => $e->getMessage()
             ], 500);

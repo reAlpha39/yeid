@@ -20,6 +20,9 @@ const weekHeaders = ["I", "II", "III", "IV"];
 const currentYear = new Date().getFullYear();
 const data = ref([]);
 
+const selectedUpdateTaskExecutionId = ref(null);
+const isUpdateScheduleTaskDialogVisible = ref(false);
+
 // Transform API data into the required format
 function transformApiData(apiData) {
   return apiData
@@ -29,7 +32,7 @@ function transformApiData(apiData) {
       pic: activity.pic?.name,
       items: activity.tasks.map((task) => {
         // Create a 48-week schedule array with empty strings
-        const schedule = Array(48).fill("");
+        const schedule = Array(48).fill({ item_id: null, status: "" });
 
         // Calculate progress based on completed executions
         const totalExecutions = task.executions.length;
@@ -46,11 +49,15 @@ function transformApiData(apiData) {
         task.executions.forEach((execution) => {
           const weekIndex = execution.scheduled_week - 1;
           if (weekIndex >= 0 && weekIndex < 48) {
-            schedule[weekIndex] = execution.status || "pending";
+            schedule[weekIndex] = {
+              item_id: execution.item_id,
+              status: execution.status || "pending",
+            };
           }
         });
 
         return {
+          task_id: task.task_id,
           name: task.machine?.machinename + " Line " + task.machine?.plantcode,
           progress, // You might want to calculate this based on completed executions
           time: `${task.frequency_times}x/${task.frequency_period}`,
@@ -86,6 +93,7 @@ async function fetchData() {
       },
     });
 
+    data.value = response.data;
     scheduleData.value = transformApiData(response.data);
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -105,14 +113,9 @@ async function handleExport() {
   }
 }
 
-function handleStatusClick(status, item) {
-  if (status === "completed") {
-    // Implement logic to show details of completed task
-    console.log("Show details of completed task", item);
-  } else {
-    // Implement logic to update task status
-    console.log("Update task status", item);
-  }
+function handleStatusClick(item) {
+  selectedUpdateTaskExecutionId.value = item.item_id;
+  isUpdateScheduleTaskDialogVisible.value = true;
 }
 
 onMounted(() => {
@@ -210,17 +213,17 @@ onMounted(() => {
                 <td>{{ item.ct }}</td>
                 <td>{{ item.mp }}</td>
                 <template
-                  v-for="(status, statusIndex) in item.schedule"
+                  v-for="(execution, statusIndex) in item.schedule"
                   :key="statusIndex"
                 >
                   <td class="text-center status-symbol">
                     <span
                       class="clickable-status"
-                      @click="handleStatusClick(status, item)"
+                      @click="handleStatusClick(execution)"
                       role="button"
                       tabindex="0"
                     >
-                      {{ getStatusSymbol(status) }}
+                      {{ getStatusSymbol(execution.status) }}
                     </span>
                   </td>
                 </template>
@@ -231,6 +234,12 @@ onMounted(() => {
       </VCard>
     </div>
   </VCard>
+
+  <UpdateScheduleTask
+    v-model:isDialogVisible="isUpdateScheduleTaskDialogVisible"
+    v-model:id="selectedUpdateTaskExecutionId"
+    @submit="fetchData"
+  />
 </template>
 
 <style scoped>

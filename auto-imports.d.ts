@@ -352,6 +352,7 @@ declare global {
   const watchThrottled: typeof import('@vueuse/core')['watchThrottled']
   const watchTriggerable: typeof import('@vueuse/core')['watchTriggerable']
   const watchWithFilter: typeof import('@vueuse/core')['watchWithFilter']
+  const weekOfYear: typeof import('./resources/js/utils/constants.js')['weekOfYear']
   const whenever: typeof import('@vueuse/core')['whenever']
 }
 // for type re-export
@@ -712,6 +713,7 @@ declare module 'vue' {
     readonly watchThrottled: UnwrapRef<typeof import('@vueuse/core')['watchThrottled']>
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
+    readonly weekOfYear: UnwrapRef<typeof import('./resources/js/utils/constants.js')['weekOfYear']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
   }
 }
@@ -1065,6 +1067,7 @@ declare module '@vue/runtime-core' {
     readonly watchThrottled: UnwrapRef<typeof import('@vueuse/core')['watchThrottled']>
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>
+    readonly weekOfYear: UnwrapRef<typeof import('./resources/js/utils/constants.js')['weekOfYear']>
     readonly whenever: UnwrapRef<typeof import('@vueuse/core')['whenever']>
   }
 }

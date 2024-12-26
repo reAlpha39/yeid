@@ -29,6 +29,7 @@ use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\OrderInventoryController;
 use App\Http\Controllers\ScheduleActivityController;
 use App\Http\Controllers\ScheduleTaskController;
+use App\Http\Controllers\ScheduleTaskExecutionController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -267,6 +268,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('/schedule/tasks', [ScheduleTaskController::class, 'destroy']);
     Route::put('/schedule/tasks/{id}', [ScheduleTaskController::class, 'update']);
     Route::get('/schedule/tasks/{id}', [ScheduleTaskController::class, 'show']);
+
+    // Schedule Activity Item
+    Route::get('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'index']);
+    Route::post('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'store']);
+    Route::delete('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'destroy']);
+    Route::put('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'update']);
+    Route::get('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'show']);
 });
 
 

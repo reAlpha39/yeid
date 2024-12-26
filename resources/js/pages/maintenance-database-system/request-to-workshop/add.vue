@@ -545,6 +545,6 @@ onMounted(() => {
 }
 
 .active-card {
-  border-color: #7267e8 !important;
+  border-color: #fa0202 !important;
 }
 </style>
