@@ -26,6 +26,7 @@ const selectedRoleAccess = ref();
 const fullName = ref();
 const email = ref();
 const phone = ref();
+const nik = ref();
 const status = ref("Active");
 const superAdmin = ref("No");
 const password = ref();
@@ -101,6 +102,7 @@ async function addData() {
             name: fullName.value,
             email: email.value,
             phone: phone.value,
+            nik: nik.value,
             role_access: convertRoleAccess(selectedRoleAccess.value),
             department_id: selectedDepartment.value.id,
             status: convertStatus(status.value),
@@ -120,6 +122,7 @@ async function addData() {
           name: fullName.value,
           email: email.value,
           phone: phone.value,
+          nik: nik.value,
           role_access: convertRoleAccess(selectedRoleAccess.value),
           department_id: selectedDepartment.value.id,
           status: convertStatus(status.value),
@@ -334,6 +337,7 @@ async function applyData() {
   fullName.value = data.name;
   email.value = data.email;
   phone.value = data.phone;
+  nik.value = data.nik;
   status.value = statusType(data.status);
   selectedRoleAccess.value = roleAccessType(data.role_access);
   superAdmin.value = superAdminType(controlAccess.value.user.view);
@@ -443,12 +447,12 @@ onMounted(() => {
           </VCol>
           <VCol>
             <AppTextField
-              v-model="phone"
-              label="Phone Number"
+              v-model="nik"
+              label="NIK"
               :rules="[requiredValidator]"
-              placeholder="Input phone number"
+              placeholder="Input NIK"
               outlined
-              maxlength="14"
+              maxlength="16"
             />
           </VCol>
           <VCol>
@@ -465,7 +469,17 @@ onMounted(() => {
         </VRow>
 
         <VRow>
-          <VCol>
+          <VCol cols="3">
+            <AppTextField
+              v-model="phone"
+              label="Phone Number"
+              :rules="[requiredValidator]"
+              placeholder="Input phone number"
+              outlined
+              maxlength="14"
+            />
+          </VCol>
+          <VCol cols="3">
             <AppAutocomplete
               v-model="selectedDepartment"
               label="Department"
@@ -477,7 +491,7 @@ onMounted(() => {
               outlined
             />
           </VCol>
-          <VCol>
+          <VCol cols="3">
             <AppSelect
               v-model="selectedRoleAccess"
               label="Role Access"
