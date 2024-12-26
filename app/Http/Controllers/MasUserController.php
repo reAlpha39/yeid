@@ -90,6 +90,7 @@ class MasUserController extends Controller
                     'max:64',
                     Rule::unique('mas_user')->whereNull('deleted_at')
                 ],
+                'nik' => 'required|string|min:16|max:16',
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
@@ -192,6 +193,7 @@ class MasUserController extends Controller
                         }
                     }
                 ],
+                'nik' => 'required|string|min:16|max:16',
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
