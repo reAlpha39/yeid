@@ -22,6 +22,7 @@ const ability = useAbility();
 const valid = ref(false);
 
 const errors = ref({
+  nik: undefined,
   email: undefined,
   password: undefined,
 });
@@ -29,6 +30,7 @@ const errors = ref({
 const refVForm = ref();
 
 const credentials = ref({
+  nik: "",
   email: "",
   password: "",
 });
@@ -40,7 +42,8 @@ const login = async () => {
     const data = await $api("/auth/login", {
       method: "POST",
       body: {
-        email: credentials.value.email,
+        nik: credentials.value.nik,
+        // email: credentials.value.email,
         password: credentials.value.password,
         remember_me: rememberMe.value,
       },
@@ -93,18 +96,28 @@ const onSubmit = () => {
           Welcome to Yamaha Electronic Motor Indonesia
         </h2>
         <p class="text-center mb-6">
-          Please sign in to your account using your email address and password.
+          Please sign in to your account using your NIK and password.
         </p>
         <VCard class="login-card pa-8 w-100" elevation="4" rounded="lg">
           <!-- Login Form -->
           <VForm ref="refVForm" v-model="valid" @submit.prevent="onSubmit">
-            <VTextField
+            <!-- <VTextField
               v-model="credentials.email"
               label="Email"
               placeholder="Input email"
               variant="outlined"
               :rules="[requiredValidator, emailValidator]"
               :error-messages="errors.email"
+              class="mb-4"
+            /> -->
+
+            <VTextField
+              v-model="credentials.nik"
+              label="NIK"
+              placeholder="Input NIK"
+              variant="outlined"
+              :rules="[requiredValidator]"
+              :error-messages="errors.nik"
               class="mb-4"
             />
 
@@ -130,7 +143,7 @@ const onSubmit = () => {
 
           <!-- Footer -->
           <div class="text-center text-body-2 text-medium-emphasis">
-            PT.Yamaha Electronic Motor Indonesia
+            PT. Yamaha Electronic Motor Indonesia
             <div class="mt-1">2024</div>
           </div>
         </VCard>

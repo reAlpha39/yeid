@@ -20,18 +20,20 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email',
+            'nik' => 'required|string',
+            // 'email' => 'required|string|email',
             'password' => 'required|string',
             'remember_me' => 'boolean'
         ]);
 
-        $user = MasUser::where('email', $request->email)->first();
+        // $user = MasUser::where('email', $request->email)->first();
+        $user = MasUser::where('nik', $request->nik)->first();
 
         // Check if user exists
         if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Wrong email or password'
+                'message' => 'Wrong nik or password'
             ], 401);
         }
 
@@ -52,11 +54,12 @@ class AuthController extends Controller
         }
 
         // Attempt authentication
-        $credentials = request(['email', 'password']);
+        // $credentials = request(['email', 'password']);
+        $credentials = request(['nik', 'password']);
         if (!Auth::attempt($credentials)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Wrong email or password'
+                'message' => 'Wrong nik or password'
             ], 401);
         }
 
