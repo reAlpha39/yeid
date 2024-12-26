@@ -90,7 +90,13 @@ class MasUserController extends Controller
                     'max:64',
                     Rule::unique('mas_user')->whereNull('deleted_at')
                 ],
-                'nik' => 'required|string|min:16|max:16',
+                'nik' => [
+                    'required',
+                    'string',
+                    'min:16',
+                    'max:16',
+                    Rule::unique('mas_user')->whereNull('deleted_at')
+                ],
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
@@ -193,7 +199,22 @@ class MasUserController extends Controller
                         }
                     }
                 ],
-                'nik' => 'required|string|min:16|max:16',
+                'nik' => [
+                    'required',
+                    'string',
+                    'min:16',
+                    'max:16',
+                    function ($attribute, $value, $fail) use ($id) {
+                        $exists = DB::table('mas_user')
+                            ->where('nik', $value)
+                            ->where('id', '<>', $id)
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('NIK has already been taken.');
+                        }
+                    }
+                ],
                 'phone' => 'required|string|max:14',
                 'department_id' => [
                     'required',
