@@ -16,7 +16,6 @@ class ScheduleTask extends Model
     protected $fillable = [
         'activity_id',
         'machine_id',
-        'dept_id',
         'frequency_times',
         'frequency_period',
         'start_week',
@@ -29,11 +28,6 @@ class ScheduleTask extends Model
     public function machine()
     {
         return $this->belongsTo(MasMachine::class, 'machine_id', 'machineno');
-    }
-
-    public function pic()
-    {
-        return $this->belongsTo(MasDepartment::class, 'dept_id', 'id');
     }
 
     public function activity()

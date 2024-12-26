@@ -19,7 +19,7 @@ class ScheduleActivityController extends Controller
             $activityName = $request->input('activity_name');
             $shopId = $request->input('shop_id');
 
-            $query = ScheduleActivity::with(['shop', 'progress', 'tasks']);
+            $query = ScheduleActivity::with(['shop', 'pic']);
 
             // Search by activity name
             if (!empty($activityName)) {
@@ -54,14 +54,18 @@ class ScheduleActivityController extends Controller
         try {
             $year = $request->input('year');
 
-            $query = ScheduleActivity::with(['tasks' => function ($query) use ($year) {
-                if (!empty($year)) {
-                    $query->where('year', $year);
-                }
-                $query->with('pic');
-                // Eager load executions for each task
-                $query->with('executions');
-            }]);
+            $query = ScheduleActivity::with([
+                'pic',
+                'tasks' => function ($query) use ($year) {
+                    if (!empty($year)) {
+                        $query->where('year', $year);
+                    }
+                    $query->with('machine');
+                    // Eager load executions for each task
+                    $query->with('executions');
+                },
+
+            ]);
 
             // If you want to only get activities that have tasks in the specified year
             if (!empty($year)) {
@@ -93,6 +97,7 @@ class ScheduleActivityController extends Controller
         try {
             $validated = $request->validate([
                 'shop_id' => 'required|exists:mas_shop,shopcode',
+                'dept_id' => 'required|exists:mas_department,id',
                 'activity_name' => 'required|string|max:255'
             ]);
 

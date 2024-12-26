@@ -21,17 +21,12 @@ const currentYear = new Date().getFullYear();
 const data = ref([]);
 
 // Transform API data into the required format
-const transformApiData = (apiData) => {
+function transformApiData(apiData) {
   return apiData
     .map((activity) => ({
       title: activity.activity_name,
       shop: activity.shop_id,
-      // Get unique PICs from tasks
-      pics: [
-        ...new Set(
-          activity.tasks.map((task) => task.pic?.name).filter(Boolean)
-        ),
-      ],
+      pic: activity.pic?.name,
       items: activity.tasks.map((task) => {
         // Create a 48-week schedule array with empty strings
         const schedule = Array(48).fill("");
@@ -56,29 +51,29 @@ const transformApiData = (apiData) => {
         });
 
         return {
-          name: task.machine_id,
+          name: task.machine?.machinename + " Line " + task.machine?.plantcode,
           progress, // You might want to calculate this based on completed executions
           time: `${task.frequency_times}x/${task.frequency_period}`,
           ct: task.cycle_time,
-          mp: task.manpower_required,
+          mp: task.manpower_srequired,
           schedule: schedule,
         };
       }),
     }))
     .filter((activity) => activity.items.length > 0); // Only show activities with tasks
-};
+}
 
-const getStatusSymbol = (status) => {
-  if (!status) return ""; // Return empty string for weeks without scheduled tasks
+function getStatusSymbol(status) {
+  if (!status) return "\u00A0"; // Return empty string for weeks without scheduled tasks
   if (status === "completed") return "●";
   if (status === "inProgress") return "▲";
   if (status === "pending") return "△";
-  return ""; // Return empty string for any unknown status
-};
+  return "\u00A0"; // Return empty string for any unknown status
+}
 
-const isOddWeek = (index) => {
+function isOddWeek(index) {
   return index % 2 === 0;
-};
+}
 
 const loadingExport = ref(false);
 const scheduleData = ref([]);
@@ -98,7 +93,7 @@ async function fetchData() {
   }
 }
 
-const handleExport = async () => {
+async function handleExport() {
   loadingExport.value = true;
   try {
     // Implement export logic here
@@ -108,7 +103,17 @@ const handleExport = async () => {
   } finally {
     loadingExport.value = false;
   }
-};
+}
+
+function handleStatusClick(status, item) {
+  if (status === "completed") {
+    // Implement logic to show details of completed task
+    console.log("Show details of completed task", item);
+  } else {
+    // Implement logic to update task status
+    console.log("Update task status", item);
+  }
+}
 
 onMounted(() => {
   fetchData();
@@ -163,13 +168,7 @@ onMounted(() => {
             </div>
           </div>
 
-          <div
-            class="text-caption"
-            v-if="section.pics && section.pics.length > 0"
-          >
-            PIC: {{ section.pics.join(", ") }}
-          </div>
-          <div class="text-caption" v-else>PIC: -</div>
+          <div class="text-caption">PIC: {{ section.pic }}</div>
         </VCardTitle>
 
         <div class="table-wrapper">
@@ -215,7 +214,14 @@ onMounted(() => {
                   :key="statusIndex"
                 >
                   <td class="text-center status-symbol">
-                    {{ getStatusSymbol(status) }}
+                    <span
+                      class="clickable-status"
+                      @click="handleStatusClick(status, item)"
+                      role="button"
+                      tabindex="0"
+                    >
+                      {{ getStatusSymbol(status) }}
+                    </span>
                   </td>
                 </template>
               </tr>
@@ -289,6 +295,30 @@ onMounted(() => {
 }
 
 .status-symbol {
-  font-size: 14px;
+  height: 100%;
+  vertical-align: middle;
+}
+
+.clickable-status {
+  cursor: pointer;
+  user-select: none;
+  padding: 2px;
+  display: inline-block;
+  font-size: 1.25rem;
+  line-height: 1; /* This helps maintain consistent height */
+  min-width: 1.25rem; /* Makes all cells same width */
+  text-align: center;
+}
+
+.clickable-status:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 4px;
+}
+
+/* Optional: Add keyboard focus styles for accessibility */
+.clickable-status:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 </style>

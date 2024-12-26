@@ -18,9 +18,11 @@ const emit = defineEmits(["update:isDialogVisible", "submit"]);
 const isUpdate = ref(false);
 const refVForm = ref();
 const shops = ref([]);
+const departments = ref([]);
 
 const activityTitle = ref(null);
 const shopCode = ref(null);
+const selectedDepartment = ref(null);
 const selectedActivity = ref(null);
 
 async function fetchDataActivity(id) {
@@ -34,6 +36,7 @@ async function fetchDataActivity(id) {
     selectedActivity.value = response.data;
 
     await fetchDataShop(selectedActivity.shop_id);
+    await fetchDataDepartment(selectedActivity.dept_id);
   } catch (err) {
     console.log(err);
   }
@@ -70,6 +73,40 @@ async function fetchDataShop(id) {
   }
 }
 
+async function fetchDataDepartment(id) {
+  try {
+    if (id) {
+      const response = await $api(
+        "/master/departments/" + encodeURIComponent(id),
+        {
+          onResponseError({ response }) {
+            errors.value = response._data.errors;
+          },
+        }
+      );
+
+      selectedDepartment.value = response.data;
+      selectedDepartment.value.title =
+        response.data.code + " | " + response.data.name;
+    } else {
+      const response = await $api("/master/departments", {
+        onResponseError({ response }) {
+          errors.value = response._data.errors;
+        },
+      });
+
+      departments.value = response.data;
+
+      departments.value.forEach((maker) => {
+        maker.title = maker.code + " | " + maker.name;
+      });
+    }
+  } catch (err) {
+    toast.error("Failed to fetch department data");
+    console.log(err);
+  }
+}
+
 async function submitData() {
   const { valid, errors } = await refVForm.value?.validate();
   if (valid === false) {
@@ -90,6 +127,7 @@ async function add() {
       body: {
         shop_id: shopCode.value.shopcode,
         activity_name: activityTitle.value,
+        dept_id: selectedDepartment.value.id,
       },
       onResponseError({ response }) {
         toast.error(response._data.message);
@@ -111,6 +149,7 @@ async function update() {
       body: {
         shop_id: shopCode.value.shopcode,
         activity_name: activityTitle.value,
+        dept_id: selectedDepartment.value.id,
       },
       onResponseError({ response }) {
         toast.error(response._data.message);
@@ -147,6 +186,7 @@ watch(
     if (newVal) {
       refVForm.value?.reset();
       await fetchDataShop();
+      await fetchDataDepartment();
 
       if (props.id) {
         await fetchDataActivity(props.id);
@@ -182,7 +222,7 @@ watch(
         </VCardText>
 
         <VRow class="pb-4 px-6">
-          <VCol cols="6">
+          <VCol>
             <AppAutocomplete
               v-model="shopCode"
               label="Shop"
@@ -198,7 +238,7 @@ watch(
             />
           </VCol>
 
-          <VCol cols="6">
+          <VCol>
             <AppTextField
               v-model="activityTitle"
               label="Schedule Activity"
@@ -206,6 +246,20 @@ watch(
               variant="outlined"
               :rules="[requiredValidator]"
               maxlength="255"
+            />
+          </VCol>
+          <VCol>
+            <AppAutocomplete
+              v-model="selectedDepartment"
+              label="PIC"
+              placeholder="Select PIC"
+              item-title="title"
+              :items="departments"
+              clear-icon="tabler-x"
+              outlined
+              return-object
+              clearable
+              :rules="[requiredValidator]"
             />
           </VCol>
         </VRow>

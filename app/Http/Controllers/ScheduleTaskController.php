@@ -54,7 +54,6 @@ class ScheduleTaskController extends Controller
         $validator = Validator::make($request->all(), [
             'activity_id' => 'required|exists:schedule_activities,activity_id',
             'machine_id' => 'required|exists:mas_machine,machineno',
-            'dept_id' => 'required|exists:mas_department,id',
             'task_name' => 'nullable|string|max:255',
             'frequency_times' => 'required|integer|min:1',
             'frequency_period' => 'required|string|in:week,month,year',
@@ -129,13 +128,11 @@ class ScheduleTaskController extends Controller
         $validator = Validator::make($request->all(), [
             'activity_id' => 'sometimes|required|exists:schedule_activities,activity_id',
             'machine_id' => 'sometimes|required|exists:mas_machine,machineno',
-            'task_name' => 'sometimes|required|string|max:255',
             'frequency_times' => 'sometimes|required|integer|min:1',
             'frequency_period' => 'sometimes|required|string|in:,week,month,year',
             'start_week' => 'sometimes|required|integer|min:1|max:48',
             'duration' => 'sometimes|required|integer|min:1',
             'manpower_required' => 'sometimes|required|integer|min:1',
-            'pic' => 'sometimes|required|string|max:255',
             'cycle_time' => 'sometimes|required|integer|min:1',
             'assigned_employees' => 'sometimes|required|array',
             'assigned_employees.*' => 'required|exists:mas_employee,employeecode'

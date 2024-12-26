@@ -15,12 +15,18 @@ class ScheduleActivity extends Model
 
     protected $fillable = [
         'shop_id',
+        'dept_id',
         'activity_name'
     ];
 
     public function shop()
     {
         return $this->belongsTo(MasShop::class, 'shop_id', 'shopcode');
+    }
+
+    public function pic()
+    {
+        return $this->belongsTo(MasDepartment::class, 'dept_id', 'id');
     }
 
     public function progress()

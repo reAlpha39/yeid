@@ -143,7 +143,6 @@ async function submitData() {
     const payload = {
       activity_id: selectedActivity.value.activity_id,
       machine_id: selectedMachine.value.machineno,
-      dept_id: selectedDepartment.value.id,
       frequency_times: frequencyTimes.value,
       frequency_period: frequencyPeriod.value,
       start_week: startingWeek.value.id, // Using the id from weekOfYear array
@@ -264,7 +263,12 @@ onMounted(() => {
             </VRow>
             <VRow class="ml-6" no-gutters>
               <VCol cols="12">
-                <small>{{ selectedActivity?.shop_id ?? "-" }}</small>
+                <small>Shop : {{ selectedActivity?.shop_id ?? "-" }}</small>
+              </VCol>
+            </VRow>
+            <VRow class="ml-6" no-gutters>
+              <VCol cols="12">
+                <small>PIC : {{ selectedActivity?.pic?.name ?? "-" }}</small>
               </VCol>
             </VRow>
           </VCol>
@@ -314,18 +318,6 @@ onMounted(() => {
               v-model="year"
               :items="years"
               outlined
-              :rules="[requiredValidator]"
-            />
-          </VCol>
-          <VCol cols="3">
-            <VAutocomplete
-              v-model="selectedDepartment"
-              placeholder="Select PIC"
-              item-title="title"
-              :items="departments"
-              return-object
-              outlined
-              clearable
               :rules="[requiredValidator]"
             />
           </VCol>

@@ -149,7 +149,9 @@ watch(
           <thead>
             <tr>
               <th>Activity Name</th>
+              <th>PIC</th>
               <th>Shop</th>
+
               <th class="text-center" style="width: 120px">Action</th>
             </tr>
           </thead>
@@ -160,11 +162,15 @@ watch(
                 {{ item.activity_name }}
               </td>
               <td>
+                {{ item.pic?.name }}
+              </td>
+              <td>
                 <div class="d-flex flex-column">
                   <span style="font-weight: 500">{{ item.shop.shopname }}</span>
                   <small>{{ item.shop.shopcode }}</small>
                 </div>
               </td>
+
               <td>
                 <div class="d-flex">
                   <VBtn
