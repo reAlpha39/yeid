@@ -453,6 +453,7 @@ onMounted(() => {
               placeholder="Input NIK"
               outlined
               maxlength="16"
+              @keypress="isNumber($event)"
             />
           </VCol>
           <VCol>
@@ -477,6 +478,7 @@ onMounted(() => {
               placeholder="Input phone number"
               outlined
               maxlength="14"
+              @keypress="isNumber($event)"
             />
           </VCol>
           <VCol cols="3">
