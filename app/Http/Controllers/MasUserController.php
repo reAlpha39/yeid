@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
 use Exception;
@@ -82,7 +83,7 @@ class MasUserController extends Controller
     public function store(Request $request)
     {
         try {
-            $validated = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:64',
                 'email' => [
                     'required',
@@ -108,6 +109,15 @@ class MasUserController extends Controller
                 'password' => 'required|string',
                 // 'c_password' => 'required|same:password'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $validated = $validator->validated();
 
             // Remove confirmation password and hash the password
             // unset($validated['c_password']);
@@ -234,7 +244,16 @@ class MasUserController extends Controller
                 'password' => 'nullable|string',
             ];
 
-            $validated = $request->validate($validationRules);
+            $validator = Validator::make($request->all(), $validationRules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $validated = $validator->validated();
 
             // Remove password from validated data if it's empty
             if (empty($validated['password'])) {
@@ -263,9 +282,18 @@ class MasUserController extends Controller
     {
         try {
             // Validate the input
-            $validated = $request->validate([
+            $validator = Validator::make($request->all(), [
                 'status' => 'required|string|max:1'
             ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first()
+                ], 422);
+            }
+
+            $validated = $validator->validated();
 
             // Find the user by ID
             $user = MasUser::find($id);
