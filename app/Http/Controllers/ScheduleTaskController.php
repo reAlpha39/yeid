@@ -69,7 +69,7 @@ class ScheduleTaskController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors()->first()
             ], 422);
         }
 
@@ -141,7 +141,7 @@ class ScheduleTaskController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'errors' => $validator->errors()
+                'errors' => $validator->errors()->first()
             ], 422);
         }
 

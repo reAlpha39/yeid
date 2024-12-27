@@ -56,7 +56,7 @@ class ScheduleTaskExecutionController extends Controller
             return response()->json(
                 [
                     'success' => false,
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors()->first()
                 ],
                 422
             );
@@ -138,7 +138,7 @@ class ScheduleTaskExecutionController extends Controller
             return response()->json(
                 [
                     'success' => false,
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors()->first()
                 ],
                 422
             );
