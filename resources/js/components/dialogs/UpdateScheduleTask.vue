@@ -47,6 +47,10 @@ async function fetchDataTaskExecution(id) {
 
 function applyData() {
   statusRadio.value = selectedTaskExecution.value.status;
+  changeWeek.value =
+    selectedTaskExecution.value.completion_week === null
+      ? null
+      : weekOfYear[selectedTaskExecution.value.completion_week - 1];
   note.value = selectedTaskExecution.value.note;
 }
 
@@ -152,11 +156,11 @@ function openDeleteDialog() {
 }
 
 function completion_week_change() {
-  if (statusRadio === "overdue") {
+  if (statusRadio.value === "overdue") {
     return changeWeek.value;
   }
 
-  if (statusRadio === "completed") {
+  if (statusRadio.value === "completed") {
     return selectedTaskExecution.value.scheduled_week;
   }
 
@@ -263,6 +267,7 @@ watch(
               placeholder="Select week"
               :items="weekOfYear"
               item-title="title"
+              :rules="statusRadio === 'overdue' ? [requiredValidator] : []"
               return-object
               outlined
             />
