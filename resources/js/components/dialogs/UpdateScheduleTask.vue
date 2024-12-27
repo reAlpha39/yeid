@@ -16,6 +16,8 @@ const props = defineProps({
 const toast = useToast();
 const emit = defineEmits(["update:isDialogVisible", "submit"]);
 
+const isDeleteDialogVisible = ref(false);
+
 const refVForm = ref();
 const isUpdate = ref(false);
 const selectedTaskExecution = ref(null);
@@ -121,6 +123,34 @@ async function update() {
   }
 }
 
+async function deleteScheduleItem() {
+  try {
+    const result = await $api(
+      "/schedule/task/executions/" + selectedTaskExecution.value.item_id,
+      {
+        method: "DELETE",
+
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+          // errors.value = response._data.errors;
+        },
+      }
+    );
+
+    isDeleteDialogVisible.value = false;
+    toast.success("Delete success");
+    emit("update:isDialogVisible", false);
+    emit("submit", true);
+  } catch (err) {
+    isDeleteDialogVisible.value = true;
+    console.log(err);
+  }
+}
+
+function openDeleteDialog() {
+  isDeleteDialogVisible.value = true;
+}
+
 function completion_week_change() {
   if (statusRadio === "overdue") {
     return changeWeek.value;
@@ -166,7 +196,11 @@ watch(
                 <h4 class="text-h4 mb-2">Update Schedule Task</h4>
               </VCol>
               <VCol cols="4" class="d-flex justify-end">
-                <VBtn variant="tonal" prepend-icon="tabler-trash" @click="">
+                <VBtn
+                  variant="tonal"
+                  prepend-icon="tabler-trash"
+                  @click="openDeleteDialog"
+                >
                   Hapus Schedule
                 </VBtn>
               </VCol>
@@ -285,6 +319,32 @@ watch(
         </div>
       </VCard>
     </VForm>
+  </VDialog>
+
+  <VDialog v-model="isDeleteDialogVisible" max-width="500px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="error"
+          variant="outlined"
+          @click="isDeleteDialogVisible = !isDeleteDialogVisible"
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="success" variant="elevated" @click="deleteScheduleItem()">
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
   </VDialog>
 </template>
 
