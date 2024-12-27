@@ -79,7 +79,7 @@ function transformApiData(apiData) {
 function getStatusSymbol(status) {
   if (!status) return "\u00A0"; // Return empty string for weeks without scheduled tasks
   if (status === "completed") return "●";
-  if (status === "inProgress") return "▲";
+  if (status === "overdue") return "▲";
   if (status === "pending") return "△";
   return "\u00A0"; // Return empty string for any unknown status
 }
