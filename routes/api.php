@@ -258,21 +258,21 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/schedule/activities', [ScheduleActivityController::class, 'index']);
     Route::get('/schedule/activities/table', [ScheduleActivityController::class, 'indexTable']);
     Route::post('/schedule/activities', [ScheduleActivityController::class, 'store']);
-    Route::delete('/schedule/activities', [ScheduleActivityController::class, 'destroy']);
+    Route::delete('/schedule/activities/{id}', [ScheduleActivityController::class, 'destroy']);
     Route::put('/schedule/activities/{id}', [ScheduleActivityController::class, 'update']);
     Route::get('/schedule/activities/{id}', [ScheduleActivityController::class, 'show']);
 
     // Schedule Activity Task
     Route::get('/schedule/tasks', [ScheduleTaskController::class, 'index']);
     Route::post('/schedule/tasks', [ScheduleTaskController::class, 'store']);
-    Route::delete('/schedule/tasks', [ScheduleTaskController::class, 'destroy']);
+    Route::delete('/schedule/tasks/{id}', [ScheduleTaskController::class, 'destroy']);
     Route::put('/schedule/tasks/{id}', [ScheduleTaskController::class, 'update']);
     Route::get('/schedule/tasks/{id}', [ScheduleTaskController::class, 'show']);
 
     // Schedule Activity Item
     Route::get('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'index']);
     Route::post('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'store']);
-    Route::delete('/schedule/task/executions', [ScheduleTaskExecutionController::class, 'destroy']);
+    Route::delete('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'destroy']);
     Route::put('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'update']);
     Route::get('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'show']);
 });

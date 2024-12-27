@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
+import { useToast } from "vue-toastification";
 
 const months = [
   "JANUARI",
@@ -16,12 +17,17 @@ const months = [
   "DESEMBER",
 ];
 
+const toast = useToast();
+
 const weekHeaders = ["I", "II", "III", "IV"];
 const currentYear = new Date().getFullYear();
 const data = ref([]);
 
 const selectedUpdateTaskExecutionId = ref(null);
 const isUpdateScheduleTaskDialogVisible = ref(false);
+const isDeleteDialogVisible = ref(false);
+
+const itemToDelete = ref(null);
 
 // Transform API data into the required format
 function transformApiData(apiData) {
@@ -62,7 +68,7 @@ function transformApiData(apiData) {
           progress, // You might want to calculate this based on completed executions
           time: `${task.frequency_times}x/${task.frequency_period}`,
           ct: task.cycle_time,
-          mp: task.manpower_srequired,
+          mp: task.manpower_required,
           schedule: schedule,
         };
       }),
@@ -111,6 +117,33 @@ async function handleExport() {
   } finally {
     loadingExport.value = false;
   }
+}
+
+async function deleteScheduleItem() {
+  try {
+    const result = await $api("/schedule/tasks/" + itemToDelete.value.task_id, {
+      method: "DELETE",
+
+      onResponseError({ response }) {
+        toast.error(response._data.message);
+        // errors.value = response._data.errors;
+      },
+    });
+
+    itemToDelete.value = null;
+    isDeleteDialogVisible.value = false;
+    toast.success("Delete success");
+    fetchData();
+  } catch (err) {
+    itemToDelete.value = null;
+    isDeleteDialogVisible.value = true;
+    console.log(err);
+  }
+}
+
+function openDeleteDialog(item) {
+  itemToDelete.value = item;
+  isDeleteDialogVisible.value = true;
 }
 
 function handleStatusClick(item) {
@@ -203,11 +236,18 @@ onMounted(() => {
             </thead>
             <tbody>
               <tr v-for="(item, itemIndex) in section.items" :key="itemIndex">
-                <td class="item-column">
-                  {{ item.name }}
-                  <VChip size="small" color="grey-lighten-3" class="mt-1">
-                    {{ item.progress }}
-                  </VChip>
+                <td
+                  class="item-column d-flex justify-space-between align-center"
+                >
+                  <div>
+                    {{ item.name }}
+                    <VChip size="small" color="grey-lighten-3" class="mt-1">
+                      {{ item.progress }}
+                    </VChip>
+                  </div>
+                  <IconBtn @click="openDeleteDialog(item)" color="error">
+                    <VIcon icon="tabler-trash" color="error" />
+                  </IconBtn>
                 </td>
                 <td>{{ item.time }}</td>
                 <td>{{ item.ct }}</td>
@@ -240,6 +280,32 @@ onMounted(() => {
     v-model:id="selectedUpdateTaskExecutionId"
     @submit="fetchData"
   />
+
+  <VDialog v-model="isDeleteDialogVisible" max-width="500px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center">
+        Are you sure you want to delete this item?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="error"
+          variant="outlined"
+          @click="isDeleteDialogVisible = !isDeleteDialogVisible"
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="success" variant="elevated" @click="deleteScheduleItem()">
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>
 
 <style scoped>
