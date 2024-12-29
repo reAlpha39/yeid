@@ -29,11 +29,6 @@ class ScheduleActivity extends Model
         return $this->belongsTo(MasDepartment::class, 'dept_id', 'id');
     }
 
-    public function progress()
-    {
-        return $this->hasMany(ScheduleActivityProgress::class, 'activity_id');
-    }
-
     public function tasks()
     {
         return $this->hasMany(ScheduleTask::class, 'activity_id');

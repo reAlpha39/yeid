@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ScheduleActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ScheduleActivitiesExport;
 use Exception;
 
 class ScheduleActivityController extends Controller
@@ -199,6 +201,22 @@ class ScheduleActivityController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $year = $request->input('year');
+            $filename = 'schedule_activities' . ($year ? "_$year" : '') . '.xlsx';
+
+            return Excel::download(new ScheduleActivitiesExport($year), $filename);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -1,4 +1,5 @@
 <script setup>
+import axios from "axios";
 import { onMounted, ref } from "vue";
 import { useToast } from "vue-toastification";
 
@@ -123,18 +124,6 @@ async function fetchData() {
   }
 }
 
-async function handleExport() {
-  loadingExport.value = true;
-  try {
-    // Implement export logic here
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  } catch (err) {
-    toast.error("Export failed");
-  } finally {
-    loadingExport.value = false;
-  }
-}
-
 async function deleteScheduleItem() {
   try {
     const result = await $api("/schedule/tasks/" + itemToDelete.value.task_id, {
@@ -154,6 +143,35 @@ async function deleteScheduleItem() {
     itemToDelete.value = null;
     isDeleteDialogVisible.value = true;
     console.log(err);
+  }
+}
+
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get("/api/schedule/activities/export", {
+      responseType: "blob",
+      params: {
+        year: currentYear,
+      },
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {},
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "production-data.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
   }
 }
 
