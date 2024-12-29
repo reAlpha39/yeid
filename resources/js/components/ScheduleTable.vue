@@ -393,6 +393,17 @@ onMounted(() => {
 .item-column {
   min-width: 300px;
   max-width: 300px;
+  position: sticky;
+  left: 0;
+  background-color: white;
+  z-index: 2;
+  /* Add box shadow for better visual separation */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Increase z-index for header to stay on top */
+.header-row .item-column {
+  z-index: 3;
 }
 
 .time-column {
