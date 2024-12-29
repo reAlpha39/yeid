@@ -157,7 +157,7 @@ function openDeleteDialog() {
 
 function completion_week_change() {
   if (statusRadio.value === "overdue") {
-    return changeWeek.value;
+    return changeWeek.value.id;
   }
 
   if (statusRadio.value === "completed") {
