@@ -24,6 +24,8 @@ declare module 'vue' {
     AddPreventionDrawer: typeof import('./resources/js/components/drawers/AddPreventionDrawer.vue')['default']
     AddProductionDataDialog: typeof import('./resources/js/components/dialogs/AddProductionDataDialog.vue')['default']
     AddScheduleActivity: typeof import('./resources/js/components/dialogs/AddScheduleActivity.vue')['default']
+    AddScheduleActivityItem: typeof import('./resources/js/components/dialogs/AddScheduleActivityItem.vue')['default']
+    AddScheduleTask: typeof import('./resources/js/components/dialogs/AddScheduleTask.vue')['default']
     AddShopDrawer: typeof import('./resources/js/components/drawers/AddShopDrawer.vue')['default']
     AddSituationDrawer: typeof import('./resources/js/components/drawers/AddSituationDrawer.vue')['default']
     AddVendorDrawer: typeof import('./resources/js/components/drawers/AddVendorDrawer.vue')['default']

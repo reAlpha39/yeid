@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ScheduleTaskItem;
+use App\Models\ScheduleUserAssignment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -49,7 +50,9 @@ class ScheduleTaskExecutionController extends Controller
             'scheduled_week' => 'required|integer|min:1|max:48',
             'status' => 'required|in:pending,completed,overdue',
             'note' => 'nullable|string',
-            'completion_week' => 'nullable|integer'
+            'completion_week' => 'nullable|integer',
+            'assigned_employees' => 'sometimes|required|array',
+            'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
         ]);
 
         if ($validator->fails()) {
@@ -79,7 +82,16 @@ class ScheduleTaskExecutionController extends Controller
 
             DB::beginTransaction();
 
-            $task = ScheduleTaskItem::create($request->all());
+            $task = ScheduleTaskItem::create($request->except('assigned_employees'));
+
+            // Create assignments for the pre-selected employees
+            foreach ($request->assigned_employees ?? [] as $employeeCode) {
+                ScheduleUserAssignment::create([
+                    'user_id' => $employeeCode,
+                    'task_item_id' => $task->item_id,
+                    'assigned_date' => now()
+                ]);
+            }
 
             DB::commit();
 

@@ -26,7 +26,10 @@ const currentYear = new Date().getFullYear();
 const data = ref([]);
 
 const selectedUpdateTaskExecutionId = ref(null);
+const selectedCreateTask = ref(null);
+const selectedWeekId = ref(null);
 const isUpdateScheduleTaskDialogVisible = ref(false);
+const isCreateScheduleTaskDialogVisible = ref(false);
 const isDeleteDialogVisible = ref(false);
 
 const itemToDelete = ref(null);
@@ -40,7 +43,13 @@ function transformApiData(apiData) {
       pic: activity.pic?.name,
       items: activity.tasks.map((task) => {
         // Create a 48-week schedule array with empty strings
-        const schedule = Array(48).fill({ item_id: null, status: "" });
+        const schedule = Array(48)
+          .fill(null)
+          .map((_, index) => ({
+            week_index: index + 1,
+            item_id: null,
+            status: "",
+          }));
 
         // Calculate progress based on completed executions
         const totalExecutions = task.executions.length;
@@ -152,9 +161,15 @@ function openDeleteDialog(item) {
   isDeleteDialogVisible.value = true;
 }
 
-function handleStatusClick(item) {
-  selectedUpdateTaskExecutionId.value = item.item_id;
-  isUpdateScheduleTaskDialogVisible.value = true;
+function handleStatusClick(execution, task) {
+  if (execution.item_id === null) {
+    selectedCreateTask.value = task;
+    selectedWeekId.value = execution.week_index;
+    isCreateScheduleTaskDialogVisible.value = true;
+  } else {
+    selectedUpdateTaskExecutionId.value = execution.item_id;
+    isUpdateScheduleTaskDialogVisible.value = true;
+  }
 }
 
 onMounted(() => {
@@ -269,7 +284,7 @@ onMounted(() => {
                   <td class="text-center status-symbol">
                     <span
                       class="clickable-status"
-                      @click="handleStatusClick(execution)"
+                      @click="handleStatusClick(execution, item)"
                       role="button"
                       tabindex="0"
                     >
@@ -288,6 +303,13 @@ onMounted(() => {
   <UpdateScheduleTask
     v-model:isDialogVisible="isUpdateScheduleTaskDialogVisible"
     v-model:id="selectedUpdateTaskExecutionId"
+    @submit="fetchData"
+  />
+
+  <AddScheduleTask
+    v-model:isDialogVisible="isCreateScheduleTaskDialogVisible"
+    v-model:task="selectedCreateTask"
+    v-model:weekId="selectedWeekId"
     @submit="fetchData"
   />
 
