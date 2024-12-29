@@ -54,7 +54,8 @@ function transformApiData(apiData) {
         // Calculate progress based on completed executions
         const totalExecutions = task.executions.length;
         const completedExecutions = task.executions.filter(
-          (execution) => execution.status === "completed"
+          (execution) =>
+            execution.status === "completed" || execution.status === "overdue"
         ).length;
 
         const progress =
