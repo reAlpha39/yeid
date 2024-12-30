@@ -152,10 +152,11 @@ watch(
           <thead>
             <tr>
               <th>Machine Name</th>
-              <th>Machine No</th>
+              <th>Plant</th>
+              <th>Model</th>
               <th>Maker</th>
               <th>Shop Code</th>
-              <th>Line</th>
+
               <th>Action</th>
             </tr>
           </thead>
@@ -165,21 +166,22 @@ watch(
               <td>
                 <div class="d-flex flex-column">
                   <span style="font-weight: 500">{{ item.machinename }}</span>
-                  <small>{{ item.machino }}</small>
+                  <small>{{ item.machineno }}</small>
                 </div>
+              </td>
+              <td>
+                {{ item.plantcode }}
               </td>
               <td>
                 {{ item.modelname }}
               </td>
               <td>
-                {{ item.machineno }}
+                {{ item.makername }}
               </td>
               <td>
                 {{ item.shopcode }}
               </td>
-              <td>
-                {{ item.linecode }}
-              </td>
+
               <td>
                 <VCol cols="11" md="1">
                   <a
