@@ -62,6 +62,7 @@ class ScheduleActivityController extends Controller
     {
         try {
             $year = $request->input('year');
+            $shopId = $request->input('shop_id');
 
             $query = ScheduleActivity::with([
                 'pic',
@@ -75,6 +76,11 @@ class ScheduleActivityController extends Controller
                 },
 
             ]);
+
+            // Search by shop_id
+            if (!empty($shopId)) {
+                $query->where('shop_id', $request->shop_id);
+            }
 
             // Only get activities that have tasks in the specified year
             if (!empty($year)) {
