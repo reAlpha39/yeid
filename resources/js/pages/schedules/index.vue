@@ -2,7 +2,7 @@
 definePage({
   meta: {
     action: "view",
-    subject: "maintenanceReport",
+    subject: "maintenanceSchedule",
   },
 });
 

@@ -4,7 +4,6 @@ export default [
         icon: { icon: 'tabler-building-warehouse' },
         to: 'schedules',
         action: 'view',
-        subject: 'inventoryInbound',
-
+        subject: 'maintenanceSchedule',
     },
 ]
