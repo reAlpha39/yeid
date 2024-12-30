@@ -1,7 +1,7 @@
 export default [
     {
         title: 'Schedules',
-        icon: { icon: 'tabler-building-warehouse' },
+        icon: { icon: 'tabler-calendar' },
         to: 'schedules',
         action: 'view',
         subject: 'maintenanceSchedule',
