@@ -34,9 +34,6 @@ async function fetchDataActivity(id) {
     });
 
     selectedActivity.value = response.data;
-
-    await fetchDataShop(selectedActivity.shop_id);
-    await fetchDataDepartment(selectedActivity.dept_id);
   } catch (err) {
     console.log(err);
   }
@@ -190,6 +187,8 @@ watch(
 
       if (props.id) {
         await fetchDataActivity(props.id);
+        await fetchDataShop(selectedActivity.value.shop_id);
+        await fetchDataDepartment(selectedActivity.value.dept_id);
         applyData();
         isUpdate.value = true;
       } else {
