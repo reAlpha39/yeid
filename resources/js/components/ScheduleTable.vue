@@ -25,6 +25,8 @@ const isLoading = ref(false);
 const weekHeaders = ["I", "II", "III", "IV"];
 const currentYear = new Date().getFullYear();
 const data = ref([]);
+const years = ref([]);
+const year = ref(currentYear);
 
 const selectedUpdateTaskExecutionId = ref(null);
 const selectedCreateTask = ref(null);
@@ -79,7 +81,7 @@ function transformApiData(apiData) {
           task_id: task.task_id,
           name: task.machine?.machinename + " Line " + task.machine?.plantcode,
           progress, // You might want to calculate this based on completed executions
-          time: `${task.frequency_times}x/${task.frequency_period}`,
+          time: `1x/${task.frequency_times} ${task.frequency_period}`,
           ct: task.cycle_time,
           mp: task.manpower_required,
           schedule: schedule,
@@ -110,7 +112,7 @@ async function fetchData() {
 
     const response = await $api("/schedule/activities/table", {
       params: {
-        year: currentYear,
+        year: year.value,
       },
     });
 
@@ -175,6 +177,12 @@ async function handleExport() {
   }
 }
 
+function getLastTenYears() {
+  for (let i = 0; i <= 10; i++) {
+    years.value.push(currentYear - i);
+  }
+}
+
 function openDeleteDialog(item) {
   itemToDelete.value = item;
   isDeleteDialogVisible.value = true;
@@ -191,14 +199,23 @@ function handleStatusClick(execution, task) {
   }
 }
 
+watch([year], () => {
+  fetchData();
+});
+
 onMounted(() => {
   fetchData();
+  getLastTenYears();
 });
 </script>
 
 <template>
   <VCard class="mb-6 pa-6">
     <div class="d-flex flex-wrap gap-4 mt-2 mb-6">
+      <div style="inline-size: 7rem">
+        <AppAutocomplete v-model="year" :items="years" outlined />
+      </div>
+
       <VSpacer />
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
         <VBtn
@@ -235,6 +252,16 @@ onMounted(() => {
       />
       <VCardText class="text-center text-body-1 text-medium-emphasis">
         Loading data, please wait...
+      </VCardText>
+    </div>
+
+    <div
+      v-else-if="!scheduleData.length"
+      class="d-flex flex-column align-center justify-center mt-6 mb-2"
+    >
+      <!-- <VIcon icon="tabler-database-off" size="48" color="grey-lighten-1" /> -->
+      <VCardText class="text-center text-body-1 text-medium-emphasis">
+        No data found
       </VCardText>
     </div>
 
