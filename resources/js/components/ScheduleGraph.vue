@@ -308,6 +308,16 @@ onMounted(() => {
       </VCardText>
     </div>
 
+    <div
+      v-else-if="!tableData.length"
+      class="d-flex flex-column align-center justify-center mt-6 mb-2"
+    >
+      <!-- <VIcon icon="tabler-database-off" size="48" color="grey-lighten-1" /> -->
+      <VCardText class="text-center text-body-1 text-medium-emphasis">
+        No data found
+      </VCardText>
+    </div>
+
     <div v-else class="px-6">
       <VueApexCharts
         type="bar"
@@ -316,31 +326,31 @@ onMounted(() => {
         :series="series"
       />
 
-        <VTable class="periodic-activity-table py-6">
-          <thead>
-            <tr>
-              <th class="text-left">BULAN</th>
-              <th class="text-left">
-                SUDAH DILAKUKAN<br />
-                (ON TIME)
-              </th>
-              <th class="text-left">SUDAH DILAKUKAN<br />(DELAY)</th>
-              <th class="text-left">BELUM<br />DILAKUKAN</th>
-              <th class="text-left">TOTAL</th>
-              <th class="text-left">% PERIODICAL<br />ACTIVITY</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in tableData" :key="row.month">
-              <td class="text-left">{{ row.month }}</td>
-              <td class="text-left">{{ row.completed }}</td>
-              <td class="text-left">{{ row.overdue }}</td>
-              <td class="text-left">{{ row.pending }}</td>
-              <td class="text-left">{{ row.total }}</td>
-              <td class="text-left">{{ row.percentage }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+      <VTable class="periodic-activity-table py-6">
+        <thead>
+          <tr>
+            <th class="text-left">BULAN</th>
+            <th class="text-left">
+              SUDAH DILAKUKAN<br />
+              (ON TIME)
+            </th>
+            <th class="text-left">SUDAH DILAKUKAN<br />(DELAY)</th>
+            <th class="text-left">BELUM<br />DILAKUKAN</th>
+            <th class="text-left">TOTAL</th>
+            <th class="text-left">% PERIODICAL<br />ACTIVITY</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="row in tableData" :key="row.month">
+            <td class="text-left">{{ row.month }}</td>
+            <td class="text-left">{{ row.completed }}</td>
+            <td class="text-left">{{ row.overdue }}</td>
+            <td class="text-left">{{ row.pending }}</td>
+            <td class="text-left">{{ row.total }}</td>
+            <td class="text-left">{{ row.percentage }}</td>
+          </tr>
+        </tbody>
+      </VTable>
     </div>
   </VCard>
 </template>
