@@ -20,6 +20,7 @@ class ScheduleActivityController extends Controller
         try {
             $activityName = $request->input('activity_name');
             $shopId = $request->input('shop_id');
+            $departmentId = $request->input('dept_id');
 
             $query = ScheduleActivity::with(['shop', 'pic']);
 
@@ -32,6 +33,12 @@ class ScheduleActivityController extends Controller
             if (!empty($shopId)) {
                 $query->where('shop_id', $request->shop_id);
             }
+
+            // Search by dept_id
+            if (!empty($departmentId)) {
+                $query->where('dept_id', $request->dept_id);
+            }
+
 
             $activities = $query->get();
 
@@ -69,7 +76,7 @@ class ScheduleActivityController extends Controller
 
             ]);
 
-            // If you want to only get activities that have tasks in the specified year
+            // Only get activities that have tasks in the specified year
             if (!empty($year)) {
                 $query->whereHas('tasks', function ($query) use ($year) {
                     $query->where('year', $year);
@@ -130,7 +137,7 @@ class ScheduleActivityController extends Controller
     public function show($id)
     {
         try {
-            $activity = ScheduleActivity::with(['shop', 'progress', 'tasks'])
+            $activity = ScheduleActivity::with(['shop', 'tasks'])
                 ->findOrFail($id);
 
             return response()->json([

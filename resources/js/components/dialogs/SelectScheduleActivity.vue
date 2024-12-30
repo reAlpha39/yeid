@@ -17,6 +17,8 @@ const selectedEditActivityId = ref(null);
 
 const data = ref([]);
 const shops = ref([]);
+const departments = ref([]);
+const selectedDepartment = ref();
 const shop = ref();
 const search = ref(null);
 
@@ -24,8 +26,9 @@ async function fetchData() {
   try {
     const response = await $api("/schedule/activities", {
       params: {
-        activity_name: search?.value,
-        shop_id: shop?.value?.shopcode,
+        activity_name: search.value,
+        shop_id: shop.value?.shopcode,
+        dept_id: selectedDepartment.value?.id,
       },
       onResponseError({ response }) {
         toast.error(response._data.message);
@@ -54,6 +57,25 @@ async function fetchDataShop() {
     });
   } catch (err) {
     toast.error("Failed to fetch data shop");
+    console.log(err);
+  }
+}
+
+async function fetchDataDepartment() {
+  try {
+    const response = await $api("/master/departments", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    departments.value = response.data;
+
+    departments.value.forEach((data) => {
+      data.title = data.code + " | " + data.name;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch department data");
     console.log(err);
   }
 }
@@ -87,6 +109,7 @@ watch(
     if (newVal) {
       fetchData();
       fetchDataShop();
+      fetchDataDepartment();
     }
   }
 );
@@ -117,7 +140,7 @@ watch(
       </VCardText>
 
       <VRow class="pb-4">
-        <VCol cols="6">
+        <VCol>
           <AppTextField
             v-model="search"
             label="Search"
@@ -126,7 +149,7 @@ watch(
           />
         </VCol>
 
-        <VCol cols="6">
+        <VCol>
           <AppAutocomplete
             v-model="shop"
             label="Shop"
@@ -138,6 +161,19 @@ watch(
             return-object
             clearable
             @update:model-value="fetchData()"
+          />
+        </VCol>
+        <VCol>
+          <AppAutocomplete
+            v-model="selectedDepartment"
+            label="Department"
+            placeholder="Select deparment"
+            item-title="title"
+            :items="departments"
+            return-object
+            outlined
+            clearable
+            @update:modelValue="fetchData()"
           />
         </VCol>
       </VRow>
