@@ -1,6 +1,6 @@
 export default [
   {
-    title: 'Maintenance Database System',
+    title: 'Maintenance DB System',
     icon: { icon: 'tabler-database' },
     children: [
       {
