@@ -130,11 +130,7 @@ watch(
             <h4 class="text-h4 mb-2">Select Schedule Activity</h4>
           </VCol>
           <VCol cols="4" class="d-flex justify-end">
-            <VBtn
-              @click="isDialogAddActivityVisible = !isDialogAddActivityVisible"
-            >
-              Add New Activity
-            </VBtn>
+            <VBtn @click="openEditActivityDialog()"> Add New Activity </VBtn>
           </VCol>
         </VRow>
       </VCardText>

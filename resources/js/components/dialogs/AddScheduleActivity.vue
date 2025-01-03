@@ -170,6 +170,7 @@ function resetForm() {
   emit("update:isDialogVisible", false);
   activityTitle.value = null;
   shopCode.value = null;
+  selectedDepartment.value = null;
   refVForm.value?.reset();
 }
 
@@ -181,7 +182,11 @@ watch(
   () => props.isDialogVisible,
   async (newVal) => {
     if (newVal) {
+      activityTitle.value = null;
+      shopCode.value = null;
+      selectedDepartment.value = null;
       refVForm.value?.reset();
+
       await fetchDataShop();
       await fetchDataDepartment();
 
