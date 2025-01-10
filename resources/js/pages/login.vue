@@ -118,7 +118,7 @@ const onSubmit = () => {
               variant="outlined"
               :rules="[requiredValidator]"
               :error-messages="errors.nik"
-              maxlength="16"
+              maxlength="10"
               class="mb-4"
             />
 

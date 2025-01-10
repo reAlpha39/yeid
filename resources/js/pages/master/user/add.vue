@@ -452,7 +452,7 @@ onMounted(() => {
               :rules="[requiredValidator]"
               placeholder="Input NIK"
               outlined
-              maxlength="16"
+              maxlength="10"
               @keypress="isNumber($event)"
             />
           </VCol>

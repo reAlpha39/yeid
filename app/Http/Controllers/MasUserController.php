@@ -94,8 +94,8 @@ class MasUserController extends Controller
                 'nik' => [
                     'required',
                     'string',
-                    'min:16',
-                    'max:16',
+                    'min:10',
+                    'max:10',
                     Rule::unique('mas_user')->whereNull('deleted_at')
                 ],
                 'phone' => 'required|string|max:14',
@@ -212,8 +212,8 @@ class MasUserController extends Controller
                 'nik' => [
                     'required',
                     'string',
-                    'min:16',
-                    'max:16',
+                    'min:10',
+                    'max:10',
                     function ($attribute, $value, $fail) use ($id) {
                         $exists = DB::table('mas_user')
                             ->where('nik', $value)
