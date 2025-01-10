@@ -114,6 +114,19 @@
   }
 }
 
+.v-data-table .v-data-table__tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.v-data-table .v-data-table__tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
+
+/* Hover effect */
+.v-data-table .v-data-table__tr:hover {
+  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+}
+
 // Dark theme support
 .v-theme--dark {
   .sticky-actions-wrapper {
