@@ -19,6 +19,7 @@ class MasterPartController extends Controller
         try {
             // Retrieve search parameters from the request
             $search = $request->input('search', '');
+            $status = $request->input('status');
             $partCode = $request->input('part_code', '');
             $partName = $request->input('part_name', '');
             $brand = $request->input('brand', '');
@@ -104,6 +105,26 @@ class MasterPartController extends Controller
                     $q->where('m.partcode', 'ILIKE', $search . '%')
                         ->orWhere(DB::raw('upper(m.partname)'), 'ILIKE',  strtoupper($search) . '%');
                 });
+            }
+
+            // Status Filter
+            if ($status === 'ORANGE') {
+                $queryBuilder->whereRaw('(m.laststocknumber + COALESCE(gi.sum_quantity, 0)) <= CAST(COALESCE(m.minstock, 0) AS INTEGER)')
+                    ->where('m.status', 'O');
+            } elseif ($status === 'RED') {
+                $queryBuilder->whereRaw('(m.laststocknumber + COALESCE(gi.sum_quantity, 0)) <= CAST(COALESCE(m.minstock, 0) AS INTEGER)')
+                    ->where(function ($q) {
+                        $q->where('m.status', '<>', 'O')
+                            ->orWhereNull('m.status');
+                    });
+            } elseif ($status === 'YELLOW') {
+                $queryBuilder->whereNotNull('m.posentdate')
+                    ->whereNotNull('m.etddate')
+                    ->whereRaw("TO_DATE(m.etddate, 'YYYYMMDD') >= CURRENT_DATE");
+            } elseif ($status === 'BLUE') {
+                $queryBuilder->whereNotNull('m.posentdate')
+                    ->whereNotNull('m.etddate')
+                    ->whereRaw("TO_DATE(m.etddate, 'YYYYMMDD') < CURRENT_DATE");
             }
 
             if (!empty($partCode)) {

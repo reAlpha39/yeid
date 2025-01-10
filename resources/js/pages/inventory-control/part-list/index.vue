@@ -29,7 +29,9 @@ const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
 const sortBy = ref([{ key: "partcode", order: "asc" }]);
+const statusData = ["ORANGE", "RED", "YELLOW", "BLUE"];
 const sortDesc = ref([]);
+const selectedStatus = ref(null);
 
 // State for lightbox
 const isLightboxVisible = ref(false);
@@ -127,6 +129,7 @@ async function fetchData(options = {}) {
     const response = await $api("/master/part-list", {
       params: {
         search: searchQuery.value,
+        status: selectedStatus.value,
         category: "",
         page: page.value,
         per_page: itemsPerPage.value,
@@ -366,6 +369,19 @@ onMounted(() => {
         <!-- 👉 Search  -->
         <div style="inline-size: 15.625rem">
           <AppTextField v-model="searchQuery" placeholder="Search" />
+        </div>
+
+        <div style="inline-size: 12rem">
+          <AppAutocomplete
+            v-model="selectedStatus"
+            placeholder="Select status"
+            :items="statusData"
+            return-object
+            clearable
+            clear-icon="tabler-x"
+            outlined
+            @update:modelValue="fetchData()"
+          />
         </div>
 
         <!-- 👉 Export button -->
