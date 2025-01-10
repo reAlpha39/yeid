@@ -1115,7 +1115,7 @@ onMounted(() => {
               variant="flat"
               style="background-color: #f9f9f9"
             >
-              <VCardTitle> Komental </VCardTitle>
+              <VCardTitle> Komentar </VCardTitle>
 
               <VTextarea
                 class="mx-4 my-4"
