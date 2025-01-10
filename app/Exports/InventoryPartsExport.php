@@ -3,13 +3,22 @@
 namespace App\Exports;
 
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\Exportable;
 
-class InventoryPartsExport implements FromCollection, WithHeadings, WithMapping
+class InventoryPartsExport implements FromQuery, WithHeadings, WithMapping, WithChunkReading
 {
-    public function collection()
+    use Exportable;
+
+    public function __construct()
+    {
+        ini_set('memory_limit', '512M');
+    }
+
+    public function query()
     {
         return DB::table('mas_inventory as m')
             ->select(
@@ -53,8 +62,7 @@ class InventoryPartsExport implements FromCollection, WithHeadings, WithMapping
             ) as gi'), 'm.partcode', '=', 'gi.partcode')
             ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
             ->where('m.status', '<>', 'D')
-            ->orderBy('partcode')
-            ->get();
+            ->orderBy('partcode');
     }
 
     public function headings(): array
@@ -97,5 +105,10 @@ class InventoryPartsExport implements FromCollection, WithHeadings, WithMapping
             $part->posentdate,
             $part->etddate
         ];
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }
