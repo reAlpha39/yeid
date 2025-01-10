@@ -21,6 +21,7 @@ class PressPartController extends Controller
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
+            $status = $request->input('status');
 
             // Pagination parameters
             $perPage = $request->input('per_page', 10);
@@ -120,6 +121,41 @@ class PressPartController extends Controller
                     $q->where('m.partcode', 'ILIKE', "{$partCode}%")
                         ->orWhere('m.partname', 'ILIKE', "{$partCode}%");
                 });
+            }
+
+            if ($status === 'RED') {
+                $query->whereRaw('CAST(COALESCE((
+                    SELECT sum(shotcount)
+                    FROM tbl_presswork
+                    WHERE machineno = m.machineno
+                    AND model = m.model
+                    AND dieno = m.dieno
+                    AND dieunitno = m.dieunitno
+                    AND startdatetime > m.exchangedatetime
+                ), 0) AS INTEGER) > CAST(COALESCE(m.companylimit, 0) AS INTEGER)');
+            } elseif ($status === 'BLUE') {
+                $query->whereRaw('CAST(COALESCE((
+                    SELECT sum(shotcount)
+                    FROM tbl_presswork
+                    WHERE machineno = m.machineno
+                    AND model = m.model
+                    AND dieno = m.dieno
+                    AND dieunitno = m.dieunitno
+                    AND startdatetime > m.exchangedatetime
+                ), 0) AS INTEGER) > CAST(COALESCE(m.makerlimit, 0) AS INTEGER)');
+            } elseif ($status === 'YELLOW') {
+                $query->whereRaw('CAST(COALESCE(m.minstock, 0) AS INTEGER) > CAST(COALESCE((
+                    COALESCE(i.laststocknumber, 0) +
+                    COALESCE((
+                        SELECT sum(CASE
+                            WHEN jobcode = \'O\' THEN -quantity
+                            ELSE quantity
+                        END)
+                        FROM tbl_invrecord
+                        WHERE partcode = i.partcode
+                        AND jobdate > i.laststockdate
+                    ), 0)
+                ), 0) AS INTEGER)');
             }
 
             // Apply sorting

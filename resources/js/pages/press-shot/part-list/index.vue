@@ -19,6 +19,7 @@ const selectedModelDie = ref(null);
 const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
+const selectedStatus = ref(null);
 
 // Data table options
 const loading = ref(false);
@@ -34,6 +35,7 @@ const date = ref(moment().format("YYYY-MM"));
 
 const modelDieData = ref([]);
 const machineNoData = ref([]);
+const statusData = ["RED", "BLUE", "YELLOW"];
 
 async function fetchData(options = {}) {
   loading.value = true;
@@ -55,6 +57,7 @@ async function fetchData(options = {}) {
     const response = await $api("/press-shot/parts", {
       params: {
         part_code: searchQuery.value,
+        status: selectedStatus.value,
         // year: targetDateSplit[0] + targetDateSplit[1],
         model: selectedModelDie.value?.model,
         die_no: selectedModelDie.value?.dieno,
@@ -439,6 +442,17 @@ onMounted(() => {
         placeholder="Select model die"
         :items="modelDieData"
         item-title="title"
+        return-object
+        clearable
+        clear-icon="tabler-x"
+        outlined
+        @update:modelValue="fetchData()"
+      />
+
+      <AppAutocomplete
+        v-model="selectedStatus"
+        placeholder="Select status"
+        :items="statusData"
         return-object
         clearable
         clear-icon="tabler-x"
