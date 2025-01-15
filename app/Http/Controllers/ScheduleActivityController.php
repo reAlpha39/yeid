@@ -62,7 +62,8 @@ class ScheduleActivityController extends Controller
     {
         try {
             $year = $request->input('year');
-            $shopId = $request->input('shop_id');
+            $shopId = $request->input('shop');
+            $department = $request->input('department');
 
             $query = ScheduleActivity::with([
                 'pic',
@@ -77,9 +78,14 @@ class ScheduleActivityController extends Controller
 
             ]);
 
-            // Search by shop_id
+            // Filter by shop
             if (!empty($shopId)) {
-                $query->where('shop_id', $request->shop_id);
+                $query->where('shop_id', $request->shop);
+            }
+
+            // Filter by department
+            if (!empty($department)) {
+                $query->where('dept_id', $request->department);
             }
 
             // Only get activities that have tasks in the specified year
@@ -223,9 +229,11 @@ class ScheduleActivityController extends Controller
     {
         try {
             $year = $request->input('year');
+            $shopId = $request->input('shop');
+            $department = $request->input('department');
             $filename = 'schedule_activities' . ($year ? "_$year" : '') . '.xlsx';
 
-            return Excel::download(new ScheduleActivitiesExport($year), $filename);
+            return Excel::download(new ScheduleActivitiesExport($year, $shopId, $department), $filename);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

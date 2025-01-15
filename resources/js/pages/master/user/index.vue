@@ -267,7 +267,7 @@ onMounted(() => {
         <VCol cols="3">
           <VAutocomplete
             v-model="selectedDepartment"
-            placeholder="Select deparment"
+            placeholder="Select department"
             item-title="title"
             :items="departments"
             return-object

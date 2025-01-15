@@ -11,11 +11,15 @@ use Illuminate\Support\Collection;
 class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $year;
+    protected $shopId;
+    protected $department;
     protected $weekMapping;
 
-    public function __construct($year = null)
+    public function __construct($year = null, $shopId = null, $department = null)
     {
         $this->year = $year;
+        $this->shopId = $shopId;
+        $this->department = $department;
         $this->initializeWeekMapping();
     }
 
@@ -91,10 +95,21 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
             },
         ]);
 
+        // Filter by year
         if (!empty($this->year)) {
             $query->whereHas('tasks', function ($query) {
                 $query->where('year', $this->year);
             });
+        }
+
+        // Filter by shop
+        if (!empty($this->shopId)) {
+            $query->where('shop_id', $this->shopId);
+        }
+
+        // Filter by department
+        if (!empty($this->department)) {
+            $query->where('dept_id', $this->department);
         }
 
         return $query->get();

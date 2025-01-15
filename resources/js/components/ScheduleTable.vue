@@ -26,6 +26,11 @@ const weekHeaders = ["I", "II", "III", "IV"];
 const currentYear = new Date().getFullYear();
 const data = ref([]);
 const years = ref([]);
+const departments = ref([]);
+const shops = ref([]);
+
+const selectedShop = ref();
+const selectedDepartment = ref();
 const year = ref(currentYear);
 
 const selectedUpdateTaskExecutionId = ref(null);
@@ -106,6 +111,44 @@ function isOddWeek(index) {
 const loadingExport = ref(false);
 const scheduleData = ref([]);
 
+async function fetchDataDepartment() {
+  try {
+    const response = await $api("/master/departments", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    departments.value = response.data;
+
+    departments.value.forEach((maker) => {
+      maker.title = maker.code + " | " + maker.name;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch department data");
+    console.log(err);
+  }
+}
+
+async function fetchDataShop() {
+  try {
+    const response = await $api("/master/shops", {
+      onResponseError({ response }) {
+        toast.error(response._data.error);
+      },
+    });
+
+    shops.value = response.data;
+
+    shops.value.forEach((data) => {
+      data.title = data.shopcode + " | " + data.shopname;
+    });
+  } catch (err) {
+    // toast.error("Failed to fetch data");s
+    console.log(err);
+  }
+}
+
 async function fetchData() {
   try {
     isLoading.value = true;
@@ -113,6 +156,8 @@ async function fetchData() {
     const response = await $api("/schedule/activities/table", {
       params: {
         year: year.value,
+        shop: selectedShop.value?.shopcode,
+        department: selectedDepartment.value?.id,
       },
     });
 
@@ -155,7 +200,9 @@ async function handleExport() {
     const response = await axios.get("/api/schedule/activities/export", {
       responseType: "blob",
       params: {
-        year: currentYear,
+        year: year.value,
+        shop: selectedShop.value?.shopcode,
+        department: selectedDepartment.value?.id,
       },
       headers: accessToken
         ? {
@@ -199,13 +246,15 @@ function handleStatusClick(execution, task) {
   }
 }
 
-watch([year], () => {
+watch([year, selectedDepartment, selectedShop], () => {
   fetchData();
 });
 
 onMounted(() => {
   fetchData();
   getLastTenYears();
+  fetchDataDepartment();
+  fetchDataShop();
 });
 </script>
 
@@ -214,6 +263,28 @@ onMounted(() => {
     <div class="d-flex flex-wrap gap-4 mt-2 mb-6">
       <div style="inline-size: 7rem">
         <AppAutocomplete v-model="year" :items="years" outlined />
+      </div>
+      <div style="inline-size: 16rem">
+        <VAutocomplete
+          v-model="selectedDepartment"
+          placeholder="PIC"
+          item-title="title"
+          :items="departments"
+          return-object
+          outlined
+          clearable
+        />
+      </div>
+      <div style="inline-size: 16rem">
+        <VAutocomplete
+          v-model="selectedShop"
+          placeholder="Shop"
+          item-title="title"
+          :items="shops"
+          return-object
+          outlined
+          clearable
+        />
       </div>
 
       <VSpacer />
