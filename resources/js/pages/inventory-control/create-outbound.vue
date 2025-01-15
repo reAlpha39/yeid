@@ -40,7 +40,16 @@ const getMachines = async (partCode) => {
     let machineData = response.data;
 
     machineData.forEach((e) => {
-      e.title = e.machineno + " | " + e.machinename;
+      e.title =
+        e.machineno +
+        " | " +
+        e.machinename +
+        " | " +
+        e.shopcode +
+        " | " +
+        e.shopname +
+        " | " +
+        e.linecode;
     });
 
     machines.value.push(machineData);
