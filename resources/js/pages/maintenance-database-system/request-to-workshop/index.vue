@@ -129,17 +129,23 @@ const headers = [
 ];
 
 async function openEditPage(id) {
-  await router.push({
+  const route = {
     path: "/maintenance-database-system/request-to-workshop/add",
     query: { wsrid: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
-async function openDetailPage(id) {
-  await router.push({
+function openDetailPage(id) {
+  const route = {
     path: "/maintenance-database-system/request-to-workshop/detail",
     query: { wsrid: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
 function openDeleteDialog(partCode) {

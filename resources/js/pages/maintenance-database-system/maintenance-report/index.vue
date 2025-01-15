@@ -180,18 +180,24 @@ async function fetchDataShop() {
   }
 }
 
-async function openEditPage(id) {
-  await router.push({
+function openEditPage(id) {
+  const route = {
     path: "/maintenance-database-system/maintenance-report/edit",
     query: { record_id: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
-async function openDetailPage(id) {
-  await router.push({
+function openDetailPage(id) {
+  const route = {
     path: "/maintenance-database-system/maintenance-report/detail",
     query: { record_id: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
 const loadingExport = ref(false);

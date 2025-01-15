@@ -201,11 +201,14 @@ async function deletePart() {
   }
 }
 
-async function openEditPage(id) {
-  await router.push({
+function openEditPage(id) {
+  const route = {
     path: "/maintenance-database-system/department-request/add",
     query: { record_id: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
 async function openDetailPage(id) {
