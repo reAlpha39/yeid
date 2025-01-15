@@ -265,6 +265,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Schedule Activity Task
     Route::get('/schedule/tasks', [ScheduleTaskController::class, 'index']);
+    Route::get('/schedule/tasks/available-machine', [ScheduleTaskController::class, 'availableMachines']);
     Route::post('/schedule/tasks', [ScheduleTaskController::class, 'store']);
     Route::delete('/schedule/tasks/{id}', [ScheduleTaskController::class, 'destroy']);
     Route::put('/schedule/tasks/{id}', [ScheduleTaskController::class, 'update']);

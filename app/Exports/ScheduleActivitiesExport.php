@@ -13,13 +13,15 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
     protected $year;
     protected $shopId;
     protected $department;
+    protected $machine;
     protected $weekMapping;
 
-    public function __construct($year = null, $shopId = null, $department = null)
+    public function __construct($year = null, $shopId = null, $department = null, $machine = null)
     {
         $this->year = $year;
         $this->shopId = $shopId;
         $this->department = $department;
+        $this->machine = $machine;
         $this->initializeWeekMapping();
     }
 
@@ -91,16 +93,12 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
                 if (!empty($this->year)) {
                     $query->where('year', $this->year);
                 }
+                if (!empty($this->machine)) {
+                    $query->where('machine_id', $this->machine);
+                }
                 $query->with(['machine', 'executions']);
             },
         ]);
-
-        // Filter by year
-        if (!empty($this->year)) {
-            $query->whereHas('tasks', function ($query) {
-                $query->where('year', $this->year);
-            });
-        }
 
         // Filter by shop
         if (!empty($this->shopId)) {
@@ -110,6 +108,18 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
         // Filter by department
         if (!empty($this->department)) {
             $query->where('dept_id', $this->department);
+        }
+
+        // Filter activities that have tasks in the specified year or with specified machine
+        if (!empty($this->year) || !empty($this->machine)) {
+            $query->whereHas('tasks', function ($query) {
+                if (!empty($this->year)) {
+                    $query->where('year', $this->year);
+                }
+                if (!empty($this->machine)) {
+                    $query->where('machine_id', $this->machine);
+                }
+            });
         }
 
         return $query->get();

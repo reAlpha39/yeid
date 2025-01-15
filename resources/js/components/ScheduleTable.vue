@@ -28,9 +28,11 @@ const data = ref([]);
 const years = ref([]);
 const departments = ref([]);
 const shops = ref([]);
+const machines = ref([]);
 
 const selectedShop = ref();
 const selectedDepartment = ref();
+const selectedMachine = ref();
 const year = ref(currentYear);
 
 const selectedUpdateTaskExecutionId = ref(null);
@@ -130,6 +132,25 @@ async function fetchDataDepartment() {
   }
 }
 
+async function fetchDataMachine() {
+  try {
+    const response = await $api("/schedule/tasks/available-machine", {
+      onResponseError({ response }) {
+        errors.value = response._data.errors;
+      },
+    });
+
+    machines.value = response.data;
+
+    machines.value.forEach((data) => {
+      data.title = data.machineno + " | " + data.machinename;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch machine data");
+    console.log(err);
+  }
+}
+
 async function fetchDataShop() {
   try {
     const response = await $api("/master/shops", {
@@ -158,6 +179,7 @@ async function fetchData() {
         year: year.value,
         shop: selectedShop.value?.shopcode,
         department: selectedDepartment.value?.id,
+        machine: selectedMachine.value?.machineno,
       },
     });
 
@@ -203,6 +225,7 @@ async function handleExport() {
         year: year.value,
         shop: selectedShop.value?.shopcode,
         department: selectedDepartment.value?.id,
+        machine: selectedMachine.value?.machineno,
       },
       headers: accessToken
         ? {
@@ -246,13 +269,14 @@ function handleStatusClick(execution, task) {
   }
 }
 
-watch([year, selectedDepartment, selectedShop], () => {
+watch([year, selectedDepartment, selectedShop, selectedMachine], () => {
   fetchData();
 });
 
 onMounted(() => {
   fetchData();
   getLastTenYears();
+  fetchDataMachine();
   fetchDataDepartment();
   fetchDataShop();
 });
@@ -263,28 +287,6 @@ onMounted(() => {
     <div class="d-flex flex-wrap gap-4 mt-2 mb-6">
       <div style="inline-size: 7rem">
         <AppAutocomplete v-model="year" :items="years" outlined />
-      </div>
-      <div style="inline-size: 16rem">
-        <VAutocomplete
-          v-model="selectedDepartment"
-          placeholder="PIC"
-          item-title="title"
-          :items="departments"
-          return-object
-          outlined
-          clearable
-        />
-      </div>
-      <div style="inline-size: 16rem">
-        <VAutocomplete
-          v-model="selectedShop"
-          placeholder="Shop"
-          item-title="title"
-          :items="shops"
-          return-object
-          outlined
-          clearable
-        />
       </div>
 
       <VSpacer />
@@ -307,6 +309,42 @@ onMounted(() => {
         </VBtn>
       </div>
     </div>
+
+    <VRow>
+      <VCol cols="3">
+        <VAutocomplete
+          v-model="selectedDepartment"
+          placeholder="PIC"
+          item-title="title"
+          :items="departments"
+          return-object
+          outlined
+          clearable
+        />
+      </VCol>
+      <VCol cols="3">
+        <VAutocomplete
+          v-model="selectedShop"
+          placeholder="Shop"
+          item-title="title"
+          :items="shops"
+          return-object
+          outlined
+          clearable
+        />
+      </VCol>
+      <VCol cols="3">
+        <VAutocomplete
+          v-model="selectedMachine"
+          placeholder="Machine"
+          item-title="title"
+          :items="machines"
+          return-object
+          outlined
+          clearable
+        />
+      </VCol>
+    </VRow>
 
     <VDivider class="my-6" />
 
@@ -455,6 +493,13 @@ onMounted(() => {
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <SelectMachineDialog
+    v-model:isDialogVisible="isSelectMachineDialogVisible"
+    v-model:items="machines"
+    v-model:shopcode="selectedShop"
+    @submit="handleMachinesSelected"
+  />
 </template>
 
 <style scoped>

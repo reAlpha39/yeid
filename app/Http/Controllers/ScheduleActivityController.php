@@ -64,12 +64,16 @@ class ScheduleActivityController extends Controller
             $year = $request->input('year');
             $shopId = $request->input('shop');
             $department = $request->input('department');
+            $machine = $request->input('machine');
 
             $query = ScheduleActivity::with([
                 'pic',
-                'tasks' => function ($query) use ($year) {
+                'tasks' => function ($query) use ($year, $machine) {
                     if (!empty($year)) {
                         $query->where('year', $year);
+                    }
+                    if (!empty($machine)) {
+                        $query->where('machine_id', $machine);
                     }
                     $query->with('machine');
                     // Eager load executions for each task
@@ -88,10 +92,15 @@ class ScheduleActivityController extends Controller
                 $query->where('dept_id', $request->department);
             }
 
-            // Only get activities that have tasks in the specified year
-            if (!empty($year)) {
-                $query->whereHas('tasks', function ($query) use ($year) {
-                    $query->where('year', $year);
+            // Only get activities that have tasks in the specified year and machine
+            if (!empty($year) || !empty($machine)) {
+                $query->whereHas('tasks', function ($query) use ($year, $machine) {
+                    if (!empty($year)) {
+                        $query->where('year', $year);
+                    }
+                    if (!empty($machine)) {
+                        $query->where('machine_id', $machine);
+                    }
                 });
             }
 
@@ -231,9 +240,10 @@ class ScheduleActivityController extends Controller
             $year = $request->input('year');
             $shopId = $request->input('shop');
             $department = $request->input('department');
+            $machine = $request->input('machine');
             $filename = 'schedule_activities' . ($year ? "_$year" : '') . '.xlsx';
 
-            return Excel::download(new ScheduleActivitiesExport($year, $shopId, $department), $filename);
+            return Excel::download(new ScheduleActivitiesExport($year, $shopId, $department, $machine), $filename);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

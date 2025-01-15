@@ -46,6 +46,56 @@ class ScheduleTaskController extends Controller
         }
     }
 
+    public function availableMachines(Request $request)
+    {
+        try {
+            $year = $request->input('year');
+            $shopId = $request->input('shop');
+            $department = $request->input('department');
+
+            // Start with ScheduleTask
+            $query = ScheduleTask::with('machine')
+            ->select('machine_id')
+            ->distinct();
+
+            // Filter by year if provided
+            if (!empty($year)) {
+                $query->where('year', $year);
+            }
+
+            // Filter by shop through the activity relationship
+            if (!empty($shopId)) {
+                $query->whereHas('activity', function ($q) use ($shopId) {
+                    $q->where('shop_id', $shopId);
+                });
+            }
+
+            // Filter by department through the activity relationship
+            if (!empty($department)) {
+                $query->whereHas('activity', function ($q) use ($department) {
+                    $q->where('dept_id', $department);
+                });
+            }
+
+            // Get the machines
+            $machines = $query->get()
+                ->pluck('machine')
+                ->filter() // Remove any null values
+                ->values(); // Reset array keys
+
+            return response()->json([
+                'success' => true,
+                'data' => $machines
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch available machine schedule',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Store a new schedule task
      */
