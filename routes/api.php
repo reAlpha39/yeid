@@ -210,9 +210,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Spare Parts Referring
     Route::get('/maintenance-database-system/spare-part-referring/cost-summary', [SparePartReferringController::class, 'getCostSummary']);
     Route::get('/maintenance-database-system/spare-part-referring/inventory-summary', [SparePartReferringController::class, 'getInventorySummary']);
+    Route::get('/maintenance-database-system/spare-part-referring/inventory-summary/export', [SparePartReferringController::class, 'exportInventorySummary']);
     Route::get('/maintenance-database-system/spare-part-referring/parts-cost', [SparePartReferringController::class, 'getPartsCost']);
+    Route::get('/maintenance-database-system/spare-part-referring/parts-cost/export', [SparePartReferringController::class, 'exportPartsCost']);
     Route::get('/maintenance-database-system/spare-part-referring/machines-cost', [SparePartReferringController::class, 'getMachinesCost']);
+    Route::get('/maintenance-database-system/spare-part-referring/machines-cost/export', [SparePartReferringController::class, 'exportMachinesCost']);
     Route::get('/maintenance-database-system/spare-part-referring/inventory-change-cost', [SparePartReferringController::class, 'getInventoryChangeCost']);
+    Route::get('/maintenance-database-system/spare-part-referring/inventory-change-cost/export', [SparePartReferringController::class, 'exportInventoryChangeCost']);
 
     // Database Analyzation
     Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);

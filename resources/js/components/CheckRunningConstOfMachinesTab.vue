@@ -1,4 +1,5 @@
 <script setup>
+import axios from "axios";
 import { useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -10,6 +11,8 @@ const currentYear = now.getFullYear();
 const currentMonth = now.getMonth() + 1;
 
 const isLoading = ref(false);
+const loadingExport = ref(false);
+
 const years = ref([]);
 const data = ref([]);
 const machines = ref([]);
@@ -96,6 +99,42 @@ async function fetchDataMachines() {
   }
 }
 
+async function handleExport() {
+  loadingExport.value = true;
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get(
+      "/api/maintenance-database-system/spare-part-referring/machines-cost/export",
+      {
+        responseType: "blob",
+        headers: accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+            }
+          : {},
+        params: {
+          year: year.value.toString(),
+          month: month.value?.value.toString(),
+          plant_code: plantCode.value,
+          shop_code: shop.value?.shopcode,
+          machine_no: machine.value?.machineno,
+        },
+      }
+    );
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "machines_cost.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExport.value = false;
+  }
+}
+
 onMounted(() => {
   getLastTenYears();
   fetchData();
@@ -112,6 +151,14 @@ onMounted(() => {
       </div>
       <VSpacer />
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExport"
+          :loading="loadingExport"
+        >
+          Export
+        </VBtn>
         <AppAutocomplete
           v-model="year"
           :items="years"

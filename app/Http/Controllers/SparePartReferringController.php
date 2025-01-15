@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SparePartReferringInventorySummaryExport;
+use App\Exports\SparePartReferringPartsCostExport;
+use App\Exports\SparePartReferringMachineCostExport;
+use App\Exports\SparePartReferringInventoryChangeCostExport;
 use Exception;
 
 class SparePartReferringController extends Controller
@@ -423,5 +428,61 @@ class SparePartReferringController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportInventorySummary(Request $request)
+    {
+        $year = $request->input('year');
+        return Excel::download(new SparePartReferringInventorySummaryExport($year), 'inventory_summary_' . $year . '.xlsx');
+    }
+
+    public function exportPartsCost(Request $request)
+    {
+        $year = $request->input('year');
+
+        return Excel::download(
+            new SparePartReferringPartsCostExport($year),
+            'parts_cost_' . $year . '.xlsx'
+        );
+    }
+
+    public function exportMachinesCost(Request $request)
+    {
+        $year = $request->input('year');
+
+        return Excel::download(
+            new SparePartReferringMachineCostExport(
+                $year,
+                $request->input('month'),
+                $request->input('plant_code'),
+                $request->input('shop_code'),
+                $request->input('machine_no')
+            ),
+            'machines_cost' . $year . '.xlsx'
+        );
+    }
+
+    public function exportInventoryChangeCost(Request $request)
+    {
+        $filters = [
+            'part_code' => $request->input('part_code'),
+            'part_name' => $request->input('part_name'),
+            'brand' => $request->input('brand'),
+            'used_flag' => $request->input('used_flag'),
+            'specification' => $request->input('specification'),
+            'address' => $request->input('address'),
+            'vendor_code' => $request->input('vendor_code'),
+            'note' => $request->input('note'),
+            'category' => $request->input('category'),
+        ];
+
+        return Excel::download(
+            new SparePartReferringInventoryChangeCostExport(
+                $request->input('year'),
+                $filters,
+                $request->input('limit', 100)
+            ),
+            'inventory_change_cost.xlsx'
+        );
     }
 }
