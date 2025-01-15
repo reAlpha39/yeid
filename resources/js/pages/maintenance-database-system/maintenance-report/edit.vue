@@ -371,7 +371,8 @@ async function fetchExchangeRate() {
 
     exchangeRate.value = response.data;
   } catch (err) {
-    toast.error("Failed to fetch data");
+    const year = new Date().getFullYear();
+    toast.error(`Failed to fetch exchange rate ${year}`);
     console.log(err);
   }
 }
@@ -982,7 +983,7 @@ onMounted(() => {
                 v-model="ltfactorNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
@@ -1012,7 +1013,7 @@ onMounted(() => {
                 v-model="situationNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
@@ -1042,7 +1043,7 @@ onMounted(() => {
                 v-model="factorNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
@@ -1075,7 +1076,7 @@ onMounted(() => {
                 v-model="measureNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
@@ -1105,7 +1106,7 @@ onMounted(() => {
                 v-model="preventionNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
@@ -1124,7 +1125,7 @@ onMounted(() => {
                 v-model="commentNote"
                 :rules="[requiredValidator]"
                 outlined
-                maxlength="50"
+                maxlength="512"
               />
             </VCard>
           </VCol>
