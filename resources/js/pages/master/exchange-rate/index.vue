@@ -232,6 +232,7 @@ onMounted(() => {
       :headers="headers"
       :sort-by="[{ key: 'year', order: 'desc' }]"
       class="text-no-wrap"
+      height="562"
     >
       <!-- part name -->
       <template #item.year="{ item }">

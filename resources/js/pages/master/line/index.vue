@@ -255,6 +255,7 @@ onMounted(() => {
       :headers="headers"
       :sort-by="[{ key: 'linecode', order: 'asc' }]"
       class="text-no-wrap"
+      height="562"
     >
       <!-- part name -->
       <template #item.linecode="{ item }">

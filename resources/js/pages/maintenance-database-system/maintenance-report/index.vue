@@ -403,6 +403,7 @@ onMounted(() => {
         fixed-header
         :sort-by="[{ key: 'recordid', order: 'desc' }]"
         class="text-no-wrap"
+        height="562"
       >
         <template #item.approval="{ item }">
           <div class="d-flex align-center">

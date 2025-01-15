@@ -523,6 +523,7 @@ onMounted(() => {
         :sort-by="sortBy"
         :sort-desc="sortDesc"
         class="text-no-wrap"
+        height="562"
         @update:options="handleOptionsUpdate"
       >
         <template #item.employeecode="{ item }">

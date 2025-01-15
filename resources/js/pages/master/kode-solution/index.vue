@@ -219,6 +219,7 @@ onMounted(() => {
       :headers="headers"
       :sort-by="[{ key: 'preventioncode', order: 'asc' }]"
       class="text-no-wrap"
+      height="562"
     >
       <!-- part name -->
       <template #item.preventioncode="{ item }">

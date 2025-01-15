@@ -374,6 +374,7 @@ onMounted(() => {
         :sort-desc="sortDesc"
         class="text-no-wrap"
         @update:options="handleOptionsUpdate"
+        height="562"
       >
         <!-- part name -->
         <template #item.partcode="{ item }">

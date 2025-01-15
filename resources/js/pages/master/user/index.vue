@@ -352,6 +352,7 @@ onMounted(() => {
       :headers="headers"
       :sort-by="[{ key: 'name', order: 'asc' }]"
       class="text-no-wrap"
+      height="562"
     >
       <!-- part name -->
       <template #item.name="{ item }">

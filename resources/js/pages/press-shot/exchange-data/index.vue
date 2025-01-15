@@ -384,6 +384,7 @@ onMounted(() => {
         :headers="headers"
         :sort-by="[{ key: 'exchangedatetime', order: 'desc' }]"
         class="text-no-wrap"
+        height="562"
       >
         <template #item.exchangedatetime="{ item }">
           <div class="d-flex align-center">

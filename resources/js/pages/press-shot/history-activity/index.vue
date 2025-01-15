@@ -376,6 +376,7 @@ onMounted(() => {
         :headers="headers"
         :sort-by="[{ key: 'datetime', order: 'desc' }]"
         class="text-no-wrap"
+        height="562"
       >
         <template #item.employeecode="{ item }">
           <div class="d-flex align-center">
