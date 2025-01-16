@@ -50,25 +50,42 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                     DB::raw('COALESCE(s.createempname, \'\') AS createempname')
                 );
 
-            if ($this->request->input('only_active') == 'true') {
+            // Only active records filter
+            if ($this->request->input('only_active') === 'true') {
                 $query->whereRaw('COALESCE(s.approval, 0) < 119');
             }
 
+            // Date filter
             if ($this->request->input('date')) {
-                $date = $this->request->input('date');
-                $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);
+                $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$this->request->input('date')]);
             }
 
+            // Shop code filter
+            if ($this->request->input('shop_code')) {
+                $query->where('s.ordershop', $this->request->input('shop_code'));
+            }
+
+            // Machine code filter
+            if ($this->request->input('machine_code')) {
+                $query->where('s.machineno', $this->request->input('machine_code'));
+            }
+
+            // Maintenance code filter
+            if ($this->request->input('maintenance_code')) {
+                $query->where('s.maintenancecode', $this->request->input('maintenance_code'));
+            }
+
+            // Order name filter
+            if ($this->request->input('order_name')) {
+                $query->where('s.orderempname', $this->request->input('order_name'));
+            }
+
+            // Search filter
             if ($this->request->input('search')) {
-                $search = $this->request->input('search');
-                $query->where(function ($q) use ($search) {
-                    $q->where('s.recordid', 'ILIKE', "$search%")
-                        ->orWhere('s.maintenancecode', 'ILIKE', "$search%")
-                        ->orWhere('s.orderempname', 'ILIKE', "$search%")
-                        ->orWhere('s.ordershop', 'ILIKE', "$search%")
-                        ->orWhere('s.machineno', 'ILIKE', "$search%")
-                        ->orWhere('m.machinename', 'ILIKE', "$search%")
-                        ->orWhere('s.ordertitle', 'ILIKE', "$search%");
+                $searchTerm = $this->request->input('search') . '%';
+                $query->where(function ($query) use ($searchTerm) {
+                    $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
+                        ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
                 });
             }
 
