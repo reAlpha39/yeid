@@ -10,9 +10,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class PreventionsExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasPrevention::all();
+        $query = MasPrevention::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('preventioncode', 'ILIKE', $this->search . '%')
+                ->orWhere('preventionname', 'ILIKE', $this->search . '%')
+                ->orWhere('remark', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        return $query->get();
     }
 
     public function headings(): array

@@ -170,10 +170,10 @@ class MasPreventionController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new PreventionsExport(), 'preventions.xlsx');
+            return Excel::download(new PreventionsExport($request->query('search')), 'preventions.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
