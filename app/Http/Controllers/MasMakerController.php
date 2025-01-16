@@ -177,10 +177,10 @@ class MasMakerController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new MakersExport(), 'makers.xlsx');
+            return Excel::download(new MakersExport($request->query('search')), 'makers.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
