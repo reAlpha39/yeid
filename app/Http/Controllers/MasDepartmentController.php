@@ -211,10 +211,10 @@ class MasDepartmentController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new DepartmentsExport(), 'departments.xlsx');
+            return Excel::download(new DepartmentsExport($request->input('search')), 'departments.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
