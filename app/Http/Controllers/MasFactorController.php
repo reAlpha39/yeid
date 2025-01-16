@@ -172,10 +172,10 @@ class MasFactorController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new FactorsExport(), 'factors.xlsx');
+            return Excel::download(new FactorsExport($request->query('search')), 'factors.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
