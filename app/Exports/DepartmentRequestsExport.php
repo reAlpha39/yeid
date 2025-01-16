@@ -25,6 +25,7 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
     public function query()
     {
         $query = DB::table('tbl_spkrecord as s')
+            ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
             ->select([
                 's.recordid',
                 's.maintenancecode',
@@ -38,29 +39,49 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
                 's.orderqtty',
                 's.orderstoptime',
                 's.updatetime',
-                's.planid',
-                's.approval',
-                's.createempcode',
-                's.createempname',
+                DB::raw('COALESCE(s.planid, 0) AS planid'),
+                DB::raw('COALESCE(s.approval, 0) AS approval'),
+                DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
+                DB::raw('COALESCE(s.createempname, \'\') AS createempname'),
                 'm.machinename'
-            ])
-            ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno');
+            ]);
 
-        if ($this->request->input('date')) {
-            $date = $this->request->input('date');
-            $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);
+        // Only active records filter
+        if ($this->request->input('only_active') === 'true') {
+            $query->whereRaw('COALESCE(s.approval, 0) < 119');
         }
 
+        // Date filter
+        if ($this->request->input('date')) {
+            $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$this->request->input('date')]);
+        }
+
+        // Shop code filter
+        if ($this->request->input('shop_code')) {
+            $query->where('s.ordershop', $this->request->input('shop_code'));
+        }
+
+        // Machine code filter
+        if ($this->request->input('machine_code')) {
+            $query->where('s.machineno', $this->request->input('machine_code'));
+        }
+
+        // Maintenance code filter
+        if ($this->request->input('maintenance_code')) {
+            $query->where('s.maintenancecode', $this->request->input('maintenance_code'));
+        }
+
+        // Order name filter
+        if ($this->request->input('order_name')) {
+            $query->where('s.orderempname', $this->request->input('order_name'));
+        }
+
+        // Search filter
         if ($this->request->input('search')) {
-            $search = $this->request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('s.recordid', 'LIKE', "%$search%")
-                    ->orWhere('s.maintenancecode', 'LIKE', "%$search%")
-                    ->orWhere('s.orderempname', 'LIKE', "%$search%")
-                    ->orWhere('s.ordershop', 'LIKE', "%$search%")
-                    ->orWhere('s.machineno', 'LIKE', "%$search%")
-                    ->orWhere('m.machinename', 'LIKE', "%$search%")
-                    ->orWhere('s.ordertitle', 'LIKE', "%$search%");
+            $searchTerm = $this->request->input('search') . '%';
+            $query->where(function ($query) use ($searchTerm) {
+                $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
+                    ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
             });
         }
 

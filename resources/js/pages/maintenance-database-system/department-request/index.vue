@@ -239,6 +239,14 @@ async function handleExport() {
         params: {
           search: searchQuery.value,
           date: date.value,
+          only_active: activeOnly.value,
+          shop_code: selectedShop.value?.shopcode,
+          machine_code: selectedMachine.value?.machineno,
+          maintenance_code:
+            maintenanceCode.value !== null
+              ? maintenanceCode.value.split("|")[0]
+              : null,
+          order_name: selectedStaff.value?.employeename,
         },
       }
     );
