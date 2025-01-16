@@ -1,4 +1,5 @@
 <script setup>
+import AppAutocomplete from "@/@core/components/app-form-elements/AppAutocomplete.vue";
 import axios from "axios";
 import moment from "moment";
 import VueEasyLightbox from "vue-easy-lightbox";
@@ -30,8 +31,18 @@ const data = ref([]);
 const searchQuery = ref("");
 const sortBy = ref([{ key: "partcode", order: "asc" }]);
 const statusData = ["ORANGE", "RED", "YELLOW", "BLUE"];
+const categories = ["Machine", "Facility", "Jig", "Other"];
 const sortDesc = ref([]);
 const selectedStatus = ref(null);
+
+const partCode = ref();
+const partName = ref();
+const spec = ref();
+const brand = ref();
+const category = ref();
+const vendor = ref();
+const address = ref();
+const note = ref();
 
 // State for lightbox
 const isLightboxVisible = ref(false);
@@ -40,6 +51,11 @@ const currentItem = ref(null);
 
 // headers
 const headers = [
+  {
+    title: "IMAGE",
+    key: "partimage",
+    sortable: false,
+  },
   {
     title: "PART CODE",
     key: "partcode",
@@ -97,11 +113,6 @@ const headers = [
     key: "etddate",
   },
   {
-    title: "PART IMAGE",
-    key: "partimage",
-    sortable: false,
-  },
-  {
     title: "ACTIONS",
     key: "actions",
     sortable: false,
@@ -129,6 +140,12 @@ async function fetchData(options = {}) {
     const response = await $api("/master/part-list", {
       params: {
         search: searchQuery.value,
+        part_code: partCode.value,
+        part_name: partName.value,
+        specification: spec.value,
+        brand: brand.value,
+        category: category.value,
+        vendor_name_text: vendor.value,
         status: selectedStatus.value,
         category: "",
         page: page.value,
@@ -408,6 +425,41 @@ onMounted(() => {
       </div>
     </VCardText>
 
+    <!-- <VCardText>
+      <VRow>
+        <VCol cols="3">
+          <AppTextField v-model="partCode" placeholder="Part Code" />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="partName" placeholder="Part Name" />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="spec" placeholder="Spec" />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="brand" placeholder="Brand" />
+        </VCol>
+      </VRow>
+      <VRow>
+        <VCol cols="3">
+          <AppAutocomplete
+            v-model="category"
+            :items="categories"
+            placeholder="Category"
+          />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="vendor" placeholder="Vendor" />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="address" placeholder="Address" />
+        </VCol>
+        <VCol cols="3">
+          <AppTextField v-model="note" placeholder="Note" />
+        </VCol>
+      </VRow>
+    </VCardText> -->
+
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
@@ -424,6 +476,16 @@ onMounted(() => {
       @update:options="handleOptionsUpdate"
       height="562"
     >
+      <template #item.partimage="{ item }">
+        <div class="d-flex justify-center align-center">
+          <IconBtn v-if="item.partimage" @click="showImage(item)">
+            <VIcon icon="tabler-camera" />
+          </IconBtn>
+
+          <VIcon v-else icon="tabler-camera-off" />
+        </div>
+      </template>
+
       <!-- part code -->
       <template #item.partcode="{ item }">
         <div class="d-flex align-center">
@@ -472,19 +534,6 @@ onMounted(() => {
       <!-- unit price -->
       <template #item.unitprice="{ item }">
         {{ formatCurrency(item.currency, item.unitprice) }}
-      </template>
-
-      <template #item.partimage="{ item }">
-        <VBtn
-          v-if="item.partimage"
-          variant="text"
-          color="secondary"
-          @click="showImage(item)"
-          size="small"
-        >
-          Lihat gambar
-        </VBtn>
-        <text v-else>Foto tidak<br />tersedia</text>
       </template>
 
       <!-- Actions -->

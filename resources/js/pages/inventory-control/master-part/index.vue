@@ -38,6 +38,11 @@ const currentItem = ref(null);
 // headers
 const headers = [
   {
+    title: "IMAGE",
+    key: "partimage",
+    sortable: false,
+  },
+  {
     title: "PART CODE",
     key: "partcode",
   },
@@ -92,11 +97,6 @@ const headers = [
   {
     title: "ETD",
     key: "etddate",
-  },
-  {
-    title: "PART IMAGE",
-    key: "partimage",
-    sortable: false,
   },
   {
     title: "ACTIONS",
@@ -412,6 +412,16 @@ onMounted(() => {
       @update:options="handleOptionsUpdate"
       height="562"
     >
+      <template #item.partimage="{ item }">
+        <div class="d-flex justify-center align-center">
+          <IconBtn v-if="item.partimage" @click="showImage(item)">
+            <VIcon icon="tabler-camera" />
+          </IconBtn>
+
+          <VIcon v-else icon="tabler-camera-off" />
+        </div>
+      </template>
+
       <!-- part code -->
       <template #item.partcode="{ item }">
         <div class="d-flex align-center">
@@ -460,19 +470,6 @@ onMounted(() => {
       <!-- unit price -->
       <template #item.unitprice="{ item }">
         {{ formatCurrency(item.currency, item.unitprice) }}
-      </template>
-
-      <template #item.partimage="{ item }">
-        <VBtn
-          v-if="item.partimage"
-          variant="text"
-          color="secondary"
-          @click="showImage(item)"
-          size="small"
-        >
-          Lihat gambar
-        </VBtn>
-        <text v-else>Foto tidak<br />tersedia</text>
       </template>
 
       <!-- Actions -->
