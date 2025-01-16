@@ -9,9 +9,40 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class MachinesExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+    protected $shopcode;
+    protected $maker;
+
+    public function __construct($search = null, $shopcode = null, $maker = null, $maxRows = null)
+    {
+        $this->search = $search;
+        $this->shopcode = $shopcode;
+        $this->maker = $maker;
+    }
+
     public function collection()
     {
-        return MasMachine::all();
+        $query = MasMachine::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('machineno', 'ILIKE', $this->search . '%')
+                ->orWhere('machinename', 'ILIKE', $this->search . '%')
+                ->orWhere('plantcode', 'ILIKE', $this->search . '%')
+                ->orWhere('shopcode', 'ILIKE', $this->search . '%')
+                ->orWhere('shopname', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        if ($this->shopcode) {
+            $query->where('shopcode', $this->shopcode);
+        }
+
+        if ($this->maker) {
+            $query->where('makercode', $this->maker);
+        }
+
+        return $query->get();
     }
 
     public function headings(): array

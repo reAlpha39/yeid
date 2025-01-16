@@ -279,10 +279,16 @@ class MasMachineController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new MachinesExport(), 'machines.xlsx');
+            $export = new MachinesExport(
+                $request->query('search'),
+                $request->query('shopcode'),
+                $request->query('maker'),
+            );
+
+            return Excel::download($export, 'machines.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
