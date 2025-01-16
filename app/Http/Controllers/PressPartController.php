@@ -851,11 +851,28 @@ class PressPartController extends Controller
     public function export(Request $request)
     {
         try {
+            // Get all filter parameters
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
             $partCode = $request->input('part_code');
+            $status = $request->input('status');
+
+            // Handle sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'asc');
+
+            // If sortBy is a JSON string, decode it
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'asc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use the original value
+                }
+            }
 
             ActivityLogger::log(
                 'press-shot-master-part',
@@ -864,7 +881,16 @@ class PressPartController extends Controller
             );
 
             return Excel::download(
-                new PressPartExport($year, $machineNo, $model, $dieNo, $partCode),
+                new PressPartExport(
+                    $year,
+                    $machineNo,
+                    $model,
+                    $dieNo,
+                    $partCode,
+                    $status,
+                    $sortBy,
+                    $sortDirection
+                ),
                 'press_parts.xlsx'
             );
         } catch (Exception $e) {

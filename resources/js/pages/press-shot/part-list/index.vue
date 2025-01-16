@@ -105,6 +105,7 @@ async function handleExport() {
       responseType: "blob",
       params: {
         part_code: searchQuery.value,
+        status: selectedStatus.value,
         // year: targetDateSplit[0] + targetDateSplit[1],
         model: selectedModelDie.value?.model,
         die_no: selectedModelDie.value?.dieno,
