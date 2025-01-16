@@ -10,9 +10,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class SituationsExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasSituation::all();
+        $query = MasSituation::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('situationcode', 'ILIKE', $this->search . '%')
+                    ->orWhere('situationname', 'ILIKE', $this->search . '%')
+                    ->orWhere('remark', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        return $query->get();
     }
 
     public function headings(): array
