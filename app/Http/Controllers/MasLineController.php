@@ -173,10 +173,16 @@ class MasLineController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new LinesExport(), 'lines.xlsx');
+            return Excel::download(
+                new LinesExport(
+                    $request->query('query'),
+                    $request->query('shop_code')
+                ),
+                'lines.xlsx'
+            );
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
