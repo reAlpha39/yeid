@@ -16,7 +16,7 @@ class RequestWorkshopController extends Controller
             $request->validate([
                 'search' => 'nullable|string',
                 'year' => 'nullable|string',
-                'only_active' => 'nullable|boolean',
+                'only_active' => 'nullable|string',
                 'shop_code' => 'nullable|string',
                 'employee_code' => 'nullable|string',
             ]);
@@ -45,7 +45,7 @@ class RequestWorkshopController extends Controller
                 )
                 ->where('requestdate', 'ILIKE', $year . '%');
 
-            if ($onlyActive) {
+            if ($onlyActive === 'true') {
                 $query->where('status', 'R');
             }
 

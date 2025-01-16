@@ -17,6 +17,7 @@ const isDeleteDialogVisible = ref(false);
 
 const selectedItem = ref();
 const searchQuery = ref("");
+const activeOnly = ref(true);
 // Data table options
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -41,6 +42,7 @@ async function fetchData() {
       {
         params: {
           search: searchQuery.value,
+          only_active: activeOnly.value,
           year: year.value.toString(),
         },
         onResponseError({ response }) {
@@ -97,6 +99,11 @@ function convertAsapFlagId(id) {
 // headers
 const headers = [
   {
+    title: "STATUS",
+    key: "status",
+    sortable: false,
+  },
+  {
     title: "REQUEST",
     key: "wsrid",
   },
@@ -116,10 +123,6 @@ const headers = [
   {
     title: "CATEGORY",
     key: "asapflag",
-  },
-  {
-    title: "STATUS",
-    key: "status",
   },
   {
     title: "ACTIONS",
@@ -170,6 +173,7 @@ async function handleExport() {
           : {},
         params: {
           search: searchQuery.value,
+          only_active: activeOnly.value,
           year: year.value.toString(),
         },
       }
@@ -186,6 +190,16 @@ async function handleExport() {
   } finally {
     loadingExport.value = false;
   }
+}
+
+function getStatusColor(item) {
+  if (item?.status === "C") {
+    return "status-red";
+  }
+  if (item?.status === "R") {
+    return "status-yellow";
+  }
+  return "status-green";
 }
 
 const debouncedFetchData = debounce(fetchData, 500);
@@ -247,6 +261,13 @@ onMounted(() => {
           <AppTextField v-model="searchQuery" placeholder="Search" />
         </div>
 
+        <VCheckbox
+          class="pr-7"
+          label="Active saja"
+          v-model="activeOnly"
+          @update:modelValue="fetchData()"
+        />
+
         <!-- 👉 Export button -->
         <VBtn
           variant="tonal"
@@ -279,6 +300,10 @@ onMounted(() => {
         class="text-no-wrap"
         height="562"
       >
+        <template #item.status="{ item }">
+          <div class="status-indicator" :class="getStatusColor(item)" />
+        </template>
+
         <template #item.wsrid="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
@@ -315,12 +340,6 @@ onMounted(() => {
         <template #item.asapflag="{ item }">
           <div class="d-flex align-center">
             {{ convertAsapFlagId(item.asapflag) }}
-          </div>
-        </template>
-
-        <template #item.status="{ item }">
-          <div class="d-flex align-center">
-            {{ item.status }}
           </div>
         </template>
 
@@ -394,5 +413,24 @@ onMounted(() => {
   overflow: hidden; /* Hide anything beyond the set width */
   white-space: nowrap; /* Prevent the text from wrapping to the next line */
   text-overflow: ellipsis; /* Add the ellipsis (...) when the text overflows */
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin: auto;
+}
+
+.status-red {
+  background-color: #ff4444;
+}
+
+.status-yellow {
+  background-color: #ffeb3b;
+}
+
+.status-green {
+  background-color: #4caf50;
 }
 </style>

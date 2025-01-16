@@ -39,7 +39,7 @@ class RequestToWorkshopsExport implements FromCollection, WithHeadings, WithMapp
             $query->where('requestdate', 'ILIKE', $this->filters['year'] . '%');
         }
 
-        if (!empty($this->filters['only_active'])) {
+        if ($this->filters['only_active'] === 'true') {
             $query->where('status', 'R');
         }
 
@@ -87,7 +87,7 @@ class RequestToWorkshopsExport implements FromCollection, WithHeadings, WithMapp
     {
         $status = match ($row->status) {
             'R' => 'REQUEST',
-            'P' => 'PROCESS',
+            'C' => 'CANCELLED',
             'F' => 'FINISH',
             default => $row->status
         };
