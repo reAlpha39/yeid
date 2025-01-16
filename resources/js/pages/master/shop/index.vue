@@ -113,6 +113,10 @@ async function handleExport() {
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get("/api/master/shops/export", {
       responseType: "blob",
+      params: {
+        shop_code: searchQuery.value,
+        shop_name: searchQuery.value,
+      },
       headers: accessToken
         ? {
             Authorization: `Bearer ${accessToken}`,

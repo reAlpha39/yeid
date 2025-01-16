@@ -9,9 +9,28 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class ShopsExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $shopCode;
+    protected $shopName;
+
+    public function __construct($shopCode = null, $shopName = null)
+    {
+        $this->shopCode = $shopCode;
+        $this->shopName = $shopName;
+    }
+
     public function collection()
     {
-        return MasShop::all();
+        $query = MasShop::query();
+
+        if ($this->shopCode) {
+            $query->where('shopcode', 'ILIKE', '%' . $this->shopCode . '%');
+        }
+
+        if ($this->shopName) {
+            $query->orWhere('shopname', 'ILIKE', '%' . $this->shopName . '%');
+        }
+
+        return $query->get();
     }
 
     public function headings(): array

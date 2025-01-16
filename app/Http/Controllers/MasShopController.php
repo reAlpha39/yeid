@@ -182,10 +182,16 @@ class MasShopController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new ShopsExport(), 'shops.xlsx');
+            return Excel::download(
+                new ShopsExport(
+                    $request->query('shop_code'),
+                    $request->query('shop_name')
+                ),
+                'shops.xlsx'
+            );
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
