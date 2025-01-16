@@ -9,9 +9,43 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class UsersExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+    protected $department;
+    protected $roleAccess;
+    protected $status;
+
+    public function __construct($search = null, $department = null, $roleAccess = null, $status = null)
+    {
+        $this->search = $search;
+        $this->department = $department;
+        $this->roleAccess = $roleAccess;
+        $this->status = $status;
+    }
+
     public function collection()
     {
-        return MasUser::with('department')->get();
+        $query = MasUser::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'ILIKE', $this->search . '%')
+                    ->orWhere('email', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        if ($this->department) {
+            $query->where('department_id', $this->department);
+        }
+
+        if ($this->roleAccess) {
+            $query->where('role_access', $this->roleAccess);
+        }
+
+        if (isset($this->status)) {
+            $query->where('status', $this->status);
+        }
+
+        return $query->with('department')->get();
     }
 
     public function headings(): array

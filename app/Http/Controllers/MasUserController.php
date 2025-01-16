@@ -376,10 +376,18 @@ class MasUserController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new UsersExport(), 'users.xlsx');
+            return Excel::download(
+                new UsersExport(
+                    $request->input('search'),
+                    $request->input('department'),
+                    $request->input('roleAccess'),
+                    $request->input('status')
+                ),
+                'users.xlsx'
+            );
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
