@@ -175,10 +175,10 @@ class MasEmployeeController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new EmployeesExport(), 'employees.xlsx');
+            return Excel::download(new EmployeesExport($request->input('search')), 'employees.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
