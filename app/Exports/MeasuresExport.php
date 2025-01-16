@@ -9,9 +9,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class MeasuresExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasMeasure::all();
+        $query = MasMeasure::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('measurecode', 'ILIKE', $this->search . '%')
+                ->orWhere('measurename', 'ILIKE', $this->search . '%')
+                ->orWhere('remark', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        return $query->get();
     }
 
     public function headings(): array
