@@ -9,9 +9,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class LTFactorExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasLTFactor::all();
+        $query = MasLTFactor::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('ltfactorcode', 'ILIKE', $this->search . '%')
+                ->orWhere('ltfactorname', 'ILIKE', $this->search . '%')
+                ->orWhere('remark', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        return $query->get();
     }
 
     public function headings(): array
