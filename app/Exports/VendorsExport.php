@@ -9,9 +9,19 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class VendorsExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasVendor::all();
+        return MasVendor::when($this->search, function ($query, $search) {
+            return $query->where('vendorcode', 'ILIKE', "$search%")
+            ->orWhere('vendorname', 'ILIKE', "$search%");
+        })->get();
     }
 
     public function headings(): array

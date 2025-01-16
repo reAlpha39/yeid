@@ -167,10 +167,10 @@ class MasVendorController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new VendorsExport(), 'vendors.xlsx');
+            return Excel::download(new VendorsExport($request->input('search')), 'vendors.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
