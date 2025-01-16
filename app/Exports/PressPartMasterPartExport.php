@@ -112,6 +112,7 @@ class PressPartMasterPartExport implements FromCollection, WithHeadings, WithMap
     public function headings(): array
     {
         return [
+            'Machine Name',
             'Machine No',
             'Model',
             'Die No',
@@ -146,6 +147,7 @@ class PressPartMasterPartExport implements FromCollection, WithHeadings, WithMap
     public function map($record): array
     {
         return [
+            $record->machinename,
             $record->machineno,
             $record->model,
             $record->dieno,

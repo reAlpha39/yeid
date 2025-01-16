@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartExport;
+use App\Exports\PressPartMasterPartExport;
 use App\Services\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
@@ -918,7 +919,7 @@ class PressPartController extends Controller
             );
 
             return Excel::download(
-                new PressPartExport($year, $machineNo, $model, $dieNo, $partCode),
+                new PressPartMasterPartExport($year, $machineNo, $model, $dieNo, $partCode),
                 'press_master_parts.xlsx'
             );
         } catch (Exception $e) {
