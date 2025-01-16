@@ -38,6 +38,10 @@ class MasterPartController extends Controller
             $sortBy = $request->input('sortBy');
             $sortDirection = $request->input('sortDirection', 'asc');
 
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10); // Default 10 items per page
+            $page = $request->input('page', 1); // Get the current page
+
             // If sortBy is a JSON string, decode it
             if (
                 $sortBy && is_string($sortBy) && str_contains($sortBy, '{')
@@ -50,10 +54,6 @@ class MasterPartController extends Controller
                     // If JSON decode fails, use the original value
                 }
             }
-
-            // Pagination parameters
-            $perPage = $request->input('per_page', 10); // Default 10 items per page
-            $page = $request->input('page', 1); // Get the current page
 
             // Build the query
             $queryBuilder = DB::table('mas_inventory as m')
@@ -623,10 +623,29 @@ class MasterPartController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new PartsExport(), 'parts.xlsx');
+            $filters = [
+                'search' => $request->input('search'),
+                'status' => $request->input('status'),
+                'part_code' => $request->input('part_code'),
+                'brand' => $request->input('brand'),
+                'used_flag' => $request->input('used_flag'),
+                'specification' => $request->input('specification'),
+                'address' => $request->input('address'),
+                'vendor_code' => $request->input('vendor_code'),
+                'note' => $request->input('note'),
+                'category' => $request->input('category'),
+                'vendor_name_cmb' => $request->input('vendor_name_cmb'),
+                'vendor_name_text' => $request->input('vendor_name_text'),
+                'minus_flag' => $request->input('minus_flag'),
+                'order_flag' => $request->input('order_flag'),
+                'sortBy' => $request->input('sortBy'),
+                'sortDirection' => $request->input('sortDirection', 'asc'),
+            ];
+
+            return Excel::download(new PartsExport($filters), 'parts_list.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
