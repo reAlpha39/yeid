@@ -9,9 +9,28 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class CurrencyExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $search;
+
+    public function __construct($search = null)
+    {
+        $this->search = $search;
+    }
+
     public function collection()
     {
-        return MasSystem::all();
+        $query = MasSystem::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('year', 'ILIKE', $this->search . '%')
+                    ->orWhere('usd2idr', 'ILIKE', $this->search . '%')
+                    ->orWhere('jpy2idr', 'ILIKE', $this->search . '%')
+                    ->orWhere('eur2idr', 'ILIKE', $this->search . '%')
+                    ->orWhere('sgd2idr', 'ILIKE', $this->search . '%');
+            });
+        }
+
+        return $query->orderByDesc('year')->get();
     }
 
     public function headings(): array

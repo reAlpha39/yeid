@@ -178,10 +178,10 @@ class MasSystemController extends Controller
         }
     }
 
-    public function export()
+    public function export(Request $request)
     {
         try {
-            return Excel::download(new CurrencyExport(), 'currency_rates.xlsx');
+            return Excel::download(new CurrencyExport($request->query('search')), 'currency_rates.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
