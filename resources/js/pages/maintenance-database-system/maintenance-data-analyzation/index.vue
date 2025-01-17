@@ -3,11 +3,13 @@ import {
   getColumnChartConfig,
   getDonutChartConfig,
 } from "@core/libs/apex-chart/apexCharConfig";
+import { saveAs } from "file-saver";
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { debounce } from "lodash";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
+import * as XLSX from "xlsx";
 
 definePage({
   meta: {
@@ -806,6 +808,68 @@ function isNumber(evt) {
   }
 }
 
+const exportGraph = () => {
+  const chart = document.querySelector(".apexcharts-canvas");
+  if (chart) {
+    // Get the SVG data
+    const svgData = chart.querySelector("svg").outerHTML;
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
+
+    saveAs(
+      svgBlob,
+      `maintenance-chart-${new Date().toISOString().split("T")[0]}.svg`
+    );
+  }
+};
+
+const exportTableToExcel = () => {
+  if (!data.value?.length) return;
+
+  // Prepare the data for export
+  const exportData = data.value.map((item) => ({
+    Code: item.code,
+    [targetItemColumnName.value]: item[targetItemColumnName.value],
+    [targetSumColumnName.value]: item[itemCountFieldName.value],
+  }));
+
+  // Create worksheet
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Maintenance Data");
+
+  // Generate Excel file
+  XLSX.writeFile(
+    wb,
+    `maintenance-data-${new Date().toISOString().split("T")[0]}.xlsx`
+  );
+};
+
+const exportTableToCSV = () => {
+  if (!data.value?.length) return;
+
+  // Prepare CSV content
+  const headers = [
+    "Code",
+    targetItemColumnName.value,
+    targetSumColumnName.value,
+  ].join(",");
+  const rows = data.value.map((item) => {
+    return [
+      item.code,
+      item[targetItemColumnName.value],
+      item[itemCountFieldName.value],
+    ].join(",");
+  });
+
+  const csvContent = [headers, ...rows].join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  saveAs(
+    blob,
+    `maintenance-data-${new Date().toISOString().split("T")[0]}.csv`
+  );
+};
 onMounted(() => {
   fetchData();
   fetchShop();
@@ -1148,6 +1212,36 @@ watch(
 
   <VCard title="Chart" v-if="!isLoadingChart">
     <div v-if="series.length !== 0">
+      <VRow class="px-7 mt-2">
+        <VCol>
+          <VBtnGroup>
+            <VBtn
+              prepend-icon="tabler-chart-bar"
+              @click="exportGraph"
+              :disabled="!series.length"
+              color="primary"
+            >
+              Export Graph
+            </VBtn>
+            <VBtn
+              prepend-icon="tabler-file-spreadsheet"
+              @click="exportTableToExcel"
+              :disabled="!data?.length"
+              color="success"
+            >
+              Export to Excel
+            </VBtn>
+            <!-- <VBtn
+              prepend-icon="tabler-file-csv"
+              @click="exportTableToCSV"
+              :disabled="!data?.length"
+              color="info"
+            >
+              Export to CSV
+            </VBtn> -->
+          </VBtnGroup>
+        </VCol>
+      </VRow>
       <VCardText>
         <VueApexCharts
           :type="method === 'One Term' ? 'donut' : 'bar'"
