@@ -71,6 +71,27 @@ class SparePartReferringController extends Controller
         try {
             $year = $request->input('year');
 
+            $orderQuery = DB::table('tbl_costrecord as c')
+                ->selectRaw("
+                substr(c.issuedate, 1, 6) as yearmonth,
+                sum(coalesce(i.qtty, 0) * coalesce(i.unitprice, 0) *
+                    (case i.currency
+                        when 'USD' then coalesce(s.usd2idr::numeric, 1)
+                        when 'JPY' then coalesce(s.jpy2idr::numeric, 1)
+                        when 'EUR' then coalesce(s.eur2idr::numeric, 1)
+                        when 'SGD' then coalesce(s.sgd2idr::numeric, 1)
+                        else 1
+                    end)
+                ) as total_order
+            ")
+                ->join('tbl_costitem as i', 'c.recordid', '=', 'i.recordid')
+                ->leftJoin('mas_system as s', DB::raw("substr(c.issuedate, 1, 4)"), '=', 's.year')
+                ->where('c.status', 'O')
+                ->where(DB::raw("substr(c.issuedate, 1, 4)"), $year)
+                ->groupBy(DB::raw("substr(c.issuedate, 1, 6)"));
+
+            $orderResults = $orderQuery->get();
+
             $invQuery = DB::table('tbl_invsummary as i')
                 ->selectRaw("
                     'I' as type,
@@ -119,14 +140,22 @@ class SparePartReferringController extends Controller
 
             $invResults = $invQuery->get();
 
-            // Format the query results
-            $formattedInvResults = [];
-            foreach ($invResults as $row) {
-                $month = intval(substr($row->yearmonth, 4, 2)); // Extract month as integer
+            // Prepare order amounts by month
+            $orderByMonth = [];
+            foreach ($orderResults as $row) {
+                $month = intval(substr($row->yearmonth, 4, 2));
+                $orderByMonth[$month] = $row->total_order;
+            }
 
-                $formattedInvResults[] = [
+            // Format the query results
+            $formattedResults = [];
+            foreach ($invResults as $row) {
+                $month = intval(substr($row->yearmonth, 4, 2));
+
+                $formattedResults[] = [
                     'type' => $row->type,
                     'month' => $month,
+                    'order_in_millions' => number_format(($orderByMonth[$month] ?? 0) / 1000000, 1),
                     'inbound_in_millions' => number_format($row->total_inbound / 1000000, 1),
                     'outbound_in_millions' => number_format($row->total_outbound / 1000000, 1),
                     'adjust_in_millions' => number_format($row->total_adjust / 1000000, 1),
@@ -136,7 +165,7 @@ class SparePartReferringController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $formattedInvResults,
+                'data' => $formattedResults,
             ], 200);
         } catch (Exception $e) {
             return response()->json([

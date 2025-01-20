@@ -148,18 +148,18 @@ onMounted(() => {
           <tr>
             <td>Order Amount</td>
             <td>Jt. IDR</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
+            <td>{{ formatNumber(data[0]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[1]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[2]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[3]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[4]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[5]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[6]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[7]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[8]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[9]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[10]?.order_in_millions) }}</td>
+            <td>{{ formatNumber(data[11]?.order_in_millions) }}</td>
           </tr>
           <tr>
             <td>Received Amount</td>
