@@ -1,35 +1,34 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Default Queue Connection Name
     |--------------------------------------------------------------------------
-    |
-    | Laravel's queue supports a variety of backends via a single, unified
-    | API, giving you convenient access to each backend using identical
-    | syntax for each. The default queue connection is defined below.
-    |
     */
 
     'default' => env('QUEUE_CONNECTION', 'database'),
 
     /*
     |--------------------------------------------------------------------------
-    | Queue Connections
+    | Queue Worker Options
     |--------------------------------------------------------------------------
     |
-    | Here you may configure the connection options for every queue backend
-    | used by your application. An example configuration is provided for
-    | each backend supported by Laravel. You're also free to add more.
+    | These options configure the behavior of the queue worker globally,
+    | affecting all queue connections unless overridden in specific connections.
     |
-    | Drivers: "sync", "database", "beanstalkd", "sqs", "redis", "null"
-    |
+    */
+    'worker_timeout' => env('QUEUE_TIMEOUT', 7200),
+    'retry_after' => env('QUEUE_RETRY_AFTER', 7300),
+    'max_jobs_before_stopping' => env('QUEUE_MAX_JOBS', 500),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Connections
+    |--------------------------------------------------------------------------
     */
 
     'connections' => [
-
         'sync' => [
             'driver' => 'sync',
         ],
@@ -39,8 +38,14 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION', null),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => env('DB_QUEUE_RETRY_AFTER', 90),
-            'after_commit' => false,
+            'retry_after' => env('DB_QUEUE_RETRY_AFTER', 7300),
+            'after_commit' => true, // Changed to true for better data consistency
+            'maintenance_mode_queue' => 'maintenance',
+            // Added options for better queue management
+            'queue_priority' => true,
+            'block_for' => null,
+            'max_tries' => env('QUEUE_MAX_TRIES', 3),
+            'backoff' => [300, 600, 1200], // Progressive delays between retries (5, 10, 20 minutes)
         ],
 
         'beanstalkd' => [
@@ -71,18 +76,12 @@ return [
             'block_for' => null,
             'after_commit' => false,
         ],
-
     ],
 
     /*
     |--------------------------------------------------------------------------
     | Job Batching
     |--------------------------------------------------------------------------
-    |
-    | The following options configure the database and table that store job
-    | batching information. These options can be updated to any database
-    | connection and table which has been defined by your application.
-    |
     */
 
     'batching' => [
@@ -94,19 +93,28 @@ return [
     |--------------------------------------------------------------------------
     | Failed Queue Jobs
     |--------------------------------------------------------------------------
-    |
-    | These options configure the behavior of failed queue job logging so you
-    | can control how and where failed jobs are stored. Laravel ships with
-    | support for storing failed jobs in a simple file or in a database.
-    |
-    | Supported drivers: "database-uuids", "dynamodb", "file", "null"
-    |
     */
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
         'database' => env('DB_CONNECTION', 'sqlite'),
         'table' => 'failed_jobs',
+        // Added timeout for failed job pruning
+        'prune_after' => env('QUEUE_FAILED_PRUNE_AFTER', 7), // Days to keep failed jobs
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Monitor Settings
+    |--------------------------------------------------------------------------
+    |
+    | These settings are used by the queue health monitoring system
+    |
+    */
+    'monitor' => [
+        'enabled' => env('QUEUE_MONITOR_ENABLED', true),
+        'timeout' => env('QUEUE_MONITOR_TIMEOUT', 300), // 5 minutes
+        'max_jobs_in_queue' => env('QUEUE_MONITOR_MAX_JOBS', 1000),
+        'alert_threshold' => env('QUEUE_MONITOR_ALERT_THRESHOLD', 500),
+    ],
 ];

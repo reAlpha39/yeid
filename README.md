@@ -1,23 +1,18 @@
-# vue
-
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates.
-
-However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can run `Volar: Switch TS Plugin on/off` from VS Code command palette.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+# YEID
 
 ## Project Setup
 
+1. Open Task Scheduler
+   Create a new Basic Task:
+
+* Name: "Laravel Queue Worker"
+* Trigger: "At startup"
+* Action: Start a program
+* Program: C:\path\to\php\php.exe
+* Arguments: artisan queue:work --timeout=7200 --tries=3--max-jobs=500
+* Start in: C:\path\to\your\laravel
+
+2. Run below:
 ```sh
 pnpm install
 ```
@@ -25,8 +20,9 @@ pnpm install
 ### Compile and Hot-Reload for Development
 
 ```sh
-npm run dev
+pnpm run dev
 ```
+
 ```sh
 php artisan serve
 ```
@@ -34,5 +30,5 @@ php artisan serve
 ### Type-Check, Compile and Minify for Production
 
 ```sh
-npm run build
+pnpm run build
 ```

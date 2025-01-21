@@ -30,6 +30,7 @@ use App\Http\Controllers\OrderInventoryController;
 use App\Http\Controllers\ScheduleActivityController;
 use App\Http\Controllers\ScheduleTaskController;
 use App\Http\Controllers\ScheduleTaskExecutionController;
+use App\Http\Controllers\InventoryController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -281,6 +282,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::delete('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'destroy']);
     Route::put('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'update']);
     Route::get('/schedule/task/executions/{id}', [ScheduleTaskExecutionController::class, 'show']);
+
+    Route::prefix('inventory')->group(function () {
+        Route::post('/update-summary', [InventoryController::class, 'updateInventorySummary']);
+        Route::get('/update-progress', [InventoryController::class, 'getJobProgress']);
+    });
 });
 
 
