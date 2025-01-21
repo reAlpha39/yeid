@@ -500,9 +500,10 @@ onMounted(() => {
       <!-- part name -->
       <template #item.partname="{ item }">
         <div class="d-flex align-center">
-          <span :class="getTextStyle(item)">
+          <!-- <span :class="getTextStyle(item)">
             {{ getPartNamePrefix(item) }}{{ item.partname }}
-          </span>
+          </span> -->
+          {{ item.partname }}
         </div>
       </template>
 
