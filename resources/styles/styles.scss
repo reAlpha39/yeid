@@ -1,5 +1,6 @@
 // VDataTable, VTable scrollbar
 .v-data-table,
+.v-data-table-server,
 .v-table {
   ::-webkit-scrollbar {
     width: 5px;
@@ -76,65 +77,136 @@
 
 // Sticky Actions Cell
 .sticky-actions-wrapper {
-  .v-table {
+  .v-data-table,
+  .v-data-table-server {
     position: relative;
     overflow: auto;
 
-    table {
-      thead {
-        tr {
-          border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
-
-          th:last-child {
-            position: sticky !important;
-            right: 0 !important;
-            background: rgb(var(--v-theme-surface)) !important;
-            z-index: 2 !important;
-            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+    // Common table styles
+    .v-table__wrapper {
+      > table,
+      .v-data-table__wrapper > table {
+        thead {
+          tr {
             border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+            
+            th {
+              position: sticky !important;
+              top: 0 !important;
+              background: rgb(var(--v-theme-surface)) !important;
+              z-index: 1 !important;
+            }
+
+            th:last-child {
+              position: sticky !important;
+              top: 0 !important;
+              right: 0 !important;
+              z-index: 2 !important;
+              box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+              border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+            }
           }
         }
-      }
 
-      tbody {
-        tr {
-          td:last-child {
-            position: sticky !important;
-            right: 0 !important;
-            background: rgb(var(--v-theme-surface)) !important;
-            z-index: 1 !important;
-            box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+        tbody {
+          tr {
+            &:nth-child(odd) {
+              td:last-child {
+                background: #ffffff !important;
+              }
+              &:hover td:last-child {
+                background: #feecec !important;
+              }
+            }
+            
+            &:nth-child(even) {
+              td:last-child {
+                background: #f5f5f5 !important;
+              }
+              &:hover td:last-child {
+                background: #feecec !important;
+              }
+            }
+
+            td:last-child {
+              position: sticky !important;
+              right: 0 !important;
+              z-index: 1 !important;
+              box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.1) !important;
+            }
+
+            &:hover {
+              background: #feecec !important;
+            }
           }
         }
       }
     }
-    .v-data-table__header {
-      border-bottom: thin solid rgba(var(--v-border-color), var(--v-border-opacity)) !important;
+
+    // Specific fixes for VDataTableServer with fixed header
+    &.v-data-table--fixed-header {
+      thead {
+        tr {
+          th {
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1 !important;
+          }
+          th:last-child {
+            z-index: 2 !important;
+          }
+        }
+      }
+      
+      .v-data-table__wrapper {
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+      }
     }
   }
 }
 
-.v-data-table .v-data-table__tr:nth-child(odd) {
-  background-color: #ffffff;
-}
+// Row striping
+.v-data-table,
+.v-data-table-server {
+  .v-data-table__tr:nth-child(odd) {
+    background-color: #ffffff;
+  }
 
-.v-data-table .v-data-table__tr:nth-child(even) {
-  background-color: #f5f5f5;
-}
+  .v-data-table__tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
 
-/* Hover effect */
-.v-data-table .v-data-table__tr:hover {
-  background-color: rgba(var(--v-theme-primary), 0.08) !important;
+  .v-data-table__tr:hover {
+    background-color: #feecec !important;
+  }
 }
 
 // Dark theme support
 .v-theme--dark {
   .sticky-actions-wrapper {
-    .v-table {
-      thead tr th:last-child,
-      tbody tr td:last-child {
-        background: rgb(var(--v-theme-surface)) !important;
-        box-shadow: -4px 0 6px -4px rgba(255, 255, 255, 0.1) !important;
+    .v-data-table,
+    .v-data-table-server {
+      tbody {
+        tr {
+          &:nth-child(odd) {
+            td:last-child {
+              background: rgb(var(--v-theme-surface)) !important;
+            }
+            &:hover td:last-child {
+              background: rgb(var(--v-theme-surface)) linear-gradient(rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0.08)) !important;
+            }
+          }
+          
+          &:nth-child(even) {
+            td:last-child {
+              background: rgba(var(--v-theme-surface), 0.95) !important;
+            }
+            &:hover td:last-child {
+              background: rgba(var(--v-theme-surface), 0.95) linear-gradient(rgba(var(--v-theme-primary), 0.08), rgba(var(--v-theme-primary), 0.08)) !important;
+            }
+          }
+        }
       }
     }
   }
