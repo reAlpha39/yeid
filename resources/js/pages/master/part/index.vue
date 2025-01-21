@@ -386,11 +386,12 @@ onMounted(() => {
         <!-- part code -->
         <template #item.partcode="{ item }">
           <div class="d-flex align-center">
-            <span
+            <!-- <span
               class="d-block font-weight-medium text-high-emphasis text-truncate"
               :class="getTextStyle(item)"
-              >{{ item.partcode }}</span
-            >
+              ></span
+            > -->
+            {{ item.partcode }}
           </div>
         </template>
 
