@@ -38,6 +38,11 @@ const currentItem = ref(null);
 // headers
 const headers = [
   {
+    title: "IMAGE",
+    key: "partimage",
+    sortable: false,
+  },
+  {
     title: "PART CODE",
     key: "partcode",
   },
@@ -62,16 +67,9 @@ const headers = [
     key: "unitprice",
   },
   {
-    title: "PART IMAGE",
-    key: "partimage",
-    sortable: false,
-  },
-  {
     title: "ACTIONS",
     key: "actions",
     sortable: false,
-    align: "center fixed",
-    class: "fixed",
   },
 ];
 
@@ -371,155 +369,154 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTableServer
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items-length="totalItems"
-      :loading="loading"
-      :headers="headers"
-      :items="data"
-      :sort-by="sortBy"
-      :sort-desc="sortDesc"
-      class="text-no-wrap"
-      @update:options="handleOptionsUpdate"
-      height="562"
-    >
-      <!-- part code -->
-      <template #item.partcode="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            :class="getTextStyle(item)"
-            >{{ item.partcode }}</span
-          >
-        </div>
-      </template>
-
-      <!-- part name -->
-      <template #item.partname="{ item }">
-        <div class="d-flex align-center">
-          <span :class="getTextStyle(item)">
-            {{ getPartNamePrefix(item) }}{{ item.partname }}
-          </span>
-        </div>
-      </template>
-
-      <!-- category -->
-      <template #item.category="{ item }">
-        <div class="d-flex align-center">
-          {{ categoryType(item.category) }}
-        </div>
-      </template>
-
-      <!-- stock quantity -->
-      <template v-slot:header.totalstock> STOCK<br />QUANTITY </template>
-      <template #item.totalstock="{ item }">
-        <div class="d-flex align-center justify-start">
-          <span :class="getStockStyle(item)">{{
-            formatNumber(item.totalstock)
-          }}</span>
-        </div>
-      </template>
-
-      <!-- minimum stock -->
-      <template v-slot:header.minstock> MINIMUM<br />STOCK </template>
-      <template #item.minstock="{ item }">
-        <div class="d-flex align-center justify-start">
-          {{ formatNumber(item.minstock) }}
-        </div>
-      </template>
-
-      <!-- unit price -->
-      <template #item.unitprice="{ item }">
-        {{ formatCurrency(item.currency, item.unitprice) }}
-      </template>
-
-      <template #item.partimage="{ item }">
-        <VBtn
-          v-if="item.partimage"
-          variant="text"
-          color="secondary"
-          @click="showImage(item)"
-          size="small"
-        >
-          Lihat gambar
-        </VBtn>
-        <text v-else>Foto tidak<br />tersedia</text>
-      </template>
-
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="d-flex justify-center gap-2">
-          <div class="d-flex justify-center align-center">
-            <div class="status-indicator mr-2" :class="getStatusColor(item)" />
+    <div class="sticky-actions-wrapper">
+      <VDataTableServer
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items-length="totalItems"
+        :loading="loading"
+        :headers="headers"
+        :items="data"
+        :sort-by="sortBy"
+        :sort-desc="sortDesc"
+        class="text-no-wrap"
+        @update:options="handleOptionsUpdate"
+        height="562"
+      >
+        <!-- part code -->
+        <template #item.partcode="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              :class="getTextStyle(item)"
+              >{{ item.partcode }}</span
+            >
           </div>
+        </template>
 
-          <!-- Popup Menu -->
-          <VMenu>
-            <template v-slot:activator="{ props }">
-              <VBtn
-                icon
-                variant="text"
-                v-bind="props"
-                size="small"
-                color="default"
-              >
-                <VIcon icon="tabler-dots-vertical" />
-              </VBtn>
-            </template>
+        <!-- part name -->
+        <template #item.partname="{ item }">
+          <div class="d-flex align-center">
+            {{ item.partname }}
+          </div>
+        </template>
 
-            <VList>
-              <!-- Print Action -->
-              <VListItem
-                @click="openBarCodeDialog(item.partcode, item.partname)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-printer" size="small" />
-                </template>
-                <VListItemTitle>Print Barcode</VListItemTitle>
-              </VListItem>
+        <!-- category -->
+        <template #item.category="{ item }">
+          <div class="d-flex align-center">
+            {{ categoryType(item.category) }}
+          </div>
+        </template>
 
-              <!-- Edit Action -->
-              <VListItem
-                v-if="$can('update', 'part')"
-                @click="openEditPartPage(item.partcode)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-edit" size="small" />
-                </template>
-                <VListItemTitle>Edit</VListItemTitle>
-              </VListItem>
+        <!-- stock quantity -->
+        <template v-slot:header.totalstock> STOCK<br />QUANTITY </template>
+        <template #item.totalstock="{ item }">
+          <div class="d-flex align-center justify-start">
+            <span :class="getStockStyle(item)">{{
+              formatNumber(item.totalstock)
+            }}</span>
+          </div>
+        </template>
 
-              <!-- Update Action -->
-              <VListItem
-                v-if="$can('update', 'part')"
-                @click="openUpdateDialog(item.partcode)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-adjustments" size="small" />
-                </template>
-                <VListItemTitle>Update</VListItemTitle>
-              </VListItem>
+        <!-- minimum stock -->
+        <template v-slot:header.minstock> MINIMUM<br />STOCK </template>
+        <template #item.minstock="{ item }">
+          <div class="d-flex align-center justify-start">
+            {{ formatNumber(item.minstock) }}
+          </div>
+        </template>
 
-              <!-- Delete Action -->
-              <VListItem
-                v-if="$can('delete', 'part')"
-                @click="openDeleteDialog(item.partcode)"
-                density="compact"
-              >
-                <template v-slot:prepend>
-                  <VIcon icon="tabler-trash" size="small" color="error" />
-                </template>
-                <VListItemTitle class="text-error">Delete</VListItemTitle>
-              </VListItem>
-            </VList>
-          </VMenu>
-        </div>
-      </template>
-    </VDataTableServer>
+        <!-- unit price -->
+        <template #item.unitprice="{ item }">
+          {{ formatCurrency(item.currency, item.unitprice) }}
+        </template>
+
+        <template #item.partimage="{ item }">
+          <div class="d-flex justify-center align-center">
+            <IconBtn v-if="item.partimage" @click="showImage(item)">
+              <VIcon icon="tabler-camera" />
+            </IconBtn>
+
+            <VIcon v-else icon="tabler-camera-off" />
+          </div>
+        </template>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="d-flex justify-center gap-2">
+            <div class="d-flex justify-center align-center">
+              <div
+                class="status-indicator mr-2"
+                :class="getStatusColor(item)"
+              />
+            </div>
+
+            <!-- Popup Menu -->
+            <VMenu>
+              <template v-slot:activator="{ props }">
+                <VBtn
+                  icon
+                  variant="text"
+                  v-bind="props"
+                  size="small"
+                  color="default"
+                >
+                  <VIcon icon="tabler-dots-vertical" />
+                </VBtn>
+              </template>
+
+              <VList>
+                <!-- Print Action -->
+                <VListItem
+                  @click="openBarCodeDialog(item.partcode, item.partname)"
+                  density="compact"
+                >
+                  <template v-slot:prepend>
+                    <VIcon icon="tabler-printer" size="small" />
+                  </template>
+                  <VListItemTitle>Print Barcode</VListItemTitle>
+                </VListItem>
+
+                <!-- Edit Action -->
+                <VListItem
+                  v-if="$can('update', 'part')"
+                  @click="openEditPartPage(item.partcode)"
+                  density="compact"
+                >
+                  <template v-slot:prepend>
+                    <VIcon icon="tabler-edit" size="small" />
+                  </template>
+                  <VListItemTitle>Edit</VListItemTitle>
+                </VListItem>
+
+                <!-- Update Action -->
+                <VListItem
+                  v-if="$can('update', 'part')"
+                  @click="openUpdateDialog(item.partcode)"
+                  density="compact"
+                >
+                  <template v-slot:prepend>
+                    <VIcon icon="tabler-adjustments" size="small" />
+                  </template>
+                  <VListItemTitle>Update</VListItemTitle>
+                </VListItem>
+
+                <!-- Delete Action -->
+                <VListItem
+                  v-if="$can('delete', 'part')"
+                  @click="openDeleteDialog(item.partcode)"
+                  density="compact"
+                >
+                  <template v-slot:prepend>
+                    <VIcon icon="tabler-trash" size="small" color="error" />
+                  </template>
+                  <VListItemTitle class="text-error">Delete</VListItemTitle>
+                </VListItem>
+              </VList>
+            </VMenu>
+          </div>
+        </template>
+      </VDataTableServer>
+    </div>
 
     <!-- Pagination Controls -->
     <template #bottom>
@@ -587,22 +584,6 @@ onMounted(() => {
 </template>
 
 <style>
-table > tbody > tr > td.fixed:nth-last-child(1),
-table > thead > tr > th.fixed:nth-last-child(1) {
-  position: sticky !important;
-  position: -webkit-sticky !important;
-  right: 0;
-  z-index: 9998;
-  background: white;
-  -webkit-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-  -moz-box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-  box-shadow: -1px 0px 3px -1px rgba(0, 0, 0, 0.19);
-}
-
-table > thead > tr > th.fixed:nth-last-child(1) {
-  z-index: 9999;
-}
-
 .status-indicator {
   width: 14px;
   height: 14px;
@@ -627,11 +608,5 @@ table > thead > tr > th.fixed:nth-last-child(1) {
 
 .status-default {
   background-color: #28c76f;
-}
-
-:deep(.v-data-table) {
-  .text-no-wrap {
-    white-space: nowrap;
-  }
 }
 </style>
