@@ -242,50 +242,52 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :sort-by="[{ key: 'machineno', order: 'asc' }]"
-      class="text-no-wrap"
-      height="562"
-    >
-      <!-- part name -->
-      <template #item.machineno="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.machineno }}</span
-          >
-        </div>
-      </template>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        :sort-by="[{ key: 'machineno', order: 'asc' }]"
+        class="text-no-wrap"
+        height="562"
+      >
+        <!-- part name -->
+        <template #item.machineno="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ item.machineno }}</span
+            >
+          </div>
+        </template>
 
-      <!-- vendor -->
-      <template #item.STATUS="{ item }">
-        <div class="d-flex align-center">
-          {{ statusType(item.status) }}
-        </div>
-      </template>
+        <!-- vendor -->
+        <template #item.STATUS="{ item }">
+          <div class="d-flex align-center">
+            {{ statusType(item.status) }}
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openEditPage(item.machineno)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'masterData')"
-            @click="openDeleteDialog(item.machineno)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="align-center">
+            <IconBtn
+              v-if="$can('update', 'masterData')"
+              @click="openEditPage(item.machineno)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'masterData')"
+              @click="openDeleteDialog(item.machineno)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
