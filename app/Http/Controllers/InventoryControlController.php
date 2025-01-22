@@ -336,6 +336,70 @@ class InventoryControlController extends Controller
         }
     }
 
+    public function updateInventoryOutBound(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $validated = $request->validate([
+                'record_id' => 'required|integer',
+                'machine_no' => 'required|string',
+                'machine_name' => 'required|string',
+                'quantity' => 'required|numeric|min:0'
+            ]);
+
+            $record = DB::table('tbl_invrecord')
+                ->where('recordid', $validated['record_id'])
+                ->first();
+
+            if (!$record) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record not found'
+                ], 404);
+            }
+
+            $updated = DB::table('tbl_invrecord')
+                ->where('recordid', $validated['record_id'])
+                ->update([
+                    'machineno' => explode('|', $validated['machine_no'])[0],
+                    'machinename' => $validated['machine_name'],
+                    'quantity' => $validated['quantity'],
+                    'total' => DB::raw('unitprice * ' . $validated['quantity']),
+                    'updatetime' => now()
+                ]);
+
+            if (!$updated) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update record'
+                ], 500);
+            }
+
+            $updatedRecord = DB::table('tbl_invrecord')
+                ->where('recordid', $validated['record_id'])
+                ->first();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Record updated successfully',
+                'data' => $updatedRecord
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the record',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function storeInvRecord(Request $request)
     {
         try {

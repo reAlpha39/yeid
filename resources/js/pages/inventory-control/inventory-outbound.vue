@@ -1,5 +1,6 @@
 <script setup>
 import axios from "axios";
+import { ref } from "vue";
 import { useToast } from "vue-toastification";
 const { can } = usePermissions();
 
@@ -15,14 +16,17 @@ const toast = useToast();
 const isDeleteDialogVisible = ref(false);
 const recordIdToDelete = ref(0);
 
+const isUpdateStockQtyDialogVisible = ref(false);
+const selectedRecordId = ref("");
+const selectedPartCode = ref("");
+const selectedMachineNo = ref("");
+const selectedQuantity = ref(0);
+
 const now = new Date();
 const oneYearAgo = new Date(now);
 oneYearAgo.setFullYear(now.getFullYear() - 1);
 
-const selectedDate = ref(null);
 const selectedVendors = ref();
-const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
-const currency = ref();
 
 // Data table options
 const loading = ref(false);
@@ -193,9 +197,17 @@ async function deleteRecord() {
   }
 }
 
-function openDeleteDialog(recordId) {
+function openDeleteDialog(item) {
   isDeleteDialogVisible.value = true;
-  recordIdToDelete.value = recordId.recordid;
+  recordIdToDelete.value = item.recordid;
+}
+
+function openAdjustQtyDialog(item) {
+  selectedRecordId.value = item.recordid;
+  selectedPartCode.value = item.partcode;
+  selectedMachineNo.value = item.machineno;
+  selectedQuantity.value = formatNumber(item.quantity);
+  isUpdateStockQtyDialogVisible.value = true;
 }
 
 async function fetchDataVendor(id) {
@@ -500,6 +512,12 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-center gap-2">
             <IconBtn
+              v-if="$can('update', 'inventoryInbound')"
+              @click="openAdjustQtyDialog(item)"
+            >
+              <VIcon icon="tabler-adjustments" />
+            </IconBtn>
+            <IconBtn
               v-if="$can('delete', 'inventoryInbound')"
               @click="openDeleteDialog(item)"
             >
@@ -546,4 +564,13 @@ onMounted(() => {
       </VCardActions>
     </VCard>
   </VDialog>
+
+  <UpdateOutboundQtyDialog
+    v-model:isDialogVisible="isUpdateStockQtyDialogVisible"
+    v-model:recordId="selectedRecordId"
+    v-model:partCode="selectedPartCode"
+    v-model:machineNo="selectedMachineNo"
+    v-model:quantity="selectedQuantity"
+    @submit="fetchData"
+  />
 </template>
