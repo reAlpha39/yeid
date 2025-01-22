@@ -23,16 +23,14 @@ class MasterPartController extends Controller
             $partCode = $request->input('part_code', '');
             $partName = $request->input('part_name', '');
             $brand = $request->input('brand', '');
-            $usedFlag = $request->input('used_flag', false);
             $specification = $request->input('specification', '');
             $address = $request->input('address', '');
             $vendorCode = $request->input('vendor_code', '');
             $note = $request->input('note', '');
             $category = $request->input('category', '');
-            $vendorNameCmb = $request->input('vendor_name_cmb', '');
-            $vendorNameText = $request->input('vendor_name_text', '');
-            $minusFlag = $request->input('minus_flag', false);
-            $orderFlag = $request->input('order_flag', false);
+            $usedFlag = $request->input('used_flag', '0');
+            $minusFlag = $request->input('minus_flag', '0');
+            $orderFlag = $request->input('order_flag', '0');
 
             // Sorting parameters
             $sortBy = $request->input('sortBy');
@@ -128,42 +126,37 @@ class MasterPartController extends Controller
             }
 
             if (!empty($partCode)) {
-                $queryBuilder->where(function ($q) use ($partCode) {
-                    $q->where('m.partcode',  $partCode)
-                        ->orWhere(DB::raw('upper(m.partname)'), strtoupper($partCode));
-                });
+                $queryBuilder->where(DB::raw('upper(m.partcode)'), 'ILIKE',  '%' .  strtoupper($partCode) . '%');
+            }
+            if (!empty($partName)) {
+                $queryBuilder->where(DB::raw('upper(m.partname)'), 'ILIKE',  '%' .  strtoupper($partName) . '%');
+            }
+            if (!empty($brand)) {
+                $queryBuilder->where(DB::raw('upper(m.brand)'), 'ILIKE',  '%' . strtoupper($brand) . '%');
             }
 
-            if (!empty($brand)) {
-                $queryBuilder->where(DB::raw('upper(m.brand)'), 'ILIKE',  strtoupper($brand) . '%');
-            }
-            if ($usedFlag) {
-                $queryBuilder->where('m.usedflag', 'O');
-            }
             if (!empty($specification)) {
-                $queryBuilder->where(DB::raw('upper(m.specification)'), 'ILIKE',  strtoupper($specification) . '%');
+                $queryBuilder->where(DB::raw('upper(m.specification)'), 'ILIKE',  '%' . strtoupper($specification) . '%');
             }
             if (!empty($address)) {
-                $queryBuilder->where(DB::raw('upper(m.address)'), 'ILIKE', $address . '%');
+                $queryBuilder->where(DB::raw('upper(m.address)'), 'ILIKE', '%' . $address . '%');
             }
             if (!empty($vendorCode)) {
                 $queryBuilder->where(DB::raw('upper(m.vendorcode)'), 'ILIKE', strtoupper($vendorCode) . '%');
             }
             if (!empty($note)) {
-                $queryBuilder->where(DB::raw('upper(m.note)'), 'ILIKE',  strtoupper($note) . '%');
+                $queryBuilder->where(DB::raw('upper(m.note)'), 'ILIKE',  '%' . strtoupper($note) . '%');
             }
             if (in_array($category, ['M', 'F', 'J', 'O'])) {
                 $queryBuilder->where('m.category', $category);
             }
-            if (!empty($vendorNameCmb)) {
-                $queryBuilder->where('m.vendorcode', $vendorNameCmb);
-            } elseif (!empty($vendorNameText)) {
-                $queryBuilder->where(DB::raw('upper(v.vendorname)'), 'ILIKE', strtoupper($vendorNameText) . '%');
+            if ($usedFlag === '1') {
+                $queryBuilder->where('m.usedflag', 'O');
             }
-            if ($minusFlag) {
+            if ($minusFlag === '1') {
                 $queryBuilder->where(DB::raw('m.minstock'), '>', DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0)'));
             }
-            if ($orderFlag) {
+            if ($orderFlag === '1') {
                 $queryBuilder->where(DB::raw('COALESCE(m.posentdate, \' \')'), '<>', ' ');
             }
 
@@ -655,10 +648,40 @@ class MasterPartController extends Controller
         }
     }
 
-    public function inventoryExport()
+    public function inventoryExport(Request $request)
     {
         try {
-            return Excel::download(new InventoryPartsExport(), 'parts.xlsx');
+            $filters = [
+                'search' => $request->input('search', ''),
+                'status' => $request->input('status'),
+                'part_code' => $request->input('part_code', ''),
+                'part_name' => $request->input('part_name', ''),
+                'brand' => $request->input('brand', ''),
+                'specification' => $request->input('specification', ''),
+                'address' => $request->input('address', ''),
+                'vendor_code' => $request->input('vendor_code', ''),
+                'note' => $request->input('note', ''),
+                'category' => $request->input('category', ''),
+                'used_flag' => $request->input('used_flag', '0'),
+                'minus_flag' => $request->input('minus_flag', '0'),
+                'order_flag' => $request->input('order_flag', '0'),
+            ];
+
+            // Handle sorting separately
+            $sortBy = $request->input('sortBy');
+            if ($sortBy) {
+                if (is_string($sortBy) && str_contains($sortBy, '{')) {
+                    // If it's a JSON string
+                    $sortData = json_decode($sortBy, true);
+                    $filters['sortBy'] = $sortData;
+                } else {
+                    // If it's already an array or simple string
+                    $filters['sortBy'] = $sortBy;
+                    $filters['sortDirection'] = $request->input('sortDirection', 'asc');
+                }
+            }
+
+            return Excel::download(new InventoryPartsExport($filters), 'parts.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
