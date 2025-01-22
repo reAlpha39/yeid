@@ -33,6 +33,7 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
                 's.orderempname',
                 's.ordershop',
                 's.machineno',
+                'm.machinename',
                 's.ordertitle',
                 's.orderfinishdate',
                 's.orderjobtype',
@@ -43,11 +44,10 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
                 DB::raw('COALESCE(s.approval, 0) AS approval'),
                 DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
                 DB::raw('COALESCE(s.createempname, \'\') AS createempname'),
-                'm.machinename'
             ]);
 
         // Only active records filter
-        if ($this->request->input('only_active') === 'true') {
+        if ($this->request->input('only_active') === '1') {
             $query->whereRaw('COALESCE(s.approval, 0) < 119');
         }
 
@@ -85,6 +85,39 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
             });
         }
 
+        // Status filter
+        if ($this->request->input('status')) {
+            $query->where(function ($query) {
+                switch ($this->request->input('status')) {
+                    case 'GRAY':
+                        $query->where('s.approval', '>=', 112);
+                        break;
+                    case 'GREEN':
+                        $query->where('s.approval', '>=', 4)
+                            ->where('s.approval', '<', 112);
+                        break;
+                    case 'YELLOW':
+                        $query->where('s.approval', '<', 4)
+                            ->where('s.planid', '>', 0);
+                        break;
+                    case 'ORANGE':
+                        $query->where('s.approval', '<', 4)
+                            ->where('s.planid', '=', 0);
+                        break;
+                    case 'WHITE':
+                        $query->where(function ($q) {
+                            $q->whereRaw('NOT (
+                                (s.approval >= 112) OR
+                                (s.approval >= 4 AND s.approval < 112) OR
+                                (s.approval < 4 AND s.planid > 0) OR
+                                (s.approval < 4 AND s.planid = 0)
+                            )');
+                        });
+                        break;
+                }
+            });
+        }
+
         $query->orderBy('s.recordid', 'desc');
 
         return $query;
@@ -107,8 +140,24 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
             'Plan ID',
             'Create Emp Code',
             'Create Emp Name',
-            'Order Shop'
+            'Order Shop',
+            'STATUS'
         ];
+    }
+
+    protected function getStatus($row): string
+    {
+        if ($row->approval >= 112) {
+            return 'GRAY';
+        } elseif ($row->approval >= 4 && $row->approval < 112) {
+            return 'GREEN';
+        } elseif ($row->approval < 4 && $row->planid > 0) {
+            return 'YELLOW';
+        } elseif ($row->approval < 4 && $row->planid == 0) {
+            return 'ORANGE';
+        } else {
+            return 'WHITE';
+        }
     }
 
     public function map($row): array
@@ -128,7 +177,8 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
             $row->planid,
             $row->createempcode,
             $row->createempname,
-            $row->ordershop
+            $row->ordershop,
+            $this->getStatus($row)
         ];
     }
 

@@ -24,6 +24,7 @@ const selectedMachine = ref(null);
 const maintenanceCode = ref(null);
 const selectedStaff = ref(null);
 const selectedShop = ref(null);
+const selectedStatus = ref(null);
 
 const now = new Date();
 const formattedDate = new Intl.DateTimeFormat("en", {
@@ -93,6 +94,7 @@ const maintenanceCodes = [
   "08|CHECH",
   "09|LAYOUT",
 ];
+const status = ["GRAY", "GREEN", "YELLOW", "ORANGE"];
 
 function convertApproval(approval) {
   let result = "";
@@ -110,7 +112,7 @@ async function fetchData() {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
+          // only_active: activeOnly.value ? '1' : '0',
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -118,6 +120,7 @@ async function fetchData() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -239,7 +242,7 @@ async function handleExport() {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
+          // only_active: activeOnly.value ? '1' : '0',
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -247,6 +250,7 @@ async function handleExport() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
       }
     );
@@ -279,7 +283,7 @@ function getApprovalColor(approval, planid) {
   let approvalId = parseInt(approval);
   let planId = parseInt(planid);
   if (approval >= 112) {
-    return "status-indigo";
+    return "status-gray";
   } else if (approvalId >= 4) {
     return "status-green";
   } else if (planId > 0 && approvalId < 4) {
@@ -293,9 +297,20 @@ function getApprovalColor(approval, planid) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch(searchQuery, () => {
-  debouncedFetchData();
-});
+watch(
+  [
+    searchQuery,
+    date,
+    selectedShop,
+    selectedMachine,
+    maintenanceCode,
+    selectedStaff,
+    selectedStatus,
+  ],
+  () => {
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -328,6 +343,19 @@ onMounted(() => {
       <div style="inline-size: 15.625rem">
         <AppTextField v-model="searchQuery" placeholder="Search" />
       </div>
+
+      <div style="inline-size: 10rem">
+        <AppAutocomplete
+          v-model="selectedStatus"
+          placeholder="Select status"
+          :items="status"
+          return-object
+          clearable
+          clear-icon="tabler-x"
+          outlined
+        />
+      </div>
+
       <div style="inline-size: 10rem">
         <AppDateTimePicker
           v-model="date"
@@ -346,15 +374,14 @@ onMounted(() => {
             ],
           }"
           append-inner-icon="tabler-calendar"
-          @update:modelValue="fetchData()"
         />
       </div>
-      <VCheckbox
+      <!-- <VCheckbox
         class="pr-7"
         label="Active saja"
         v-model="activeOnly"
         @update:modelValue="fetchData()"
-      />
+      /> -->
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
@@ -393,7 +420,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol>
@@ -406,7 +432,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol>
@@ -417,7 +442,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol>
@@ -430,7 +454,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
       </VRow>
@@ -613,7 +636,7 @@ onMounted(() => {
   background-color: #2d9cdb;
 }
 
-.status-indigo {
+.status-gray {
   background-color: #a59fb2;
 }
 

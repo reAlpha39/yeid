@@ -15,13 +15,14 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            $onlyActive = $request->input('only_active', false);
+            $onlyActive = $request->input('only_active');
             $date = $request->input('date');
             $shopCode = $request->input('shop_code');
             $machineCode = $request->input('machine_code');
             $maintenanceCode = $request->input('maintenance_code');
             $orderName = $request->input('order_name');
             $search = $request->input('search');
+            $status = $request->input('status');
 
             $query = DB::table('tbl_spkrecord as s')
                 ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
@@ -46,7 +47,7 @@ class MaintenanceRequestController extends Controller
                 ]);
 
             // Apply filters
-            if ($onlyActive === 'true') {
+            if ($onlyActive === '1') {
                 $query->whereRaw('COALESCE(s.approval, 0) < 119');
             }
 
@@ -75,6 +76,38 @@ class MaintenanceRequestController extends Controller
                 $query->where(function ($query) use ($searchTerm) {
                     $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
                         ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
+                });
+            }
+
+            if (!empty($status)) {
+                $query->where(function ($query) use ($status) {
+                    switch ($status) {
+                        case 'GRAY':
+                            $query->where('s.approval', '>=', 112);
+                            break;
+                        case 'GREEN':
+                            $query->where('s.approval', '>=', 4)
+                                ->where('s.approval', '<', 112);
+                            break;
+                        case 'YELLOW':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '>', 0);
+                            break;
+                        case 'ORANGE':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '=', 0);
+                            break;
+                        case 'WHITE':
+                            $query->where(function ($q) {
+                                $q->whereRaw('NOT (
+                                    (s.approval >= 112) OR
+                                    (s.approval >= 4 AND s.approval < 112) OR
+                                    (s.approval < 4 AND s.planid > 0) OR
+                                    (s.approval < 4 AND s.planid = 0)
+                                )');
+                            });
+                            break;
+                    }
                 });
             }
 
