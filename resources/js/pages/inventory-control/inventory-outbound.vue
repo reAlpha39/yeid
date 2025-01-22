@@ -20,7 +20,6 @@ const oneYearAgo = new Date(now);
 oneYearAgo.setFullYear(now.getFullYear() - 1);
 
 const selectedDate = ref(null);
-const vendors = ref([]);
 const selectedVendors = ref();
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 const currency = ref();
@@ -31,9 +30,22 @@ const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
-const searchQuery = ref("");
 const sortBy = ref([{ key: "jobdate", order: "asc" }]);
+const vendors = ref([]);
 const sortDesc = ref([]);
+const appliedOptions = ref({});
+
+const partCode = ref();
+const partName = ref();
+const spec = ref();
+const brand = ref();
+const vendor = ref();
+const note = ref();
+const usedParts = ref(false);
+const minusParts = ref(false);
+const orderParts = ref(false);
+const selectedStartDate = ref(null);
+const selectedEndDate = ref(null);
 
 // headers
 const headers = [
@@ -106,15 +118,21 @@ async function fetchData(options = {}) {
 
     const response = await $api("/invControl", {
       params: {
-        search: searchQuery.value,
-        startDate: selectedDate.value ?? formatDate(oneYearAgo),
-        endDate: selectedDate.value ?? formatDate(now),
-        jobCode: "O",
+        start_date: selectedStartDate.value,
+        end_date: selectedEndDate.value,
+        part_code: partCode.value,
+        part_name: partName.value,
+        brand: brand.value,
+        specification: spec.value,
+        vendor_code: vendor.value?.vendorcode,
+        note: note.value,
+        used_flag: usedParts.value ? "1" : "0",
+        minus_flag: minusParts.value ? "1" : "0",
+        order_flag: orderParts.value ? "1" : "0",
+        job_code: "O",
         limit: 0,
         orderBy: "jobdate",
         direction: "desc",
-        vendorcode: selectedVendors.value?.vendorcode,
-        currency: currency.value,
         page: page.value,
         per_page: itemsPerPage.value,
         ...sortParams,
@@ -145,6 +163,8 @@ function handleOptionsUpdate(options) {
   // Update the pagination values
   page.value = options.page;
   itemsPerPage.value = options.itemsPerPage;
+
+  appliedOptions.value = options;
 
   // Fetch the data with new options
   fetchData(options);
@@ -205,7 +225,22 @@ const loadingExport = ref(false);
 
 async function handleExport() {
   loadingExport.value = true;
+
+  var options = appliedOptions.value;
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get("/api/invControl/export", {
       responseType: "blob",
@@ -215,22 +250,32 @@ async function handleExport() {
           }
         : {},
       params: {
-        search: searchQuery.value,
-        startDate: selectedDate.value ?? formatDate(oneYearAgo),
-        endDate: selectedDate.value ?? formatDate(now),
-        jobCode: "O",
+        start_date: selectedStartDate.value,
+        end_date: selectedEndDate.value,
+        part_code: partCode.value,
+        part_name: partName.value,
+        brand: brand.value,
+        specification: spec.value,
+        vendor_code: vendor.value?.vendorcode,
+        note: note.value,
+        used_flag: usedParts.value ? "1" : "0",
+        minus_flag: minusParts.value ? "1" : "0",
+        order_flag: orderParts.value ? "1" : "0",
+        job_code: "O",
         limit: 0,
         orderBy: "jobdate",
         direction: "desc",
-        vendorcode: selectedVendors.value?.vendorcode,
-        currency: currency.value,
+        page: page.value,
+        per_page: itemsPerPage.value,
+        ...sortParams,
+        ...options,
       },
     });
 
     const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = "inventory_outbounds.xlsx";
+    link.download = "inventory_inbounds.xlsx";
     link.click();
     window.URL.revokeObjectURL(downloadUrl);
   } catch (error) {
@@ -242,11 +287,30 @@ async function handleExport() {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch(searchQuery, () => {
-  debouncedFetchData();
-});
+watch(
+  [
+    partCode,
+    partName,
+    spec,
+    brand,
+    vendor,
+    note,
+    usedParts,
+    minusParts,
+    orderParts,
+    selectedStartDate,
+    selectedEndDate,
+  ],
+  () => {
+    page.value = 1; // Reset to first page when search changes
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
+  selectedStartDate.value = formatDate(oneYearAgo);
+  selectedEndDate.value = formatDate(now);
+
   fetchData();
   fetchDataVendor();
 });
@@ -271,74 +335,10 @@ onMounted(() => {
 
   <!-- 👉 products -->
   <VCard class="mb-6">
-    <VCardItem class="pb-4">
-      <VCardTitle>Filters</VCardTitle>
-    </VCardItem>
-
-    <VCardText>
-      <VRow>
-        <VCol cols="12" sm="4">
-          <AppDateTimePicker
-            v-model="selectedDate"
-            placeholder="Select Date"
-            :config="{ dateFormat: 'Ymd' }"
-            append-inner-icon="tabler-calendar"
-            clearable
-            clear-icon="tabler-x"
-            @update:modelValue="fetchData()"
-          />
-        </VCol>
-        <VCol cols="12" sm="4">
-          <AppAutocomplete
-            v-model="selectedVendors"
-            placeholder="Select Vendor"
-            item-title="title"
-            :items="vendors"
-            return-object
-            clearable
-            clear-icon="tabler-x"
-            outlined
-            @update:modelValue="fetchData()"
-          />
-        </VCol>
-        <VCol cols="12" sm="4">
-          <AppSelect
-            v-model="currency"
-            :items="currencies"
-            placeholder="Select Currency"
-            clearable
-            clear-icon="tabler-x"
-            @update:modelValue="fetchData()"
-          />
-        </VCol>
-      </VRow>
-    </VCardText>
-
-    <VDivider />
-
     <VCardText class="d-flex flex-wrap gap-4">
-      <!-- <div class="me-3 d-flex gap-3">
-        <AppSelect
-          :model-value="itemsPerPage"
-          :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: '100' },
-            { value: -1, title: 'All' },
-          ]"
-          style="inline-size: 6.25rem"
-          @update:model-value="itemsPerPage = parseInt($event, 10)"
-        />
-      </div> -->
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-        <!-- 👉 Search  -->
-        <div style="inline-size: 15.625rem">
-          <AppTextField v-model="searchQuery" placeholder="Search" />
-        </div>
-
         <!-- 👉 Export button -->
         <VBtn
           variant="tonal"
@@ -359,6 +359,91 @@ onMounted(() => {
         </VBtn>
       </div>
     </VCardText>
+
+    <VCard class="mx-6" variant="outlined">
+      <VExpansionPanels>
+        <VExpansionPanel elevation="0">
+          <VExpansionPanelTitle>
+            <template v-slot:default="{ expanded }">
+              <VRow no-gutters>
+                <VCol class="d-flex justify-start" cols="4"> Filter </VCol>
+              </VRow>
+            </template>
+          </VExpansionPanelTitle>
+          <VExpansionPanelText>
+            <VRow>
+              <VCol cols="3">
+                <AppTextField v-model="partCode" placeholder="Part Code" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="partName" placeholder="Part Name" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="spec" placeholder="Spec" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="brand" placeholder="Brand" />
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol cols="3">
+                <AppAutocomplete
+                  v-model="vendor"
+                  :items="vendors"
+                  return-object
+                  clearable
+                  clear-icon="tabler-x"
+                  outlined
+                  placeholder="Vendor"
+                />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="note" placeholder="Note" />
+              </VCol>
+              <VCol cols="3">
+                <AppDateTimePicker
+                  v-model="selectedStartDate"
+                  placeholder="Start Date"
+                  :config="{ dateFormat: 'Ymd' }"
+                  append-inner-icon="tabler-calendar"
+                />
+              </VCol>
+              <VCol cols="3">
+                <AppDateTimePicker
+                  v-model="selectedEndDate"
+                  placeholder="End Date"
+                  :config="{ dateFormat: 'Ymd' }"
+                  append-inner-icon="tabler-calendar"
+                />
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Used Parts"
+                  v-model="usedParts"
+                />
+              </VCol>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Minus Parts"
+                  v-model="minusParts"
+                />
+              </VCol>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Order Parts"
+                  v-model="orderParts"
+                />
+              </VCol>
+            </VRow>
+          </VExpansionPanelText>
+        </VExpansionPanel>
+      </VExpansionPanels>
+    </VCard>
 
     <VDivider class="mt-4" />
 

@@ -25,7 +25,6 @@ const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
-const searchQuery = ref("");
 const sortBy = ref([{ key: "jobdate", order: "asc" }]);
 const vendors = ref([]);
 const sortDesc = ref([]);
@@ -125,7 +124,7 @@ async function fetchData(options = {}) {
         used_flag: usedParts.value ? "1" : "0",
         minus_flag: minusParts.value ? "1" : "0",
         order_flag: orderParts.value ? "1" : "0",
-        jobCode: "I",
+        job_code: "I",
         limit: 0,
         orderBy: "jobdate",
         direction: "desc",
@@ -257,7 +256,7 @@ async function handleExport() {
         used_flag: usedParts.value ? "1" : "0",
         minus_flag: minusParts.value ? "1" : "0",
         order_flag: orderParts.value ? "1" : "0",
-        jobCode: "I",
+        job_code: "I",
         limit: 0,
         orderBy: "jobdate",
         direction: "desc",
