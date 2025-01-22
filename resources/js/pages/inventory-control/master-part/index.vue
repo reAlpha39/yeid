@@ -28,7 +28,23 @@ const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
 const sortBy = ref([{ key: "partcode", order: "asc" }]);
+const categories = ["Machine", "Facility", "Jig", "Other"];
+const vendors = ref([]);
 const sortDesc = ref([]);
+const selectedStatus = ref(null);
+const appliedOptions = ref({});
+
+const partCode = ref();
+const partName = ref();
+const spec = ref();
+const brand = ref();
+const category = ref();
+const vendor = ref();
+const address = ref();
+const note = ref();
+const usedParts = ref(false);
+const minusParts = ref(false);
+const orderParts = ref(false);
 
 // State for lightbox
 const isLightboxVisible = ref(false);
@@ -124,7 +140,17 @@ async function fetchData(options = {}) {
     const response = await $api("/master/part-list", {
       params: {
         search: searchQuery.value,
-        category: "",
+        part_code: partCode.value,
+        part_name: partName.value,
+        specification: spec.value,
+        brand: brand.value,
+        address: address.value,
+        category: revCategoryType(category.value),
+        vendor_code: vendor.value?.vendorcode,
+        used_flag: usedParts.value ? "1" : "0",
+        minus_flag: minusParts.value ? "1" : "0",
+        order_flag: orderParts.value ? "1" : "0",
+        note: note.value,
         page: page.value,
         per_page: itemsPerPage.value,
         ...sortParams,
@@ -180,6 +206,8 @@ function handleOptionsUpdate(options) {
   page.value = options.page;
   itemsPerPage.value = options.itemsPerPage;
 
+  appliedOptions.value = options;
+
   // Fetch the data with new options
   fetchData(options);
 }
@@ -217,14 +245,62 @@ function categoryType(category) {
   }
 }
 
+function revCategoryType(category) {
+  switch (category) {
+    case "Machine":
+      return "M";
+    case "Facility":
+      return "F";
+    case "Jig":
+      return "J";
+    case "Other":
+      return "O";
+    default:
+      return "";
+  }
+}
+
 const loadingExport = ref(false);
 
 async function handleExport() {
   loadingExport.value = true;
+
+  var options = appliedOptions.value;
   try {
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get("/api/master/part-inventory/export", {
       responseType: "blob",
+      params: {
+        search: searchQuery.value,
+        part_code: partCode.value,
+        part_name: partName.value,
+        specification: spec.value,
+        brand: brand.value,
+        address: address.value,
+        category: revCategoryType(category.value),
+        vendor_code: vendor.value?.vendorcode,
+        status: selectedStatus.value,
+        used_flag: usedParts.value ? "1" : "0",
+        minus_flag: minusParts.value ? "1" : "0",
+        order_flag: orderParts.value ? "1" : "0",
+        note: note.value,
+        page: page.value,
+        per_page: itemsPerPage.value,
+        ...sortParams,
+        ...options,
+      },
       headers: accessToken
         ? {
             Authorization: `Bearer ${accessToken}`,
@@ -335,10 +411,25 @@ const closeLightbox = () => {
 const debouncedFetchData = debounce(fetchData, 500);
 
 // Watch for search query changes
-watch(searchQuery, () => {
-  page.value = 1; // Reset to first page when search changes
-  debouncedFetchData();
-});
+watch(
+  [
+    partCode,
+    partName,
+    spec,
+    brand,
+    address,
+    category,
+    vendor,
+    note,
+    usedParts,
+    minusParts,
+    orderParts,
+  ],
+  () => {
+    page.value = 1; // Reset to first page when search changes
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -368,11 +459,6 @@ onMounted(() => {
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
-        <!-- 👉 Search  -->
-        <div style="inline-size: 15.625rem">
-          <AppTextField v-model="searchQuery" placeholder="Search" />
-        </div>
-
         <!-- 👉 Export button -->
         <VBtn
           variant="tonal"
@@ -393,6 +479,88 @@ onMounted(() => {
         </VBtn>
       </div>
     </VCardText>
+
+    <VCard class="mx-6" variant="outlined">
+      <VExpansionPanels>
+        <VExpansionPanel elevation="0">
+          <VExpansionPanelTitle>
+            <template v-slot:default="{ expanded }">
+              <VRow no-gutters>
+                <VCol class="d-flex justify-start" cols="4"> Filter </VCol>
+              </VRow>
+            </template>
+          </VExpansionPanelTitle>
+          <VExpansionPanelText>
+            <VRow>
+              <VCol cols="3">
+                <AppTextField v-model="partCode" placeholder="Part Code" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="partName" placeholder="Part Name" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="spec" placeholder="Spec" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="brand" placeholder="Brand" />
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol cols="3">
+                <AppAutocomplete
+                  v-model="category"
+                  :items="categories"
+                  clearable
+                  clear-icon="tabler-x"
+                  outlined
+                  placeholder="Category"
+                />
+              </VCol>
+              <VCol cols="3">
+                <AppAutocomplete
+                  v-model="vendor"
+                  :items="vendors"
+                  return-object
+                  clearable
+                  clear-icon="tabler-x"
+                  outlined
+                  placeholder="Vendor"
+                />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="address" placeholder="Address" />
+              </VCol>
+              <VCol cols="3">
+                <AppTextField v-model="note" placeholder="Note" />
+              </VCol>
+            </VRow>
+            <VRow>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Used Parts"
+                  v-model="usedParts"
+                />
+              </VCol>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Minus Parts"
+                  v-model="minusParts"
+                />
+              </VCol>
+              <VCol cols="2">
+                <VCheckbox
+                  class="pr-7"
+                  label="Order Parts"
+                  v-model="orderParts"
+                />
+              </VCol>
+            </VRow>
+          </VExpansionPanelText>
+        </VExpansionPanel>
+      </VExpansionPanels>
+    </VCard>
 
     <VDivider class="mt-4" />
 
