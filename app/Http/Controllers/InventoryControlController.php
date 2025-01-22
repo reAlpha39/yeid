@@ -13,13 +13,19 @@ class InventoryControlController extends Controller
     public function getRecords(Request $request)
     {
         try {
-            // Basic filters
-            $search = $request->input('search');
-            $startDate = $request->input('startDate', '20240417');
-            $endDate = $request->input('endDate', '20240516');
-            $jobCode = $request->input('jobCode', 'I');
-            $vendorCode = $request->input('vendorcode');
-            $currency = $request->input('currency');
+            $startDate = $request->input('start_date', '');
+            $endDate = $request->input('end_date', '');
+            $jobCode = $request->input('job_code', 'I');
+
+            $partCode = $request->input('part_code', '');
+            $partName = $request->input('part_name', '');
+            $brand = $request->input('brand', '');
+            $specification = $request->input('specification', '');
+            $vendorCode = $request->input('vendor_code', '');
+            $note = $request->input('note', '');
+            $usedFlag = $request->input('used_flag', '0');
+            $minusFlag = $request->input('minus_flag', '0');
+            $orderFlag = $request->input('order_flag', '0');
 
             // Pagination parameters
             $perPage = $request->input('per_page', 10);
@@ -40,48 +46,88 @@ class InventoryControlController extends Controller
                 }
             }
 
-            // Build the query
+            // Build the main query
             $query = DB::table('tbl_invrecord AS i')
-                ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno')
-                ->select(
-                    'i.recordid',
-                    'i.jobcode',
-                    'i.jobdate',
-                    'i.jobtime',
-                    'i.partcode',
-                    'i.partname',
-                    'i.specification',
-                    'i.brand',
-                    'i.usedflag',
-                    'i.quantity',
-                    'i.unitprice',
-                    'i.currency',
-                    'i.total',
-                    'i.machineno',
-                    DB::raw('COALESCE(m.shopname, \'-\') AS shopname'),
-                    DB::raw('COALESCE(m.linecode, \'-\') AS linecode'),
-                    'i.employeecode',
-                    'i.note',
-                    'i.vendorcode'
-                )
-                ->whereBetween('i.jobdate', [$startDate, $endDate])
-                ->where('i.jobcode', $jobCode);
+                ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno');
 
-            // Apply search filter
-            if ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('i.partcode', 'ILIKE', "{$search}%")
-                        ->orWhere('i.partname', 'ILIKE', "{$search}%");
+            // Add joins for minus_flag and order_flag
+            if ($minusFlag === '1' || $orderFlag === '1') {
+                $query->leftJoin('mas_inventory AS mi', 'i.partcode', '=', 'mi.partcode');
+            }
+
+            // Add join for minus_flag
+            if ($minusFlag === '1') {
+                $subQuery = DB::table('tbl_invrecord AS t')
+                    ->select('t.partcode')
+                    ->selectRaw('SUM(CASE WHEN t.jobcode = \'O\' THEN -t.quantity ELSE t.quantity END) as sum_quantity')
+                    ->leftJoin('mas_inventory AS minv', 't.partcode', '=', 'minv.partcode')
+                    ->where(
+                        't.jobdate',
+                        '>',
+                        DB::raw('minv.laststockdate')
+                    )
+                    ->groupBy('t.partcode');
+
+                $query->leftJoinSub($subQuery, 'gi', function ($join) {
+                    $join->on('i.partcode', '=', 'gi.partcode');
                 });
             }
 
-            // Apply additional filters
-            if ($vendorCode) {
+            // Select fields
+            $query->select(
+                'i.recordid',
+                'i.jobcode',
+                'i.jobdate',
+                'i.jobtime',
+                'i.partcode',
+                'i.partname',
+                'i.specification',
+                'i.brand',
+                'i.usedflag',
+                'i.quantity',
+                'i.unitprice',
+                'i.currency',
+                'i.total',
+                'i.machineno',
+                DB::raw('COALESCE(m.shopname, \'-\') AS shopname'),
+                DB::raw('COALESCE(m.linecode, \'-\') AS linecode'),
+                'i.employeecode',
+                'i.note',
+                'i.vendorcode'
+            );
+
+            $query->whereBetween(
+                'i.jobdate',
+                [$startDate, $endDate]
+            )
+                ->where('i.jobcode', $jobCode);
+
+            if (!empty($partCode)) {
+                $query->where('i.partcode', 'ILIKE', '%' . $partCode . '%');
+            }
+            if (!empty($partName)) {
+                $query->where('i.partname', 'ILIKE', '%' . $partName . '%');
+            }
+            if (!empty($brand)) {
+                $query->where('i.brand', 'ILIKE', '%' . $brand . '%');
+            }
+            if (!empty($specification)) {
+                $query->where('i.specification', 'ILIKE', '%' . $specification . '%');
+            }
+            if (!empty($vendorCode)) {
                 $query->where('i.vendorcode', $vendorCode);
             }
-
-            if ($currency) {
-                $query->where('i.currency', $currency);
+            if (!empty($note)) {
+                $query->where('i.note', 'ILIKE', '%' . $note . '%');
+            }
+            if ($usedFlag === '1') {
+                $query->where('i.usedflag', 'O');
+            }
+            if ($minusFlag === '1') {
+                $query->whereRaw('mi.minstock > (mi.laststocknumber + COALESCE(gi.sum_quantity, 0))');
+            }
+            if ($orderFlag === '1') {
+                $query->whereRaw("COALESCE(mi.posentdate, '') <> ''");
             }
 
             // Apply sorting
@@ -428,24 +474,33 @@ class InventoryControlController extends Controller
     public function export(Request $request)
     {
         try {
-            $startDate = $request->input('startDate', '20240101');
-            $endDate = $request->input('endDate', '20240101');
-            $jobCode = $request->input('jobCode', 'I');
-            $vendorCode = $request->input('vendorcode');
-            $currency = $request->input('currency');
-            $search = $request->input('search');
+            $filters = [
+                'start_date' => $request->input('start_date', '20240417'),
+                'end_date' => $request->input('end_date', '20240516'),
+                'job_code' => $request->input('job_code', 'I'),
+                'part_code' => $request->input('part_code', ''),
+                'part_name' => $request->input('part_name', ''),
+                'brand' => $request->input('brand', ''),
+                'specification' => $request->input('specification', ''),
+                'vendor_code' => $request->input('vendor_code', ''),
+                'note' => $request->input('note', ''),
+                'used_flag' => $request->input('used_flag', '0'),
+                'minus_flag' => $request->input('minus_flag', '0'),
+                'order_flag' => $request->input('order_flag', '0'),
+            ];
 
-            return Excel::download(
-                new InventoryControlExport(
-                    $startDate,
-                    $endDate,
-                    $jobCode,
-                    $vendorCode,
-                    $currency,
-                    $search
-                ),
-                'inventory_records.xlsx'
-            );
+            // Handle sorting
+            $sortBy = $request->input('sortBy');
+            if ($sortBy) {
+                if (is_string($sortBy) && str_contains($sortBy, '{')) {
+                    $filters['sortBy'] = json_decode($sortBy, true);
+                } else {
+                    $filters['sortBy'] = $sortBy;
+                    $filters['sortDirection'] = $request->input('sortDirection', 'desc');
+                }
+            }
+
+            return Excel::download(new InventoryControlExport($filters), 'inventory_records.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
