@@ -287,6 +287,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::prefix('inventory')->group(function () {
         Route::post('/update-summary', [InventoryController::class, 'updateInventorySummary']);
         Route::get('/update-progress', [InventoryController::class, 'getJobProgress']);
+        Route::post('/cancel-update', [InventoryController::class, 'cancelJob']);
     });
 });
 

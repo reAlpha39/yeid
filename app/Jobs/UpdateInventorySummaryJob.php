@@ -10,25 +10,53 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use App\Models\JobProgress;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\Middleware\CheckJobCancellation;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class UpdateInventorySummaryJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private $jobProgressId;
+    public $jobProgressId;
     private $isRecreate;
     public $timeout = 7200; // 2 hours
     public $tries = 1;
+
+    private $shouldCancel = false;
 
     public function __construct(bool $isRecreate)
     {
         $this->isRecreate = $isRecreate;
     }
 
+    public function middleware()
+    {
+        return [new CheckJobCancellation];
+    }
+
+    private function checkIfCancelled(): bool
+    {
+        return Cache::get("job_cancelled_{$this->jobProgressId}", false);
+    }
+
+    private function cleanupOldCancelledJobs()
+    {
+        // Find all cancelled jobs older than 24 hours
+        JobProgress::where('status', 'cancelled')
+            ->where('completed_at', '<', now()->subDay())
+            ->get()
+            ->each(function ($job) {
+                Cache::forget("job_cancelled_{$job->id}");
+            });
+    }
+
     public function handle()
     {
         try {
+            // Clean up old cancelled jobs first
+            $this->cleanupOldCancelledJobs();
+
             // Create progress record
             $jobProgress = JobProgress::create([
                 'job_type' => 'inventory_summary_update',
@@ -40,6 +68,8 @@ class UpdateInventorySummaryJob implements ShouldQueue
             ]);
 
             $this->jobProgressId = $jobProgress->id;
+
+            Cache::put("job_cancelled_{$this->jobProgressId}", false, now()->addHours(3));
 
             // Get part codes
             $partCodes = DB::table('mas_inventory')
@@ -64,7 +94,31 @@ class UpdateInventorySummaryJob implements ShouldQueue
             $errors = [];
 
             foreach ($partCodes->chunk(100) as $partCodeChunk) {
+                // Cancellation check
+                if ($this->checkIfCancelled()) {
+                    $this->updateProgress(
+                        ($processedCount / $totalParts) * 100,
+                        $totalParts,
+                        $processedCount,
+                        'cancelled',
+                        'Job was cancelled by user'
+                    );
+                    return;
+                }
+
                 foreach ($partCodeChunk as $partCode) {
+                    // Cancellation check
+                    if ($this->checkIfCancelled()) {
+                        $this->updateProgress(
+                            ($processedCount / $totalParts) * 100,
+                            $totalParts,
+                            $processedCount,
+                            'cancelled',
+                            'Job was cancelled by user'
+                        );
+                        return;
+                    }
+
                     $success = $this->processPartInventory($partCode, $minDate, $this->isRecreate);
 
                     if (!$success) {
@@ -107,6 +161,8 @@ class UpdateInventorySummaryJob implements ShouldQueue
             );
 
             throw $e;
+        } finally {
+            Cache::forget("job_cancelled_{$this->jobProgressId}");
         }
     }
 
@@ -149,6 +205,11 @@ class UpdateInventorySummaryJob implements ShouldQueue
     private function processPartInventory(string $partCode, string $minDate, bool $isRecreate): bool
     {
         try {
+            // Check for cancellation
+            if ($this->checkIfCancelled()) {
+                return false;
+            }
+
             DB::beginTransaction();
 
             // Get last stock info
@@ -216,6 +277,12 @@ class UpdateInventorySummaryJob implements ShouldQueue
             // If this is a Recreate, process historical data
             if ($isRecreate) {
                 $this->processHistoricalData($partCode, $stockDate, $inventory);
+            }
+
+            // Check for cancellation
+            if ($this->checkIfCancelled()) {
+                DB::rollBack();
+                return false;
             }
 
             DB::commit();

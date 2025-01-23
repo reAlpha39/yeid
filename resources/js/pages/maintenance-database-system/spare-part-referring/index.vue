@@ -11,6 +11,8 @@ const toast = useToast();
 const currentTab = ref("window1");
 const isUpdateDialogVisible = ref(false);
 const isReCreateDialogVisible = ref(false);
+const isCancelDialogVisible = ref(false);
+const isCheckLogDialogVisible = ref(false);
 
 const onUpdate = ref(false);
 const progress = ref(0.0);
@@ -61,7 +63,11 @@ async function updateProgress() {
       },
     });
 
-    if (response.data.status === "completed") {
+    if (
+      response.data.status === "completed" ||
+      response.data.status === "cancelled" ||
+      response.data.status === "completed_with_errors"
+    ) {
       onUpdate.value = false;
       if (progressInterval.value) {
         clearInterval(progressInterval.value);
@@ -70,6 +76,10 @@ async function updateProgress() {
     } else {
       onUpdate.value = true;
       progress.value = response.data.progress;
+    }
+
+    if (response.data.status === "completed_with_errors") {
+      isCheckLogDialogVisible.value = true;
     }
   } catch (err) {
     console.log(err);
@@ -80,6 +90,23 @@ async function updateProgress() {
     onUpdate.value = false;
   } finally {
     isLoading.value = false; // Set loading to false after check completes
+  }
+}
+
+async function cancelUpdate() {
+  try {
+    const response = await $api("/inventory/cancel-update", {
+      method: "POST",
+
+      onResponseError({ response }) {
+        toast.error(response._data.message);
+      },
+    });
+
+    toast.success(response.message);
+    isCancelDialogVisible.value = false;
+  } catch (err) {
+    console.log(err);
   }
 }
 
@@ -166,6 +193,11 @@ onMounted(async () => {
             color="primary"
             striped
           />
+          <div class="text-center">
+            <VBtn @click="isCancelDialogVisible = !isCancelDialogVisible">
+              Cancel
+            </VBtn>
+          </div>
         </VCardTitle>
       </VCard>
     </div>
@@ -235,6 +267,53 @@ onMounted(async () => {
         <VBtn color="error" variant="elevated" @click="initUpdateData(true)">
           OK
         </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
+
+  <VDialog v-model="isCheckLogDialogVisible" max-width="600px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center text-wrap">
+        The update process has been completed with errors. Please check the log
+        for more details.
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="grey-darken-1"
+          variant="elevated"
+          @click="isCheckLogDialogVisible = !isCheckLogDialogVisible"
+        >
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
+
+  <VDialog v-model="isCancelDialogVisible" max-width="600px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center text-wrap">
+        Are you sure you want to cancel the update process?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="grey-darken-1"
+          variant="outlined"
+          @click="isCancelDialogVisible = !isCancelDialogVisible"
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="error" variant="elevated" @click="cancelUpdate"> OK </VBtn>
 
         <VSpacer />
       </VCardActions>
