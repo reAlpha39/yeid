@@ -58,41 +58,48 @@ class ScheduleActivityController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function indexTable(Request $request)
+    public function indexTableSchedule(Request $request)
     {
         try {
             $year = $request->input('year');
+            $month = $request->input('month');
+            $week = $request->input('week');
             $shopId = $request->input('shop');
             $department = $request->input('department');
             $machine = $request->input('machine');
 
             $query = ScheduleActivity::with([
                 'pic',
-                'tasks' => function ($query) use ($year, $machine) {
+                'tasks' => function ($query) use ($year, $machine, $month, $week) {
                     if (!empty($year)) {
                         $query->where('year', $year);
                     }
                     if (!empty($machine)) {
                         $query->where('machine_id', $machine);
                     }
-                    $query->with('machine');
-                    // Eager load executions for each task
-                    $query->with('executions');
-                },
-
+                    $query->with(['machine', 'executions' => function ($query) use ($month, $week) {
+                        if (!empty($month)) {
+                            $weekStart = ($month - 1) * 4 + 1;
+                            $weekEnd = $month * 4;
+                            $query->whereBetween('scheduled_week', [$weekStart, $weekEnd]);
+                        }
+                        if (!empty($week)) {
+                            $query->where(function ($q) use ($week) {
+                                $q->whereRaw('(scheduled_week - 1) % 4 + 1 = ?', [$week]);
+                            });
+                        }
+                    }]);
+                }
             ]);
 
-            // Filter by shop
             if (!empty($shopId)) {
-                $query->where('shop_id', $request->shop);
+                $query->where('shop_id', $shopId);
             }
 
-            // Filter by department
             if (!empty($department)) {
-                $query->where('dept_id', $request->department);
+                $query->where('dept_id', $department);
             }
 
-            // Only get activities that have tasks in the specified year and machine
             if (!empty($year) || !empty($machine)) {
                 $query->whereHas('tasks', function ($query) use ($year, $machine) {
                     if (!empty($year)) {
@@ -100,6 +107,21 @@ class ScheduleActivityController extends Controller
                     }
                     if (!empty($machine)) {
                         $query->where('machine_id', $machine);
+                    }
+                });
+            }
+
+            if (!empty($month) || !empty($week)) {
+                $query->whereHas('tasks.executions', function ($query) use ($month, $week) {
+                    if (!empty($month)) {
+                        $weekStart = ($month - 1) * 4 + 1;
+                        $weekEnd = $month * 4;
+                        $query->whereBetween('scheduled_week', [$weekStart, $weekEnd]);
+                    }
+                    if (!empty($week)) {
+                        $query->where(function ($q) use ($week) {
+                            $q->whereRaw('(scheduled_week - 1) % 4 + 1 = ?', [$week]);
+                        });
                     }
                 });
             }
@@ -238,12 +260,14 @@ class ScheduleActivityController extends Controller
     {
         try {
             $year = $request->input('year');
+            $month = $request->input('month');
+            $week = $request->input('week');
             $shopId = $request->input('shop');
             $department = $request->input('department');
             $machine = $request->input('machine');
             $filename = 'schedule_activities' . ($year ? "_$year" : '') . '.xlsx';
 
-            return Excel::download(new ScheduleActivitiesExport($year, $shopId, $department, $machine), $filename);
+            return Excel::download(new ScheduleActivitiesExport($year, $shopId, $department, $machine, $month, $week), $filename);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

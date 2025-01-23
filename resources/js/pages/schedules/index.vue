@@ -25,6 +25,7 @@ const currentTab = ref("window1");
   <VTabs v-model="currentTab" class="v-tabs-pill">
     <VTab>Graph</VTab>
     <VTab>Schedule</VTab>
+    <VTab>Activity</VTab>
   </VTabs>
 
   <VWindow v-model="currentTab" class="mt-6">
@@ -33,6 +34,9 @@ const currentTab = ref("window1");
     </VWindowItem>
     <VWindowItem key="`window2`">
       <ScheduleTable />
+    </VWindowItem>
+    <VWindowItem key="`window3`">
+      <ScheduleActivityTab />
     </VWindowItem>
   </VWindow>
 </template>

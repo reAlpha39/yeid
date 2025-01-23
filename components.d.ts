@@ -405,6 +405,7 @@ declare module 'vue' {
     ResultConstOfUsedPartsTab: typeof import('./resources/js/components/ResultConstOfUsedPartsTab.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ScheduleActivityTab: typeof import('./resources/js/components/ScheduleActivityTab.vue')['default']
     ScheduleGraph: typeof import('./resources/js/components/ScheduleGraph.vue')['default']
     ScheduleTable: typeof import('./resources/js/components/ScheduleTable.vue')['default']
     ScrollToTop: typeof import('./resources/js/@core/components/ScrollToTop.vue')['default']
