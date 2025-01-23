@@ -14,74 +14,17 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
     protected $shopId;
     protected $department;
     protected $machine;
-    protected $weekMapping;
+    protected $month;
+    protected $week;
 
-    public function __construct($year = null, $shopId = null, $department = null, $machine = null)
+    public function __construct($year = null, $shopId = null, $department = null, $machine = null, $month = null, $week = null)
     {
         $this->year = $year;
         $this->shopId = $shopId;
         $this->department = $department;
         $this->machine = $machine;
-        $this->initializeWeekMapping();
-    }
-
-    private function initializeWeekMapping()
-    {
-        $this->weekMapping = [
-            1 => "Jan Week 1",
-            2 => "Jan Week 2",
-            3 => "Jan Week 3",
-            4 => "Jan Week 4",
-            5 => "Feb Week 1",
-            6 => "Feb Week 2",
-            7 => "Feb Week 3",
-            8 => "Feb Week 4",
-            9 => "Mar Week 1",
-            10 => "Mar Week 2",
-            11 => "Mar Week 3",
-            12 => "Mar Week 4",
-            13 => "Apr Week 1",
-            14 => "Apr Week 2",
-            15 => "Apr Week 3",
-            16 => "Apr Week 4",
-            17 => "May Week 1",
-            18 => "May Week 2",
-            19 => "May Week 3",
-            20 => "May Week 4",
-            21 => "Jun Week 1",
-            22 => "Jun Week 2",
-            23 => "Jun Week 3",
-            24 => "Jun Week 4",
-            25 => "Jul Week 1",
-            26 => "Jul Week 2",
-            27 => "Jul Week 3",
-            28 => "Jul Week 4",
-            29 => "Aug Week 1",
-            30 => "Aug Week 2",
-            31 => "Aug Week 3",
-            32 => "Aug Week 4",
-            33 => "Sep Week 1",
-            34 => "Sep Week 2",
-            35 => "Sep Week 3",
-            36 => "Sep Week 4",
-            37 => "Oct Week 1",
-            38 => "Oct Week 2",
-            39 => "Oct Week 3",
-            40 => "Oct Week 4",
-            41 => "Nov Week 1",
-            42 => "Nov Week 2",
-            43 => "Nov Week 3",
-            44 => "Nov Week 4",
-            45 => "Dec Week 1",
-            46 => "Dec Week 2",
-            47 => "Dec Week 3",
-            48 => "Dec Week 4"
-        ];
-    }
-
-    protected function getWeekLabel($weekNumber)
-    {
-        return $this->weekMapping[$weekNumber] ?? '';
+        $this->month = $month;
+        $this->week = $week;
     }
 
     public function collection()
@@ -96,21 +39,29 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
                 if (!empty($this->machine)) {
                     $query->where('machine_id', $this->machine);
                 }
-                $query->with(['machine', 'executions']);
+                $query->with(['machine', 'executions' => function ($query) {
+                    if (!empty($this->month)) {
+                        $weekStart = ($this->month - 1) * 4 + 1;
+                        $weekEnd = $this->month * 4;
+                        $query->whereBetween('scheduled_week', [$weekStart, $weekEnd]);
+                    }
+                    if (!empty($this->week)) {
+                        $query->where(function ($q) {
+                            $q->whereRaw('(scheduled_week - 1) % 4 + 1 = ?', [$this->week]);
+                        });
+                    }
+                }]);
             },
         ]);
 
-        // Filter by shop
         if (!empty($this->shopId)) {
             $query->where('shop_id', $this->shopId);
         }
 
-        // Filter by department
         if (!empty($this->department)) {
             $query->where('dept_id', $this->department);
         }
 
-        // Filter activities that have tasks in the specified year or with specified machine
         if (!empty($this->year) || !empty($this->machine)) {
             $query->whereHas('tasks', function ($query) {
                 if (!empty($this->year)) {
@@ -118,6 +69,21 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
                 }
                 if (!empty($this->machine)) {
                     $query->where('machine_id', $this->machine);
+                }
+            });
+        }
+
+        if (!empty($this->month) || !empty($this->week)) {
+            $query->whereHas('tasks.executions', function ($query) {
+                if (!empty($this->month)) {
+                    $weekStart = ($this->month - 1) * 4 + 1;
+                    $weekEnd = $this->month * 4;
+                    $query->whereBetween('scheduled_week', [$weekStart, $weekEnd]);
+                }
+                if (!empty($this->week)) {
+                    $query->where(function ($q) {
+                        $q->whereRaw('(scheduled_week - 1) % 4 + 1 = ?', [$this->week]);
+                    });
                 }
             });
         }
@@ -140,12 +106,13 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
             'Frequency Times',
             'Frequency Period',
             'Start Week',
-            // 'Duration',
             'Manpower Required',
             'Cycle Time',
             'Year',
             'Task Status',
+            'Scheduled Month',
             'Scheduled Week',
+            'Completion Month',
             'Completion Week',
             'Note',
             'Assigned Users'
@@ -154,19 +121,19 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
 
     public function map($activity): array
     {
-        // Initialize an empty collection to store all rows
         $rows = new Collection();
 
-        // For each task in the activity
         foreach ($activity->tasks as $task) {
-            // For each execution in the task
             foreach ($task->executions as $execution) {
-                // Get assigned users for this execution
                 $assignedUsers = $execution->userAssignments->map(function ($assignment) {
                     return $assignment->user->employeename;
                 })->join(', ');
 
-                // Create a row
+                $scheduledWeek = ($execution->scheduled_week - 1) % 4 + 1;
+                $scheduledMonth = ceil($execution->scheduled_week / 4);
+                $completionWeek = $execution->completion_week ? ($execution->completion_week - 1) % 4 + 1 : '';
+                $completionMonth = $execution->completion_week ? ceil($execution->completion_week / 4) : '';
+
                 $rows->push([
                     $activity->activity_id,
                     $activity->shop->shopcode ?? '',
@@ -179,20 +146,20 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
                     $task->machine->plantcode ?? '',
                     $task->frequency_times,
                     $task->frequency_period,
-                    $this->getWeekLabel($task->start_week),
-                    // $task->duration,
+                    $task->start_week,
                     $task->manpower_required,
                     $task->cycle_time,
                     $task->year,
                     $execution->status,
-                    $this->getWeekLabel($execution->scheduled_week),
-                    $this->getWeekLabel($execution->completion_week),
+                    $scheduledMonth,
+                    $scheduledWeek,
+                    $completionMonth,
+                    $completionWeek,
                     $execution->note,
                     $assignedUsers
                 ]);
             }
 
-            // If there are no executions, still show the task
             if ($task->executions->isEmpty()) {
                 $rows->push([
                     $activity->activity_id,
@@ -203,14 +170,16 @@ class ScheduleActivitiesExport implements FromCollection, WithHeadings, WithMapp
                     $activity->activity_name,
                     $task->machine->machineno ?? '',
                     $task->machine->machinename ?? '',
+                    $task->machine->plantcode ?? '',
                     $task->frequency_times,
                     $task->frequency_period,
-                    $this->getWeekLabel($task->start_week),
-                    $task->duration,
+                    $task->start_week,
                     $task->manpower_required,
                     $task->cycle_time,
                     $task->year,
                     'No executions',
+                    '',
+                    '',
                     '',
                     '',
                     '',
