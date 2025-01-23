@@ -17,13 +17,13 @@ class UpdateInventorySummaryJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private $jobProgressId;
-    private $isShiftUpdate;
+    private $isRecreate;
     public $timeout = 7200; // 2 hours
-    public $tries = 1;      // No retries due to data sensitivity
+    public $tries = 1;
 
-    public function __construct(bool $isShiftUpdate)
+    public function __construct(bool $isRecreate)
     {
-        $this->isShiftUpdate = $isShiftUpdate;
+        $this->isRecreate = $isRecreate;
     }
 
     public function handle()
@@ -65,7 +65,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
 
             foreach ($partCodes->chunk(100) as $partCodeChunk) {
                 foreach ($partCodeChunk as $partCode) {
-                    $success = $this->processPartInventory($partCode, $minDate, $this->isShiftUpdate);
+                    $success = $this->processPartInventory($partCode, $minDate, $this->isRecreate);
 
                     if (!$success) {
                         $errors[] = $partCode;
@@ -146,7 +146,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
     /**
      * Process inventory for a single part
      */
-    private function processPartInventory(string $partCode, string $minDate, bool $isShiftUpdate): bool
+    private function processPartInventory(string $partCode, string $minDate, bool $isRecreate): bool
     {
         try {
             DB::beginTransaction();
@@ -166,7 +166,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
             $currentMonth = Carbon::now()->startOfMonth();
 
             // Delete existing summary data if full update
-            if ($isShiftUpdate) {
+            if ($isRecreate) {
                 DB::table('tbl_invsummary')
                     ->where('partcode', $partCode)
                     ->delete();
@@ -213,8 +213,8 @@ class UpdateInventorySummaryJob implements ShouldQueue
                 );
             }
 
-            // If this is a shift update, process historical data
-            if ($isShiftUpdate) {
+            // If this is a Recreate, process historical data
+            if ($isRecreate) {
                 $this->processHistoricalData($partCode, $stockDate, $inventory);
             }
 

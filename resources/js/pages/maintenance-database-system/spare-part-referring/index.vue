@@ -9,13 +9,18 @@ definePage({
 });
 const toast = useToast();
 const currentTab = ref("window1");
+const isUpdateDialogVisible = ref(false);
+const isReCreateDialogVisible = ref(false);
 
 const onUpdate = ref(false);
 const progress = ref(0.0);
 const progressInterval = ref(null);
 const isLoading = ref(true);
 
-async function initUpdateData() {
+async function initUpdateData(recreate = false) {
+  isReCreateDialogVisible.value = false;
+  isUpdateDialogVisible.value = false;
+
   try {
     onUpdate.value = true;
     progress.value = 0;
@@ -23,7 +28,7 @@ async function initUpdateData() {
     const response = await $api("/inventory/update-summary", {
       method: "POST",
       params: {
-        shift_flag: true,
+        recreate: recreate ? "1" : "0",
       },
       onResponseError({ response }) {
         toast.error(response._data.message);
@@ -122,13 +127,23 @@ onMounted(async () => {
 
     <VSpacer />
 
-    <VBtn
-      prepend-icon="tabler-refresh"
-      @click="initUpdateData"
-      :loading="onUpdate"
-    >
-      Update
-    </VBtn>
+    <div v-if="!onUpdate" class="d-flex gap-4">
+      <VBtn
+        prepend-icon="tabler-plus"
+        @click="isUpdateDialogVisible = !isUpdateDialogVisible"
+        :loading="onUpdate"
+      >
+        Update
+      </VBtn>
+
+      <VBtn
+        prepend-icon="tabler-refresh"
+        @click="isReCreateDialogVisible = !isReCreateDialogVisible"
+        :loading="onUpdate"
+      >
+        Re-Create
+      </VBtn>
+    </div>
   </div>
 
   <VProgressCircular
@@ -172,4 +187,57 @@ onMounted(async () => {
       </VWindow>
     </div>
   </div>
+
+  <VDialog v-model="isUpdateDialogVisible" max-width="600px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center text-wrap">
+        Are you sure you want to update inventory summary data?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="grey-darken-1"
+          variant="outlined"
+          @click="isUpdateDialogVisible = !isUpdateDialogVisible"
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="error" variant="elevated" @click="initUpdateData(false)">
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
+
+  <VDialog v-model="isReCreateDialogVisible" max-width="600px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center text-wrap">
+        The summary data may be modified after re-creation. Are you sure you
+        want to re-create the inventory summary data?
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="grey-darken-1"
+          variant="outlined"
+          @click="isReCreateDialogVisible = !isReCreateDialogVisible"
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="error" variant="elevated" @click="initUpdateData(true)">
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 </template>

@@ -25,8 +25,8 @@ class InventoryController extends Controller
         }
 
         // Dispatch new job
-        $isShiftUpdate = $request->input('shift_flag', false);
-        UpdateInventorySummaryJob::dispatch($isShiftUpdate);
+        $isRecreate = $request->input('recreate', '0');
+        UpdateInventorySummaryJob::dispatch($isRecreate === '1' ? true : false);
 
         return response()->json([
             'status' => 'success',
