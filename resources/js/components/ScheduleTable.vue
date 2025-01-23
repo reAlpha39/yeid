@@ -117,7 +117,7 @@ async function fetchDataDepartment() {
   try {
     const response = await $api("/master/departments", {
       onResponseError({ response }) {
-        errors.value = response._data.errors;
+        errors.value = response._data.message;
       },
     });
 
@@ -136,7 +136,12 @@ async function fetchDataMachine() {
   try {
     const response = await $api("/schedule/tasks/available-machine", {
       onResponseError({ response }) {
-        errors.value = response._data.errors;
+        errors.value = response._data.message;
+      },
+      params: {
+        year: year.value,
+        shop: selectedShop.value?.shopcode,
+        department: selectedDepartment.value?.id,
       },
     });
 
@@ -146,7 +151,6 @@ async function fetchDataMachine() {
       data.title = data.machineno + " | " + data.machinename;
     });
   } catch (err) {
-    toast.error("Failed to fetch machine data");
     console.log(err);
   }
 }
@@ -175,6 +179,9 @@ async function fetchData() {
     isLoading.value = true;
 
     const response = await $api("/schedule/activities/table", {
+      onResponseError({ response }) {
+        errors.value = response._data.message;
+      },
       params: {
         year: year.value,
         shop: selectedShop.value?.shopcode,
@@ -186,7 +193,6 @@ async function fetchData() {
     data.value = response.data;
     scheduleData.value = transformApiData(response.data);
   } catch (err) {
-    toast.error("Failed to fetch data");
     console.error(err);
   } finally {
     isLoading.value = false;
@@ -195,7 +201,7 @@ async function fetchData() {
 
 async function deleteScheduleItem() {
   try {
-    const result = await $api("/schedule/tasks/" + itemToDelete.value.task_id, {
+    await $api("/schedule/tasks/" + itemToDelete.value.task_id, {
       method: "DELETE",
 
       onResponseError({ response }) {
@@ -207,7 +213,8 @@ async function deleteScheduleItem() {
     itemToDelete.value = null;
     isDeleteDialogVisible.value = false;
     toast.success("Delete success");
-    fetchData();
+    await fetchData();
+    await etchDataMachine();
   } catch (err) {
     itemToDelete.value = null;
     isDeleteDialogVisible.value = true;
@@ -271,6 +278,7 @@ function handleStatusClick(execution, task) {
 
 watch([year, selectedDepartment, selectedShop, selectedMachine], () => {
   fetchData();
+  fetchDataMachine();
 });
 
 onMounted(() => {
@@ -493,13 +501,6 @@ onMounted(() => {
       </VCardActions>
     </VCard>
   </VDialog>
-
-  <SelectMachineDialog
-    v-model:isDialogVisible="isSelectMachineDialogVisible"
-    v-model:items="machines"
-    v-model:shopcode="selectedShop"
-    @submit="handleMachinesSelected"
-  />
 </template>
 
 <style scoped>
