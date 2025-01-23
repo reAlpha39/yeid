@@ -9,7 +9,7 @@ import AddWorkTimeDialog from "@/components/dialogs/AddWorkTimeDialog.vue";
 definePage({
   meta: {
     action: ["create", "update"],
-    subject: "maintenanceReport",
+    subject: "mtDbsMtReport",
   },
 });
 

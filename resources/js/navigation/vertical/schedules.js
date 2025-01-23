@@ -4,6 +4,6 @@ export default [
         icon: { icon: 'tabler-calendar' },
         to: 'schedules',
         action: 'view',
-        subject: 'maintenanceSchedule',
+        subject: 'schedule',
     },
 ]

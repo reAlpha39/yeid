@@ -14,7 +14,7 @@ import * as XLSX from "xlsx";
 definePage({
   meta: {
     action: "view",
-    subject: "maintenanceReport",
+    subject: "mtDbsDbAnl",
   },
 });
 

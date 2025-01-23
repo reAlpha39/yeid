@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "pressShot",
+    subject: "pressShotProdData",
   },
 });
 
@@ -362,7 +362,7 @@ onMounted(() => {
         </VBtn>
 
         <VBtn
-          v-if="$can('create', 'pressShot')"
+          v-if="$can('create', 'pressShotProdData')"
           prepend-icon="tabler-edit"
           to="production-data/add"
         >

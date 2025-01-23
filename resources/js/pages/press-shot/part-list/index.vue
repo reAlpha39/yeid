@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "pressShot",
+    subject: "pressShotPartList",
   },
 });
 
@@ -587,7 +587,7 @@ onMounted(() => {
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
             <IconBtn
-              v-if="$can('update', 'pressShot')"
+              v-if="$can('update', 'pressShotPartList')"
               @click="openEditPage(item.exchangedatetime)"
             >
               <VIcon icon="tabler-exchange" />

@@ -5,7 +5,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "inventoryInbound",
+    subject: "invControlInbound",
   },
 });
 
@@ -346,7 +346,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="can('create', 'inventoryInbound')"
+          v-if="can('create', 'invControlInbound')"
           prepend-icon="tabler-plus"
           to="create-inbound"
         >
@@ -487,7 +487,7 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-center gap-2">
             <IconBtn
-              v-if="$can('delete', 'inventoryInbound')"
+              v-if="$can('delete', 'invControlInbound')"
               @click="openDeleteDialog(item)"
             >
               <VIcon icon="tabler-trash" />

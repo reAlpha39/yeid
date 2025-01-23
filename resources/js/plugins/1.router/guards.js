@@ -53,7 +53,7 @@ export const setupGuards = router => {
 
     // Load user permissions if they haven't been loaded yet
     const ability = useAbility();
-    const storedRules = useCookie('userAbilityRules').value;
+    const storedRules = JSON.parse(localStorage.getItem('userAbilityRules'));
 
     if (isLoggedIn && storedRules && !ability.rules.length) {
       ability.update(storedRules);

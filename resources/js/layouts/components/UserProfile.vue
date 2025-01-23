@@ -32,7 +32,7 @@ const logout = async () => {
     // ℹ️ We had to remove abilities in then block because if we don't nav menu items mutation is visible while redirecting user to login page
 
     // Remove "userAbilities" from cookie
-    useCookie("userAbilityRules").value = null;
+    localStorage.removeItem("userAbilityRules");
 
     // Reset ability to initial ability
     ability.update([]);

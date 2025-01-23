@@ -5,7 +5,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: ["create", "update"],
-    subject: "maintenanceReport",
+    subject: "mtDbsDeptReq",
   },
 });
 

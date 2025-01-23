@@ -54,11 +54,11 @@ const login = async () => {
 
     const { token, user } = data;
 
-    // console.log(token + " " + user.control_access);
-
     const caslPermissions = convertPermissions(data.user.control_access);
-    useCookie("userAbilityRules").value = caslPermissions;
+
+    localStorage.setItem("userAbilityRules", JSON.stringify(caslPermissions));
     ability.update(caslPermissions);
+
     useCookie("userData").value = user;
     useCookie("accessToken").value = token;
     await nextTick(() => {

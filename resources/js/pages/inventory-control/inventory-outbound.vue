@@ -7,7 +7,7 @@ const { can } = usePermissions();
 definePage({
   meta: {
     action: "view",
-    subject: "inventoryOutbound",
+    subject: "invControlOutbound",
   },
 });
 
@@ -363,7 +363,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="can('create', 'inventoryOutbound')"
+          v-if="can('create', 'invControlOutbound')"
           prepend-icon="tabler-plus"
           to="create-outbound"
         >
@@ -512,13 +512,13 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-center gap-2">
             <IconBtn
-              v-if="$can('update', 'inventoryInbound')"
+              v-if="$can('update', 'invControlOutbound')"
               @click="openAdjustQtyDialog(item)"
             >
               <VIcon icon="tabler-adjustments" />
             </IconBtn>
             <IconBtn
-              v-if="$can('delete', 'inventoryInbound')"
+              v-if="$can('delete', 'invControlOutbound')"
               @click="openDeleteDialog(item)"
             >
               <VIcon icon="tabler-trash" />

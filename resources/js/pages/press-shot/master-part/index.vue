@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "pressShot",
+    subject: "pressShotMasterPart",
   },
 });
 
@@ -501,7 +501,7 @@ onMounted(() => {
         </VBtn>
 
         <VBtn
-          v-if="$can('create', 'pressShot')"
+          v-if="$can('create', 'pressShotMasterPart')"
           prepend-icon="tabler-edit"
           to="master-part/add"
         >
@@ -612,13 +612,13 @@ onMounted(() => {
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
             <IconBtn
-              v-if="$can('update', 'pressShot')"
+              v-if="$can('update', 'pressShotMasterPart')"
               @click="openEditPage(item)"
             >
               <VIcon icon="tabler-edit" />
             </IconBtn>
             <IconBtn
-              v-if="$can('delete', 'pressShot')"
+              v-if="$can('delete', 'pressShotMasterPart')"
               @click="openDeleteDialog(item)"
             >
               <VIcon icon="tabler-trash" />

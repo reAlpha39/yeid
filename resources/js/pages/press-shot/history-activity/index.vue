@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "pressShot",
+    subject: "pressShotHistoryAct",
   },
 });
 

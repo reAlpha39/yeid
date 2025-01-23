@@ -6,7 +6,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "maintenanceReport",
+    subject: "mtDbsReqWork",
   },
 });
 
@@ -279,7 +279,7 @@ onMounted(() => {
         </VBtn>
 
         <VBtn
-          v-if="$can('create', 'maintenanceReport')"
+          v-if="$can('create', 'mtDbsReqWork')"
           prepend-icon="tabler-plus"
           to="request-to-workshop/add"
         >
@@ -350,13 +350,13 @@ onMounted(() => {
               <VIcon icon="tabler-eye" />
             </IconBtn>
             <IconBtn
-              v-if="$can('update', 'maintenanceReport')"
+              v-if="$can('update', 'mtDbsReqWork')"
               @click="openEditPage(item.wsrid)"
             >
               <VIcon icon="tabler-edit" />
             </IconBtn>
             <IconBtn
-              v-if="$can('delete', 'maintenanceReport')"
+              v-if="$can('delete', 'mtDbsReqWork')"
               @click="openDeleteDialog(item.wsrid)"
             >
               <VIcon icon="tabler-trash" />

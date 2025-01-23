@@ -4,7 +4,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "maintenanceReport",
+    subject: "mtDbsSparePart",
   },
 });
 const toast = useToast();

@@ -34,44 +34,92 @@ const allChecked = ref(false);
 const controlAccess = ref({
   masterData: { view: false, create: false, update: false, delete: false },
   user: { view: false, create: false, update: false, delete: false },
-  part: { view: false, create: false, update: false, delete: false },
-  maintenanceSchedule: {
+  masterDataPart: { view: false, create: false, update: false, delete: false },
+  invControlPartList: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  maintenanceReport: {
+  invControlMasterPart: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  correctiveMaintenance: {
+  invControlInbound: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  inventoryInbound: {
+  invControlOutbound: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  inventoryOutbound: {
+  pressShotPartList: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  inventoryOpname: {
+  pressShotExcData: {
     view: false,
     create: false,
     update: false,
     delete: false,
   },
-  pressShot: {
+  pressShotProdData: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  pressShotMasterPart: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  pressShotHistoryAct: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  mtDbsDeptReq: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  mtDbsMtReport: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  mtDbsReqWork: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  mtDbsDbAnl: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  mtDbsSparePart: {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+  },
+  schedule: {
     view: false,
     create: false,
     update: false,
@@ -284,49 +332,97 @@ async function applyData() {
       update: false,
       delete: false,
     },
-    part: prevControlAccess.part || {
+    masterDataPart: prevControlAccess.masterDataPart || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    maintenanceSchedule: prevControlAccess.maintenanceSchedule || {
+    invControlPartList: prevControlAccess.invControlPartList || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    maintenanceReport: prevControlAccess.maintenanceReport || {
+    invControlMasterPart: prevControlAccess.invControlMasterPart || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    correctiveMaintenance: prevControlAccess.correctiveMaintenance || {
+    invControlInbound: prevControlAccess.invControlInbound || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    inventoryInbound: prevControlAccess.inventoryInbound || {
+    invControlOutbound: prevControlAccess.invControlOutbound || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    inventoryOutbound: prevControlAccess.inventoryOutbound || {
+    pressShotPartList: prevControlAccess.pressShotPartList || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    inventoryOpname: prevControlAccess.inventoryOpname || {
+    pressShotExcData: prevControlAccess.pressShotExcData || {
       view: false,
       create: false,
       update: false,
       delete: false,
     },
-    pressShot: prevControlAccess.pressShot || {
+    pressShotProdData: prevControlAccess.pressShotProdData || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    pressShotMasterPart: prevControlAccess.pressShotMasterPart || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    pressShotHistoryAct: prevControlAccess.pressShotHistoryAct || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    mtDbsDeptReq: prevControlAccess.mtDbsDeptReq || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    mtDbsMtReport: prevControlAccess.mtDbsMtReport || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    mtDbsReqWork: prevControlAccess.mtDbsReqWork || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    mtDbsDbAnl: prevControlAccess.mtDbsDbAnl || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    mtDbsSparePart: prevControlAccess.mtDbsSparePart || {
+      view: false,
+      create: false,
+      update: false,
+      delete: false,
+    },
+    schedule: prevControlAccess.schedule || {
       view: false,
       create: false,
       update: false,
@@ -584,28 +680,63 @@ onMounted(() => {
           "
         >
           <text class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Part</strong>
+            <strong>Master Data - Part</strong>
           </text>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.part.view"
+            v-model="controlAccess.masterDataPart.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.part.create"
+            v-model="controlAccess.masterDataPart.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.part.update"
+            v-model="controlAccess.masterDataPart.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.part.delete"
+            v-model="controlAccess.masterDataPart.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <text class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Inventory Control - Part List</strong>
+          </text>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.invControlPartList.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.invControlPartList.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.invControlPartList.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.invControlPartList.delete"
           />
         </VRow>
 
@@ -619,28 +750,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Maintenance Schedule</strong>
+            <strong>Inventory Control - Master Part</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.maintenanceSchedule.view"
+            v-model="controlAccess.invControlMasterPart.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.maintenanceSchedule.create"
+            v-model="controlAccess.invControlMasterPart.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.maintenanceSchedule.update"
+            v-model="controlAccess.invControlMasterPart.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.maintenanceSchedule.delete"
+            v-model="controlAccess.invControlMasterPart.delete"
           />
         </VRow>
 
@@ -654,28 +785,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Maintenance Report</strong>
+            <strong>Inventory Control - Inbound</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.maintenanceReport.view"
+            v-model="controlAccess.invControlInbound.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.maintenanceReport.create"
+            v-model="controlAccess.invControlInbound.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.maintenanceReport.update"
+            v-model="controlAccess.invControlInbound.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.maintenanceReport.delete"
+            v-model="controlAccess.invControlInbound.delete"
           />
         </VRow>
 
@@ -689,28 +820,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Corrective Maintenance</strong>
+            <strong>Inventory Control - Outbound</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.correctiveMaintenance.view"
+            v-model="controlAccess.invControlOutbound.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.correctiveMaintenance.create"
+            v-model="controlAccess.invControlOutbound.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.correctiveMaintenance.update"
+            v-model="controlAccess.invControlOutbound.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.correctiveMaintenance.delete"
+            v-model="controlAccess.invControlOutbound.delete"
           />
         </VRow>
 
@@ -724,28 +855,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Inventory Inbound</strong>
+            <strong>Press Shot - Part List</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.inventoryInbound.view"
+            v-model="controlAccess.pressShotPartList.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.inventoryInbound.create"
+            v-model="controlAccess.pressShotPartList.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.inventoryInbound.update"
+            v-model="controlAccess.pressShotPartList.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.inventoryInbound.delete"
+            v-model="controlAccess.pressShotPartList.delete"
           />
         </VRow>
 
@@ -759,28 +890,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Inventory Outbound</strong>
+            <strong>Press Shot - Exchange Data</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.inventoryOutbound.view"
+            v-model="controlAccess.pressShotExcData.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.inventoryOutbound.create"
+            v-model="controlAccess.pressShotExcData.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.inventoryOutbound.update"
+            v-model="controlAccess.pressShotExcData.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.inventoryOutbound.delete"
+            v-model="controlAccess.pressShotExcData.delete"
           />
         </VRow>
 
@@ -794,28 +925,28 @@ onMounted(() => {
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Inventory Opname</strong>
+            <strong>Press Shot - Production Data</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.inventoryOpname.view"
+            v-model="controlAccess.pressShotProdData.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.inventoryOpname.create"
+            v-model="controlAccess.pressShotProdData.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.inventoryOpname.update"
+            v-model="controlAccess.pressShotProdData.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.inventoryOpname.delete"
+            v-model="controlAccess.pressShotProdData.delete"
           />
         </VRow>
 
@@ -823,34 +954,281 @@ onMounted(() => {
           style="
             border-top: 1px solid #ccc;
             padding-top: 8px;
-            padding-bottom: 24px;
+            padding-bottom: 8px;
             display: flex;
             align-items: center;
           "
         >
           <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
-            <strong>Press Shot Control</strong>
+            <strong>Press Shot - Master Part</strong>
           </div>
 
           <VCheckbox
             class="pr-2"
             label="View"
-            v-model="controlAccess.pressShot.view"
+            v-model="controlAccess.pressShotMasterPart.view"
           />
           <VCheckbox
             class="pr-2"
             label="Create"
-            v-model="controlAccess.pressShot.create"
+            v-model="controlAccess.pressShotMasterPart.create"
           />
           <VCheckbox
             class="pr-2"
             label="Update"
-            v-model="controlAccess.pressShot.update"
+            v-model="controlAccess.pressShotMasterPart.update"
           />
           <VCheckbox
             class="pr-7"
             label="Delete"
-            v-model="controlAccess.pressShot.delete"
+            v-model="controlAccess.pressShotMasterPart.delete"
+          />
+        </VRow>
+        <!-- --------------- -->
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Press Shot - History Activityt</strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.pressShotHistoryAct.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.pressShotHistoryAct.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.pressShotHistoryAct.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.pressShotHistoryAct.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Maintenance DB System - Department Request </strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.mtDbsDeptReq.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.mtDbsDeptReq.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.mtDbsDeptReq.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.mtDbsDeptReq.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Maintenance DB System - Maintenance Report</strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.mtDbsMtReport.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.mtDbsMtReport.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.mtDbsMtReport.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.mtDbsMtReport.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Maintenance DB System - Request to Workshop</strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.mtDbsReqWork.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.mtDbsReqWork.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.mtDbsReqWork.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.mtDbsReqWork.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong
+              >Maintenance DB System - Maintenance Data Analyzation</strong
+            >
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.mtDbsDbAnl.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.mtDbsDbAnl.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.mtDbsDbAnl.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.mtDbsDbAnl.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Maintenance DB System - Spare Part Referring</strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.mtDbsSparePart.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.mtDbsSparePart.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.mtDbsSparePart.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.mtDbsSparePart.delete"
+          />
+        </VRow>
+
+        <VRow
+          style="
+            border-top: 1px solid #ccc;
+            padding-top: 8px;
+            padding-bottom: 16px;
+            display: flex;
+            align-items: center;
+          "
+        >
+          <div class="pl-7" style="flex-grow: 2; flex-basis: 0">
+            <strong>Schedule</strong>
+          </div>
+
+          <VCheckbox
+            class="pr-2"
+            label="View"
+            v-model="controlAccess.schedule.view"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Create"
+            v-model="controlAccess.schedule.create"
+          />
+          <VCheckbox
+            class="pr-2"
+            label="Update"
+            v-model="controlAccess.schedule.update"
+          />
+          <VCheckbox
+            class="pr-7"
+            label="Delete"
+            v-model="controlAccess.schedule.delete"
           />
         </VRow>
       </VCard>

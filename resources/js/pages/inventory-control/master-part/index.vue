@@ -8,7 +8,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "masterData",
+    subject: "invControlMasterPart",
   },
 });
 
@@ -471,7 +471,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="$can('create', 'masterData')"
+          v-if="$can('create', 'invControlMasterPart')"
           prepend-icon="tabler-plus"
           to="master-part/add"
         >
@@ -676,7 +676,7 @@ onMounted(() => {
 
                 <!-- Edit Action -->
                 <VListItem
-                  v-if="$can('update', 'masterData')"
+                  v-if="$can('update', 'invControlMasterPart')"
                   @click="openEditPartPage(item.partcode)"
                   density="compact"
                 >
@@ -688,7 +688,7 @@ onMounted(() => {
 
                 <!-- Update Action -->
                 <VListItem
-                  v-if="$can('update', 'masterData')"
+                  v-if="$can('update', 'invControlMasterPart')"
                   @click="openUpdateDialog(item.partcode)"
                   density="compact"
                 >
@@ -700,7 +700,7 @@ onMounted(() => {
 
                 <!-- Delete Action -->
                 <VListItem
-                  v-if="$can('delete', 'masterData')"
+                  v-if="$can('delete', 'invControlMasterPart')"
                   @click="openDeleteDialog(item.partcode)"
                   density="compact"
                 >

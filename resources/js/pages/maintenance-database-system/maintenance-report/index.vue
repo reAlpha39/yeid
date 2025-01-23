@@ -7,7 +7,7 @@ import { useToast } from "vue-toastification";
 definePage({
   meta: {
     action: "view",
-    subject: "maintenanceReport",
+    subject: "mtDbsMtReport",
   },
 });
 
@@ -460,7 +460,7 @@ onMounted(() => {
               <VIcon icon="tabler-eye" />
             </IconBtn>
             <IconBtn
-              v-if="$can('update', 'maintenanceReport')"
+              v-if="$can('update', 'mtDbsMtReport')"
               @click="openEditPage(item.recordid)"
             >
               <VIcon icon="tabler-edit" />

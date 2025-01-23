@@ -11,7 +11,7 @@ import { VExpansionPanel } from "vuetify/lib/components/index.mjs";
 definePage({
   meta: {
     action: "view",
-    subject: "inventoryInbound",
+    subject: "invControlPartList",
   },
 });
 
@@ -486,7 +486,7 @@ onMounted(() => {
 
         <!-- 👉 Add button -->
         <VBtn
-          v-if="$can('create', 'inventoryInbound')"
+          v-if="$can('create', 'invControlPartList')"
           prepend-icon="tabler-plus"
           @click="
             isSelectInventoryVendorDialogVisible =
