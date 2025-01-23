@@ -54,12 +54,15 @@ const login = async () => {
 
     const { token, user } = data;
 
-    const caslPermissions = convertPermissions(data.user.control_access);
+    const caslPermissions = convertPermissions(user.control_access);
 
     localStorage.setItem("userAbilityRules", JSON.stringify(caslPermissions));
     ability.update(caslPermissions);
 
-    useCookie("userData").value = user;
+    // remove control_access from user data
+    const { control_access, ...userWithoutAccess } = user;
+
+    useCookie("userData").value = userWithoutAccess;
     useCookie("accessToken").value = token;
     await nextTick(() => {
       router.replace(route.query.to ? String(route.query.to) : "/");
