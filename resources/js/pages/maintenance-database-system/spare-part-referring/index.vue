@@ -10,7 +10,7 @@ definePage({
 const toast = useToast();
 const currentTab = ref("window1");
 const isUpdateDialogVisible = ref(false);
-const isReCreateDialogVisible = ref(false);
+const isResetDialogVisible = ref(false);
 const isCancelDialogVisible = ref(false);
 const isCheckLogDialogVisible = ref(false);
 
@@ -20,7 +20,7 @@ const progressInterval = ref(null);
 const isLoading = ref(true);
 
 async function initUpdateData(recreate = false) {
-  isReCreateDialogVisible.value = false;
+  isResetDialogVisible.value = false;
   isUpdateDialogVisible.value = false;
 
   try {
@@ -165,10 +165,10 @@ onMounted(async () => {
 
       <VBtn
         prepend-icon="tabler-refresh"
-        @click="isReCreateDialogVisible = !isReCreateDialogVisible"
+        @click="isResetDialogVisible = !isResetDialogVisible"
         :loading="onUpdate"
       >
-        Re-Create
+        Reset
       </VBtn>
     </div>
   </div>
@@ -246,11 +246,11 @@ onMounted(async () => {
     </VCard>
   </VDialog>
 
-  <VDialog v-model="isReCreateDialogVisible" max-width="600px">
+  <VDialog v-model="isResetDialogVisible" max-width="600px">
     <VCard class="pa-4">
       <VCardTitle class="text-center text-wrap">
-        The summary data may be modified after re-creation. Are you sure you
-        want to re-create the inventory summary data?
+        The summary data may be modified after reset. Are you sure you want to
+        reset the inventory summary data?
       </VCardTitle>
 
       <VCardActions class="pt-4">
@@ -259,7 +259,7 @@ onMounted(async () => {
         <VBtn
           color="grey-darken-1"
           variant="outlined"
-          @click="isReCreateDialogVisible = !isReCreateDialogVisible"
+          @click="isResetDialogVisible = !isResetDialogVisible"
         >
           Cancel
         </VBtn>
