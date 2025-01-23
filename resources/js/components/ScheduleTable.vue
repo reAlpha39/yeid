@@ -447,6 +447,11 @@ onMounted(() => {
                   <td class="text-center status-symbol">
                     <span
                       class="clickable-status"
+                      :class="{
+                        completed: execution.status === 'completed',
+                        overdue: execution.status === 'overdue',
+                        pending: execution.status === 'pending',
+                      }"
                       @click="handleStatusClick(execution, item)"
                       role="button"
                       tabindex="0"
@@ -589,6 +594,15 @@ onMounted(() => {
   line-height: 1; /* This helps maintain consistent height */
   min-width: 1.25rem; /* Makes all cells same width */
   text-align: center;
+}
+.completed {
+  color: #4caf50;
+}
+.overdue {
+  color: #ff9800;
+}
+.pending {
+  color: #f44336;
 }
 
 .clickable-status:hover {
