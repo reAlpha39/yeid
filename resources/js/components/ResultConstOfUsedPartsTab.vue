@@ -14,6 +14,7 @@ const year = ref(currentYear);
 const data = ref([]);
 const isLoading = ref(false);
 const loadingExport = ref(false);
+const isGraphDialogVisible = ref(false);
 
 const months = [
   { value: 1, label: "JANUARI" },
@@ -138,6 +139,90 @@ function calculateSubTotal(factoryData, month) {
   return total.toFixed(1);
 }
 
+// const chartData = computed(() => {
+//   const series = rows.map((row) => ({
+//     name: `${row.type} ${row.category}`,
+//     data: months.map((month) => {
+//       const total = groupedFactories.value.reduce((sum, factory) => {
+//         const value = getCellValue(
+//           factory.data,
+//           row.type,
+//           row.category,
+//           month.value
+//         );
+//         return sum + (value === "-" ? 0 : parseFloat(value));
+//       }, 0);
+//       return total;
+//     }),
+//   }));
+
+//   return {
+//     series,
+//     labels: months.map((month) => month.label.slice(0, 3)),
+//   };
+// });
+
+// const chartConfig = computed(() => {
+//   const colors = [
+//     "#4CAF50",
+//     "#FF9800",
+//     "#2196F3",
+//     "#E91E63",
+//     "#9C27B0",
+//     "#795548",
+//     "#607D8B",
+//     "#FF5722",
+//   ];
+
+//   return {
+//     chart: {
+//       type: "bar",
+//       stacked: true,
+//       toolbar: { show: true },
+//       parentHeightOffset: 0,
+//     },
+//     plotOptions: {
+//       bar: {
+//         horizontal: false,
+//         columnWidth: "30%",
+//         borderRadius: 0,
+//       },
+//     },
+//     colors,
+//     xaxis: {
+//       categories: chartData.value.labels.map((month, index) => {
+//         const totalCost = chartData.value.series.reduce((sum, serie) => {
+//           return sum + (serie.data[index] || 0);
+//         }, 0);
+//         return `${month} (${totalCost.toFixed(1)})`;
+//       }),
+//       labels: {
+//         style: { fontSize: "12px" },
+//       },
+//     },
+//     yaxis: {
+//       title: {
+//         text: "Cost (Jt. IDR)",
+//       },
+//       labels: {
+//         formatter: (value) => Math.round(value),
+//       },
+//     },
+//     legend: {
+//       position: "bottom",
+//       horizontalAlign: "center",
+//     },
+//     dataLabels: {
+//       enabled: false,
+//     },
+//     tooltip: {
+//       y: {
+//         formatter: (value) => `${value.toFixed(1)} Jt. IDR`,
+//       },
+//     },
+//   };
+// });
+
 onMounted(() => {
   getLastTenYears();
   fetchData();
@@ -150,6 +235,14 @@ onMounted(() => {
       <div class="align-center d-flex gap-3">Result Const Of Used Parts</div>
       <VSpacer />
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+        <VBtn
+          v-if="!isLoading && groupedFactories.length > 0"
+          variant="tonal"
+          prepend-icon="tabler-graph"
+          @click="isGraphDialogVisible = !isGraphDialogVisible"
+        >
+          Graph
+        </VBtn>
         <VBtn
           variant="tonal"
           prepend-icon="tabler-upload"
@@ -167,6 +260,15 @@ onMounted(() => {
       </div>
     </VCardTitle>
 
+    <!-- <VCard outlined class="ma-4">
+      <VCardTitle>Grafik Spare Part Cost Yeary Chart</VCardTitle>
+      <VueApexCharts
+        height="410"
+        :options="chartConfig"
+        :series="chartData.series"
+      />
+    </VCard> -->
+
     <div
       v-if="isLoading"
       class="d-flex flex-column align-center justify-center my-8"
@@ -180,6 +282,12 @@ onMounted(() => {
       />
       <VCardText class="text-center text-body-1 text-medium-emphasis">
         Loading data, please wait...
+      </VCardText>
+    </div>
+
+    <div v-else-if="groupedFactories.length === 0">
+      <VCardText class="text-center text-body-1 text-medium-emphasis">
+        No data available
       </VCardText>
     </div>
 
@@ -236,6 +344,11 @@ onMounted(() => {
       </VTable>
     </VCard>
   </VCard>
+
+  <SparePartCostYearlyChartDialog
+    v-model:isDialogVisible="isGraphDialogVisible"
+    v-model:data="data"
+  />
 </template>
 
 <style scoped>

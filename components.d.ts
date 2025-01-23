@@ -419,6 +419,7 @@ declare module 'vue' {
     SelectStaffDialog: typeof import('./resources/js/components/dialogs/SelectStaffDialog.vue')['default']
     ShareProjectDialog: typeof import('./resources/js/components/dialogs/ShareProjectDialog.vue')['default']
     Shortcuts: typeof import('./resources/js/@core/components/Shortcuts.vue')['default']
+    SparePartCostYearlyChartDialog: typeof import('./resources/js/components/dialogs/SparePartCostYearlyChartDialog.vue')['default']
     TablePagination: typeof import('./resources/js/@core/components/TablePagination.vue')['default']
     TheCustomizer: typeof import('./resources/js/@core/components/TheCustomizer.vue')['default']
     ThemeSwitcher: typeof import('./resources/js/@core/components/ThemeSwitcher.vue')['default']
