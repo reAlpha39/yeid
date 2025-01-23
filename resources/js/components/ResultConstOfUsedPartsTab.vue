@@ -139,89 +139,22 @@ function calculateSubTotal(factoryData, month) {
   return total.toFixed(1);
 }
 
-// const chartData = computed(() => {
-//   const series = rows.map((row) => ({
-//     name: `${row.type} ${row.category}`,
-//     data: months.map((month) => {
-//       const total = groupedFactories.value.reduce((sum, factory) => {
-//         const value = getCellValue(
-//           factory.data,
-//           row.type,
-//           row.category,
-//           month.value
-//         );
-//         return sum + (value === "-" ? 0 : parseFloat(value));
-//       }, 0);
-//       return total;
-//     }),
-//   }));
+const calculateAllTotal = computed(() => {
+  const allTotals = {};
 
-//   return {
-//     series,
-//     labels: months.map((month) => month.label.slice(0, 3)),
-//   };
-// });
+  months.forEach((month) => {
+    let total = 0;
+    groupedFactories.value.forEach((factory) => {
+      const subtotal = calculateSubTotal(factory.data, month.value);
+      if (subtotal !== "-") {
+        total += parseFloat(subtotal);
+      }
+    });
+    allTotals[month.value] = total > 0 ? total.toFixed(1) : "-";
+  });
 
-// const chartConfig = computed(() => {
-//   const colors = [
-//     "#4CAF50",
-//     "#FF9800",
-//     "#2196F3",
-//     "#E91E63",
-//     "#9C27B0",
-//     "#795548",
-//     "#607D8B",
-//     "#FF5722",
-//   ];
-
-//   return {
-//     chart: {
-//       type: "bar",
-//       stacked: true,
-//       toolbar: { show: true },
-//       parentHeightOffset: 0,
-//     },
-//     plotOptions: {
-//       bar: {
-//         horizontal: false,
-//         columnWidth: "30%",
-//         borderRadius: 0,
-//       },
-//     },
-//     colors,
-//     xaxis: {
-//       categories: chartData.value.labels.map((month, index) => {
-//         const totalCost = chartData.value.series.reduce((sum, serie) => {
-//           return sum + (serie.data[index] || 0);
-//         }, 0);
-//         return `${month} (${totalCost.toFixed(1)})`;
-//       }),
-//       labels: {
-//         style: { fontSize: "12px" },
-//       },
-//     },
-//     yaxis: {
-//       title: {
-//         text: "Cost (Jt. IDR)",
-//       },
-//       labels: {
-//         formatter: (value) => Math.round(value),
-//       },
-//     },
-//     legend: {
-//       position: "bottom",
-//       horizontalAlign: "center",
-//     },
-//     dataLabels: {
-//       enabled: false,
-//     },
-//     tooltip: {
-//       y: {
-//         formatter: (value) => `${value.toFixed(1)} Jt. IDR`,
-//       },
-//     },
-//   };
-// });
+  return allTotals;
+});
 
 onMounted(() => {
   getLastTenYears();
@@ -259,15 +192,6 @@ onMounted(() => {
         />
       </div>
     </VCardTitle>
-
-    <!-- <VCard outlined class="ma-4">
-      <VCardTitle>Grafik Spare Part Cost Yeary Chart</VCardTitle>
-      <VueApexCharts
-        height="410"
-        :options="chartConfig"
-        :series="chartData.series"
-      />
-    </VCard> -->
 
     <div
       v-if="isLoading"
@@ -338,6 +262,33 @@ onMounted(() => {
             <td>Jt. IDR</td>
             <td v-for="month in months" :key="`subtotal-${month.value}`">
               {{ calculateSubTotal(factory.data, month.value) }}
+            </td>
+          </tr>
+        </tbody>
+      </VTable>
+    </VCard>
+
+    <VCard v-if="groupedFactories.length > 0" class="ma-4" variant="outlined">
+      <VCardTitle class="my-4">All Total</VCardTitle>
+      <VDivider />
+      <VTable>
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th>UNIT</th>
+            <th v-for="month in months" :key="month.value">
+              {{ month.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="font-weight-bold" style="background-color: #f9f9f9">
+            <td>All Total</td>
+            <td></td>
+            <td>Jt. IDR</td>
+            <td v-for="month in months" :key="`total-${month.value}`">
+              {{ calculateAllTotal[month.value] }}
             </td>
           </tr>
         </tbody>
