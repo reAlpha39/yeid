@@ -54,9 +54,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
     public function handle()
     {
         try {
-            // Clean up old cancelled jobs first
-            $this->cleanupOldCancelledJobs();
-
             // Create progress record
             $jobProgress = JobProgress::create([
                 'job_type' => 'inventory_summary_update',
@@ -68,6 +65,9 @@ class UpdateInventorySummaryJob implements ShouldQueue
             ]);
 
             $this->jobProgressId = $jobProgress->id;
+
+            // Clean up old cancelled jobs first
+            $this->cleanupOldCancelledJobs();
 
             Cache::put("job_cancelled_{$this->jobProgressId}", false, now()->addHours(3));
 
@@ -212,9 +212,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
 
             DB::beginTransaction();
 
-            // Get last stock info
             $inventory = DB::table('mas_inventory')
-                ->select(['laststocknumber', 'laststockdate'])
                 ->where('partcode', $partCode)
                 ->first();
 
@@ -223,60 +221,60 @@ class UpdateInventorySummaryJob implements ShouldQueue
                 return false;
             }
 
-            $stockDate = Carbon::createFromFormat('Ymd', $inventory->laststockdate);
-            $currentMonth = Carbon::now()->startOfMonth();
-
-            // Delete existing summary data if full update
             if ($isRecreate) {
                 DB::table('tbl_invsummary')
                     ->where('partcode', $partCode)
                     ->delete();
             }
 
-            // Calculate inventory movements
-            $movements = DB::table('tbl_invrecord')
-                ->select(
-                    DB::raw("to_char(to_date(jobdate, 'YYYYMMDD'), 'YYYYMM') as yearmonth"),
-                    DB::raw("SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound"),
-                    DB::raw("SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound"),
-                    DB::raw("SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust")
-                )
-                ->where('partcode', $partCode)
-                ->where('jobdate', '>=', $stockDate->format('Ymd'))
-                ->where('jobdate', '<', $currentMonth->format('Ymd'))
-                ->groupBy(DB::raw("to_char(to_date(jobdate, 'YYYYMMDD'), 'YYYYMM')"))
-                ->orderBy('yearmonth')
-                ->get();
+            $currentMonth = Carbon::now()->startOfMonth();
+            $historicalStartDate = Carbon::createFromFormat('Ymd', '20111101');
+            $monthsToProcess = [];
 
-            // Process movements and update summary
-            $stockNumber = $inventory->laststocknumber;
+            $processDate = $historicalStartDate->copy();
+            while ($processDate->lt($currentMonth)) {
+                $monthsToProcess[] = $processDate->format('Ym');
+                $processDate->addMonth();
+            }
 
-            foreach ($movements as $movement) {
-                $stockNumber += ($movement->inbound - $movement->outbound + $movement->adjust);
+            $runningStock = 0;
 
-                // Using updateOrInsert to handle both new records and updates
+            foreach ($monthsToProcess as $yearMonth) {
+                $movements = DB::table('tbl_invrecord')
+                    ->where('partcode', $partCode)
+                    ->whereRaw("substr(jobdate, 1, 6) = ?", [$yearMonth])
+                    ->groupBy('partcode')
+                    ->select(DB::raw("
+                    SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
+                    SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
+                    SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
+                "))
+                    ->first();
+
+                $inbound = floatval($movements->inbound ?? 0);
+                $outbound = floatval($movements->outbound ?? 0);
+                $adjust = floatval($movements->adjust ?? 0);
+
+                $monthlyChange = $inbound - $outbound + $adjust;
+                $runningStock += $monthlyChange;
+
                 DB::table('tbl_invsummary')->updateOrInsert(
                     [
-                        'yearmonth' => $movement->yearmonth,
+                        'yearmonth' => $yearMonth,
                         'partcode' => $partCode
                     ],
                     [
                         'laststocknumber' => $inventory->laststocknumber,
                         'laststockdate' => $inventory->laststockdate,
-                        'inbound' => $movement->inbound,
-                        'outbound' => $movement->outbound,
-                        'adjust' => $movement->adjust,
-                        'stocknumber' => $stockNumber,
+                        'inbound' => $inbound,
+                        'outbound' => $outbound,
+                        'adjust' => $adjust,
+                        'stocknumber' => $runningStock,
                         'jobnumber' => 1,
                         'status' => 'C',
                         'updatetime' => now()
                     ]
                 );
-            }
-
-            // If this is a Recreate, process historical data
-            if ($isRecreate) {
-                $this->processHistoricalData($partCode, $stockDate, $inventory);
             }
 
             // Check for cancellation
@@ -291,53 +289,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
             DB::rollBack();
             Log::error("Error processing part {$partCode}: " . $e->getMessage());
             return false;
-        }
-    }
-
-    /**
-     * Process historical inventory data for a part
-     */
-    private function processHistoricalData(string $partCode, Carbon $stockDate, object $inventory): void
-    {
-        // Get historical movements
-        $historicalMovements = DB::table('tbl_invrecord')
-            ->select(
-                DB::raw("to_char(to_date(jobdate, 'YYYYMMDD'), 'YYYYMM') as yearmonth"),
-                DB::raw("SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound"),
-                DB::raw("SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound"),
-                DB::raw("SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust")
-            )
-            ->where('partcode', $partCode)
-            ->where('jobdate', '<', $stockDate->format('Ymd'))
-            ->where('jobdate', '>=', '20111101') // Historical start date
-            ->groupBy(DB::raw("to_char(to_date(jobdate, 'YYYYMMDD'), 'YYYYMM')"))
-            ->orderBy('yearmonth', 'desc')
-            ->get();
-
-        $stockNumber = $inventory->laststocknumber;
-
-        // Process each historical month in reverse
-        foreach ($historicalMovements as $movement) {
-            // Subtract the movements since we're going backwards
-            $stockNumber -= ($movement->inbound - $movement->outbound + $movement->adjust);
-
-            DB::table('tbl_invsummary')->updateOrInsert(
-                [
-                    'yearmonth' => $movement->yearmonth,
-                    'partcode' => $partCode
-                ],
-                [
-                    'laststocknumber' => $inventory->laststocknumber,
-                    'laststockdate' => $inventory->laststockdate,
-                    'inbound' => $movement->inbound,
-                    'outbound' => $movement->outbound,
-                    'adjust' => $movement->adjust,
-                    'stocknumber' => $stockNumber,
-                    'jobnumber' => 0,
-                    'status' => 'C',
-                    'updatetime' => now()
-                ]
-            );
         }
     }
 }
