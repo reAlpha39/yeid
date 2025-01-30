@@ -47,6 +47,9 @@ class UpdateInventorySummaryJob implements ShouldQueue
             $this->monthsToProcess[] = $historicalStartDate->format('Ym');
             $historicalStartDate->addMonth();
         }
+
+        // Add the current month
+        $this->monthsToProcess[] = $currentMonth->format('Ym');
     }
 
     private function checkIfCancelled(): bool
@@ -67,7 +70,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $jobProgress = $this->initializeJob();
+            $this->initializeJob();
             $this->cleanupOldCancelledJobs();
 
             $partCodesQuery = DB::table('mas_inventory')
@@ -138,7 +141,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
         }
     }
 
-    private function initializeJob(): JobProgress
+    private function initializeJob(): void
     {
         $jobProgress = JobProgress::create([
             'job_type' => 'inventory_summary_update',
@@ -155,8 +158,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
             false,
             self::CACHE_TTL
         );
-
-        return $jobProgress;
     }
 
     private function performBatchInsert(array $records): void
