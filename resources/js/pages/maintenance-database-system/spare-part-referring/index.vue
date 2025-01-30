@@ -19,6 +19,8 @@ const progress = ref(0.0);
 const progressInterval = ref(null);
 const isLoading = ref(true);
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function initUpdateData(recreate = false) {
   isResetDialogVisible.value = false;
   isUpdateDialogVisible.value = false;
@@ -36,6 +38,8 @@ async function initUpdateData(recreate = false) {
         toast.error(response._data.message);
       },
     });
+
+    await delay(1000); // Wait for the server to start the update process
 
     startProgressPolling();
     toast.success(response.message);
@@ -63,22 +67,21 @@ async function updateProgress() {
       },
     });
 
-    if (
-      response.data.status === "completed" ||
-      response.data.status === "cancelled" ||
-      response.data.status === "completed_with_errors"
-    ) {
+    if (response.data.status === "processing") {
+      onUpdate.value = true;
+      progress.value = response.data.progress;
+    } else {
       onUpdate.value = false;
       if (progressInterval.value) {
         clearInterval(progressInterval.value);
         progressInterval.value = null;
       }
-    } else {
-      onUpdate.value = true;
-      progress.value = response.data.progress;
     }
 
-    if (response.data.status === "completed_with_errors") {
+    if (
+      response.data.status === "completed_with_errors" ||
+      response.data.status === "failed"
+    ) {
       isCheckLogDialogVisible.value = true;
     }
   } catch (err) {
@@ -284,7 +287,6 @@ onMounted(async () => {
         <VSpacer />
 
         <VBtn
-          color="grey-darken-1"
           variant="elevated"
           @click="isCheckLogDialogVisible = !isCheckLogDialogVisible"
         >
