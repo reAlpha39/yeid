@@ -196,10 +196,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'store']);
     Route::put('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'update']);
     Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);
+    Route::post('/maintenance-database-system/department-requests/{id}/approve', [MaintenanceRequestController::class, 'approve']);
     Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
     Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
     Route::get('/maintenance-database-system/maintenance-report/export', [MaintenanceRequestController::class, 'exportMaintenanceReports']);
     Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
+
 
     // Request to Workshop
     Route::get('/maintenance-database-system/request-workshop', [RequestWorkshopController::class, 'index']);

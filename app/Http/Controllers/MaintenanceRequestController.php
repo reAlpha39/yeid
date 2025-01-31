@@ -7,11 +7,21 @@ use Illuminate\Support\Facades\DB;
 use App\Exports\DepartmentRequestsExport;
 use App\Exports\MaintenanceReportsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\ApprovalService;
+use App\Models\MasUser;
+use App\Models\SpkRecord;
 use Exception;
 use Log;
 
 class MaintenanceRequestController extends Controller
 {
+    private $approvalService;
+
+    public function __construct(ApprovalService $approvalService)
+    {
+        $this->approvalService = $approvalService;
+    }
+
     public function index(Request $request)
     {
         try {
@@ -219,7 +229,8 @@ class MaintenanceRequestController extends Controller
 
             $newRecordId = $maxRecordId ? $maxRecordId + 1 : 1;
 
-            DB::table('tbl_spkrecord')->insert([
+            // Create the SPK record
+            $spkRecord = SpkRecord::create([
                 'recordid' => $newRecordId,
                 'maintenancecode' => $request->input('maintenancecode'),
                 'orderdatetime' => $request->input('orderdatetime'),
@@ -234,7 +245,7 @@ class MaintenanceRequestController extends Controller
                 'orderqtty' => $request->input('orderqtty'),
                 'orderstoptime' => $request->input('orderstoptime'),
                 'planid' => $request->input('planid'),
-                'approval' => $request->input('approval'),
+                'approval' => 0, // Set initial approval to 0
                 'updatetime' => now(),
                 'occurdate' => $request->input('occurdate'),
                 'analysisquarter' => $request->input('analysisquarter'),
@@ -242,14 +253,31 @@ class MaintenanceRequestController extends Controller
                 'analysisterm' => $request->input('analysisterm'),
                 'createempcode' => $request->input('createempcode'),
                 'createempname' => $request->input('createempname'),
-
             ]);
+
+            // Get the requester user
+            $requester = MasUser::where('id', $request->input('orderempcode'))->first();
+
+            if (!$requester) {
+                throw new Exception('Requester user not found');
+            }
+
+            // Create initial approval record
+            $approval = $this->approvalService->createInitialApproval($spkRecord, $requester);
+
+            // Update spkRecord approval status based on initial approval
+            $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);
+            $spkRecord->save();
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Record created successfully'
+                'message' => 'Record created successfully',
+                'data' => [
+                    'spk_record' => $spkRecord,
+                    'approval' => $approval
+                ]
             ], 201);
         } catch (Exception $e) {
             DB::rollBack();
@@ -259,6 +287,64 @@ class MaintenanceRequestController extends Controller
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function approve(Request $request, $recordId)
+    {
+        DB::beginTransaction();
+
+        try {
+            $spkRecord = SpkRecord::findOrFail($recordId);
+            $approver = MasUser::where('id', auth()->user()->id)->first();
+
+            if (!$approver) {
+                throw new Exception('Approver user not found');
+            }
+
+            $approval = $this->approvalService->approve(
+                $spkRecord->approval,
+                $approver,
+                $request->input('note')
+            );
+
+            // Update spkRecord approval status
+            $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);
+            $spkRecord->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Approval updated successfully',
+                'data' => [
+                    'spk_record' => $spkRecord,
+                    'approval' => $approval
+                ]
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function mapApprovalStatus($status)
+    {
+        // Map approval_status to your existing approval values
+        switch ($status) {
+            case 'pending':
+                return 0;
+            case 'partially_approved':
+                return 4;
+            case 'approved':
+                return 119;
+            default:
+                return 0;
         }
     }
 

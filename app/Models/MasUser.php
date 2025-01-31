@@ -25,7 +25,7 @@ class MasUser extends Authenticatable
         'phone',
         'nik',
         'department_id',
-        'role_access',  
+        'role_access',
         'status',
         'control_access',
         'password',
