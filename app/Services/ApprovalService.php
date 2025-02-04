@@ -14,6 +14,8 @@ class ApprovalService
     const STATUS_PENDING = 'pending';
     const STATUS_PARTIALLY_APPROVED = 'partially_approved';
     const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_REVISION_NEEDED = 'revision_needed';
 
     public function __construct(MailService $mailService)
     {
@@ -31,29 +33,89 @@ class ApprovalService
             'approval_status' => self::STATUS_PENDING
         ]);
 
-        if ($requester->role === '2') {
-            $approval->supervisor_approved_by = $requester->id;
-            $approval->supervisor_approved_at = now();
-            $approval->approval_status = self::STATUS_PARTIALLY_APPROVED;
-
-            $this->notifyDepartmentManager($department, $spkRecord);
-        } elseif ($requester->role === '3') {
-            $approval->supervisor_approved_by = $requester->id;
-            $approval->supervisor_approved_at = now();
-            $approval->manager_approved_by = $requester->id;
-            $approval->manager_approved_at = now();
-
-            if ($isMtcDepartment) {
-                $approval->approval_status = self::STATUS_APPROVED;
-            } else {
-                $approval->approval_status = self::STATUS_PENDING;
-                $this->notifyMtcApprovers($spkRecord);
-            }
+        if ($requester->role === '3') { // Manager
+            $this->autoApproveForManager($approval, $requester, $isMtcDepartment);
+        } elseif ($requester->role === '2') { // Supervisor
+            $this->autoApproveForSupervisor($approval, $requester, $department, $spkRecord);
         } else {
             $this->notifyDepartmentApprovers($department, $spkRecord);
         }
 
         $approval->save();
+        return $approval;
+    }
+
+    private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment)
+    {
+        $approval->supervisor_approved_by = $requester->id;
+        $approval->supervisor_approved_at = now();
+        $approval->manager_approved_by = $requester->id;
+        $approval->manager_approved_at = now();
+
+        if ($isMtcDepartment) {
+            $approval->approval_status = self::STATUS_APPROVED;
+        } else {
+            $this->notifyMtcApprovers(SpkRecord::find($approval->record_id));
+        }
+    }
+
+    private function autoApproveForSupervisor(SpkRecordApproval $approval, MasUser $requester, MasDepartment $department, SpkRecord $spkRecord)
+    {
+        $approval->supervisor_approved_by = $requester->id;
+        $approval->supervisor_approved_at = now();
+        $approval->approval_status = self::STATUS_PARTIALLY_APPROVED;
+        $this->notifyDepartmentManager($department, $spkRecord);
+    }
+
+    public function requestRevision(SpkRecordApproval $approval, MasUser $reviewer, string $note)
+    {
+        $currentNotes = $approval->notes ?? [];
+        $currentNotes[] = [
+            'user_id' => $reviewer->id,
+            'user_name' => $reviewer->name,
+            'role' => $this->getUserRole($reviewer),
+            'note' => $note,
+            'timestamp' => now()->toDateTimeString(),
+            'department' => $reviewer->department->name,
+            'type' => 'revision'
+        ];
+
+        $approval->notes = $currentNotes;
+        $approval->approval_status = self::STATUS_REVISION_NEEDED;
+        $approval->save();
+
+        $this->mailService->sendRevisionRequest(
+            SpkRecord::find($approval->record_id),
+            $reviewer,
+            $note
+        );
+
+        return $approval;
+    }
+
+    public function reject(SpkRecordApproval $approval, MasUser $rejector, string $note)
+    {
+        $currentNotes = $approval->notes ?? [];
+        $currentNotes[] = [
+            'user_id' => $rejector->id,
+            'user_name' => $rejector->name,
+            'role' => $this->getUserRole($rejector),
+            'note' => $note,
+            'timestamp' => now()->toDateTimeString(),
+            'department' => $rejector->department->name,
+            'type' => 'rejection'
+        ];
+
+        $approval->notes = $currentNotes;
+        $approval->approval_status = self::STATUS_REJECTED;
+        $approval->save();
+
+        $this->mailService->sendRejectionNotification(
+            SpkRecord::find($approval->record_id),
+            $rejector,
+            $note
+        );
+
         return $approval;
     }
 
@@ -216,5 +278,13 @@ class ApprovalService
         if ($manager) {
             $this->mailService->sendApprovalRequest($manager, $spkRecord);
         }
+    }
+
+    private function getUserRole(MasUser $user): string
+    {
+        if ($user->department->code === 'MTC') {
+            return $user->role === '3' ? 'mtc_manager' : 'mtc_supervisor';
+        }
+        return $user->role === '3' ? 'manager' : 'supervisor';
     }
 }

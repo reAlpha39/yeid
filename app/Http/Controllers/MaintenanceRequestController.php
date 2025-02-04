@@ -290,17 +290,76 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+    public function reject(Request $request, $recordId)
+    {
+        DB::beginTransaction();
+        try {
+            $spkRecord = SpkRecord::findOrFail($recordId);
+            $rejector = MasUser::findOrFail(auth()->user()->id);
+
+            $approval = $this->approvalService->reject(
+                $spkRecord->approval,
+                $rejector,
+                $request->input('note')
+            );
+
+            $spkRecord->approval = 0;
+            $spkRecord->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Request rejected successfully',
+                'data' => $approval
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function requestRevision(Request $request, $recordId)
+    {
+        DB::beginTransaction();
+        try {
+            $spkRecord = SpkRecord::findOrFail($recordId);
+            $reviewer = MasUser::findOrFail(auth()->user()->id);
+
+            $approval = $this->approvalService->requestRevision(
+                $spkRecord->approval,
+                $reviewer,
+                $request->input('note')
+            );
+
+            $spkRecord->approval = 0;
+            $spkRecord->save();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Revision requested successfully',
+                'data' => $approval
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function approve(Request $request, $recordId)
     {
         DB::beginTransaction();
-
         try {
             $spkRecord = SpkRecord::findOrFail($recordId);
-            $approver = MasUser::where('id', auth()->user()->id)->first();
-
-            if (!$approver) {
-                throw new Exception('Approver user not found');
-            }
+            $approver = MasUser::findOrFail(auth()->user()->id);
 
             $approval = $this->approvalService->approve(
                 $spkRecord->approval,
@@ -308,7 +367,6 @@ class MaintenanceRequestController extends Controller
                 $request->input('note')
             );
 
-            // Update spkRecord approval status
             $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);
             $spkRecord->save();
 
@@ -316,26 +374,20 @@ class MaintenanceRequestController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Approval updated successfully',
-                'data' => [
-                    'spk_record' => $spkRecord,
-                    'approval' => $approval
-                ]
+                'message' => 'Request approved successfully',
+                'data' => $approval
             ]);
         } catch (Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred',
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     private function mapApprovalStatus($status)
     {
-        // Map approval_status to your existing approval values
         switch ($status) {
             case 'pending':
                 return 0;
@@ -343,6 +395,10 @@ class MaintenanceRequestController extends Controller
                 return 4;
             case 'approved':
                 return 119;
+            case 'revision_needed':
+                return 0;
+            case 'rejected':
+                return 0;
             default:
                 return 0;
         }

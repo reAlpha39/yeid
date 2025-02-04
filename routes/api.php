@@ -31,6 +31,7 @@ use App\Http\Controllers\ScheduleActivityController;
 use App\Http\Controllers\ScheduleTaskController;
 use App\Http\Controllers\ScheduleTaskExecutionController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\InboxController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -291,11 +292,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/update-progress', [InventoryController::class, 'getJobProgress']);
         Route::post('/cancel-update', [InventoryController::class, 'cancelJob']);
     });
+
+    Route::prefix('inbox')->group(function () {
+        Route::get('/', [InboxController::class, 'index']);
+        Route::patch('/{id}/read', [InboxController::class, 'markAsRead']);
+        Route::patch('/{id}/archive', [InboxController::class, 'archive']);
+        Route::get('/unread-count', [InboxController::class, 'getUnreadCount']);
+        Route::post('/batch/read', [InboxController::class, 'batchMarkAsRead']);
+        Route::post('/batch/archive', [InboxController::class, 'batchArchive']);
+    });
 });
-
-
-// Work
-// Route::get('/maintenance-database-system/work/{recordId}', [WorkController::class, 'show']);
-// Route::post('/maintenance-database-system/work', [WorkController::class, 'store']);
-// Route::put('/maintenance-database-system/work/{recordId}', [WorkController::class, 'update']);
-// Route::delete('/maintenance-database-system/work/{recordId}', [WorkController::class, 'destroy']);
