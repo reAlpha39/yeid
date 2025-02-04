@@ -851,14 +851,38 @@ const exportGraph = async () => {
   }
 };
 
-const exportTableToExcel = async () => {
+const exportSummaryExcel = async () => {
   if (!data.value?.length) return;
 
   try {
     const accessToken = useCookie("accessToken").value;
+
+    const chartSeries = series.value.map((s) => {
+      if (method.value === "One Term") {
+        return {
+          name: s.toString(),
+          data: [s],
+        };
+      }
+      return s;
+    });
+
+    const requestData = {
+      ...getCurrentAnalysisParams(),
+      targetItemColumn: targetItemColumnName.value,
+      targetSumColumn: targetSumColumnName.value,
+      targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+      itemCountFieldName: itemCountFieldName.value,
+      method: method.value,
+      seeOnly: seeOnly.value,
+      sort: sort.value,
+      series: chartSeries,
+      labels: labels.value,
+    };
+
     const response = await axios({
       method: "post",
-      url: "/api/maintenance-database-system/analyze/export/excel",
+      url: "/api/maintenance-database-system/analyze/export/summary-excel",
       responseType: "blob",
       headers: accessToken
         ? {
@@ -868,44 +892,54 @@ const exportTableToExcel = async () => {
         : {
             "Content-Type": "application/json",
           },
-      data: {
-        ...getCurrentAnalysisParams(),
-        targetItemColumn: targetItemColumnName.value,
-        targetSumColumn: targetSumColumnName.value,
-        targetItemFieldName: targetItemColumnName.value.toLowerCase(),
-        itemCountFieldName: itemCountFieldName.value,
-        method: method.value,
-        seeOnly: seeOnly.value,
-        sort: sort.value,
-      },
+      data: requestData,
     });
 
-    // Create download link
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute(
-      "download",
-      `maintenance-data-${new Date().toISOString().split("T")[0]}.xlsx`
-    );
+
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
+    link.setAttribute("download", `maintenance-data-${dateStr}.xlsx`);
+
     document.body.appendChild(link);
     link.click();
-    link.remove();
+
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
+    console.error("Export error:", error);
     toast.error("Failed to export Excel file");
-    console.error(error);
   }
 };
 
-const exportTableToCSV = async () => {
+const exportDetailExcel = async () => {
   if (!data.value?.length) return;
 
   try {
     const accessToken = useCookie("accessToken").value;
+
+    const requestData = {
+      ...getCurrentAnalysisParams(),
+      targetItemColumn: targetItemColumnName.value,
+      targetSumColumn: targetSumColumnName.value,
+      targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+      itemCountFieldName: itemCountFieldName.value,
+      method: method.value,
+      seeOnly: seeOnly.value,
+      sort: sort.value,
+      series: series.value,
+      labels: labels.value,
+    };
+
     const response = await axios({
       method: "post",
-      url: "/api/maintenance-database-system/analyze/export/csv",
+      url: "/api/maintenance-database-system/analyze/export/detail-excel",
       responseType: "blob",
       headers: accessToken
         ? {
@@ -915,33 +949,29 @@ const exportTableToCSV = async () => {
         : {
             "Content-Type": "application/json",
           },
-      data: {
-        ...getCurrentAnalysisParams(),
-        targetItemColumn: targetItemColumnName.value,
-        targetSumColumn: targetSumColumnName.value,
-        targetItemFieldName: targetItemColumnName.value.toLowerCase(),
-        itemCountFieldName: itemCountFieldName.value,
-        method: method.value,
-        seeOnly: seeOnly.value,
-        sort: sort.value,
-      },
+      data: requestData,
     });
 
-    // Create download link
-    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute(
-      "download",
-      `maintenance-data-${new Date().toISOString().split("T")[0]}.csv`
-    );
+
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
+    link.setAttribute("download", `maintenance-detail-${dateStr}.xlsx`);
+
     document.body.appendChild(link);
     link.click();
-    link.remove();
+
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    toast.error("Failed to export CSV file");
-    console.error(error);
+    console.error("Export error:", error);
+    toast.error("Failed to export detailed Excel file");
   }
 };
 
@@ -1332,20 +1362,20 @@ watch(
             </VBtn>
             <VBtn
               prepend-icon="tabler-file-spreadsheet"
-              @click="exportTableToExcel"
+              @click="exportSummaryExcel"
               :disabled="!data?.length"
               color="success"
             >
-              Export to Excel
+              Summary Data
             </VBtn>
-            <!-- <VBtn
-              prepend-icon="tabler-file-csv"
-              @click="exportTableToCSV"
+            <VBtn
+              prepend-icon="tabler-file-spreadsheet"
+              @click="exportDetailExcel"
               :disabled="!data?.length"
               color="info"
             >
-              Export to CSV
-            </VBtn> -->
+              Detail Data
+            </VBtn>
           </VBtnGroup>
         </VCol>
       </VRow>

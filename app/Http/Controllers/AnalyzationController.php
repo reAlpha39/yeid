@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use Illuminate\Support\Str;
 use Exception;
 use Carbon\Carbon;
@@ -286,33 +288,142 @@ class AnalyzationController extends Controller
         return '#' . $randomColor;
     }
 
-    public function exportExcel(Request $request)
+    public function exportSummaryExcel(Request $request)
     {
         try {
             $data = $this->getProcessedData($request);
+            $method = $request->input('method');
+            $series = $request->input('series', []);
+            $labels = $request->input('labels', []);
+            $targetItemColumn = $request->input('targetItemColumn');
 
+            // Create new Spreadsheet object
             $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
+            $dataSheet = $spreadsheet->getActiveSheet();
+            $dataSheet->setTitle('Data');
 
-            $headers = ['CODE', Str::upper($request->input('targetItemColumn')), Str::upper($request->input('targetSumColumn'))];
-            $sheet->fromArray([$headers], null, 'A1');
+            if ($method === 'One Term') {
+                // One Term format
+                $headers = ['CODE', Str::upper($targetItemColumn), 'SUM'];
+                $dataSheet->fromArray([$headers], null, 'A1');
 
-            // Add data rows
-            $rowIndex = 2;
-            foreach ($data as $row) {
-                $rowData = [
-                    $row['code'],
-                    $row[$request->input('targetItemFieldName')] ?? '',
-                    $row[$request->input('itemCountFieldName')] ?? ''
+                // Add data rows
+                $rowIndex = 2;
+                foreach ($data as $row) {
+                    $rowData = [
+                        $row['code'],
+                        $row[$request->input('targetItemFieldName')] ?? '',
+                        $row[$request->input('itemCountFieldName')] ?? ''
+                    ];
+                    $dataSheet->fromArray([$rowData], null, 'A' . $rowIndex);
+                    $rowIndex++;
+                }
+            } else {
+                // Multiple terms format
+                // Prepare headers: CODE, NAME, Period columns, SUM, AVE
+                $headers = ['CODE', Str::upper($targetItemColumn)];
+
+                // Add period columns from labels
+                foreach ($labels as $label) {
+                    $headers[] = $label;
+                }
+
+                // Add SUM and AVE columns
+                $headers[] = 'SUM';
+                $headers[] = 'AVE';
+
+                // Write headers
+                $dataSheet->fromArray([$headers], null, 'A1');
+
+                // Prepare and write data
+                $rowIndex = 2;
+                $lastCol = Coordinate::stringFromColumnIndex(count($headers));
+
+                foreach ($data as $item) {
+                    // Find corresponding series data
+                    $seriesData = collect($series)->first(function ($s) use ($item) {
+                        return $s['name'] === $item['code'];
+                    });
+
+                    if ($seriesData) {
+                        $row = [
+                            $item['code'],
+                            $item[$request->input('targetItemFieldName')] ?? ''
+                        ];
+
+                        // Add period values
+                        foreach ($seriesData['data'] as $value) {
+                            $row[] = $value;
+                        }
+
+                        // Calculate and add SUM
+                        $sum = array_sum($seriesData['data']);
+                        $row[] = $sum;
+
+                        // Calculate and add AVE
+                        $average = count($seriesData['data']) > 0 ? $sum / count($seriesData['data']) : 0;
+                        $row[] = round($average, 2);
+
+                        $dataSheet->fromArray([$row], null, 'A' . $rowIndex);
+
+                        $rowIndex++;
+                    }
+                }
+
+                // Auto-size columns
+                foreach (range('A', $lastCol) as $col) {
+                    $dataSheet->getColumnDimension($col)->setAutoSize(true);
+                }
+
+                // Apply number format to numeric columns
+                $numericStartCol = Coordinate::stringFromColumnIndex(3); // Start from first period column
+                $numericEndCol = Coordinate::stringFromColumnIndex(count($headers) - 2); // Before AVE column
+                $dataSheet->getStyle($numericStartCol . '2:' . $lastCol . ($rowIndex - 1))
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0.00');
+
+                // Add total row
+                $totalRow = ['Total', ''];
+                $firstDataCol = Coordinate::stringFromColumnIndex(3);
+                $lastDataCol = Coordinate::stringFromColumnIndex(count($headers));
+
+                // Calculate totals for each period
+                for ($col = 3; $col <= count($headers); $col++) {
+                    $colLetter = Coordinate::stringFromColumnIndex($col);
+                    $totalRow[] = "=SUM({$colLetter}2:{$colLetter}" . ($rowIndex - 1) . ")";
+                }
+
+                $dataSheet->fromArray([$totalRow], null, 'A' . $rowIndex);
+
+                // Style the total row
+                $dataSheet->getStyle('A' . $rowIndex . ':' . $lastCol . $rowIndex)
+                    ->getFont()->setBold(true);
+
+                // Add borders
+                $styleArray = [
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
                 ];
-                $sheet->fromArray([$rowData], null, 'A' . $rowIndex);
-                $rowIndex++;
+                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex)->applyFromArray($styleArray);
+
+                // Style headers
+                $dataSheet->getStyle('A1:' . $lastCol . '1')
+                    ->getFont()->setBold(true);
+
+                // Freeze pane
+                $dataSheet->freezePane('C2');
             }
 
+            // Create the Excel file
             $writer = new Xlsx($spreadsheet);
             $filename = 'maintenance-data-' . date('Y-m-d') . '.xlsx';
 
+            // Save to temp file and return
             $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->setIncludeCharts(true);
             $writer->save($tempFile);
 
             return Response::download($tempFile, $filename, [
@@ -327,36 +438,282 @@ class AnalyzationController extends Controller
         }
     }
 
-    public function exportCsv(Request $request)
+    public function exportDetailExcel(Request $request)
     {
         try {
             $data = $this->getProcessedData($request);
+            $method = $request->input('method');
+            $targetIndex = $request->input('targetItem');
 
-            // Prepare CSV content
-            $headers = [
-                'CODE',
-                Str::upper($request->input('targetItemColumn')),
-                Str::upper($request->input('targetSumColumn'))
-            ];
-
-            $csvContent = implode(',', $headers) . "\n";
-
-            foreach ($data as $row) {
-                $rowData = [
-                    $row['code'],
-                    $row[$request->input('targetItemFieldName')] ?? '',
-                    $row[$request->input('itemCountFieldName')] ?? ''
-                ];
-                $csvContent .= implode(',', $rowData) . "\n";
+            $codes = [];
+            foreach ($data as $item) {
+                if (isset($item['code'])) {
+                    $codes[] = $item['code'];
+                }
             }
 
-            // Create response with CSV content
-            $filename = 'maintenance-data-' . date('Y-m-d') . '.csv';
+            $targetConfig = $this->getTargetConfig($targetIndex);
+            if (!$targetConfig) {
+                throw new Exception('Invalid target configuration');
+            }
 
-            return Response::make($csvContent, 200, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            $query = DB::table('tbl_spkrecord as r')
+                ->join('mas_machine as mm', 'r.machineno', '=', 'mm.machineno')
+                ->join('mas_shop as ms', 'r.ordershop', '=', 'ms.shopcode')
+                ->leftJoin('mas_situation as msit', 'r.situationcode', '=', 'msit.situationcode')
+                ->leftJoin('mas_factor as mf', 'r.factorcode', '=', 'mf.factorcode')
+                ->leftJoin('mas_measure as mm2', 'r.measurecode', '=', 'mm2.measurecode')
+                ->leftJoin('mas_prevention as mp', 'r.preventioncode', '=', 'mp.preventioncode')
+                ->leftJoin('mas_ltfactor as ml', 'r.ltfactorcode', '=', 'ml.ltfactorcode')
+                ->leftJoin('mas_maker as mmk', 'mm.makercode', '=', 'mmk.makercode')
+                ->select([
+                    'r.recordid',
+                    'r.occurdate',
+                    'r.ordershop',
+                    'ms.shopname',
+                    'r.machineno',
+                    'mm.machinename',
+                    'mm.linecode',
+                    'r.situationcode',
+                    'msit.situationname',
+                    'r.situation',
+                    'r.factorcode',
+                    'mf.factorname',
+                    'r.factor',
+                    'r.measurecode',
+                    'mm2.measurename',
+                    'r.measure',
+                    'r.preventioncode',
+                    'mp.preventionname',
+                    'r.prevention',
+                    'r.ltfactorcode',
+                    'ml.ltfactorname',
+                    'r.ltfactor',
+                    'mmk.makername',
+                    'r.machinestoptime',
+                    'r.linestoptime',
+                    'r.staffnum',
+                    'r.makerservice',
+                    'r.makerparts',
+                    'r.partcostsum',
+                    'r.inactivesum',
+                    'r.periodicalsum',
+                    'r.questionsum',
+                    'r.preparesum',
+                    'r.checksum',
+                    'r.waitsum',
+                    'r.repairsum',
+                    'r.confirmsum',
+                    'r.makerhour',
+                    'r.comments',
+                    'r.ordertitle',
+                    'r.updatetime',
+                    DB::raw("(CASE r.maintenancecode
+                        WHEN '01' THEN 'UM'
+                        WHEN '02' THEN 'BM'
+                        WHEN '03' THEN 'TBC'
+                        WHEN '04' THEN 'TBA'
+                        WHEN '05' THEN 'PvM'
+                        WHEN '06' THEN 'FM'
+                        WHEN '07' THEN 'CM'
+                        WHEN '08' THEN 'CHECK'
+                        WHEN '09' THEN 'LAYOUT'
+                        ELSE '--'
+                    END) as maintenancecode"),
+                    DB::raw('(r.totalrepairsum * r.staffnum) as internal_manhour'),
+                    DB::raw('(r.totalrepairsum * r.staffnum + r.makerhour) as total_manhour')
+                ]);
+
+            $sourceField = str_replace(' as code', '', $targetConfig['sourceField']);
+
+            if (strpos($sourceField, 'SUBSTRING') !== false) {
+                // For cases like SUBSTRING(r.machineno, 1, 3)
+                $query->whereIn(DB::raw($sourceField), $codes);
+            } elseif (strpos($sourceField, "COALESCE") !== false) {
+                // For cases with COALESCE
+                $query->whereIn(DB::raw($sourceField), $codes);
+            } else {
+                // For simple column references
+                $query->whereIn($sourceField, $codes);
+            }
+
+            $startDate = sprintf(
+                '%d%02d01',
+                $request->input('startYear'),
+                intval($request->input('startMonth'))
+            );
+
+            $endDate = Carbon::create(
+                $request->input('endYear'),
+                $request->input('endMonth'),
+                1
+            )->endOfMonth()->format('Ymd');
+
+            $query->whereBetween('r.occurdate', [$startDate, $endDate]);
+
+            $this->addFilters($query, $request->all());
+
+            $detailedData = $query->get();
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Detailed Data');
+
+            $headers = [
+                'SPK NO',
+                'ORDER DATE',
+                'SHOP CODE',
+                'SHOP NAME',
+                'MACHINE NO',
+                'MACHINE NAME',
+                'LINE',
+                'TITLE',
+                'NOTE STOP PANJANG',
+                'NOTE URAIAN MASALAH',
+                'NOTE PENYEBAB',
+                'NOTE TINDAKAN',
+                'NOTE SOLUSI',
+                'COMMENTS',
+                'MAINTENANCE CODE',
+                'KODE URAIAN MASALAH',
+                'NAMA URAIAN MASALAH',
+                'KODE PENYEBAB',
+                'NAMA PENYEBAB',
+                'KODE TINDAKAN',
+                'NAMA TINDAKAN',
+                'KODE SOLUSI',
+                'NAMA SOLUSI',
+                'KODE STOP PANJANG',
+                'NAMA STOP PANJANG',
+                'MAKER NAME',
+                'PARTS COST[IDR]',
+                'STAFF NUMBER[ORANG]',
+                'INTERNAL MANHOUR[MENIT]',
+                'TOTAL MANHOUR[MENIT]',
+                'MACHINE STOP TIME[MENIT]',
+                'LINE STOP TIME[MENIT]',
+                'MAKER MANHOUR[MENIT]',
+                'MAKER SERVICE FEE[IDR]',
+                'MAKER PARTS FEE[IDR]',
+                'WKT SEBELUM PEKERJAAN[MENIT]',
+                'WKT PERIODICAL[MENIT]',
+                'WKT PERTANYAAN[MENIT]',
+                'WKT SIAPKAN[MENIT]',
+                'WKT PENELITIAN[MENIT]',
+                'WKT MENUNGGU PART[MENIT]',
+                'WKT PEKERJAAN [MENIT]',
+                'WKT KONFIRM[MENIT]',
+                'UPDATETIME'
+            ];
+
+            $sheet->fromArray([$headers], null, 'A1');
+
+            // Add data
+            $row = 2;
+            foreach ($detailedData as $record) {
+                $rowData = [
+                    $record->recordid,
+                    $record->occurdate,
+                    $record->ordershop,
+                    $record->shopname,
+                    $record->machineno,
+                    $record->machinename,
+                    $record->linecode,
+                    $record->ordertitle,
+                    $record->ltfactor,
+                    $record->situation,
+                    $record->factor,
+                    $record->measure,
+                    $record->prevention,
+                    $record->comments,
+                    $record->maintenancecode,
+                    $record->situationcode,
+                    $record->situationname,
+                    $record->factorcode,
+                    $record->factorname,
+                    $record->measurecode,
+                    $record->measurename,
+                    $record->preventioncode,
+                    $record->preventionname,
+                    $record->ltfactorcode,
+                    $record->ltfactorname,
+                    $record->makername,
+                    $record->partcostsum,
+                    $record->staffnum,
+                    $record->internal_manhour,
+                    $record->total_manhour,
+                    $record->machinestoptime,
+                    $record->linestoptime,
+                    $record->makerhour,
+                    $record->makerservice,
+                    $record->makerparts,
+                    $record->inactivesum,
+                    $record->periodicalsum,
+                    $record->questionsum,
+                    $record->preparesum,
+                    $record->checksum,
+                    $record->waitsum,
+                    $record->repairsum,
+                    $record->confirmsum,
+                    $record->updatetime,
+                ];
+                $sheet->fromArray([$rowData], null, 'A' . $row);
+                $row++;
+            }
+
+            // Apply number format to numeric columns
+            $numericColumns = range(20, 36); // Columns T to AJ
+            foreach ($numericColumns as $colIndex) {
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                $sheet->getStyle($colLetter . '2:' . $colLetter . ($row - 1))
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0');
+            }
+
+            // Auto-size columns
+            $lastColumnIndex = count($headers);
+            for ($i = 1;
+                $i <= $lastColumnIndex;
+                $i++
+            ) {
+                $columnLetter = Coordinate::stringFromColumnIndex($i);
+                $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
+            }
+
+            // Style the header row
+            $lastCol = 'AS';
+            $sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E0E0E0']
+                ]
             ]);
+
+            // Add borders
+            $styleArray = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    ],
+                ],
+            ];
+            $sheet->getStyle('A1:' . $lastCol . ($row - 1))->applyFromArray($styleArray);
+
+            // Freeze the top row
+            $sheet->freezePane('A2');
+
+            // Create the Excel file
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $filename = 'maintenance-detail-' . date('Y-m-d') . '.xlsx';
+
+            // Save to temp file and return
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->save($tempFile);
+
+            return Response::download($tempFile, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
