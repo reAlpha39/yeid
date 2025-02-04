@@ -297,17 +297,14 @@ class AnalyzationController extends Controller
             $labels = $request->input('labels', []);
             $targetItemColumn = $request->input('targetItemColumn');
 
-            // Create new Spreadsheet object
             $spreadsheet = new Spreadsheet();
             $dataSheet = $spreadsheet->getActiveSheet();
             $dataSheet->setTitle('Data');
 
             if ($method === 'One Term') {
-                // One Term format
                 $headers = ['CODE', Str::upper($targetItemColumn), 'SUM'];
                 $dataSheet->fromArray([$headers], null, 'A1');
 
-                // Add data rows
                 $rowIndex = 2;
                 foreach ($data as $row) {
                     $rowData = [
@@ -319,28 +316,22 @@ class AnalyzationController extends Controller
                     $rowIndex++;
                 }
             } else {
-                // Multiple terms format
-                // Prepare headers: CODE, NAME, Period columns, SUM, AVE
+                // Headers: CODE, NAME, Period columns, SUM, AVE
                 $headers = ['CODE', Str::upper($targetItemColumn)];
 
-                // Add period columns from labels
                 foreach ($labels as $label) {
                     $headers[] = $label;
                 }
 
-                // Add SUM and AVE columns
                 $headers[] = 'SUM';
                 $headers[] = 'AVE';
 
-                // Write headers
                 $dataSheet->fromArray([$headers], null, 'A1');
 
-                // Prepare and write data
                 $rowIndex = 2;
                 $lastCol = Coordinate::stringFromColumnIndex(count($headers));
 
                 foreach ($data as $item) {
-                    // Find corresponding series data
                     $seriesData = collect($series)->first(function ($s) use ($item) {
                         return $s['name'] === $item['code'];
                     });
@@ -351,16 +342,13 @@ class AnalyzationController extends Controller
                             $item[$request->input('targetItemFieldName')] ?? ''
                         ];
 
-                        // Add period values
                         foreach ($seriesData['data'] as $value) {
                             $row[] = $value;
                         }
 
-                        // Calculate and add SUM
                         $sum = array_sum($seriesData['data']);
                         $row[] = $sum;
 
-                        // Calculate and add AVE
                         $average = count($seriesData['data']) > 0 ? $sum / count($seriesData['data']) : 0;
                         $row[] = round($average, 2);
 
@@ -370,24 +358,17 @@ class AnalyzationController extends Controller
                     }
                 }
 
-                // Auto-size columns
                 foreach (range('A', $lastCol) as $col) {
                     $dataSheet->getColumnDimension($col)->setAutoSize(true);
                 }
 
-                // Apply number format to numeric columns
                 $numericStartCol = Coordinate::stringFromColumnIndex(3); // Start from first period column
-                $numericEndCol = Coordinate::stringFromColumnIndex(count($headers) - 2); // Before AVE column
                 $dataSheet->getStyle($numericStartCol . '2:' . $lastCol . ($rowIndex - 1))
                     ->getNumberFormat()
-                    ->setFormatCode('#,##0.00');
+                    ->setFormatCode('#,##0');
 
-                // Add total row
                 $totalRow = ['Total', ''];
-                $firstDataCol = Coordinate::stringFromColumnIndex(3);
-                $lastDataCol = Coordinate::stringFromColumnIndex(count($headers));
 
-                // Calculate totals for each period
                 for ($col = 3; $col <= count($headers); $col++) {
                     $colLetter = Coordinate::stringFromColumnIndex($col);
                     $totalRow[] = "=SUM({$colLetter}2:{$colLetter}" . ($rowIndex - 1) . ")";
@@ -395,11 +376,9 @@ class AnalyzationController extends Controller
 
                 $dataSheet->fromArray([$totalRow], null, 'A' . $rowIndex);
 
-                // Style the total row
                 $dataSheet->getStyle('A' . $rowIndex . ':' . $lastCol . $rowIndex)
                     ->getFont()->setBold(true);
 
-                // Add borders
                 $styleArray = [
                     'borders' => [
                         'allBorders' => [
@@ -409,19 +388,15 @@ class AnalyzationController extends Controller
                 ];
                 $dataSheet->getStyle('A1:' . $lastCol . $rowIndex)->applyFromArray($styleArray);
 
-                // Style headers
                 $dataSheet->getStyle('A1:' . $lastCol . '1')
                     ->getFont()->setBold(true);
 
-                // Freeze pane
                 $dataSheet->freezePane('C2');
             }
 
-            // Create the Excel file
             $writer = new Xlsx($spreadsheet);
             $filename = 'maintenance-data-' . date('Y-m-d') . '.xlsx';
 
-            // Save to temp file and return
             $tempFile = tempnam(sys_get_temp_dir(), 'export');
             $writer->setIncludeCharts(true);
             $writer->save($tempFile);
@@ -672,7 +647,8 @@ class AnalyzationController extends Controller
 
             // Auto-size columns
             $lastColumnIndex = count($headers);
-            for ($i = 1;
+            for (
+                $i = 1;
                 $i <= $lastColumnIndex;
                 $i++
             ) {
