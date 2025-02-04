@@ -9,6 +9,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Illuminate\Support\Str;
 use Exception;
 use Carbon\Carbon;
@@ -534,6 +536,51 @@ class AnalyzationController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Detailed Data');
 
+            // Add title and parameters at the top
+            $parameterText = $this->generateParameterText($request);
+            $sheet->setCellValue('A1', 'Maintenance Database System - Detailed Export');
+            $sheet->setCellValue('A2', $parameterText);
+
+            $sheet->mergeCells('A1:AR1');
+
+            $paramLines = substr_count($parameterText, "\n") + 1;
+            $sheet->mergeCells('A2:AR' . ($paramLines + 1));
+
+            $sheet->getStyle('A1')->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => 14
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '4F81BD']
+                ],
+                'font' => [
+                    'color' => ['rgb' => 'FFFFFF']
+                ]
+            ]);
+
+            $sheet->getStyle('A2')->applyFromArray([
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_TOP,
+                    'wrapText' => true
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E9EFF7']
+                ]
+            ]);
+
+            $sheet->getRowDimension(2)->setRowHeight(($paramLines * 15));
+
+
+            $dataStartRow = $paramLines + 3;
+
             $headers = [
                 'SPK NO',
                 'ORDER DATE',
@@ -581,10 +628,10 @@ class AnalyzationController extends Controller
                 'UPDATETIME'
             ];
 
-            $sheet->fromArray([$headers], null, 'A1');
+            $sheet->fromArray([$headers], null, 'A' . $dataStartRow);
 
             // Add data
-            $row = 2;
+            $row = $dataStartRow + 1;
             foreach ($detailedData as $record) {
                 $rowData = [
                     $record->recordid,
@@ -657,11 +704,11 @@ class AnalyzationController extends Controller
             }
 
             // Style the header row
-            $lastCol = 'AS';
+            $lastCol = 'AR';
             $sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray([
                 'font' => ['bold' => true],
                 'fill' => [
-                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['rgb' => 'E0E0E0']
                 ]
             ]);
@@ -670,20 +717,17 @@ class AnalyzationController extends Controller
             $styleArray = [
                 'borders' => [
                     'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'borderStyle' => Border::BORDER_THIN,
                     ],
                 ],
             ];
             $sheet->getStyle('A1:' . $lastCol . ($row - 1))->applyFromArray($styleArray);
 
-            // Freeze the top row
-            $sheet->freezePane('A2');
+            $sheet->freezePane('A' . ($dataStartRow + 1));
 
-            // Create the Excel file
-            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer = new Xlsx($spreadsheet);
             $filename = 'maintenance-detail-' . date('Y-m-d') . '.xlsx';
 
-            // Save to temp file and return
             $tempFile = tempnam(sys_get_temp_dir(), 'export');
             $writer->save($tempFile);
 
@@ -722,6 +766,181 @@ class AnalyzationController extends Controller
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function generateParameterText($request)
+    {
+        $params = [];
+
+        // Basic parameters
+        $params[] = "Term: " . $request->input('method', 'N/A');
+
+        // Date range
+        $startDate = Carbon::create($request->input('startYear'), $request->input('startMonth'), 1)
+            ->format('M Y');
+        $endDate = Carbon::create($request->input('endYear'), $request->input('endMonth'), 1)
+            ->format('M Y');
+        $params[] = "Period: {$startDate} - {$endDate}";
+
+        $params[] = "Summary: " . $this->convertTargetItem($request->input('targetItem'));
+
+        $params[] = "Item: " . $this->convertTargetSum($request->input('targetSum'));
+
+        // Add other parameters if they exist
+        if ($request->input('tdivision')) {
+            $params[] = "Maintenance: " . $this->convertMaintenanceCode($request->input('tdivision'));
+        }
+
+        if ($request->input('section')) {
+            $params[] = "Shop: " . $request->input('section');
+        }
+
+        if ($request->input('line')) {
+            $params[] = "Line: " . $request->input('line');
+        }
+
+        if ($request->input('machineNo')) {
+            $params[] = "Machine No: " . $request->input('machineNo');
+        }
+
+        if ($request->input('situation')) {
+            $params[] = "Situation: " . $request->input('situation');
+        }
+
+        if ($request->input('factor')) {
+            $params[] = "Factor: " . $request->input('factor');
+        }
+
+        if ($request->input('measures')) {
+            $params[] = "Measure: " . $request->input('measures');
+        }
+
+        if ($request->input('preventive')) {
+            $params[] = "Prevention: " . $request->input('preventive');
+        }
+
+        if ($request->input('factorLt')) {
+            $params[] = "LT Factor: " . $request->input('factorLt');
+        }
+
+        if ($request->input('machineMaker')) {
+            $params[] = "Machine Maker: " . $request->input('machineMaker');
+        }
+
+        if ($request->input('numItem')) {
+            $counterValue = $request->input('counter');
+            $moreThan = $request->input('numMax');
+            $lessThan = $request->input('numMin');
+
+            if ($counterValue) {
+                $params[] = "Counter: " . $counterValue;
+                if ($moreThan) {
+                    $params[] = "More Than: " . $moreThan;
+                }
+                if ($lessThan) {
+                    $params[] = "Less Than: " . $lessThan;
+                }
+            }
+        }
+
+        $params[] = "Sort: " . $request->input('sort', 'N/A');
+        $params[] = "Items Shown: " . $request->input('seeOnly', '50');
+
+        if ($request->input('outofRank')) {
+            $params[] = "Including Others: Yes";
+        }
+
+        return implode(", ", $params);
+    }
+
+    private function convertMaintenanceCode($maintenanceCode)
+    {
+        switch ($maintenanceCode) {
+            case '01':
+                return 'UM';
+            case '02':
+                return 'BM';
+            case '03':
+                return 'TBC';
+            case '04':
+                return 'TBA';
+            case '05':
+                return 'PvM';
+            case '06':
+                return 'FM';
+            case '07':
+                return 'CM';
+            case '08':
+                return 'CHECH';
+            case '09':
+                return 'LAYOUT';
+        }
+    }
+
+    private function convertTargetItem($targetItem)
+    {
+        switch ($targetItem) {
+            case '0':
+                return 'Jenis Perbaikan';
+            case '1':
+                return 'Shop';
+            case '2':
+                return 'Line';
+            case '3':
+                return 'Machine Header';
+            case '4':
+                return 'Machine No';
+            case '5':
+                return 'Penyebab';
+            case '6':
+                return 'Tindakan';
+            case '7':
+                return 'Solution';
+            case '8':
+                return 'Stop Panjang';
+            case '9':
+                return 'Machine Maker';
+        }
+    }
+
+    private function convertTargetSum($targetSum)
+    {
+        switch ($targetSum) {
+            case '0':
+                return 'Count';
+            case '1':
+                return 'Waktu Machine Stop';
+            case '2':
+                return 'Waktu Line Stop';
+            case '3':
+                return 'Repair ManHour (Internal)';
+            case '4':
+                return 'Repair ManHour (Maker)';
+            case '5':
+                return 'Repair ManHour Total';
+            case '6':
+                return 'Maker Cost';
+            case '7':
+                return 'Parts Cost';
+            case '8':
+                return 'Staff Number';
+            case '9':
+                return 'Waktu Sebelum Pekerjaan';
+            case '10':
+                return 'Waktu Periodical Maintenance';
+            case '11':
+                return 'Waktu Pertanyaan';
+            case '12':
+                return 'Waktu Siapkan';
+            case '13':
+                return 'Waktu Penelitian';
+            case '14':
+                return 'Waktu Menunggu Part';
+            case '15':
+                return 'Waktu Pekerjaan Maintenance';
+            case '16':
+                return 'Waktu Confirm';
         }
     }
 
