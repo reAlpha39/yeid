@@ -305,6 +305,10 @@ class AnalyzationController extends Controller
 
             if ($method === 'One Term') {
                 $headers = ['CODE', Str::upper($targetItemColumn), 'SUM'];
+
+                $lastColIndex = count($headers);
+                $lastCol = Coordinate::stringFromColumnIndex($lastColIndex);
+
                 $dataSheet->fromArray([$headers], null, 'A1');
 
                 $rowIndex = 2;
@@ -317,6 +321,30 @@ class AnalyzationController extends Controller
                     $dataSheet->fromArray([$rowData], null, 'A' . $rowIndex);
                     $rowIndex++;
                 }
+
+                for ($i = 1; $i <= $lastColIndex; $i++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($i);
+                    $dataSheet->getColumnDimension($columnLetter)->setAutoSize(true);
+                }
+
+                // Style the header row
+                $dataSheet->getStyle('A1' . ':' . $lastCol . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E0E0E0']
+                    ]
+                ]);
+
+                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex - 1)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                ]);
+
+                $dataSheet->freezePane('C2');
             } else {
                 // Headers: CODE, NAME, Period columns, SUM, AVE
                 $headers = ['CODE', Str::upper($targetItemColumn)];
@@ -331,7 +359,8 @@ class AnalyzationController extends Controller
                 $dataSheet->fromArray([$headers], null, 'A1');
 
                 $rowIndex = 2;
-                $lastCol = Coordinate::stringFromColumnIndex(count($headers));
+                $lastColIndex = count($headers);
+                $lastCol = Coordinate::stringFromColumnIndex($lastColIndex);
 
                 foreach ($data as $item) {
                     $seriesData = collect($series)->first(function ($s) use ($item) {
@@ -355,13 +384,14 @@ class AnalyzationController extends Controller
                         $row[] = round($average, 2);
 
                         $dataSheet->fromArray([$row], null, 'A' . $rowIndex);
-
                         $rowIndex++;
                     }
                 }
 
-                foreach (range('A', $lastCol) as $col) {
-                    $dataSheet->getColumnDimension($col)->setAutoSize(true);
+                // Auto-size all columns
+                for ($colIndex = 1; $colIndex <= $lastColIndex; $colIndex++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($colIndex);
+                    $dataSheet->getColumnDimension($columnLetter)->setAutoSize(true);
                 }
 
                 $numericStartCol = Coordinate::stringFromColumnIndex(3); // Start from first period column
@@ -371,27 +401,29 @@ class AnalyzationController extends Controller
 
                 $totalRow = ['Total', ''];
 
-                for ($col = 3; $col <= count($headers); $col++) {
+                for ($col = 3; $col <= $lastColIndex; $col++) {
                     $colLetter = Coordinate::stringFromColumnIndex($col);
                     $totalRow[] = "=SUM({$colLetter}2:{$colLetter}" . ($rowIndex - 1) . ")";
                 }
 
                 $dataSheet->fromArray([$totalRow], null, 'A' . $rowIndex);
 
-                $dataSheet->getStyle('A' . $rowIndex . ':' . $lastCol . $rowIndex)
-                    ->getFont()->setBold(true);
+                // Style the header row
+                $dataSheet->getStyle('A1' . ':' . $lastCol . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E0E0E0']
+                    ]
+                ]);
 
-                $styleArray = [
+                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
                         ],
                     ],
-                ];
-                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex)->applyFromArray($styleArray);
-
-                $dataSheet->getStyle('A1:' . $lastCol . '1')
-                    ->getFont()->setBold(true);
+                ]);
 
                 $dataSheet->freezePane('C2');
             }
@@ -504,16 +536,14 @@ class AnalyzationController extends Controller
             $sourceField = str_replace(' as code', '', $targetConfig['sourceField']);
 
             if (strpos($sourceField, 'SUBSTRING') !== false) {
-                // For cases like SUBSTRING(r.machineno, 1, 3)
                 $query->whereIn(DB::raw($sourceField), $codes);
             } elseif (strpos($sourceField, "COALESCE") !== false) {
-                // For cases with COALESCE
                 $query->whereIn(DB::raw($sourceField), $codes);
             } else {
-                // For simple column references
                 $query->whereIn($sourceField, $codes);
             }
 
+            // Add date filters and other filters...
             $startDate = sprintf(
                 '%d%02d01',
                 $request->input('startYear'),
@@ -527,7 +557,6 @@ class AnalyzationController extends Controller
             )->endOfMonth()->format('Ymd');
 
             $query->whereBetween('r.occurdate', [$startDate, $endDate]);
-
             $this->addFilters($query, $request->all());
 
             $detailedData = $query->get();
@@ -536,51 +565,7 @@ class AnalyzationController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Detailed Data');
 
-            // Add title and parameters at the top
-            $parameterText = $this->generateParameterText($request);
-            $sheet->setCellValue('A1', 'Maintenance Database System - Detailed Export');
-            $sheet->setCellValue('A2', $parameterText);
-
-            $sheet->mergeCells('A1:AR1');
-
-            $paramLines = substr_count($parameterText, "\n") + 1;
-            $sheet->mergeCells('A2:AR' . ($paramLines + 1));
-
-            $sheet->getStyle('A1')->applyFromArray([
-                'font' => [
-                    'bold' => true,
-                    'size' => 14
-                ],
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_CENTER,
-                    'vertical' => Alignment::VERTICAL_CENTER,
-                ],
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => '4F81BD']
-                ],
-                'font' => [
-                    'color' => ['rgb' => 'FFFFFF']
-                ]
-            ]);
-
-            $sheet->getStyle('A2')->applyFromArray([
-                'alignment' => [
-                    'horizontal' => Alignment::HORIZONTAL_LEFT,
-                    'vertical' => Alignment::VERTICAL_TOP,
-                    'wrapText' => true
-                ],
-                'fill' => [
-                    'fillType' => Fill::FILL_SOLID,
-                    'startColor' => ['rgb' => 'E9EFF7']
-                ]
-            ]);
-
-            $sheet->getRowDimension(2)->setRowHeight(($paramLines * 15));
-
-
-            $dataStartRow = $paramLines + 3;
-
+            // Add headers
             $headers = [
                 'SPK NO',
                 'ORDER DATE',
@@ -628,7 +613,41 @@ class AnalyzationController extends Controller
                 'UPDATETIME'
             ];
 
+            // Add title parameters
+            $parameterText = $this->generateParameterText($request);
+            $sheet->setCellValue('A1', $parameterText);
+
+            $lastColumnIndex = count($headers);
+            $lastCol = Coordinate::stringFromColumnIndex($lastColumnIndex);
+
+            $paramLines = 1;
+            $sheet->mergeCells("A1:{$lastCol}" . ($paramLines));
+
+
+            $sheet->getStyle('A1')->applyFromArray([
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_TOP,
+                    'wrapText' => true
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E9EFF7']
+                ]
+            ]);
+
+            $sheet->getRowDimension(1)->setRowHeight(($paramLines * 15));
+
+            $dataStartRow = $paramLines + 2;
             $sheet->fromArray([$headers], null, 'A' . $dataStartRow);
+
+            $textColumns = ['H', 'I', 'J', 'K', 'L', 'M', 'N']; // Columns with text that may contain newlines
+            foreach ($textColumns as $col) {
+                $sheet->getStyle($col . $dataStartRow . ':' . $col . ($dataStartRow + 1000))
+                    ->getAlignment()
+                    ->setWrapText(true)
+                    ->setVertical(Alignment::VERTICAL_BOTTOM);
+            }
 
             // Add data
             $row = $dataStartRow + 1;
@@ -683,29 +702,22 @@ class AnalyzationController extends Controller
                 $row++;
             }
 
-            // Apply number format to numeric columns
-            $numericColumns = range(20, 36); // Columns T to AJ
-            foreach ($numericColumns as $colIndex) {
+            // Format numeric columns
+            for ($colIndex = 27; $colIndex <= 42; $colIndex++) {
                 $colLetter = Coordinate::stringFromColumnIndex($colIndex);
-                $sheet->getStyle($colLetter . '2:' . $colLetter . ($row - 1))
+                $sheet->getStyle($colLetter . $dataStartRow . ':' . $colLetter . ($row - 1))
                     ->getNumberFormat()
                     ->setFormatCode('#,##0');
             }
 
             // Auto-size columns
-            $lastColumnIndex = count($headers);
-            for (
-                $i = 1;
-                $i <= $lastColumnIndex;
-                $i++
-            ) {
+            for ($i = 1; $i <= $lastColumnIndex; $i++) {
                 $columnLetter = Coordinate::stringFromColumnIndex($i);
                 $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
             }
 
             // Style the header row
-            $lastCol = 'AR';
-            $sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray([
+            $sheet->getStyle('A' . $dataStartRow . ':' . $lastCol . $dataStartRow)->applyFromArray([
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -721,7 +733,7 @@ class AnalyzationController extends Controller
                     ],
                 ],
             ];
-            $sheet->getStyle('A1:' . $lastCol . ($row - 1))->applyFromArray($styleArray);
+            $sheet->getStyle('A' . $dataStartRow . ':' . $lastCol . ($row - 1))->applyFromArray($styleArray);
 
             $sheet->freezePane('A' . ($dataStartRow + 1));
 
