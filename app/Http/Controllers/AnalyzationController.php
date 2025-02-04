@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Str;
 use Exception;
 use Carbon\Carbon;
 
@@ -153,6 +157,236 @@ class AnalyzationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error performing analysis',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getProcessedData(Request $request)
+    {
+        $analysisResponse = $this->analyze($request);
+        $rawData = json_decode($analysisResponse->getContent(), true)['data'];
+        $method = $request->input('method');
+        $seeOnly = $request->input('seeOnly', 50);
+        $sort = $request->input('sort', 'DESC');
+        $itemCountFields = [
+            'item_count',
+            'machinestop',
+            'linestop',
+            'repair_manhour_internal',
+            'maker_manhour',
+            'total_maintenance_man_hour',
+            'maker_cost',
+            'part_cost',
+            'staff_number',
+            'wkt_sebelum_pekerjaan',
+            'wkt_priodical_maintenance',
+            'wkt_pertanyaan',
+            'wkt_siapkan',
+            'wkt_penelitian',
+            'wkt_menunggu_part',
+            'wkt_pekerjaan_maintenance',
+            'wkt_konfirm'
+        ];
+
+        if ($method === 'One Term') {
+            $processedData = collect($rawData)->map(function ($item, $index) use ($seeOnly) {
+                return array_merge($item, [
+                    'color' => $index < $seeOnly ? $this->getRandomColor() : '#5C4646'
+                ]);
+            });
+
+            if ($sort !== null) {
+                $processedData = $processedData->sortBy(function ($item) use ($itemCountFields, $sort) {
+                    foreach ($itemCountFields as $field) {
+                        if (isset($item[$field])) {
+                            return $sort === 'DESC' ? -$item[$field] : $item[$field];
+                        }
+                    }
+                    return 0;
+                });
+            }
+
+            if ($seeOnly) {
+                $processedData = $processedData->take($seeOnly);
+            }
+
+            return $processedData->values()->all();
+        } else {
+            $terms = [];
+            $codes = collect();
+            $groupedData = [];
+            $codeDetails = [];
+
+            // Find the item count field from the first data item
+            $itemCountField = null;
+            if (!empty($rawData)) {
+                $firstItem = $rawData[0];
+                foreach ($itemCountFields as $field) {
+                    if (isset($firstItem[$field])) {
+                        $itemCountField = $field;
+                        break;
+                    }
+                }
+            }
+
+            // Process raw data
+            foreach ($rawData as $item) {
+                $code = $item['code'];
+                $term = $item['term'];
+                $itemCount = isset($item[$itemCountField]) ? intval($item[$itemCountField]) : 0;
+
+                if (!isset($groupedData[$term])) {
+                    $groupedData[$term] = [];
+                    $terms[] = $term;
+                }
+
+                $groupedData[$term][$code] = $itemCount;
+                $codes->push($code);
+
+                if (!isset($codeDetails[$code])) {
+                    $codeDetails[$code] = $item;
+                }
+            }
+
+            // Calculate total counts and prepare final data
+            $totalCounts = [];
+            foreach ($codes->unique() as $code) {
+                $totalCounts[$code] = collect($terms)->sum(function ($term) use ($groupedData, $code) {
+                    return $groupedData[$term][$code] ?? 0;
+                });
+            }
+
+            // Create and sort the final data array
+            $processedData = $codes->unique()->map(function ($code) use ($codeDetails, $totalCounts, $itemCountField) {
+                return array_merge(
+                    $codeDetails[$code],
+                    [
+                        'color' => $this->getRandomColor(),
+                        $itemCountField => $totalCounts[$code]
+                    ]
+                );
+            });
+
+            if ($sort !== null) {
+                $processedData = $processedData->sortBy($itemCountField, SORT_REGULAR, $sort === 'DESC');
+            }
+
+            if ($seeOnly) {
+                $processedData = $processedData->take($seeOnly);
+            }
+
+            return $processedData->values()->all();
+        }
+    }
+
+    private function getRandomColor()
+    {
+        $randomColor = str_pad(dechex(mt_rand(0, 16777215)), 6, '0', STR_PAD_LEFT);
+        return '#' . $randomColor;
+    }
+
+    public function exportExcel(Request $request)
+    {
+        try {
+            $data = $this->getProcessedData($request);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $headers = ['CODE', Str::upper($request->input('targetItemColumn')), Str::upper($request->input('targetSumColumn'))];
+            $sheet->fromArray([$headers], null, 'A1');
+
+            // Add data rows
+            $rowIndex = 2;
+            foreach ($data as $row) {
+                $rowData = [
+                    $row['code'],
+                    $row[$request->input('targetItemFieldName')] ?? '',
+                    $row[$request->input('itemCountFieldName')] ?? ''
+                ];
+                $sheet->fromArray([$rowData], null, 'A' . $rowIndex);
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'maintenance-data-' . date('Y-m-d') . '.xlsx';
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->save($tempFile);
+
+            return Response::download($tempFile, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportCsv(Request $request)
+    {
+        try {
+            $data = $this->getProcessedData($request);
+
+            // Prepare CSV content
+            $headers = [
+                'CODE',
+                Str::upper($request->input('targetItemColumn')),
+                Str::upper($request->input('targetSumColumn'))
+            ];
+
+            $csvContent = implode(',', $headers) . "\n";
+
+            foreach ($data as $row) {
+                $rowData = [
+                    $row['code'],
+                    $row[$request->input('targetItemFieldName')] ?? '',
+                    $row[$request->input('itemCountFieldName')] ?? ''
+                ];
+                $csvContent .= implode(',', $rowData) . "\n";
+            }
+
+            // Create response with CSV content
+            $filename = 'maintenance-data-' . date('Y-m-d') . '.csv';
+
+            return Response::make($csvContent, 200, [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportSvg(Request $request)
+    {
+        try {
+            // Get the SVG content from the request
+            $svgContent = $request->input('svgContent');
+
+            if (!$svgContent) {
+                throw new Exception('SVG content is required');
+            }
+
+            // Create response with SVG content
+            $filename = 'maintenance-chart-' . date('Y-m-d') . '.svg';
+
+            return Response::make($svgContent, 200, [
+                'Content-Type' => 'image/svg+xml',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
                 'error' => $e->getMessage()
             ], 500);
         }

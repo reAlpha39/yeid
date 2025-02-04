@@ -3,13 +3,12 @@ import {
   getColumnChartConfig,
   getDonutChartConfig,
 } from "@core/libs/apex-chart/apexCharConfig";
-import { saveAs } from "file-saver";
+import axios from "axios";
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { debounce } from "lodash";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
-import * as XLSX from "xlsx";
 
 definePage({
   meta: {
@@ -808,68 +807,176 @@ function isNumber(evt) {
   }
 }
 
-const exportGraph = () => {
+const exportGraph = async () => {
   const chart = document.querySelector(".apexcharts-canvas");
   if (chart) {
-    // Get the SVG data
-    const svgData = chart.querySelector("svg").outerHTML;
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
+    try {
+      const accessToken = useCookie("accessToken").value;
+      // Get the SVG data
+      const svgData = chart.querySelector("svg").outerHTML;
 
-    saveAs(
-      svgBlob,
-      `maintenance-chart-${new Date().toISOString().split("T")[0]}.svg`
-    );
+      const response = await axios({
+        method: "post",
+        url: "/api/maintenance-database-system/analyze/export/svg",
+        responseType: "blob",
+        headers: accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            }
+          : {
+              "Content-Type": "application/json",
+            },
+        data: {
+          svgContent: svgData,
+        },
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `maintenance-chart-${new Date().toISOString().split("T")[0]}.svg`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Failed to export graph");
+      console.error(error);
+    }
   }
 };
 
-const exportTableToExcel = () => {
+const exportTableToExcel = async () => {
   if (!data.value?.length) return;
 
-  // Prepare the data for export
-  const exportData = data.value.map((item) => ({
-    Code: item.code,
-    [targetItemColumnName.value]: item[targetItemColumnName.value],
-    [targetSumColumnName.value]: item[itemCountFieldName.value],
-  }));
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios({
+      method: "post",
+      url: "/api/maintenance-database-system/analyze/export/excel",
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        : {
+            "Content-Type": "application/json",
+          },
+      data: {
+        ...getCurrentAnalysisParams(),
+        targetItemColumn: targetItemColumnName.value,
+        targetSumColumn: targetSumColumnName.value,
+        targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+        itemCountFieldName: itemCountFieldName.value,
+        method: method.value,
+        seeOnly: seeOnly.value,
+        sort: sort.value,
+      },
+    });
 
-  // Create worksheet
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Maintenance Data");
-
-  // Generate Excel file
-  XLSX.writeFile(
-    wb,
-    `maintenance-data-${new Date().toISOString().split("T")[0]}.xlsx`
-  );
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `maintenance-data-${new Date().toISOString().split("T")[0]}.xlsx`
+    );
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    toast.error("Failed to export Excel file");
+    console.error(error);
+  }
 };
 
-const exportTableToCSV = () => {
+const exportTableToCSV = async () => {
   if (!data.value?.length) return;
 
-  // Prepare CSV content
-  const headers = [
-    "Code",
-    targetItemColumnName.value,
-    targetSumColumnName.value,
-  ].join(",");
-  const rows = data.value.map((item) => {
-    return [
-      item.code,
-      item[targetItemColumnName.value],
-      item[itemCountFieldName.value],
-    ].join(",");
-  });
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios({
+      method: "post",
+      url: "/api/maintenance-database-system/analyze/export/csv",
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        : {
+            "Content-Type": "application/json",
+          },
+      data: {
+        ...getCurrentAnalysisParams(),
+        targetItemColumn: targetItemColumnName.value,
+        targetSumColumn: targetSumColumnName.value,
+        targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+        itemCountFieldName: itemCountFieldName.value,
+        method: method.value,
+        seeOnly: seeOnly.value,
+        sort: sort.value,
+      },
+    });
 
-  const csvContent = [headers, ...rows].join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  saveAs(
-    blob,
-    `maintenance-data-${new Date().toISOString().split("T")[0]}.csv`
-  );
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `maintenance-data-${new Date().toISOString().split("T")[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    toast.error("Failed to export CSV file");
+    console.error(error);
+  }
 };
+
+const getCurrentAnalysisParams = () => {
+  return {
+    targetTerm:
+      method.value === "One Term" ? null : methods.indexOf(method.value),
+    targetItem: targetItems.indexOf(targetItem.value),
+    targetSum: targetSums.indexOf(targetSum.value),
+    startYear: new Date(startDate.value).getFullYear(),
+    startMonth: new Date(startDate.value).getMonth() + 1,
+    endYear: new Date(endDate.value).getFullYear(),
+    endMonth: new Date(endDate.value).getMonth() + 1,
+    tdivision: maintenanceCode.value
+      ? maintenanceCode.value.split("|")[0]
+      : null,
+    section: shop.value?.shopcode,
+    line: line.value?.linecode,
+    machineNo: machineNo.value,
+    situation: situation.value?.situationcode,
+    measures: measure.value?.measurecode,
+    factor: factor.value?.factorcode,
+    factorLt: ltfactor.value?.ltfactorcode,
+    preventive: prevention.value?.preventioncode,
+    machineMaker: maker.value?.makercode,
+    numItem:
+      counter.value !== null ? counters.indexOf(counter.value) + 1 : null,
+    numMin: counter.value !== null ? parseInt(lessThan.value) : null,
+    numMax: counter.value !== null ? parseInt(moreThan.value) : null,
+    targetSort: sorts.indexOf(sort.value),
+    maxRow: parseInt(seeOnly.value ?? "50"),
+    outofRank: includeOtherCheckBox.value,
+  };
+};
+
 onMounted(() => {
   fetchData();
   fetchShop();
