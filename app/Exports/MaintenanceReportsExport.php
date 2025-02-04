@@ -89,6 +89,39 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                 });
             }
 
+            // Status filter
+            if ($this->request->input('status')) {
+                $query->where(function ($query) {
+                    switch ($this->request->input('status')) {
+                        case 'GRAY':
+                            $query->where('s.approval', '>=', 112);
+                            break;
+                        case 'GREEN':
+                            $query->where('s.approval', '>=', 4)
+                                ->where('s.approval', '<', 112);
+                            break;
+                        case 'YELLOW':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '>', 0);
+                            break;
+                        case 'ORANGE':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '=', 0);
+                            break;
+                        case 'WHITE':
+                            $query->where(function ($q) {
+                                $q->whereRaw('NOT (
+                                (s.approval >= 112) OR
+                                (s.approval >= 4 AND s.approval < 112) OR
+                                (s.approval < 4 AND s.planid > 0) OR
+                                (s.approval < 4 AND s.planid = 0)
+                            )');
+                            });
+                            break;
+                    }
+                });
+            }
+
             $query->orderBy('s.recordid', 'DESC')
                 ->chunk($this->chunkSize, function ($records) use (&$result) {
                     foreach ($records as $row) {

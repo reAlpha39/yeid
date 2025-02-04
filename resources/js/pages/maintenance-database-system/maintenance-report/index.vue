@@ -23,6 +23,7 @@ const selectedMachine = ref(null);
 const maintenanceCode = ref(null);
 const selectedStaff = ref(null);
 const selectedShop = ref(null);
+const selectedStatus = ref(null);
 
 const now = new Date();
 const formattedDate = new Intl.DateTimeFormat("en", {
@@ -96,6 +97,8 @@ const maintenanceCodes = [
   "09|LAYOUT",
 ];
 
+const status = ["GRAY", "GREEN", "YELLOW", "ORANGE"];
+
 function convertApproval(approval) {
   let result = "";
   (parseInt(approval) & 16) === 16 ? (result += "S") : (result += "B");
@@ -120,6 +123,7 @@ async function fetchData() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -223,6 +227,7 @@ async function handleExport() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
       }
     );
@@ -266,9 +271,20 @@ function getApprovalColor(approval) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch(searchQuery, () => {
-  debouncedFetchData();
-});
+watch(
+  [
+    searchQuery,
+    date,
+    selectedShop,
+    selectedMachine,
+    maintenanceCode,
+    selectedStaff,
+    selectedStatus,
+  ],
+  () => {
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -300,6 +316,18 @@ onMounted(() => {
     <VCardText class="d-flex flex-wrap gap-4">
       <div style="inline-size: 15.625rem">
         <AppTextField v-model="searchQuery" placeholder="Search" />
+      </div>
+
+      <div style="inline-size: 10rem">
+        <AppAutocomplete
+          v-model="selectedStatus"
+          placeholder="Select status"
+          :items="status"
+          return-object
+          clearable
+          clear-icon="tabler-x"
+          outlined
+        />
       </div>
 
       <div style="inline-size: 10rem">

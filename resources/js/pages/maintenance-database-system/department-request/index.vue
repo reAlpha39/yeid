@@ -19,7 +19,6 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
-const activeOnly = ref(true);
 const selectedMachine = ref(null);
 const maintenanceCode = ref(null);
 const selectedStaff = ref(null);
