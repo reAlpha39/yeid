@@ -313,6 +313,10 @@ async function initEditData(id) {
 
   await fetchDataMachine(data.machineno);
 
+  await fetchExchangeRate(
+    data.occurdate?.substring(0, 4) ?? new Date().getFullYear()
+  );
+
   if (data.ltfactorcode) {
     await fetchLtfactors(data.ltfactorcode);
   }
@@ -364,14 +368,15 @@ async function fetchParts(id) {
   }
 }
 
-async function fetchExchangeRate() {
+async function fetchExchangeRate(id) {
   try {
-    const year = new Date().getFullYear();
+    console.log(id);
+    const year = id ?? new Date().getFullYear();
     const response = await $api("/master/systems/" + encodeURIComponent(year));
 
     exchangeRate.value = response.data;
   } catch (err) {
-    const year = new Date().getFullYear();
+    const year = id ?? new Date().getFullYear();
     toast.error(`Failed to fetch exchange rate ${year}`);
     console.log(err);
   }
