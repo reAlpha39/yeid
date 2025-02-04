@@ -74,8 +74,8 @@ onMounted(() => {
 
       <VDivider />
 
-      <div class="table-container">
-        <VTable class="v-table">
+      <div class="table-container v-table-row-odd-even">
+        <VTable fixed-header class="v-table">
           <thead>
             <tr>
               <th>Vendor</th>

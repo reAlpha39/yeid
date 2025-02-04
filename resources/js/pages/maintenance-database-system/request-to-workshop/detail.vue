@@ -253,23 +253,25 @@ onMounted(() => {
         Data parts masih kosong. Silakan tambah parts yang ganti.
       </VCardText>
       <div v-else style="overflow-x: auto">
-        <VTable class="text-no-wrap" height="250">
-          <thead>
-            <tr>
-              <th style="width: 100px">NO</th>
-              <th>STAFF CODE</th>
-              <th>STAFF NAME</th>
-            </tr>
-          </thead>
+        <div class="v-table-row-odd-even">
+          <VTable fixed-header class="text-no-wrap" height="250">
+            <thead>
+              <tr>
+                <th style="width: 100px">NO</th>
+                <th>STAFF CODE</th>
+                <th>STAFF NAME</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr v-for="(item, index) in employees" :key="item.employeecode">
-              <td>{{ index + 1 }}</td>
-              <td>{{ item.employeecode }}</td>
-              <td>{{ item.employeename }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+            <tbody>
+              <tr v-for="(item, index) in employees" :key="item.employeecode">
+                <td>{{ index + 1 }}</td>
+                <td>{{ item.employeecode }}</td>
+                <td>{{ item.employeename }}</td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </div>
     </VCard>
 

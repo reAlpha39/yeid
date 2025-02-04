@@ -1398,28 +1398,32 @@ watch(
 
       <br />
 
-      <VTable class="text-no-wrap px-7">
-        <thead>
-          <tr>
-            <th></th>
-            <th class="color-column">Code</th>
-            <th>{{ targetItemColumnName }}</th>
-            <th>{{ targetSumColumnName }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in data" :key="item.code">
-            <td class="color-column" :style="{ backgroundColor: item.color }">
-              <div style="width: 20px; height: 20px; border-radius: 4px"></div>
-            </td>
-            <td>{{ item.code }}</td>
-            <td>{{ item[targetItemColumnName] }}</td>
-            <td>
-              {{ Intl.NumberFormat().format(item[itemCountFieldName] ?? 0) }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable fixed-header class="text-no-wrap px-7">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="color-column">Code</th>
+              <th>{{ targetItemColumnName }}</th>
+              <th>{{ targetSumColumnName }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in data" :key="item.code">
+              <td class="color-column" :style="{ backgroundColor: item.color }">
+                <div
+                  style="width: 20px; height: 20px; border-radius: 4px"
+                ></div>
+              </td>
+              <td>{{ item.code }}</td>
+              <td>{{ item[targetItemColumnName] }}</td>
+              <td>
+                {{ Intl.NumberFormat().format(item[itemCountFieldName] ?? 0) }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
 
       <br />
     </div>

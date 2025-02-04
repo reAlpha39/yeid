@@ -556,46 +556,48 @@ onMounted(async () => {
       </VCardTitle>
 
       <VCard flat outlined v-if="machines.length > 0">
-        <VTable class="text-no-wrap">
-          <thead>
-            <tr>
-              <th>Machine Name</th>
-              <th>Model Name</th>
-              <th>Maker</th>
-              <th>Shop Code</th>
-              <th>Line</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- First row -->
-            <tr v-for="(item, index) in machines" :key="item.machineno">
-              <td>
-                <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.machinename }}</span>
-                  <small>{{ item.machineno }}</small>
-                </div>
-              </td>
-              <td>
-                {{ item.modelname }}
-              </td>
-              <td>
-                {{ item.makername }}
-              </td>
-              <td>
-                {{ item.shopcode }}
-              </td>
-              <td>
-                {{ item.linecode }}
-              </td>
-              <td>
-                <IconBtn @click="openDeleteDialog(index)">
-                  <VIcon icon="tabler-trash" />
-                </IconBtn>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
+        <div class="v-table-row-odd-even">
+          <VTable fixed-header class="text-no-wrap">
+            <thead>
+              <tr>
+                <th>Machine Name</th>
+                <th>Model Name</th>
+                <th>Maker</th>
+                <th>Shop Code</th>
+                <th>Line</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- First row -->
+              <tr v-for="(item, index) in machines" :key="item.machineno">
+                <td>
+                  <div class="d-flex flex-column">
+                    <span style="font-weight: 500">{{ item.machinename }}</span>
+                    <small>{{ item.machineno }}</small>
+                  </div>
+                </td>
+                <td>
+                  {{ item.modelname }}
+                </td>
+                <td>
+                  {{ item.makername }}
+                </td>
+                <td>
+                  {{ item.shopcode }}
+                </td>
+                <td>
+                  {{ item.linecode }}
+                </td>
+                <td>
+                  <IconBtn @click="openDeleteDialog(index)">
+                    <VIcon icon="tabler-trash" />
+                  </IconBtn>
+                </td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </VCard>
     </VCard>
     <VRow class="d-flex justify-start py-8">

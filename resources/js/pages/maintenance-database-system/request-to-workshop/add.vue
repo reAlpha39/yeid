@@ -415,32 +415,34 @@ onMounted(() => {
           Data parts masih kosong. Silakan tambah parts yang ganti.
         </VCardText>
         <div v-else style="overflow-x: auto">
-          <VTable class="text-no-wrap" height="250">
-            <thead>
-              <tr>
-                <th>STAFF CODE</th>
-                <th>STAFF NAME</th>
-                <th class="actions-column">ACTIONS</th>
-              </tr>
-            </thead>
+          <div class="v-table-row-odd-even">
+            <VTable fixed-header class="text-no-wrap" height="250">
+              <thead>
+                <tr>
+                  <th>STAFF CODE</th>
+                  <th>STAFF NAME</th>
+                  <th class="actions-column">ACTIONS</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              <tr v-for="item in employees" :key="item.employeecode">
-                <td>{{ item.employeecode }}</td>
-                <td>{{ item.employeename }}</td>
-                <td class="actions-column">
-                  <div class="action-buttons">
-                    <IconBtn>
-                      <VIcon
-                        @click="handleDeleteEmployee(item.employeecode)"
-                        icon="tabler-trash"
-                      />
-                    </IconBtn>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+              <tbody>
+                <tr v-for="item in employees" :key="item.employeecode">
+                  <td>{{ item.employeecode }}</td>
+                  <td>{{ item.employeename }}</td>
+                  <td class="actions-column">
+                    <div class="action-buttons">
+                      <IconBtn>
+                        <VIcon
+                          @click="handleDeleteEmployee(item.employeecode)"
+                          icon="tabler-trash"
+                        />
+                      </IconBtn>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
         </div>
       </VCard>
 
