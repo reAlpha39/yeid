@@ -47,9 +47,9 @@ class DepartmentRequestsExport implements FromQuery, WithHeadings, WithMapping, 
             ]);
 
         // Only active records filter
-        if ($this->request->input('only_active') === '1') {
-            $query->whereRaw('COALESCE(s.approval, 0) < 119');
-        }
+        // if ($this->request->input('only_active') === '1') {
+        //     $query->whereRaw('COALESCE(s.approval, 0) < 119');
+        // }
 
         // Date filter
         if ($this->request->input('date')) {

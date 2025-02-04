@@ -19,7 +19,6 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
-const activeOnly = ref(true);
 const selectedMachine = ref(null);
 const maintenanceCode = ref(null);
 const selectedStaff = ref(null);
@@ -107,14 +106,13 @@ function convertApproval(approval) {
 
 async function fetchData() {
   try {
-    console.log(date.value);
+    // console.log(date.value);
     const response = await $api(
       "/maintenance-database-system/department-requests",
       {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -218,7 +216,6 @@ async function handleExport() {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -327,12 +324,6 @@ onMounted(() => {
         />
       </div>
 
-      <VCheckbox
-        class="pr-7"
-        label="Active saja"
-        v-model="activeOnly"
-        @update:modelValue="fetchData()"
-      />
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
