@@ -200,8 +200,8 @@ class MasUserController extends Controller
                         $exists = DB::table('mas_user')
                             ->where('email', $value)
                             ->where('id', '<>', $id)
+                            ->whereNull('deleted_at')
                             ->exists();
-
                         if ($exists) {
                             $fail('Email has already been taken.');
                         }
@@ -214,8 +214,8 @@ class MasUserController extends Controller
                         $exists = DB::table('mas_user')
                             ->where('nik', $value)
                             ->where('id', '<>', $id)
+                            ->whereNull('deleted_at')
                             ->exists();
-
                         if ($exists) {
                             $fail('NIK has already been taken.');
                         }
