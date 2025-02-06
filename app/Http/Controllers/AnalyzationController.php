@@ -4,6 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Illuminate\Support\Str;
 use Exception;
 use Carbon\Carbon;
 
@@ -155,6 +163,796 @@ class AnalyzationController extends Controller
                 'message' => 'Error performing analysis',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function getProcessedData(Request $request)
+    {
+        $analysisResponse = $this->analyze($request);
+        $rawData = json_decode($analysisResponse->getContent(), true)['data'];
+        $method = $request->input('method');
+        $seeOnly = $request->input('seeOnly', 50);
+        $sort = $request->input('sort', 'DESC');
+        $itemCountFields = [
+            'item_count',
+            'machinestop',
+            'linestop',
+            'repair_manhour_internal',
+            'maker_manhour',
+            'total_maintenance_man_hour',
+            'maker_cost',
+            'part_cost',
+            'staff_number',
+            'wkt_sebelum_pekerjaan',
+            'wkt_priodical_maintenance',
+            'wkt_pertanyaan',
+            'wkt_siapkan',
+            'wkt_penelitian',
+            'wkt_menunggu_part',
+            'wkt_pekerjaan_maintenance',
+            'wkt_konfirm'
+        ];
+
+        if ($method === 'One Term') {
+            $processedData = collect($rawData)->map(function ($item, $index) use ($seeOnly) {
+                return array_merge($item, [
+                    'color' => $index < $seeOnly ? $this->getRandomColor() : '#5C4646'
+                ]);
+            });
+
+            if ($sort !== null) {
+                $processedData = $processedData->sortBy(function ($item) use ($itemCountFields, $sort) {
+                    foreach ($itemCountFields as $field) {
+                        if (isset($item[$field])) {
+                            return $sort === 'DESC' ? -$item[$field] : $item[$field];
+                        }
+                    }
+                    return 0;
+                });
+            }
+
+            if ($seeOnly) {
+                $processedData = $processedData->take($seeOnly);
+            }
+
+            return $processedData->values()->all();
+        } else {
+            $terms = [];
+            $codes = collect();
+            $groupedData = [];
+            $codeDetails = [];
+
+            // Find the item count field from the first data item
+            $itemCountField = null;
+            if (!empty($rawData)) {
+                $firstItem = $rawData[0];
+                foreach ($itemCountFields as $field) {
+                    if (isset($firstItem[$field])) {
+                        $itemCountField = $field;
+                        break;
+                    }
+                }
+            }
+
+            // Process raw data
+            foreach ($rawData as $item) {
+                $code = $item['code'];
+                $term = $item['term'];
+                $itemCount = isset($item[$itemCountField]) ? intval($item[$itemCountField]) : 0;
+
+                if (!isset($groupedData[$term])) {
+                    $groupedData[$term] = [];
+                    $terms[] = $term;
+                }
+
+                $groupedData[$term][$code] = $itemCount;
+                $codes->push($code);
+
+                if (!isset($codeDetails[$code])) {
+                    $codeDetails[$code] = $item;
+                }
+            }
+
+            // Calculate total counts and prepare final data
+            $totalCounts = [];
+            foreach ($codes->unique() as $code) {
+                $totalCounts[$code] = collect($terms)->sum(function ($term) use ($groupedData, $code) {
+                    return $groupedData[$term][$code] ?? 0;
+                });
+            }
+
+            // Create and sort the final data array
+            $processedData = $codes->unique()->map(function ($code) use ($codeDetails, $totalCounts, $itemCountField) {
+                return array_merge(
+                    $codeDetails[$code],
+                    [
+                        'color' => $this->getRandomColor(),
+                        $itemCountField => $totalCounts[$code]
+                    ]
+                );
+            });
+
+            if ($sort !== null) {
+                $processedData = $processedData->sortBy($itemCountField, SORT_REGULAR, $sort === 'DESC');
+            }
+
+            if ($seeOnly) {
+                $processedData = $processedData->take($seeOnly);
+            }
+
+            return $processedData->values()->all();
+        }
+    }
+
+    private function getRandomColor()
+    {
+        $randomColor = str_pad(dechex(mt_rand(0, 16777215)), 6, '0', STR_PAD_LEFT);
+        return '#' . $randomColor;
+    }
+
+    public function exportSummaryExcel(Request $request)
+    {
+        try {
+            $data = $this->getProcessedData($request);
+            $method = $request->input('method');
+            $series = $request->input('series', []);
+            $labels = $request->input('labels', []);
+            $targetItemColumn = $request->input('targetItemColumn');
+
+            $spreadsheet = new Spreadsheet();
+            $dataSheet = $spreadsheet->getActiveSheet();
+            $dataSheet->setTitle('Data');
+
+            if ($method === 'One Term') {
+                $headers = ['CODE', Str::upper($targetItemColumn), 'SUM'];
+
+                $lastColIndex = count($headers);
+                $lastCol = Coordinate::stringFromColumnIndex($lastColIndex);
+
+                $dataSheet->fromArray([$headers], null, 'A1');
+
+                $rowIndex = 2;
+                foreach ($data as $row) {
+                    $rowData = [
+                        $row['code'],
+                        $row[$request->input('targetItemFieldName')] ?? '',
+                        $row[$request->input('itemCountFieldName')] ?? ''
+                    ];
+                    $dataSheet->fromArray([$rowData], null, 'A' . $rowIndex);
+                    $rowIndex++;
+                }
+
+                for ($i = 1; $i <= $lastColIndex; $i++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($i);
+                    $dataSheet->getColumnDimension($columnLetter)->setAutoSize(true);
+                }
+
+                // Style the header row
+                $dataSheet->getStyle('A1' . ':' . $lastCol . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E0E0E0']
+                    ]
+                ]);
+
+                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex - 1)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                ]);
+
+                $dataSheet->freezePane('C2');
+            } else {
+                // Headers: CODE, NAME, Period columns, SUM, AVE
+                $headers = ['CODE', Str::upper($targetItemColumn)];
+
+                foreach ($labels as $label) {
+                    $headers[] = $label;
+                }
+
+                $headers[] = 'SUM';
+                $headers[] = 'AVE';
+
+                $dataSheet->fromArray([$headers], null, 'A1');
+
+                $rowIndex = 2;
+                $lastColIndex = count($headers);
+                $lastCol = Coordinate::stringFromColumnIndex($lastColIndex);
+
+                foreach ($data as $item) {
+                    $seriesData = collect($series)->first(function ($s) use ($item) {
+                        return $s['name'] === $item['code'];
+                    });
+
+                    if ($seriesData) {
+                        $row = [
+                            $item['code'],
+                            $item[$request->input('targetItemFieldName')] ?? ''
+                        ];
+
+                        foreach ($seriesData['data'] as $value) {
+                            $row[] = $value;
+                        }
+
+                        $sum = array_sum($seriesData['data']);
+                        $row[] = $sum;
+
+                        $average = count($seriesData['data']) > 0 ? $sum / count($seriesData['data']) : 0;
+                        $row[] = round($average, 2);
+
+                        $dataSheet->fromArray([$row], null, 'A' . $rowIndex);
+                        $rowIndex++;
+                    }
+                }
+
+                // Auto-size all columns
+                for ($colIndex = 1; $colIndex <= $lastColIndex; $colIndex++) {
+                    $columnLetter = Coordinate::stringFromColumnIndex($colIndex);
+                    $dataSheet->getColumnDimension($columnLetter)->setAutoSize(true);
+                }
+
+                $numericStartCol = Coordinate::stringFromColumnIndex(3); // Start from first period column
+                $dataSheet->getStyle($numericStartCol . '2:' . $lastCol . ($rowIndex - 1))
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0');
+
+                $totalRow = ['Total', ''];
+
+                for ($col = 3; $col <= $lastColIndex; $col++) {
+                    $colLetter = Coordinate::stringFromColumnIndex($col);
+                    $totalRow[] = "=SUM({$colLetter}2:{$colLetter}" . ($rowIndex - 1) . ")";
+                }
+
+                $dataSheet->fromArray([$totalRow], null, 'A' . $rowIndex);
+
+                // Style the header row
+                $dataSheet->getStyle('A1' . ':' . $lastCol . '1')->applyFromArray([
+                    'font' => ['bold' => true],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => 'E0E0E0']
+                    ]
+                ]);
+
+                $dataSheet->getStyle('A1:' . $lastCol . $rowIndex)->applyFromArray([
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                ]);
+
+                $dataSheet->freezePane('C2');
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'maintenance-data-' . date('Y-m-d') . '.xlsx';
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->setIncludeCharts(true);
+            $writer->save($tempFile);
+
+            return Response::download($tempFile, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportDetailExcel(Request $request)
+    {
+        try {
+            $data = $this->getProcessedData($request);
+            $method = $request->input('method');
+            $targetIndex = $request->input('targetItem');
+
+            $codes = [];
+            foreach ($data as $item) {
+                if (isset($item['code'])) {
+                    $codes[] = $item['code'];
+                }
+            }
+
+            $targetConfig = $this->getTargetConfig($targetIndex);
+            if (!$targetConfig) {
+                throw new Exception('Invalid target configuration');
+            }
+
+            $query = DB::table('tbl_spkrecord as r')
+                ->join('mas_machine as mm', 'r.machineno', '=', 'mm.machineno')
+                ->join('mas_shop as ms', 'r.ordershop', '=', 'ms.shopcode')
+                ->leftJoin('mas_situation as msit', 'r.situationcode', '=', 'msit.situationcode')
+                ->leftJoin('mas_factor as mf', 'r.factorcode', '=', 'mf.factorcode')
+                ->leftJoin('mas_measure as mm2', 'r.measurecode', '=', 'mm2.measurecode')
+                ->leftJoin('mas_prevention as mp', 'r.preventioncode', '=', 'mp.preventioncode')
+                ->leftJoin('mas_ltfactor as ml', 'r.ltfactorcode', '=', 'ml.ltfactorcode')
+                ->leftJoin('mas_maker as mmk', 'mm.makercode', '=', 'mmk.makercode')
+                ->select([
+                    'r.recordid',
+                    'r.occurdate',
+                    'r.ordershop',
+                    'ms.shopname',
+                    'r.machineno',
+                    'mm.machinename',
+                    'mm.linecode',
+                    'r.situationcode',
+                    'msit.situationname',
+                    'r.situation',
+                    'r.factorcode',
+                    'mf.factorname',
+                    'r.factor',
+                    'r.measurecode',
+                    'mm2.measurename',
+                    'r.measure',
+                    'r.preventioncode',
+                    'mp.preventionname',
+                    'r.prevention',
+                    'r.ltfactorcode',
+                    'ml.ltfactorname',
+                    'r.ltfactor',
+                    'mmk.makername',
+                    'r.machinestoptime',
+                    'r.linestoptime',
+                    'r.staffnum',
+                    'r.makerservice',
+                    'r.makerparts',
+                    'r.partcostsum',
+                    'r.inactivesum',
+                    'r.periodicalsum',
+                    'r.questionsum',
+                    'r.preparesum',
+                    'r.checksum',
+                    'r.waitsum',
+                    'r.repairsum',
+                    'r.confirmsum',
+                    'r.makerhour',
+                    'r.comments',
+                    'r.ordertitle',
+                    'r.updatetime',
+                    DB::raw("(CASE r.maintenancecode
+                        WHEN '01' THEN 'UM'
+                        WHEN '02' THEN 'BM'
+                        WHEN '03' THEN 'TBC'
+                        WHEN '04' THEN 'TBA'
+                        WHEN '05' THEN 'PvM'
+                        WHEN '06' THEN 'FM'
+                        WHEN '07' THEN 'CM'
+                        WHEN '08' THEN 'CHECK'
+                        WHEN '09' THEN 'LAYOUT'
+                        ELSE '--'
+                    END) as maintenancecode"),
+                    DB::raw('(r.totalrepairsum * r.staffnum) as internal_manhour'),
+                    DB::raw('(r.totalrepairsum * r.staffnum + r.makerhour) as total_manhour')
+                ]);
+
+            $sourceField = str_replace(' as code', '', $targetConfig['sourceField']);
+
+            if (strpos($sourceField, 'SUBSTRING') !== false) {
+                $query->whereIn(DB::raw($sourceField), $codes);
+            } elseif (strpos($sourceField, "COALESCE") !== false) {
+                $query->whereIn(DB::raw($sourceField), $codes);
+            } else {
+                $query->whereIn($sourceField, $codes);
+            }
+
+            // Add date filters and other filters...
+            $startDate = sprintf(
+                '%d%02d01',
+                $request->input('startYear'),
+                intval($request->input('startMonth'))
+            );
+
+            $endDate = Carbon::create(
+                $request->input('endYear'),
+                $request->input('endMonth'),
+                1
+            )->endOfMonth()->format('Ymd');
+
+            $query->whereBetween('r.occurdate', [$startDate, $endDate]);
+            $this->addFilters($query, $request->all());
+
+            $detailedData = $query->get();
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Detailed Data');
+
+            // Add headers
+            $headers = [
+                'SPK NO',
+                'ORDER DATE',
+                'SHOP CODE',
+                'SHOP NAME',
+                'MACHINE NO',
+                'MACHINE NAME',
+                'LINE',
+                'TITLE',
+                'NOTE STOP PANJANG',
+                'NOTE URAIAN MASALAH',
+                'NOTE PENYEBAB',
+                'NOTE TINDAKAN',
+                'NOTE SOLUSI',
+                'COMMENTS',
+                'MAINTENANCE CODE',
+                'KODE URAIAN MASALAH',
+                'NAMA URAIAN MASALAH',
+                'KODE PENYEBAB',
+                'NAMA PENYEBAB',
+                'KODE TINDAKAN',
+                'NAMA TINDAKAN',
+                'KODE SOLUSI',
+                'NAMA SOLUSI',
+                'KODE STOP PANJANG',
+                'NAMA STOP PANJANG',
+                'MAKER NAME',
+                'PARTS COST[IDR]',
+                'STAFF NUMBER[ORANG]',
+                'INTERNAL MANHOUR[MENIT]',
+                'TOTAL MANHOUR[MENIT]',
+                'MACHINE STOP TIME[MENIT]',
+                'LINE STOP TIME[MENIT]',
+                'MAKER MANHOUR[MENIT]',
+                'MAKER SERVICE FEE[IDR]',
+                'MAKER PARTS FEE[IDR]',
+                'WKT SEBELUM PEKERJAAN[MENIT]',
+                'WKT PERIODICAL[MENIT]',
+                'WKT PERTANYAAN[MENIT]',
+                'WKT SIAPKAN[MENIT]',
+                'WKT PENELITIAN[MENIT]',
+                'WKT MENUNGGU PART[MENIT]',
+                'WKT PEKERJAAN [MENIT]',
+                'WKT KONFIRM[MENIT]',
+                'UPDATETIME'
+            ];
+
+            // Add title parameters
+            $parameterText = $this->generateParameterText($request);
+            $sheet->setCellValue('A1', $parameterText);
+
+            $lastColumnIndex = count($headers);
+            $lastCol = Coordinate::stringFromColumnIndex($lastColumnIndex);
+
+            $paramLines = 1;
+            $sheet->mergeCells("A1:{$lastCol}" . ($paramLines));
+
+
+            $sheet->getStyle('A1')->applyFromArray([
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_TOP,
+                    'wrapText' => true
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E9EFF7']
+                ]
+            ]);
+
+            $sheet->getRowDimension(1)->setRowHeight(($paramLines * 15));
+
+            $dataStartRow = $paramLines + 2;
+            $sheet->fromArray([$headers], null, 'A' . $dataStartRow);
+
+            $textColumns = ['H', 'I', 'J', 'K', 'L', 'M', 'N']; // Columns with text that may contain newlines
+            foreach ($textColumns as $col) {
+                $sheet->getStyle($col . $dataStartRow . ':' . $col . ($dataStartRow + 1000))
+                    ->getAlignment()
+                    ->setWrapText(true)
+                    ->setVertical(Alignment::VERTICAL_BOTTOM);
+            }
+
+            // Add data
+            $row = $dataStartRow + 1;
+            foreach ($detailedData as $record) {
+                $rowData = [
+                    $record->recordid,
+                    $record->occurdate,
+                    $record->ordershop,
+                    $record->shopname,
+                    $record->machineno,
+                    $record->machinename,
+                    $record->linecode,
+                    $record->ordertitle,
+                    $record->ltfactor,
+                    $record->situation,
+                    $record->factor,
+                    $record->measure,
+                    $record->prevention,
+                    $record->comments,
+                    $record->maintenancecode,
+                    $record->situationcode,
+                    $record->situationname,
+                    $record->factorcode,
+                    $record->factorname,
+                    $record->measurecode,
+                    $record->measurename,
+                    $record->preventioncode,
+                    $record->preventionname,
+                    $record->ltfactorcode,
+                    $record->ltfactorname,
+                    $record->makername,
+                    $record->partcostsum,
+                    $record->staffnum,
+                    $record->internal_manhour,
+                    $record->total_manhour,
+                    $record->machinestoptime,
+                    $record->linestoptime,
+                    $record->makerhour,
+                    $record->makerservice,
+                    $record->makerparts,
+                    $record->inactivesum,
+                    $record->periodicalsum,
+                    $record->questionsum,
+                    $record->preparesum,
+                    $record->checksum,
+                    $record->waitsum,
+                    $record->repairsum,
+                    $record->confirmsum,
+                    $record->updatetime,
+                ];
+                $sheet->fromArray([$rowData], null, 'A' . $row);
+                $row++;
+            }
+
+            // Format numeric columns
+            for ($colIndex = 27; $colIndex <= 42; $colIndex++) {
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex);
+                $sheet->getStyle($colLetter . $dataStartRow . ':' . $colLetter . ($row - 1))
+                    ->getNumberFormat()
+                    ->setFormatCode('#,##0');
+            }
+
+            // Auto-size columns
+            for ($i = 1; $i <= $lastColumnIndex; $i++) {
+                $columnLetter = Coordinate::stringFromColumnIndex($i);
+                $sheet->getColumnDimension($columnLetter)->setAutoSize(true);
+            }
+
+            // Style the header row
+            $sheet->getStyle('A' . $dataStartRow . ':' . $lastCol . $dataStartRow)->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E0E0E0']
+                ]
+            ]);
+
+            // Add borders
+            $styleArray = [
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+            ];
+            $sheet->getStyle('A' . $dataStartRow . ':' . $lastCol . ($row - 1))->applyFromArray($styleArray);
+
+            $sheet->freezePane('A' . ($dataStartRow + 1));
+
+            $writer = new Xlsx($spreadsheet);
+            $filename = 'maintenance-detail-' . date('Y-m-d') . '.xlsx';
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->save($tempFile);
+
+            return Response::download($tempFile, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportSvg(Request $request)
+    {
+        try {
+            // Get the SVG content from the request
+            $svgContent = $request->input('svgContent');
+
+            if (!$svgContent) {
+                throw new Exception('SVG content is required');
+            }
+
+            // Create response with SVG content
+            $filename = 'maintenance-chart-' . date('Y-m-d') . '.svg';
+
+            return Response::make($svgContent, 200, [
+                'Content-Type' => 'image/svg+xml',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function generateParameterText($request)
+    {
+        $params = [];
+
+        // Basic parameters
+        $params[] = "Term: " . $request->input('method', 'N/A');
+
+        // Date range
+        $startDate = Carbon::create($request->input('startYear'), $request->input('startMonth'), 1)
+            ->format('M Y');
+        $endDate = Carbon::create($request->input('endYear'), $request->input('endMonth'), 1)
+            ->format('M Y');
+        $params[] = "Period: {$startDate} - {$endDate}";
+
+        $params[] = "Summary: " . $this->convertTargetItem($request->input('targetItem'));
+
+        $params[] = "Item: " . $this->convertTargetSum($request->input('targetSum'));
+
+        // Add other parameters if they exist
+        if ($request->input('tdivision')) {
+            $params[] = "Maintenance: " . $this->convertMaintenanceCode($request->input('tdivision'));
+        }
+
+        if ($request->input('section')) {
+            $params[] = "Shop: " . $request->input('section');
+        }
+
+        if ($request->input('line')) {
+            $params[] = "Line: " . $request->input('line');
+        }
+
+        if ($request->input('machineNo')) {
+            $params[] = "Machine No: " . $request->input('machineNo');
+        }
+
+        if ($request->input('situation')) {
+            $params[] = "Situation: " . $request->input('situation');
+        }
+
+        if ($request->input('factor')) {
+            $params[] = "Factor: " . $request->input('factor');
+        }
+
+        if ($request->input('measures')) {
+            $params[] = "Measure: " . $request->input('measures');
+        }
+
+        if ($request->input('preventive')) {
+            $params[] = "Prevention: " . $request->input('preventive');
+        }
+
+        if ($request->input('factorLt')) {
+            $params[] = "LT Factor: " . $request->input('factorLt');
+        }
+
+        if ($request->input('machineMaker')) {
+            $params[] = "Machine Maker: " . $request->input('machineMaker');
+        }
+
+        if ($request->input('numItem')) {
+            $counterValue = $request->input('counter');
+            $moreThan = $request->input('numMax');
+            $lessThan = $request->input('numMin');
+
+            if ($counterValue) {
+                $params[] = "Counter: " . $counterValue;
+                if ($moreThan) {
+                    $params[] = "More Than: " . $moreThan;
+                }
+                if ($lessThan) {
+                    $params[] = "Less Than: " . $lessThan;
+                }
+            }
+        }
+
+        $params[] = "Sort: " . $request->input('sort', 'N/A');
+        $params[] = "Items Shown: " . $request->input('seeOnly', '50');
+
+        if ($request->input('outofRank')) {
+            $params[] = "Including Others: Yes";
+        }
+
+        return implode(", ", $params);
+    }
+
+    private function convertMaintenanceCode($maintenanceCode)
+    {
+        switch ($maintenanceCode) {
+            case '01':
+                return 'UM';
+            case '02':
+                return 'BM';
+            case '03':
+                return 'TBC';
+            case '04':
+                return 'TBA';
+            case '05':
+                return 'PvM';
+            case '06':
+                return 'FM';
+            case '07':
+                return 'CM';
+            case '08':
+                return 'CHECH';
+            case '09':
+                return 'LAYOUT';
+        }
+    }
+
+    private function convertTargetItem($targetItem)
+    {
+        switch ($targetItem) {
+            case '0':
+                return 'Jenis Perbaikan';
+            case '1':
+                return 'Shop';
+            case '2':
+                return 'Line';
+            case '3':
+                return 'Machine Header';
+            case '4':
+                return 'Machine No';
+            case '5':
+                return 'Penyebab';
+            case '6':
+                return 'Tindakan';
+            case '7':
+                return 'Solution';
+            case '8':
+                return 'Stop Panjang';
+            case '9':
+                return 'Machine Maker';
+        }
+    }
+
+    private function convertTargetSum($targetSum)
+    {
+        switch ($targetSum) {
+            case '0':
+                return 'Count';
+            case '1':
+                return 'Waktu Machine Stop';
+            case '2':
+                return 'Waktu Line Stop';
+            case '3':
+                return 'Repair ManHour (Internal)';
+            case '4':
+                return 'Repair ManHour (Maker)';
+            case '5':
+                return 'Repair ManHour Total';
+            case '6':
+                return 'Maker Cost';
+            case '7':
+                return 'Parts Cost';
+            case '8':
+                return 'Staff Number';
+            case '9':
+                return 'Waktu Sebelum Pekerjaan';
+            case '10':
+                return 'Waktu Periodical Maintenance';
+            case '11':
+                return 'Waktu Pertanyaan';
+            case '12':
+                return 'Waktu Siapkan';
+            case '13':
+                return 'Waktu Penelitian';
+            case '14':
+                return 'Waktu Menunggu Part';
+            case '15':
+                return 'Waktu Pekerjaan Maintenance';
+            case '16':
+                return 'Waktu Confirm';
         }
     }
 

@@ -225,6 +225,9 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Database Analyzation
     Route::post('/maintenance-database-system/analyze', [AnalyzationController::class, 'analyze']);
+    Route::post('/maintenance-database-system/analyze/export/svg', [AnalyzationController::class, 'exportSvg']);
+    Route::post('/maintenance-database-system/analyze/export/summary-excel', [AnalyzationController::class, 'exportSummaryExcel']);
+    Route::post('/maintenance-database-system/analyze/export/detail-excel', [AnalyzationController::class, 'exportDetailExcel']);
 
     // Press Part
     Route::get('/press-shot/parts', [PressPartController::class, 'indexParts']);

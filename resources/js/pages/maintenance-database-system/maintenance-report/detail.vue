@@ -279,37 +279,39 @@ onMounted(() => {
         maintenance.
       </VCardText>
       <div v-else style="overflow-x: auto">
-        <VTable class="text-no-wrap" height="250">
-          <thead>
-            <tr>
-              <th>NO</th>
-              <th>NAME</th>
-              <th>WAKTU<br />SEBELUM</th>
-              <th>WAKTU<br />PERIODICAL</th>
-              <th>WAKTU<br />PERTANYAAN</th>
-              <th>WAKTU<br />SIAPKAN</th>
-              <th>WAKTU<br />PENELITIAN</th>
-              <th>WAKTU<br />MENUNGGU PART</th>
-              <th>WAKTU PEKERJAAN<br />MAINTENANCE</th>
-              <th>WAKTU<br />KONFIRMASI</th>
-            </tr>
-          </thead>
+        <div class="v-table-row-odd-even">
+          <VTable fixed-header class="text-no-wrap" height="250">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>NAME</th>
+                <th>WAKTU<br />SEBELUM</th>
+                <th>WAKTU<br />PERIODICAL</th>
+                <th>WAKTU<br />PERTANYAAN</th>
+                <th>WAKTU<br />SIAPKAN</th>
+                <th>WAKTU<br />PENELITIAN</th>
+                <th>WAKTU<br />MENUNGGU PART</th>
+                <th>WAKTU PEKERJAAN<br />MAINTENANCE</th>
+                <th>WAKTU<br />KONFIRMASI</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr v-for="item in addedWorkTime" :key="item.workid">
-              <td>{{ item.workid }}</td>
-              <td>{{ item.staffname }}</td>
-              <td>{{ item.inactivetime }}</td>
-              <td>{{ item.periodicaltime }}</td>
-              <td>{{ item.questiontime }}</td>
-              <td>{{ item.preparetime }}</td>
-              <td>{{ item.checktime }}</td>
-              <td>{{ item.waittime }}</td>
-              <td>{{ item.repairtime }}</td>
-              <td>{{ item.confirmtime }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+            <tbody>
+              <tr v-for="item in addedWorkTime" :key="item.workid">
+                <td>{{ item.workid }}</td>
+                <td>{{ item.staffname }}</td>
+                <td>{{ item.inactivetime }}</td>
+                <td>{{ item.periodicaltime }}</td>
+                <td>{{ item.questiontime }}</td>
+                <td>{{ item.preparetime }}</td>
+                <td>{{ item.checktime }}</td>
+                <td>{{ item.waittime }}</td>
+                <td>{{ item.repairtime }}</td>
+                <td>{{ item.confirmtime }}</td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </div>
     </VCard>
 
@@ -340,34 +342,36 @@ onMounted(() => {
         Data parts masih kosong. Silakan tambah parts yang ganti.
       </VCardText>
       <div v-else style="overflow-x: auto">
-        <VTable class="text-no-wrap" height="250">
-          <thead>
-            <tr>
-              <th>NO</th>
-              <th>PART</th>
-              <th>SPESIFIKASI</th>
-              <th>BRAND</th>
-              <th>QUANTITY</th>
-              <th>HARGA</th>
-              <th>CURRENCY</th>
-            </tr>
-          </thead>
+        <div class="v-table-row-odd-even">
+          <VTable class="text-no-wrap" height="250">
+            <thead>
+              <tr>
+                <th>NO</th>
+                <th>PART</th>
+                <th>SPESIFIKASI</th>
+                <th>BRAND</th>
+                <th>QUANTITY</th>
+                <th>HARGA</th>
+                <th>CURRENCY</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            <tr v-for="item in addedChangedPart" :key="item.partid">
-              <td>{{ item.partid }}</td>
-              <td>
-                {{ item.partname }} <br />
-                <small>{{ item.partcode }}</small>
-              </td>
-              <td>{{ item.specification }}</td>
-              <td>{{ item.brand }}</td>
-              <td>{{ item.qtty }}</td>
-              <td>{{ item.price }}</td>
-              <td>{{ item.currency }}</td>
-            </tr>
-          </tbody>
-        </VTable>
+            <tbody>
+              <tr v-for="item in addedChangedPart" :key="item.partid">
+                <td>{{ item.partid }}</td>
+                <td>
+                  {{ item.partname }} <br />
+                  <small>{{ item.partcode }}</small>
+                </td>
+                <td>{{ item.specification }}</td>
+                <td>{{ item.brand }}</td>
+                <td>{{ item.qtty }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.currency }}</td>
+              </tr>
+            </tbody>
+          </VTable>
+        </div>
       </div>
     </VCard>
 

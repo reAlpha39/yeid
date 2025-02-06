@@ -326,31 +326,33 @@ onMounted(() => {
         :series="series"
       />
 
-      <VTable class="periodic-activity-table py-6">
-        <thead>
-          <tr>
-            <th class="text-left">BULAN</th>
-            <th class="text-left">
-              SUDAH DILAKUKAN<br />
-              (ON TIME)
-            </th>
-            <th class="text-left">SUDAH DILAKUKAN<br />(DELAY)</th>
-            <th class="text-left">BELUM<br />DILAKUKAN</th>
-            <th class="text-left">TOTAL</th>
-            <th class="text-left">% PERIODICAL<br />ACTIVITY</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="row in tableData" :key="row.month">
-            <td class="text-left">{{ row.month }}</td>
-            <td class="text-left">{{ row.completed }}</td>
-            <td class="text-left">{{ row.overdue }}</td>
-            <td class="text-left">{{ row.pending }}</td>
-            <td class="text-left">{{ row.total }}</td>
-            <td class="text-left">{{ row.percentage }}</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable fixed-header class="periodic-activity-table py-6">
+          <thead>
+            <tr>
+              <th class="text-left">BULAN</th>
+              <th class="text-left">
+                SUDAH DILAKUKAN<br />
+                (ON TIME)
+              </th>
+              <th class="text-left">SUDAH DILAKUKAN<br />(DELAY)</th>
+              <th class="text-left">BELUM<br />DILAKUKAN</th>
+              <th class="text-left">TOTAL</th>
+              <th class="text-left">% PERIODICAL<br />ACTIVITY</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in tableData" :key="row.month">
+              <td class="text-left">{{ row.month }}</td>
+              <td class="text-left">{{ row.completed }}</td>
+              <td class="text-left">{{ row.overdue }}</td>
+              <td class="text-left">{{ row.pending }}</td>
+              <td class="text-left">{{ row.total }}</td>
+              <td class="text-left">{{ row.percentage }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
     </div>
   </VCard>
 </template>

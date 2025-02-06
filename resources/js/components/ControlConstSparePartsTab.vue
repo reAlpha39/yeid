@@ -125,108 +125,110 @@ onMounted(() => {
     </div>
 
     <VCard v-else variant="outlined" class="ma-4">
-      <VTable>
-        <thead>
-          <tr>
-            <th>ITEM</th>
-            <th>UNIT</th>
-            <th>JANUARI</th>
-            <th>FEBRUARI</th>
-            <th>MARET</th>
-            <th>APRIL</th>
-            <th>MEI</th>
-            <th>JUNI</th>
-            <th>JULI</th>
-            <th>AGUSTUS</th>
-            <th>SEPTEMBER</th>
-            <th>OKTOBER</th>
-            <th>NOVEMBER</th>
-            <th>DESEMBER</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Order Amount</td>
-            <td>Jt. IDR</td>
-            <td>{{ formatNumber(data[0]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[1]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[2]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[3]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[4]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[5]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[6]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[7]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[8]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[9]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[10]?.order_in_millions) }}</td>
-            <td>{{ formatNumber(data[11]?.order_in_millions) }}</td>
-          </tr>
-          <tr>
-            <td>Received Amount</td>
-            <td>Jt. IDR</td>
-            <td>{{ formatNumber(data[0]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[1]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[2]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[3]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[4]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[5]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[6]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[7]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[8]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[9]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[10]?.inbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[11]?.inbound_in_millions) }}</td>
-          </tr>
-          <tr>
-            <td>Spent Amount</td>
-            <td>Jt. IDR</td>
-            <td>{{ formatNumber(data[0]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[1]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[2]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[3]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[4]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[5]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[6]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[7]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[8]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[9]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[10]?.outbound_in_millions) }}</td>
-            <td>{{ formatNumber(data[11]?.outbound_in_millions) }}</td>
-          </tr>
-          <tr>
-            <td>Adjust Amount</td>
-            <td>Jt. IDR</td>
-            <td>{{ formatNumber(data[0]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[1]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[2]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[3]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[4]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[5]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[6]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[7]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[8]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[9]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[10]?.adjust_in_millions) }}</td>
-            <td>{{ formatNumber(data[11]?.adjust_in_millions) }}</td>
-          </tr>
-          <tr>
-            <td>Stock Amount</td>
-            <td>Jt. IDR</td>
-            <td>{{ formatNumber(data[0]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[1]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[2]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[3]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[4]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[5]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[6]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[7]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[8]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[9]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[10]?.stock_in_millions) }}</td>
-            <td>{{ formatNumber(data[11]?.stock_in_millions) }}</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable>
+          <thead>
+            <tr>
+              <th>ITEM</th>
+              <th>UNIT</th>
+              <th>JANUARI</th>
+              <th>FEBRUARI</th>
+              <th>MARET</th>
+              <th>APRIL</th>
+              <th>MEI</th>
+              <th>JUNI</th>
+              <th>JULI</th>
+              <th>AGUSTUS</th>
+              <th>SEPTEMBER</th>
+              <th>OKTOBER</th>
+              <th>NOVEMBER</th>
+              <th>DESEMBER</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Order Amount</td>
+              <td>Jt. IDR</td>
+              <td>{{ formatNumber(data[0]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[1]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[2]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[3]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[4]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[5]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[6]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[7]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[8]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[9]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[10]?.order_in_millions) }}</td>
+              <td>{{ formatNumber(data[11]?.order_in_millions) }}</td>
+            </tr>
+            <tr>
+              <td>Received Amount</td>
+              <td>Jt. IDR</td>
+              <td>{{ formatNumber(data[0]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[1]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[2]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[3]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[4]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[5]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[6]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[7]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[8]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[9]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[10]?.inbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[11]?.inbound_in_millions) }}</td>
+            </tr>
+            <tr>
+              <td>Spent Amount</td>
+              <td>Jt. IDR</td>
+              <td>{{ formatNumber(data[0]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[1]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[2]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[3]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[4]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[5]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[6]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[7]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[8]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[9]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[10]?.outbound_in_millions) }}</td>
+              <td>{{ formatNumber(data[11]?.outbound_in_millions) }}</td>
+            </tr>
+            <tr>
+              <td>Adjust Amount</td>
+              <td>Jt. IDR</td>
+              <td>{{ formatNumber(data[0]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[1]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[2]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[3]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[4]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[5]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[6]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[7]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[8]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[9]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[10]?.adjust_in_millions) }}</td>
+              <td>{{ formatNumber(data[11]?.adjust_in_millions) }}</td>
+            </tr>
+            <tr>
+              <td>Stock Amount</td>
+              <td>Jt. IDR</td>
+              <td>{{ formatNumber(data[0]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[1]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[2]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[3]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[4]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[5]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[6]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[7]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[8]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[9]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[10]?.stock_in_millions) }}</td>
+              <td>{{ formatNumber(data[11]?.stock_in_millions) }}</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
     </VCard>
   </VCard>
 </template>

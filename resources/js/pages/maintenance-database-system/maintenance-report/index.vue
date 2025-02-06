@@ -19,11 +19,11 @@ const isDetailDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
-const activeOnly = ref(true);
 const selectedMachine = ref(null);
 const maintenanceCode = ref(null);
 const selectedStaff = ref(null);
 const selectedShop = ref(null);
+const selectedStatus = ref(null);
 
 const now = new Date();
 const formattedDate = new Intl.DateTimeFormat("en", {
@@ -97,6 +97,8 @@ const maintenanceCodes = [
   "09|LAYOUT",
 ];
 
+const status = ["GRAY", "GREEN", "YELLOW", "ORANGE"];
+
 function convertApproval(approval) {
   let result = "";
   (parseInt(approval) & 16) === 16 ? (result += "S") : (result += "B");
@@ -107,14 +109,13 @@ function convertApproval(approval) {
 
 async function fetchData() {
   try {
-    console.log(date.value);
+    // console.log(date.value);
     const response = await $api(
       "/maintenance-database-system/department-requests",
       {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -122,6 +123,7 @@ async function fetchData() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
         onResponseError({ response }) {
           errors.value = response._data.errors;
@@ -218,7 +220,6 @@ async function handleExport() {
         params: {
           search: searchQuery.value,
           date: date.value,
-          only_active: activeOnly.value,
           shop_code: selectedShop.value?.shopcode,
           machine_code: selectedMachine.value?.machineno,
           maintenance_code:
@@ -226,6 +227,7 @@ async function handleExport() {
               ? maintenanceCode.value.split("|")[0]
               : null,
           order_name: selectedStaff.value?.employeename,
+          status: selectedStatus.value,
         },
       }
     );
@@ -269,9 +271,20 @@ function getApprovalColor(approval) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch(searchQuery, () => {
-  debouncedFetchData();
-});
+watch(
+  [
+    searchQuery,
+    date,
+    selectedShop,
+    selectedMachine,
+    maintenanceCode,
+    selectedStaff,
+    selectedStatus,
+  ],
+  () => {
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -306,6 +319,18 @@ onMounted(() => {
       </div>
 
       <div style="inline-size: 10rem">
+        <AppAutocomplete
+          v-model="selectedStatus"
+          placeholder="Select status"
+          :items="status"
+          return-object
+          clearable
+          clear-icon="tabler-x"
+          outlined
+        />
+      </div>
+
+      <div style="inline-size: 10rem">
         <AppDateTimePicker
           v-model="date"
           placeholder="Select month"
@@ -327,12 +352,6 @@ onMounted(() => {
         />
       </div>
 
-      <VCheckbox
-        class="pr-7"
-        label="Active saja"
-        v-model="activeOnly"
-        @update:modelValue="fetchData()"
-      />
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">

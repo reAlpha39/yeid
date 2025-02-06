@@ -395,8 +395,8 @@ onMounted(() => {
           <div class="text-caption">PIC: {{ section.pic }}</div>
         </VCardTitle>
 
-        <div class="table-wrapper">
-          <VTable>
+        <div class="table-wrapper v-table-row-odd-even">
+          <VTable fixed-header>
             <thead>
               <tr class="header-row">
                 <th class="item-column" rowspan="2">ITEM</th>

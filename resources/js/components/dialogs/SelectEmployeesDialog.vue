@@ -125,8 +125,8 @@ onMounted(() => {
 
       <VDivider />
 
-      <div class="table-container">
-        <VTable class="text-no-wrap" height="500">
+      <div class="table-container v-table-row-odd-even">
+        <VTable fixed-header class="text-no-wrap" height="500">
           <thead>
             <tr>
               <th>Staff Code</th>

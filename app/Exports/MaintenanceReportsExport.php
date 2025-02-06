@@ -51,9 +51,9 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                 );
 
             // Only active records filter
-            if ($this->request->input('only_active') === 'true') {
-                $query->whereRaw('COALESCE(s.approval, 0) < 119');
-            }
+            // if ($this->request->input('only_active') === 'true') {
+            //     $query->whereRaw('COALESCE(s.approval, 0) < 119');
+            // }
 
             // Date filter
             if ($this->request->input('date')) {
@@ -86,6 +86,39 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
                 $query->where(function ($query) use ($searchTerm) {
                     $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
                         ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
+                });
+            }
+
+            // Status filter
+            if ($this->request->input('status')) {
+                $query->where(function ($query) {
+                    switch ($this->request->input('status')) {
+                        case 'GRAY':
+                            $query->where('s.approval', '>=', 112);
+                            break;
+                        case 'GREEN':
+                            $query->where('s.approval', '>=', 4)
+                                ->where('s.approval', '<', 112);
+                            break;
+                        case 'YELLOW':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '>', 0);
+                            break;
+                        case 'ORANGE':
+                            $query->where('s.approval', '<', 4)
+                                ->where('s.planid', '=', 0);
+                            break;
+                        case 'WHITE':
+                            $query->where(function ($q) {
+                                $q->whereRaw('NOT (
+                                (s.approval >= 112) OR
+                                (s.approval >= 4 AND s.approval < 112) OR
+                                (s.approval < 4 AND s.planid > 0) OR
+                                (s.approval < 4 AND s.planid = 0)
+                            )');
+                            });
+                            break;
+                    }
                 });
             }
 

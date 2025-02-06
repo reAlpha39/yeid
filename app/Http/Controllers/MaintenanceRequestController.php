@@ -25,7 +25,7 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            $onlyActive = $request->input('only_active');
+            // $onlyActive = $request->input('only_active');
             $date = $request->input('date');
             $shopCode = $request->input('shop_code');
             $machineCode = $request->input('machine_code');
@@ -57,9 +57,9 @@ class MaintenanceRequestController extends Controller
                 ]);
 
             // Apply filters
-            if ($onlyActive === '1') {
-                $query->whereRaw('COALESCE(s.approval, 0) < 119');
-            }
+            // if ($onlyActive === '1') {
+            //     $query->whereRaw('COALESCE(s.approval, 0) < 119');
+            // }
 
             if (!empty($date)) {
                 $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);

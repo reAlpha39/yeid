@@ -225,74 +225,78 @@ onMounted(() => {
       <VCardTitle class="my-4"> Factory {{ factory.plantCode }} </VCardTitle>
 
       <VDivider />
-      <VTable>
-        <thead>
-          <tr>
-            <th>IMPORT/<br />LOCAL</th>
-            <th>CAT</th>
-            <th>UNIT</th>
-            <th v-for="month in months" :key="month.value">
-              {{ month.label }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-for="(row, index) in rows" :key="index">
+      <div class="v-table-row-odd-even">
+        <VTable fixed-header>
+          <thead>
             <tr>
-              <td>{{ row.type }}</td>
-              <td>{{ row.category }}</td>
+              <th>IMPORT/<br />LOCAL</th>
+              <th>CAT</th>
+              <th>UNIT</th>
+              <th v-for="month in months" :key="month.value">
+                {{ month.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="(row, index) in rows" :key="index">
+              <tr>
+                <td>{{ row.type }}</td>
+                <td>{{ row.category }}</td>
+                <td>Jt. IDR</td>
+                <td
+                  v-for="month in months"
+                  :key="`${row.type}-${row.category}-${month.value}`"
+                >
+                  {{
+                    getCellValue(
+                      factory.data,
+                      row.type,
+                      row.category,
+                      month.value
+                    )
+                  }}
+                </td>
+              </tr>
+            </template>
+            <tr class="font-weight-bold" style="background-color: #f9f9f9">
+              <td colspan="2">Sub Total</td>
               <td>Jt. IDR</td>
-              <td
-                v-for="month in months"
-                :key="`${row.type}-${row.category}-${month.value}`"
-              >
-                {{
-                  getCellValue(
-                    factory.data,
-                    row.type,
-                    row.category,
-                    month.value
-                  )
-                }}
+              <td v-for="month in months" :key="`subtotal-${month.value}`">
+                {{ calculateSubTotal(factory.data, month.value) }}
               </td>
             </tr>
-          </template>
-          <tr class="font-weight-bold" style="background-color: #f9f9f9">
-            <td colspan="2">Sub Total</td>
-            <td>Jt. IDR</td>
-            <td v-for="month in months" :key="`subtotal-${month.value}`">
-              {{ calculateSubTotal(factory.data, month.value) }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+          </tbody>
+        </VTable>
+      </div>
     </VCard>
 
     <VCard v-if="groupedFactories.length > 0" class="ma-4" variant="outlined">
       <VCardTitle class="my-4">All Total</VCardTitle>
       <VDivider />
-      <VTable>
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th>UNIT</th>
-            <th v-for="month in months" :key="month.value">
-              {{ month.label }}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="font-weight-bold" style="background-color: #f9f9f9">
-            <td>All Total</td>
-            <td></td>
-            <td>Jt. IDR</td>
-            <td v-for="month in months" :key="`total-${month.value}`">
-              {{ calculateAllTotal[month.value] }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable fixed-header>
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th>UNIT</th>
+              <th v-for="month in months" :key="month.value">
+                {{ month.label }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="font-weight-bold" style="background-color: #f9f9f9">
+              <td>All Total</td>
+              <td></td>
+              <td>Jt. IDR</td>
+              <td v-for="month in months" :key="`total-${month.value}`">
+                {{ calculateAllTotal[month.value] }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
     </VCard>
   </VCard>
 

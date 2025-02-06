@@ -3,13 +3,12 @@ import {
   getColumnChartConfig,
   getDonutChartConfig,
 } from "@core/libs/apex-chart/apexCharConfig";
-import { saveAs } from "file-saver";
+import axios from "axios";
 import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index";
 import { debounce } from "lodash";
 import { useToast } from "vue-toastification";
 import { useTheme } from "vuetify";
 import { VDivider } from "vuetify/lib/components/index.mjs";
-import * as XLSX from "xlsx";
 
 definePage({
   meta: {
@@ -808,68 +807,206 @@ function isNumber(evt) {
   }
 }
 
-const exportGraph = () => {
+const exportGraph = async () => {
   const chart = document.querySelector(".apexcharts-canvas");
   if (chart) {
-    // Get the SVG data
-    const svgData = chart.querySelector("svg").outerHTML;
-    const svgBlob = new Blob([svgData], {
-      type: "image/svg+xml;charset=utf-8",
-    });
+    try {
+      const accessToken = useCookie("accessToken").value;
+      // Get the SVG data
+      const svgData = chart.querySelector("svg").outerHTML;
 
-    saveAs(
-      svgBlob,
-      `maintenance-chart-${new Date().toISOString().split("T")[0]}.svg`
-    );
+      const response = await axios({
+        method: "post",
+        url: "/api/maintenance-database-system/analyze/export/svg",
+        responseType: "blob",
+        headers: accessToken
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            }
+          : {
+              "Content-Type": "application/json",
+            },
+        data: {
+          svgContent: svgData,
+        },
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `maintenance-chart-${new Date().toISOString().split("T")[0]}.svg`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Failed to export graph");
+      console.error(error);
+    }
   }
 };
 
-const exportTableToExcel = () => {
+const exportSummaryExcel = async () => {
   if (!data.value?.length) return;
 
-  // Prepare the data for export
-  const exportData = data.value.map((item) => ({
-    Code: item.code,
-    [targetItemColumnName.value]: item[targetItemColumnName.value],
-    [targetSumColumnName.value]: item[itemCountFieldName.value],
-  }));
+  try {
+    const accessToken = useCookie("accessToken").value;
 
-  // Create worksheet
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Maintenance Data");
+    const chartSeries = series.value.map((s) => {
+      if (method.value === "One Term") {
+        return {
+          name: s.toString(),
+          data: [s],
+        };
+      }
+      return s;
+    });
 
-  // Generate Excel file
-  XLSX.writeFile(
-    wb,
-    `maintenance-data-${new Date().toISOString().split("T")[0]}.xlsx`
-  );
+    const requestData = {
+      ...getCurrentAnalysisParams(),
+      targetItemColumn: targetItemColumnName.value,
+      targetSumColumn: targetSumColumnName.value,
+      targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+      itemCountFieldName: itemCountFieldName.value,
+      method: method.value,
+      seeOnly: seeOnly.value,
+      sort: sort.value,
+      series: chartSeries,
+      labels: labels.value,
+    };
+
+    const response = await axios({
+      method: "post",
+      url: "/api/maintenance-database-system/analyze/export/summary-excel",
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        : {
+            "Content-Type": "application/json",
+          },
+      data: requestData,
+    });
+
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
+    link.setAttribute("download", `maintenance-data-${dateStr}.xlsx`);
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export error:", error);
+    toast.error("Failed to export Excel file");
+  }
 };
 
-const exportTableToCSV = () => {
+const exportDetailExcel = async () => {
   if (!data.value?.length) return;
 
-  // Prepare CSV content
-  const headers = [
-    "Code",
-    targetItemColumnName.value,
-    targetSumColumnName.value,
-  ].join(",");
-  const rows = data.value.map((item) => {
-    return [
-      item.code,
-      item[targetItemColumnName.value],
-      item[itemCountFieldName.value],
-    ].join(",");
-  });
+  try {
+    const accessToken = useCookie("accessToken").value;
 
-  const csvContent = [headers, ...rows].join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  saveAs(
-    blob,
-    `maintenance-data-${new Date().toISOString().split("T")[0]}.csv`
-  );
+    const requestData = {
+      ...getCurrentAnalysisParams(),
+      targetItemColumn: targetItemColumnName.value,
+      targetSumColumn: targetSumColumnName.value,
+      targetItemFieldName: targetItemColumnName.value.toLowerCase(),
+      itemCountFieldName: itemCountFieldName.value,
+      method: method.value,
+      seeOnly: seeOnly.value,
+      sort: sort.value,
+      series: series.value,
+      labels: labels.value,
+    };
+
+    const response = await axios({
+      method: "post",
+      url: "/api/maintenance-database-system/analyze/export/detail-excel",
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        : {
+            "Content-Type": "application/json",
+          },
+      data: requestData,
+    });
+
+    const blob = new Blob([response.data], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
+    link.setAttribute("download", `maintenance-detail-${dateStr}.xlsx`);
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Export error:", error);
+    toast.error("Failed to export detailed Excel file");
+  }
 };
+
+const getCurrentAnalysisParams = () => {
+  return {
+    targetTerm:
+      method.value === "One Term" ? null : methods.indexOf(method.value),
+    targetItem: targetItems.indexOf(targetItem.value),
+    targetSum: targetSums.indexOf(targetSum.value),
+    startYear: new Date(startDate.value).getFullYear(),
+    startMonth: new Date(startDate.value).getMonth() + 1,
+    endYear: new Date(endDate.value).getFullYear(),
+    endMonth: new Date(endDate.value).getMonth() + 1,
+    tdivision: maintenanceCode.value
+      ? maintenanceCode.value.split("|")[0]
+      : null,
+    section: shop.value?.shopcode,
+    line: line.value?.linecode,
+    machineNo: machineNo.value,
+    situation: situation.value?.situationcode,
+    measures: measure.value?.measurecode,
+    factor: factor.value?.factorcode,
+    factorLt: ltfactor.value?.ltfactorcode,
+    preventive: prevention.value?.preventioncode,
+    machineMaker: maker.value?.makercode,
+    numItem:
+      counter.value !== null ? counters.indexOf(counter.value) + 1 : null,
+    numMin: counter.value !== null ? parseInt(lessThan.value) : null,
+    numMax: counter.value !== null ? parseInt(moreThan.value) : null,
+    targetSort: sorts.indexOf(sort.value),
+    maxRow: parseInt(seeOnly.value ?? "50"),
+    outofRank: includeOtherCheckBox.value,
+  };
+};
+
 onMounted(() => {
   fetchData();
   fetchShop();
@@ -1225,20 +1362,20 @@ watch(
             </VBtn>
             <VBtn
               prepend-icon="tabler-file-spreadsheet"
-              @click="exportTableToExcel"
+              @click="exportSummaryExcel"
               :disabled="!data?.length"
               color="success"
             >
-              Export to Excel
+              Summary Data
             </VBtn>
-            <!-- <VBtn
-              prepend-icon="tabler-file-csv"
-              @click="exportTableToCSV"
+            <VBtn
+              prepend-icon="tabler-file-spreadsheet"
+              @click="exportDetailExcel"
               :disabled="!data?.length"
               color="info"
             >
-              Export to CSV
-            </VBtn> -->
+              Detail Data
+            </VBtn>
           </VBtnGroup>
         </VCol>
       </VRow>
@@ -1261,28 +1398,32 @@ watch(
 
       <br />
 
-      <VTable class="text-no-wrap px-7">
-        <thead>
-          <tr>
-            <th></th>
-            <th class="color-column">Code</th>
-            <th>{{ targetItemColumnName }}</th>
-            <th>{{ targetSumColumnName }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in data" :key="item.code">
-            <td class="color-column" :style="{ backgroundColor: item.color }">
-              <div style="width: 20px; height: 20px; border-radius: 4px"></div>
-            </td>
-            <td>{{ item.code }}</td>
-            <td>{{ item[targetItemColumnName] }}</td>
-            <td>
-              {{ Intl.NumberFormat().format(item[itemCountFieldName] ?? 0) }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable fixed-header class="text-no-wrap px-7">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="color-column">Code</th>
+              <th>{{ targetItemColumnName }}</th>
+              <th>{{ targetSumColumnName }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="item in data" :key="item.code">
+              <td class="color-column" :style="{ backgroundColor: item.color }">
+                <div
+                  style="width: 20px; height: 20px; border-radius: 4px"
+                ></div>
+              </td>
+              <td>{{ item.code }}</td>
+              <td>{{ item[targetItemColumnName] }}</td>
+              <td>
+                {{ Intl.NumberFormat().format(item[itemCountFieldName] ?? 0) }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
 
       <br />
     </div>

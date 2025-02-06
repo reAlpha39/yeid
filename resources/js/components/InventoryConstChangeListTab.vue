@@ -138,40 +138,42 @@ onMounted(() => {
     </div>
 
     <VCard v-else variant="outlined" class="ma-4">
-      <VTable height="600" fixed-header>
-        <thead>
-          <tr>
-            <th style="max-width: 300px; min-width: 100px">PART</th>
-            <th style="max-width: 300px; min-width: 100px">SPECIFICATION</th>
-            <th
-              v-for="month in months"
-              :key="month.value"
-              style="max-width: 300px; min-width: 100px"
-            >
-              {{ month.label }}<br />(JT. RP)
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, index) in data" :key="index">
-            <td style="max-width: 400px; min-width: 100px">
-              {{ row.partname }}
-              <br />
-              <small>{{ row.partcode }}</small>
-            </td>
-            <td style="max-width: 400px; min-width: 100px">
-              {{ row.specification }}
-            </td>
-            <td
-              v-for="month in months"
-              :key="month.value"
-              style="max-width: 300px; min-width: 100px"
-            >
-              {{ row.monthly_data[month.value] }}
-            </td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable height="600" fixed-header>
+          <thead>
+            <tr>
+              <th style="max-width: 300px; min-width: 100px">PART</th>
+              <th style="max-width: 300px; min-width: 100px">SPECIFICATION</th>
+              <th
+                v-for="month in months"
+                :key="month.value"
+                style="max-width: 300px; min-width: 100px"
+              >
+                {{ month.label }}<br />(JT. RP)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, index) in data" :key="index">
+              <td style="max-width: 400px; min-width: 100px">
+                {{ row.partname }}
+                <br />
+                <small>{{ row.partcode }}</small>
+              </td>
+              <td style="max-width: 400px; min-width: 100px">
+                {{ row.specification }}
+              </td>
+              <td
+                v-for="month in months"
+                :key="month.value"
+                style="max-width: 300px; min-width: 100px"
+              >
+                {{ row.monthly_data[month.value] }}
+              </td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
     </VCard>
   </VCard>
 </template>

@@ -155,6 +155,7 @@ async function addData() {
             department_id: selectedDepartment.value.id,
             status: convertStatus(status.value),
             control_access: controlAccessJson,
+            password: password.value,
           },
           onResponseError({ response }) {
             toast.error(response._data.message ?? "Failed to save user data");

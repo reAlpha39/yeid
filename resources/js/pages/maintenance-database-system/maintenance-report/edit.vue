@@ -313,6 +313,10 @@ async function initEditData(id) {
 
   await fetchDataMachine(data.machineno);
 
+  await fetchExchangeRate(
+    data.occurdate?.substring(0, 4) ?? new Date().getFullYear()
+  );
+
   if (data.ltfactorcode) {
     await fetchLtfactors(data.ltfactorcode);
   }
@@ -364,14 +368,15 @@ async function fetchParts(id) {
   }
 }
 
-async function fetchExchangeRate() {
+async function fetchExchangeRate(id) {
   try {
-    const year = new Date().getFullYear();
+    console.log(id);
+    const year = id ?? new Date().getFullYear();
     const response = await $api("/master/systems/" + encodeURIComponent(year));
 
     exchangeRate.value = response.data;
   } catch (err) {
-    const year = new Date().getFullYear();
+    const year = id ?? new Date().getFullYear();
     toast.error(`Failed to fetch exchange rate ${year}`);
     console.log(err);
   }
@@ -1193,53 +1198,55 @@ onMounted(() => {
           pekerjaan maintenance.
         </VCardText>
         <div v-else style="overflow-x: auto">
-          <VTable class="text-no-wrap" height="250">
-            <thead>
-              <tr>
-                <th>NO</th>
-                <th>NAME</th>
-                <th>WAKTU<br />SEBELUM</th>
-                <th>WAKTU<br />PERIODICAL</th>
-                <th>WAKTU<br />PERTANYAAN</th>
-                <th>WAKTU<br />SIAPKAN</th>
-                <th>WAKTU<br />PENELITIAN</th>
-                <th>WAKTU<br />MENUNGGU PART</th>
-                <th>WAKTU PEKERJAAN<br />MAINTENANCE</th>
-                <th>WAKTU<br />KONFIRMASI</th>
-                <th class="actions-column">ACTIONS</th>
-                <!-- Added class for Actions column -->
-              </tr>
-            </thead>
+          <div class="v-table-row-odd-even">
+            <VTable fixed-header class="text-no-wrap" height="250">
+              <thead>
+                <tr>
+                  <th>NO</th>
+                  <th>NAME</th>
+                  <th>WAKTU<br />SEBELUM</th>
+                  <th>WAKTU<br />PERIODICAL</th>
+                  <th>WAKTU<br />PERTANYAAN</th>
+                  <th>WAKTU<br />SIAPKAN</th>
+                  <th>WAKTU<br />PENELITIAN</th>
+                  <th>WAKTU<br />MENUNGGU PART</th>
+                  <th>WAKTU PEKERJAAN<br />MAINTENANCE</th>
+                  <th>WAKTU<br />KONFIRMASI</th>
+                  <th class="actions-column">ACTIONS</th>
+                  <!-- Added class for Actions column -->
+                </tr>
+              </thead>
 
-            <tbody>
-              <tr v-for="item in addedWorkTime" :key="item.workid">
-                <td>{{ item.workid }}</td>
-                <td>{{ item.staffname }}</td>
-                <td>{{ item.inactivetime }}</td>
-                <td>{{ item.periodicaltime }}</td>
-                <td>{{ item.questiontime }}</td>
-                <td>{{ item.preparetime }}</td>
-                <td>{{ item.checktime }}</td>
-                <td>{{ item.waittime }}</td>
-                <td>{{ item.repairtime }}</td>
-                <td>{{ item.confirmtime }}</td>
-                <td class="actions-column align-center">
-                  <IconBtn>
-                    <VIcon
-                      @click="handleUpdateWorkTime(item.workid)"
-                      icon="tabler-edit"
-                    />
-                  </IconBtn>
-                  <IconBtn>
-                    <VIcon
-                      @click="handleDeleteWorkTime(item.workid)"
-                      icon="tabler-trash"
-                    />
-                  </IconBtn>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+              <tbody>
+                <tr v-for="item in addedWorkTime" :key="item.workid">
+                  <td>{{ item.workid }}</td>
+                  <td>{{ item.staffname }}</td>
+                  <td>{{ item.inactivetime }}</td>
+                  <td>{{ item.periodicaltime }}</td>
+                  <td>{{ item.questiontime }}</td>
+                  <td>{{ item.preparetime }}</td>
+                  <td>{{ item.checktime }}</td>
+                  <td>{{ item.waittime }}</td>
+                  <td>{{ item.repairtime }}</td>
+                  <td>{{ item.confirmtime }}</td>
+                  <td class="actions-column align-center">
+                    <IconBtn>
+                      <VIcon
+                        @click="handleUpdateWorkTime(item.workid)"
+                        icon="tabler-edit"
+                      />
+                    </IconBtn>
+                    <IconBtn>
+                      <VIcon
+                        @click="handleDeleteWorkTime(item.workid)"
+                        icon="tabler-trash"
+                      />
+                    </IconBtn>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
         </div>
       </VCard>
 
@@ -1283,49 +1290,51 @@ onMounted(() => {
           Data parts masih kosong. Silakan tambah parts yang ganti.
         </VCardText>
         <div v-else style="overflow-x: auto">
-          <VTable class="text-no-wrap" height="250">
-            <thead>
-              <tr>
-                <th>NO</th>
-                <th>PART</th>
-                <th>SPESIFIKASI</th>
-                <th>BRAND</th>
-                <th>QUANTITY</th>
-                <th>HARGA</th>
-                <th>CURRENCY</th>
-                <th class="actions-column">ACTIONS</th>
-              </tr>
-            </thead>
+          <div class="v-table-row-odd-even">
+            <VTable fixed-header class="text-no-wrap" height="250">
+              <thead>
+                <tr>
+                  <th>NO</th>
+                  <th>PART</th>
+                  <th>SPESIFIKASI</th>
+                  <th>BRAND</th>
+                  <th>QUANTITY</th>
+                  <th>HARGA</th>
+                  <th>CURRENCY</th>
+                  <th class="actions-column">ACTIONS</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              <tr v-for="item in addedChangedPart" :key="item.partid">
-                <td>{{ item.partid }}</td>
-                <td>
-                  {{ item.partname }} <br />
-                  <small>{{ item.partcode }}</small>
-                </td>
-                <td>{{ item.specification }}</td>
-                <td>{{ item.brand }}</td>
-                <td>{{ item.qtty }}</td>
-                <td>{{ item.price }}</td>
-                <td>{{ item.currency }}</td>
-                <td class="actions-column align-center">
-                  <IconBtn>
-                    <VIcon
-                      @click="handleUpdateChangedPart(item.partid)"
-                      icon="tabler-edit"
-                    />
-                  </IconBtn>
-                  <IconBtn>
-                    <VIcon
-                      @click="handleDeleteChangedPart(item.partid)"
-                      icon="tabler-trash"
-                    />
-                  </IconBtn>
-                </td>
-              </tr>
-            </tbody>
-          </VTable>
+              <tbody>
+                <tr v-for="item in addedChangedPart" :key="item.partid">
+                  <td>{{ item.partid }}</td>
+                  <td>
+                    {{ item.partname }} <br />
+                    <small>{{ item.partcode }}</small>
+                  </td>
+                  <td>{{ item.specification }}</td>
+                  <td>{{ item.brand }}</td>
+                  <td>{{ item.qtty }}</td>
+                  <td>{{ item.price }}</td>
+                  <td>{{ item.currency }}</td>
+                  <td class="actions-column align-center">
+                    <IconBtn>
+                      <VIcon
+                        @click="handleUpdateChangedPart(item.partid)"
+                        icon="tabler-edit"
+                      />
+                    </IconBtn>
+                    <IconBtn>
+                      <VIcon
+                        @click="handleDeleteChangedPart(item.partid)"
+                        icon="tabler-trash"
+                      />
+                    </IconBtn>
+                  </td>
+                </tr>
+              </tbody>
+            </VTable>
+          </div>
         </div>
       </VCard>
 

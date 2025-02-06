@@ -234,30 +234,36 @@ onMounted(() => {
     </div>
 
     <VCard v-else variant="outlined" class="ma-4">
-      <VTable height="600" fixed-header class="text-no-wrap machine-cost-table">
-        <thead>
-          <tr>
-            <th class="no-column">NO.</th>
-            <th class="machine-name-column">MACHINE NAME</th>
-            <th class="machine-no-column">MACHINE NO</th>
-            <th class="shop-column">SHOP</th>
-            <th class="line-column">LINE</th>
-            <th class="cost-column">COST</th>
-            <th>UNIT</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(row, index) in data" :key="index">
-            <td class="no-column">{{ row.index }}</td>
-            <td class="machine-name-column">{{ row.machinename }}</td>
-            <td class="machine-no-column">{{ row.machineno }}</td>
-            <td class="shop-column">{{ row.shopname }}</td>
-            <td class="line-column">{{ row.linecode }}</td>
-            <td class="cost-column">{{ row.price }}</td>
-            <td>Rp.</td>
-          </tr>
-        </tbody>
-      </VTable>
+      <div class="v-table-row-odd-even">
+        <VTable
+          height="600"
+          fixed-header
+          class="text-no-wrap machine-cost-table"
+        >
+          <thead>
+            <tr>
+              <th class="no-column">NO.</th>
+              <th class="machine-name-column">MACHINE NAME</th>
+              <th class="machine-no-column">MACHINE NO</th>
+              <th class="shop-column">SHOP</th>
+              <th class="line-column">LINE</th>
+              <th class="cost-column">COST</th>
+              <th>UNIT</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(row, index) in data" :key="index">
+              <td class="no-column">{{ row.index }}</td>
+              <td class="machine-name-column">{{ row.machinename }}</td>
+              <td class="machine-no-column">{{ row.machineno }}</td>
+              <td class="shop-column">{{ row.shopname }}</td>
+              <td class="line-column">{{ row.linecode }}</td>
+              <td class="cost-column">{{ row.price }}</td>
+              <td>Rp.</td>
+            </tr>
+          </tbody>
+        </VTable>
+      </div>
     </VCard>
   </VCard>
 </template>
