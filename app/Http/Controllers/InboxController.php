@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\InboxService;
 use App\Models\Inbox;
 use Illuminate\Http\Request;
+use Exception;
 
 class InboxController extends Controller
 {
@@ -17,79 +18,148 @@ class InboxController extends Controller
 
     public function index(Request $request)
     {
-        // $query = Inbox::with(['source'])
-        //     ->where('user_id', $request->user()->id);
-        $query = Inbox::where('user_id', $request->user()->id);
+        try {
+            $query = Inbox::where('user_id', $request->user()->id);
 
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->has('category')) {
+                $query->where('category', $request->category);
+            }
+
+            if ($request->has('source_type')) {
+                $query->where('source_type', $request->source_type);
+            }
+
+            $perPage = $request->input('per_page', 15);
+            $messages = $query->latest()->paginate($perPage);
+
+            return response()->json([
+                'status' => true,
+                'data' => $messages
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        if ($request->has('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->has('source_type')) {
-            $query->where('source_type', $request->source_type);
-        }
-
-        $perPage = $request->input('per_page', 15);
-        $messages = $query->latest()->paginate($perPage);
-
-        return response()->json($messages);
     }
 
     public function markAsRead(Request $request, $id)
     {
-        $inbox = Inbox::where('user_id', $request->user()->id)
-            ->findOrFail($id);
+        try {
+            $inbox = Inbox::where('user_id', $request->user()->id)
+                ->findOrFail($id);
 
-        $inbox->markAsRead();
+            $inbox->markAsRead();
 
-        return response()->json(['message' => 'Message marked as read']);
+            return response()->json([
+                'status' => true,
+                'message' => 'Message marked as read',
+                'data' => $inbox
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to mark message as read',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function archive(Request $request, $id)
     {
-        $inbox = Inbox::where('user_id', $request->user()->id)
-            ->findOrFail($id);
+        try {
+            $inbox = Inbox::where('user_id', $request->user()->id)
+                ->findOrFail($id);
 
-        $inbox->archive();
+            $inbox->archive();
 
-        return response()->json(['message' => 'Message archived']);
+            return response()->json([
+                'status' => true,
+                'message' => 'Message archived',
+                'data' => $inbox
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to archive message',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getUnreadCount(Request $request)
     {
-        $count = $this->inboxService->getUserUnreadCount($request->user()->id);
-        return response()->json(['unread_count' => $count]);
+        try {
+            $count = $this->inboxService->getUserUnreadCount($request->user()->id);
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'unread_count' => $count
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to get unread count',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function batchMarkAsRead(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
+        try {
+            $request->validate(['ids' => 'required|array']);
 
-        Inbox::where('user_id', $request->user()->id)
-            ->whereIn('id', $request->ids)
-            ->update([
-                'status' => 'read',
-                'read_at' => now()
+            Inbox::where('user_id', $request->user()->id)
+                ->whereIn('id', $request->ids)
+                ->update([
+                    'status' => 'read',
+                    'read_at' => now()
+                ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Messages marked as read'
             ]);
-
-        return response()->json(['message' => 'Messages marked as read']);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to mark messages as read',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function batchArchive(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
+        try {
+            $request->validate(['ids' => 'required|array']);
 
-        Inbox::where('user_id', $request->user()->id)
-            ->whereIn('id', $request->ids)
-            ->update([
-                'status' => 'archived',
-                'archived_at' => now()
+            Inbox::where('user_id', $request->user()->id)
+                ->whereIn('id', $request->ids)
+                ->update([
+                    'status' => 'archived',
+                    'archived_at' => now()
+                ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Messages archived'
             ]);
-
-        return response()->json(['message' => 'Messages archived']);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to archive messages',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
