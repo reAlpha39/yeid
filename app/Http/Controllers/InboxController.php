@@ -33,7 +33,7 @@ class InboxController extends Controller
                 $query->where('source_type', $request->source_type);
             }
 
-            $perPage = $request->input('per_page', 15);
+            $perPage = $request->input('per_page', 10);
             $messages = $query->latest()->paginate($perPage);
 
             return response()->json([
@@ -88,6 +88,28 @@ class InboxController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to archive message',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        try {
+            $inbox = Inbox::where('user_id', $request->user()->id)
+                ->findOrFail($id);
+
+            $inbox->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Message deleted',
+                'data' => $inbox
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to delete message',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -158,6 +180,31 @@ class InboxController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to archive messages',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function batchDestroy(Request $request)
+    {
+        try {
+            $request->validate(['ids' => 'required|array']);
+
+            Inbox::where('user_id', $request->user()->id)
+                ->whereIn('id', $request->ids)
+                ->update([
+                    'status' => 'archived',
+                    'deleted_at' => now()
+                ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Messages deleted'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to delete messages',
                 'error' => $e->getMessage()
             ], 500);
         }

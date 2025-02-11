@@ -304,8 +304,10 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/', [InboxController::class, 'index']);
         Route::patch('/{id}/read', [InboxController::class, 'markAsRead']);
         Route::patch('/{id}/archive', [InboxController::class, 'archive']);
+        Route::delete('/{id}/delete', [InboxController::class, 'destroy']);
         Route::get('/unread-count', [InboxController::class, 'getUnreadCount']);
         Route::post('/batch/read', [InboxController::class, 'batchMarkAsRead']);
         Route::post('/batch/archive', [InboxController::class, 'batchArchive']);
+        Route::post('/batch/archive', [InboxController::class, 'batchDelete']);
     });
 });
