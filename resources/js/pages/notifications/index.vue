@@ -1,53 +1,58 @@
 <script setup>
-import moment from "moment";
-import "moment/locale/id";
-import { computed, onMounted, ref } from "vue";
-import { PerfectScrollbar } from "vue3-perfect-scrollbar";
-moment.locale("id");
-
-const props = defineProps({
-  badgeProps: {
-    type: Object,
-    required: false,
-    default: undefined,
-  },
-  location: {
-    type: String,
-    required: false,
-    default: "bottom end",
-  },
-});
+import { onMounted, ref } from "vue";
+import moment from 'moment';
+import 'moment/locale/id';
+moment.locale('id');
 
 const notifications = ref([]);
 const loading = ref(false);
 const unreadCount = ref(0);
-const perPage = 10;
 
-// Fetch notifications
+// Pagination
+const page = ref(1);
+const itemsPerPage = ref(10);
+const totalItems = ref(0);
+
+// Fetch notifications with pagination
 const fetchNotifications = async () => {
   try {
     loading.value = true;
     const response = await $api("/inbox", {
       params: {
-        per_page: perPage,
+        page: page.value,
+        per_page: itemsPerPage.value,
       },
     });
+
     notifications.value = response.data.data.map((notification) => ({
       id: notification.id,
       title: notification.title,
       subtitle: notification.message,
-      time: moment(notification.created_at).format(
-        "dddd, D MMMM YYYY HH:mm:ss"
-      ),
+      time: moment(notification.created_at).format('dddd, D MMMM YYYY HH:mm:ss'),
       isSeen: notification.status === "read",
       img: notification.source?.avatar || null,
       color: getNotificationColor(notification.category),
     }));
+
+    // Update pagination data from meta
+    totalItems.value = response.data.meta.total;
   } catch (error) {
     console.error("Error fetching notifications:", error);
   } finally {
     loading.value = false;
   }
+};
+
+// Handle pagination changes
+const handlePageChange = async (newPage) => {
+  page.value = newPage;
+  await fetchNotifications();
+};
+
+const handleItemsPerPageChange = async (newItemsPerPage) => {
+  itemsPerPage.value = newItemsPerPage;
+  page.value = 1; // Reset to first page when changing items per page
+  await fetchNotifications();
 };
 
 // Fetch unread count
@@ -59,9 +64,6 @@ const fetchUnreadCount = async () => {
     console.error("Error fetching unread count:", error);
   }
 };
-
-// Computed properties
-const isAllRead = computed(() => unreadCount.value === 0);
 
 // Methods for handling notifications
 const markAsRead = async (id) => {
@@ -130,67 +132,35 @@ onMounted(async () => {
 </script>
 
 <template>
-  <IconBtn id="notification-btn">
-    <VBadge
-      v-bind="props.badgeProps"
-      :model-value="unreadCount > 0"
-      color="error"
-      :content="unreadCount"
-      max="99"
-      offset-x="2"
-      offset-y="3"
-    >
-      <VIcon size="24" icon="tabler-bell" />
-    </VBadge>
+  <div>
+    <VBreadcrumbs
+      class="px-0 pb-2 pt-0"
+      :items="[
+        {
+          title: 'Notifications',
+          class: 'text-h4',
+        },
+      ]"
+    />
+  </div>
 
-    <VMenu
-      activator="parent"
-      width="380px"
-      :location="props.location"
-      offset="12px"
-      :close-on-content-click="false"
-    >
-      <VCard class="d-flex flex-column">
-        <!-- Header -->
-        <VCardItem class="notification-section">
-          <VCardTitle class="text-h6"> Notifications </VCardTitle>
-
-          <template #append>
-            <VChip
-              v-if="unreadCount > 0"
-              size="small"
-              color="primary"
-              class="me-2"
-            >
-              {{ unreadCount }} New
-            </VChip>
-            <IconBtn
-              v-if="notifications.length"
-              size="34"
-              @click="markAllAsRead"
-            >
-              <VIcon
-                size="20"
-                color="high-emphasis"
-                :icon="isAllRead ? 'tabler-mail-opened' : 'tabler-mail'"
-              />
-
-              <VTooltip activator="parent" location="start">
-                Mark all as read
-              </VTooltip>
-            </IconBtn>
-          </template>
-        </VCardItem>
-
-        <VDivider />
-
-        <!-- Notifications list -->
-        <VProgressLinear v-if="loading" indeterminate />
-
-        <PerfectScrollbar
-          :options="{ wheelPropagation: false }"
-          style="max-block-size: 23.75rem"
+  <VCard class="mb-6">
+    <VCardText>
+      <div class="d-flex align-center mb-4">
+        <VSpacer />
+        <VBtn
+          v-if="notifications.length && unreadCount > 0"
+          variant="text"
+          @click="markAllAsRead"
         >
+          Mark all as read
+        </VBtn>
+      </div>
+
+      <VDivider class="mb-4" />
+
+      <div class="notification-table-wrapper">
+        <PerfectScrollbar :options="{ wheelPropagation: false }">
           <VList class="notification-list rounded-0 py-0">
             <template
               v-for="(notification, index) in notifications"
@@ -255,30 +225,42 @@ onMounted(async () => {
             <VListItem
               v-if="!loading && !notifications.length"
               class="text-center text-medium-emphasis"
-              style="block-size: 56px"
             >
               <VListItemTitle>No Notifications Found!</VListItemTitle>
             </VListItem>
           </VList>
         </PerfectScrollbar>
+      </div>
 
-        <VDivider />
+      <!-- Loading Overlay -->
+      <VOverlay v-model="loading" class="align-center justify-center">
+        <VProgressCircular indeterminate size="64" />
+      </VOverlay>
 
-        <!-- Footer -->
-        <VCardText v-if="notifications.length" class="pa-4">
-          <VBtn block size="small" to="/notifications">
-            View All Notifications
-          </VBtn>
-        </VCardText>
-      </VCard>
-    </VMenu>
-  </IconBtn>
+      <!-- Pagination -->
+      <div class="d-flex align-center justify-space-between mt-4">
+        <VSelect
+          v-model="itemsPerPage"
+          :items="[10, 25, 50, 100]"
+          style="max-width: 150px"
+          @update:model-value="handleItemsPerPageChange"
+        />
+
+        <VPagination
+          v-model="page"
+          :length="Math.ceil(totalItems / itemsPerPage)"
+          :total-visible="5"
+          @update:model-value="handlePageChange"
+        />
+      </div>
+    </VCardText>
+  </VCard>
 </template>
 
-<style lang="scss">
-.notification-section {
-  padding-block: 0.75rem;
-  padding-inline: 1rem;
+<style lang="scss" scoped>
+.notification-table-wrapper {
+  position: relative;
+  min-height: 400px;
 }
 
 .list-item-hover-class {

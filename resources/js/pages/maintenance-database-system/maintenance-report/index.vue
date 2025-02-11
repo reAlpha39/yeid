@@ -126,14 +126,13 @@ async function fetchData() {
           status: selectedStatus.value,
         },
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message);
         },
       }
     );
 
     data.value = response.data;
   } catch (err) {
-    toast.error("Failed to fetch data");
     console.log(err);
   }
 }

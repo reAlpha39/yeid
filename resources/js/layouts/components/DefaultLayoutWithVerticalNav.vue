@@ -56,7 +56,7 @@ watch([
         /> -->
         <!-- <NavbarThemeSwitcher /> -->
         <!-- <NavbarShortcuts /> -->
-        <!-- <NavBarNotifications class="me-1" /> -->
+        <NavBarNotifications class="me-1" />
         <UserProfile />
       </div>
     </template>
