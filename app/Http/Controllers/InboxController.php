@@ -17,8 +17,9 @@ class InboxController extends Controller
 
     public function index(Request $request)
     {
-        $query = Inbox::with(['source'])
-            ->where('user_id', $request->user()->id);
+        // $query = Inbox::with(['source'])
+        //     ->where('user_id', $request->user()->id);
+        $query = Inbox::where('user_id', $request->user()->id);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);

@@ -9,7 +9,9 @@ use App\Exports\MaintenanceReportsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\ApprovalService;
 use App\Models\MasUser;
+use App\Models\MasEmployee;
 use App\Models\SpkRecord;
+use App\Models\SpkRecordApproval;
 use Exception;
 use Log;
 
@@ -256,14 +258,18 @@ class MaintenanceRequestController extends Controller
             ]);
 
             // Get the requester user
-            $requester = MasUser::where('id', $request->input('orderempcode'))->first();
+            $requester = MasUser::findOrFail(auth()->user()->id);
+
+            $pic = $request->input('pic')
+                ? MasEmployee::where('employeecode', $request->input('pic'))->first()
+                : null;
 
             if (!$requester) {
                 throw new Exception('Requester user not found');
             }
 
             // Create initial approval record
-            $approval = $this->approvalService->createInitialApproval($spkRecord, $requester);
+            $approval = $this->approvalService->createInitialApproval($spkRecord, $requester, $pic);
 
             // Update spkRecord approval status based on initial approval
             $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);
@@ -297,6 +303,14 @@ class MaintenanceRequestController extends Controller
             $spkRecord = SpkRecord::findOrFail($recordId);
             $rejector = MasUser::findOrFail(auth()->user()->id);
 
+            if ($this->approvalService->isApprovalStatusReject($spkRecord->approval)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is already rejected'
+                ], 400);
+            }
+
             $approval = $this->approvalService->reject(
                 $spkRecord->approval,
                 $rejector,
@@ -329,6 +343,14 @@ class MaintenanceRequestController extends Controller
             $spkRecord = SpkRecord::findOrFail($recordId);
             $reviewer = MasUser::findOrFail(auth()->user()->id);
 
+            if ($this->approvalService->isApprovalStatusRevise($spkRecord->approval)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is already revised'
+                ], 400);
+            }
+
             $approval = $this->approvalService->requestRevision(
                 $spkRecord->approval,
                 $reviewer,
@@ -360,11 +382,21 @@ class MaintenanceRequestController extends Controller
         try {
             $spkRecord = SpkRecord::findOrFail($recordId);
             $approver = MasUser::findOrFail(auth()->user()->id);
+            $pic = MasEmployee::find($request->input('employee_code'));
+
+            if ($this->approvalService->isAlreadyApprove($spkRecord->approvalRecord, $approver)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is already approved'
+                ], 400);
+            }
 
             $approval = $this->approvalService->approve(
-                $spkRecord->approval,
+                $spkRecord->approvalRecord,
                 $approver,
-                $request->input('note')
+                $request->input('note'),
+                $pic,
             );
 
             $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);

@@ -9,7 +9,7 @@ class SpkRecord extends Model
 {
     protected $table = 'tbl_spkrecord';
     protected $primaryKey = 'recordid';
-    public $timestamps = true;
+    public $timestamps = false;
 
     protected $fillable = [
         'yokotenkai',
@@ -70,7 +70,7 @@ class SpkRecord extends Model
         'analysishalf',
     ];
 
-    public function approval(): HasOne
+    public function approvalRecord(): HasOne
     {
         return $this->hasOne(SpkRecordApproval::class, 'record_id', 'recordid');
     }

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Inbox;
 use App\Models\MasUser;
 use App\Models\SpkRecord;
+use App\Models\SpkRecordApproval;
 use Illuminate\Database\Eloquent\Model;
 
 class InboxService
@@ -28,25 +29,29 @@ class InboxService
         ]);
     }
 
-    public function createApprovalRequest(MasUser $approver, SpkRecord $record): Inbox
+    public function createApprovalRequest(MasUser $user, SpkRecord $record): Inbox
     {
         return $this->createMessage(
             $record,
-            $approver,
+            $user,
             "New Approval Request #{$record->recordid}",
-            "You have a new request waiting for your approval from {$record->orderempname}.",
+            "You have a new request waiting for your approval from {$user->name}.",
             'approval',
             [
                 'request_type' => 'spk_approval',
-                'requester_id' => $record->createempcode,
-                'requester_name' => $record->orderempname
+                'requester_id' => $user->id,
+                'requester_name' => $user->name
             ]
         );
     }
 
     public function createRevisionRequest(SpkRecord $record, MasUser $reviewer, string $note): ?Inbox
     {
-        $requester = MasUser::find($record->createempcode);
+        $requester = MasUser::find(
+            SpkRecordApproval::where('record_id', $record->recordid)
+                ->value('created_by')
+        );
+
         if (!$requester) return null;
 
         return $this->createMessage(
@@ -65,7 +70,11 @@ class InboxService
 
     public function createRejectionNotification(SpkRecord $record, MasUser $rejector, string $note): ?Inbox
     {
-        $requester = MasUser::find($record->createempcode);
+        $requester = MasUser::find(
+            SpkRecordApproval::where('record_id', $record->recordid)
+                ->value('created_by')
+        );
+        
         if (!$requester) return null;
 
         return $this->createMessage(
