@@ -126,7 +126,7 @@ async function addData() {
           method: "PUT",
           body: requestData,
           onResponseError({ response }) {
-            errors.value = response._data.errors;
+            toast.error(response._data.message);
           },
         }
       );
@@ -140,7 +140,7 @@ async function addData() {
           method: "POST",
           body: requestData,
           onResponseError({ response }) {
-            errors.value = response._data.errors;
+            toast.error(response._data.message);
           },
         }
       );
@@ -149,7 +149,7 @@ async function addData() {
     }
     await router.push("/maintenance-database-system/department-request");
   } catch (err) {
-    toast.error("Failed to save department request");
+    // toast.error("Failed to save department request");
     console.log(err);
   }
 }

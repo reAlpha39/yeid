@@ -27,7 +27,6 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
-            // $onlyActive = $request->input('only_active');
             $date = $request->input('date');
             $shopCode = $request->input('shop_code');
             $machineCode = $request->input('machine_code');
@@ -35,9 +34,11 @@ class MaintenanceRequestController extends Controller
             $orderName = $request->input('order_name');
             $search = $request->input('search');
             $status = $request->input('status');
+            $approvedOnly = $request->input('approved_only');
 
             $query = DB::table('tbl_spkrecord as s')
                 ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
+                ->leftJoin('tbl_spkrecord_approval as a', 's.recordid', '=', 'a.record_id')
                 ->select([
                     's.recordid',
                     's.maintenancecode',
@@ -55,13 +56,19 @@ class MaintenanceRequestController extends Controller
                     DB::raw('COALESCE(s.planid, 0) AS planid'),
                     DB::raw('COALESCE(s.approval, 0) AS approval'),
                     DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
-                    DB::raw('COALESCE(s.createempname, \'\') AS createempname')
+                    DB::raw('COALESCE(s.createempname, \'\') AS createempname'),
+                    'a.approval_status',
+                    DB::raw('CASE
+                        WHEN a.approval_status IS NULL THEN true
+                        WHEN a.approval_status IN (\'pending\', \'revision\') THEN true
+                        ELSE false
+                    END AS can_update'),
+                    DB::raw('CASE
+                        WHEN a.approval_status IS NULL THEN true
+                        WHEN a.approval_status IN (\'pending\')  THEN true
+                        ELSE false
+                    END AS can_delete')
                 ]);
-
-            // Apply filters
-            // if ($onlyActive === '1') {
-            //     $query->whereRaw('COALESCE(s.approval, 0) < 119');
-            // }
 
             if (!empty($date)) {
                 $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);
@@ -120,6 +127,13 @@ class MaintenanceRequestController extends Controller
                             });
                             break;
                     }
+                });
+            }
+
+            if (!empty($approvedOnly)) {
+                $query->where(function ($q) {
+                    $q->where('a.approval_status', 'approved')
+                        ->orWhereNull('a.approval_status');
                 });
             }
 
@@ -265,7 +279,7 @@ class MaintenanceRequestController extends Controller
                 : null;
 
             if (!$requester) {
-                throw new Exception('Requester user not found');
+                throw new Exception('Request user not found');
             }
 
             // Create initial approval record
@@ -303,7 +317,7 @@ class MaintenanceRequestController extends Controller
             $spkRecord = SpkRecord::findOrFail($recordId);
             $rejector = MasUser::findOrFail(auth()->user()->id);
 
-            if ($this->approvalService->isApprovalStatusReject($spkRecord->approval)) {
+            if ($this->approvalService->isApprovalStatusReject($spkRecord->approvalRecord)) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
@@ -311,8 +325,16 @@ class MaintenanceRequestController extends Controller
                 ], 400);
             }
 
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request cannot be approved'
+                ], 400);
+            }
+
             $approval = $this->approvalService->reject(
-                $spkRecord->approval,
+                $spkRecord->approvalRecord,
                 $rejector,
                 $request->input('note')
             );
@@ -343,7 +365,7 @@ class MaintenanceRequestController extends Controller
             $spkRecord = SpkRecord::findOrFail($recordId);
             $reviewer = MasUser::findOrFail(auth()->user()->id);
 
-            if ($this->approvalService->isApprovalStatusRevise($spkRecord->approval)) {
+            if ($this->approvalService->isApprovalStatusRevise($spkRecord->approvalRecord)) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
@@ -351,8 +373,16 @@ class MaintenanceRequestController extends Controller
                 ], 400);
             }
 
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request cannot be approved'
+                ], 400);
+            }
+
             $approval = $this->approvalService->requestRevision(
-                $spkRecord->approval,
+                $spkRecord->approvalRecord,
                 $reviewer,
                 $request->input('note')
             );
@@ -389,6 +419,14 @@ class MaintenanceRequestController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Request is already approved'
+                ], 400);
+            }
+
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request cannot be approved'
                 ], 400);
             }
 
@@ -471,7 +509,8 @@ class MaintenanceRequestController extends Controller
                 ->first();
 
             $canApprove = !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
-                && in_array($user->role_access, ['2', '3'], true);
+                && in_array($user->role_access, ['2', '3'], true)
+                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true);
 
             // Merge machine details with SPK record
             $responseData = array_merge(
@@ -503,6 +542,15 @@ class MaintenanceRequestController extends Controller
     public function update(Request $request, $recordId)
     {
         try {
+            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'revision', null], true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is cannot be updated'
+                ], 400);
+            }
+
             $mainteCode = $request->input('maintenancecode');
             $orderDate = $request->input('orderdatetime'); // Expecting in 'Y-m-d H:i' format
             $orderEmployeeName = $request->input('orderempname', '');
@@ -542,6 +590,24 @@ class MaintenanceRequestController extends Controller
                     'updatetime' => NOW()
                 ]);
 
+            // Get the requester user
+            $requester = MasUser::findOrFail(auth()->user()->id);
+
+            $pic = $request->input('pic')
+                ? MasEmployee::where('employeecode', $request->input('pic'))->first()
+                : null;
+
+            if (!$requester) {
+                throw new Exception('Request user not found');
+            }
+
+            // Create initial approval record
+            $approval = $this->approvalService->revisedApproval($spkRecord, $requester, $pic);
+
+            // Update spkRecord approval status
+            $spkRecord->approval = $this->mapApprovalStatus($approval->approval_status);
+            $spkRecord->save();
+
 
             return response()->json([
                 'success' => true,
@@ -561,6 +627,15 @@ class MaintenanceRequestController extends Controller
         DB::beginTransaction();
 
         try {
+            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is cannot be edited before approved'
+                ], 400);
+            }
+
             $startDateTime = $request->input('startdatetime'); // Assumed to be in 'Y-m-d H:i' format
             $endDateTime = $request->input('enddatetime');
             $restoredDateTime = $request->input('restoreddatetime');
@@ -678,6 +753,16 @@ class MaintenanceRequestController extends Controller
                 ]);
             }
 
+            $user = MasUser::findOrFail(auth()->user()->id);
+
+            $approval = $this->approvalService->finish(
+                $spkRecord->approvalRecord,
+                $user,
+                $request->input('note')
+            );
+
+            $spkRecord->save();
+
             // Commit the transaction
             DB::commit();
 
@@ -696,6 +781,15 @@ class MaintenanceRequestController extends Controller
         DB::beginTransaction();
 
         try {
+            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', null], true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Request is cannot be deleted'
+                ], 400);
+            }
+
             $deletedRows = DB::table('tbl_spkrecord')
                 ->where('recordid', $recordId)
                 ->delete();

@@ -557,13 +557,13 @@ onMounted(() => {
               <VIcon icon="tabler-eye" />
             </IconBtn>
             <IconBtn
-              v-if="$can('update', 'mtDbsDeptReq')"
+              v-if="$can('update', 'mtDbsDeptReq') && item.can_update"
               @click="openEditPage(item.recordid)"
             >
               <VIcon icon="tabler-edit" />
             </IconBtn>
             <IconBtn
-              v-if="$can('delete', 'mtDbsDeptReq')"
+              v-if="$can('delete', 'mtDbsDeptReq') && item.can_delete"
               @click="openDeleteDialog(item.recordid)"
             >
               <VIcon icon="tabler-trash" />

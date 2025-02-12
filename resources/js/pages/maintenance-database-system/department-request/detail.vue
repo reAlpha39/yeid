@@ -99,8 +99,8 @@ async function approve() {
         method: "POST",
         body: {
           note: note.value,
-          employee_code: selectedEmployee
-            ? selectedEmployee.employeecode
+          employee_code: selectedEmployee.value
+            ? selectedEmployee.value.employeecode
             : null,
         },
       }
@@ -126,7 +126,7 @@ async function revise() {
     await $api(
       "/maintenance-database-system/department-requests/" +
         encodeURIComponent(id) +
-        "/requestRevision",
+        "/revise",
       {
         onResponseError({ response }) {
           toast.error(response._data.message);

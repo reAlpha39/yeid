@@ -124,6 +124,7 @@ async function fetchData() {
               : null,
           order_name: selectedStaff.value?.employeename,
           status: selectedStatus.value,
+          approved_only: true,
         },
         onResponseError({ response }) {
           toast.error(response._data.message);

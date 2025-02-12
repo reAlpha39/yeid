@@ -52,6 +52,27 @@ class ApprovalService
         return $approval;
     }
 
+    public function revisedApproval(SpkRecord $spkRecord, MasUser $requester, ?MasEmployee $pic = null)
+    {
+        $department = MasDepartment::find($requester->department_id);
+        $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
+
+        $approval = $spkRecord->approvalRecord;
+
+        $approval->approval_status = self::STATUS_PENDING;
+
+        if ($requester->role_access === '3') { // Manager
+            $this->autoApproveForManager($approval, $requester, $isMtcDepartment, $pic);
+        } elseif ($requester->role_access === '2') { // Supervisor
+            $this->autoApproveForSupervisor($approval, $requester, $department, $spkRecord, $pic);
+        } else {
+            $this->notifyDepartmentApprovers($department, $spkRecord);
+        }
+
+        $approval->save();
+        return $approval;
+    }
+
     private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment, MasEmployee $pic)
     {
         $approval->manager_approved_by = $requester->id;
@@ -170,6 +191,37 @@ class ApprovalService
 
         return false;
     }
+
+    public function isApprovalStatusFinish(SpkRecordApproval $approval): bool
+    {
+        return $approval->approval_status === self::STATUS_FINISH;
+    }
+
+    public function finish(SpkRecordApproval $approval, MasUser $user, string $note = null)
+    {
+        // Create a note if provided
+        if ($note) {
+            $approval->notes()->create([
+                'user_id' => $user->id,
+                'note' => $note,
+                'type' => self::STATUS_FINISH
+            ]);
+        }
+
+        // Update approval status
+        $approval->approval_status = self::STATUS_FINISH;
+        $approval->save();
+
+        // Get the associated record
+        $spkRecord = SpkRecord::find($approval->record_id);
+
+        // Send notification if mail service is needed
+        // $this->mailService->sendFinishNotification($spkRecord, $user, $note);
+
+        return $approval;
+    }
+
+
 
     private function handleDepartmentApproval(
         SpkRecordApproval $approval,
