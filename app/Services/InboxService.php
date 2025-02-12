@@ -18,8 +18,10 @@ class InboxService
         string $category,
         array $metadata = []
     ): Inbox {
+        // Get the full class name
+        $sourceType = class_basename(get_class($source));
         return Inbox::create([
-            'source_type' => get_class($source),
+            'source_type' => $sourceType,
             'source_id' => $source->getKey(),
             'user_id' => $user->id,
             'title' => $title,
@@ -74,7 +76,7 @@ class InboxService
             SpkRecordApproval::where('record_id', $record->recordid)
                 ->value('created_by')
         );
-        
+
         if (!$requester) return null;
 
         return $this->createMessage(

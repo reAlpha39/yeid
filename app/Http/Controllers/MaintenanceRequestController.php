@@ -384,7 +384,7 @@ class MaintenanceRequestController extends Controller
             $approver = MasUser::findOrFail(auth()->user()->id);
             $pic = MasEmployee::find($request->input('employee_code'));
 
-            if ($this->approvalService->isAlreadyApprove($spkRecord->approvalRecord, $approver)) {
+            if ($this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $approver)) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
@@ -439,43 +439,56 @@ class MaintenanceRequestController extends Controller
     public function show($spkNo)
     {
         try {
-            // Prepare the SQL query
-            $sql = "SELECT
-                s.*,
-                m.machinename,
-                m.plantcode,
-                m.shopcode,
-                m.linecode,
-                m.modelname,
-                -- m.makername,  -- use s.makername instead
-                m.serialno,
-                m.installdate,
-                COALESCE(s.orderfinishdate, '') AS orderfinishdate,
-                COALESCE(s.approval, 0) AS approval,
-                COALESCE(s.createempcode, '') AS createempcode,
-                COALESCE(s.createempname, '') AS createempname,
-                (SELECT shopname FROM mas_shop WHERE shopcode = m.shopcode) AS shopname
-            FROM
-                tbl_spkrecord s
-            LEFT JOIN
-                mas_machine m ON s.machineno = m.machineno
-            WHERE
-                s.recordid = :spkNo";
+            $user = MasUser::findOrFail(auth()->user()->id);
 
-            $data = DB::select($sql, ['spkNo' => $spkNo]);
+            $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
+                $query->with([
+                    'department:id,name',
+                    'createdBy:id,name',
+                    'pic:employeecode,employeename',
+                    'notes' => function ($query) {
+                        $query->with(['user' => function ($query) {
+                            $query->select('id', 'name', 'role_access', 'department_id')
+                                ->with('department:id,name');
+                        }]);
+                    }
+                ]);
+            }])->findOrFail($spkNo);
 
-            if (empty($data)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Record not found'
-                ], 404);
-            }
+            // Get machine details
+            $machineDetails = DB::table('mas_machine')
+                ->select([
+                    'machinename',
+                    'plantcode',
+                    'shopcode',
+                    'linecode',
+                    'modelname',
+                    'serialno',
+                    'installdate',
+                    DB::raw('(SELECT shopname FROM mas_shop WHERE shopcode = mas_machine.shopcode) AS shopname')
+                ])
+                ->where('machineno', $spkRecord->machineno)
+                ->first();
 
-            $record = $data[0];
+            $canApprove = !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
+                && in_array($user->role_access, ['2', '3'], true);
+
+            // Merge machine details with SPK record
+            $responseData = array_merge(
+                $spkRecord->toArray(),
+                $machineDetails ? (array)$machineDetails : [],
+                [
+                    'orderfinishdate' => $spkRecord->orderfinishdate ?? '',
+                    'approval' => $spkRecord->approval ?? 0,
+                    'createempcode' => $spkRecord->createempcode ?? '',
+                    'createempname' => $spkRecord->createempname ?? '',
+                    'can_approve' => $canApprove,
+                ],
+            );
 
             return response()->json([
                 'success' => true,
-                'data' => $record,
+                'data' => $responseData,
             ], 200);
         } catch (Exception $e) {
             return response()->json([

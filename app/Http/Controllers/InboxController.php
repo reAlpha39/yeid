@@ -33,13 +33,26 @@ class InboxController extends Controller
                 $query->where('source_type', $request->source_type);
             }
 
+            // Pagination parameters
             $perPage = $request->input('per_page', 10);
-            $messages = $query->latest()->paginate($perPage);
+            $page = $request->input('page', 1);
+
+            $results = $query->latest()->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
-                'status' => true,
-                'data' => $messages
-            ]);
+                'success' => true,
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => false,

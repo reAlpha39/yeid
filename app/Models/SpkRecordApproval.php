@@ -42,12 +42,12 @@ class SpkRecordApproval extends Model
 
     public function department(): BelongsTo
     {
-        return $this->belongsTo(MasDepartment::class, 'department_id', 'dept_id');
+        return $this->belongsTo(MasDepartment::class, 'department_id', 'id');
     }
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(MasUser::class, 'creatad_by', 'id');
+        return $this->belongsTo(MasUser::class, 'created_by', 'id');
     }
 
     public function pic(): BelongsTo

@@ -129,6 +129,7 @@ declare module 'vue-router/auto/routes' {
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-department-request': RouteRecordInfo<'maintenance-database-system-department-request', '/maintenance-database-system/department-request', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-department-request-add': RouteRecordInfo<'maintenance-database-system-department-request-add', '/maintenance-database-system/department-request/add', Record<never, never>, Record<never, never>>,
+    'maintenance-database-system-department-request-detail': RouteRecordInfo<'maintenance-database-system-department-request-detail', '/maintenance-database-system/department-request/detail', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-maintenance-data-analyzation': RouteRecordInfo<'maintenance-database-system-maintenance-data-analyzation', '/maintenance-database-system/maintenance-data-analyzation', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-maintenance-report': RouteRecordInfo<'maintenance-database-system-maintenance-report', '/maintenance-database-system/maintenance-report', Record<never, never>, Record<never, never>>,
     'maintenance-database-system-maintenance-report-detail': RouteRecordInfo<'maintenance-database-system-maintenance-report-detail', '/maintenance-database-system/maintenance-report/detail', Record<never, never>, Record<never, never>>,

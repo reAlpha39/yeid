@@ -12,6 +12,9 @@ class ApprovalService
 {
     private $mailService;
 
+    const ROLE_SUPERVISOR = '2';
+    const ROLE_MANAGER = '3';
+
     const MTC_DEPARTMENT = 'MTC';
     const STATUS_PENDING = 'pending';
     const STATUS_PARTIALLY_APPROVED = 'partially_approved';
@@ -131,20 +134,23 @@ class ApprovalService
         return $this->handleDepartmentApproval($approval, $approver, $note, $isMtcDepartment, $pic);
     }
 
-    public function isAlreadyApprove(SpkRecordApproval $approval, MasUser $approver): bool
+    public function isAlreadyApproved(SpkRecordApproval $approval, MasUser $approver): bool
     {
-        $isMtcApprover = $approver->department->code === self::MTC_DEPARTMENT;
+        $approvalMap = [
+            true => [  // isMtcApprover
+                '2' => 'supervisor_mtc_approved_by',
+                '3' => 'manager_mtc_approved_by'
+            ],
+            false => [ // !isMtcApprover
+                '2' => 'supervisor_approved_by',
+                '3' => 'manager_approved_by'
+            ]
+        ];
 
-        if ($isMtcApprover && $approval->supervisor_approved_by !== null) {
-            return true;
-        } elseif ($isMtcApprover && $approval->manager_approved_by !== null) {
-            return true;
-        } elseif (!$isMtcApprover && $approval->supervisor_approved_by !== null) {
-            return true;
-        } elseif (!$isMtcApprover && $approval->manager_approved_by !== null) {
-            return true;
-        }
-        return false;
+        $isMtcApprover = $approver->department->code === self::MTC_DEPARTMENT;
+        $field = $approvalMap[$isMtcApprover][$approver->role_access] ?? null;
+
+        return $field !== null && $approval->$field !== null;
     }
 
     public function isApprovalStatusRevise(SpkRecordApproval $approval): bool
@@ -207,12 +213,11 @@ class ApprovalService
                 ]);
             }
 
-            $this->notifyDepartmentManager(MasDepartment::find($approval->department_id), $spkRecord);
+            // $this->notifyDepartmentManager(MasDepartment::find($approval->department_id), $spkRecord);
         }
 
-        if ($pic) {
-            $approval->pic = $pic->employeecode;
-        }
+
+        $approval->pic = $approval->pic ?? $pic->employeecode;
 
         $approval->save();
 
@@ -250,12 +255,10 @@ class ApprovalService
                 ]);
             }
 
-            $this->notifyMtcManager($spkRecord);
+            // $this->notifyMtcManager($spkRecord);
         }
 
-        if ($pic) {
-            $approval->pic = $pic->employeecode;
-        }
+        $approval->pic = $approval->pic ?? $pic->employeecode;
 
         $approval->save();
 

@@ -2,6 +2,7 @@
 import moment from "moment";
 import "moment/locale/id";
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { PerfectScrollbar } from "vue3-perfect-scrollbar";
 moment.locale("id");
 
@@ -18,6 +19,9 @@ const props = defineProps({
   },
 });
 
+const router = useRouter();
+const menuOpen = ref(false);
+
 const notifications = ref([]);
 const loading = ref(false);
 const unreadCount = ref(0);
@@ -32,7 +36,8 @@ const fetchNotifications = async () => {
         per_page: perPage,
       },
     });
-    notifications.value = response.data.data.map((notification) => ({
+
+    notifications.value = response.data.map((notification) => ({
       id: notification.id,
       title: notification.title,
       subtitle: notification.message,
@@ -40,8 +45,9 @@ const fetchNotifications = async () => {
         "dddd, D MMMM YYYY HH:mm:ss"
       ),
       isSeen: notification.status === "read",
-      img: notification.source?.avatar || null,
-      color: getNotificationColor(notification.category),
+      category: notification.category,
+      sourceType: notification.source_type,
+      sourceId: notification.source_id,
     }));
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -109,18 +115,19 @@ const handleNotificationClick = async (notification) => {
   if (!notification.isSeen) {
     await markAsRead(notification.id);
   }
+
+  if (notification.category === "approval") {
+    menuOpen.value = false;
+    await openDetailPage(notification.sourceId);
+  }
 };
 
-// Helper function to determine notification color based on category
-const getNotificationColor = (category) => {
-  const colors = {
-    info: "info",
-    success: "success",
-    warning: "warning",
-    error: "error",
-  };
-  return colors[category] || "primary";
-};
+async function openDetailPage(id) {
+  await router.push({
+    path: "/maintenance-database-system/department-request/detail",
+    query: { record_id: id, to_approve: "1" },
+  });
+}
 
 // Initialize component
 onMounted(async () => {
@@ -144,6 +151,7 @@ onMounted(async () => {
     </VBadge>
 
     <VMenu
+      v-model="menuOpen"
       activator="parent"
       width="380px"
       :location="props.location"

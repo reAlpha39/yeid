@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useToast } from "vue-toastification";
 
 definePage({
@@ -10,7 +10,6 @@ definePage({
 });
 
 const toast = useToast();
-const router = useRouter();
 const route = useRoute();
 
 const report = ref(null);

@@ -1,9 +1,12 @@
 <script setup>
+import moment from "moment";
+import "moment/locale/id";
 import { onMounted, ref } from "vue";
-import moment from 'moment';
-import 'moment/locale/id';
-moment.locale('id');
+import { useRouter } from "vue-router";
+import { PerfectScrollbar } from "vue3-perfect-scrollbar";
+moment.locale("id");
 
+const router = useRouter();
 const notifications = ref([]);
 const loading = ref(false);
 const unreadCount = ref(0);
@@ -13,7 +16,7 @@ const page = ref(1);
 const itemsPerPage = ref(10);
 const totalItems = ref(0);
 
-// Fetch notifications with pagination
+// Fetch notifications with pagination and sorting
 const fetchNotifications = async () => {
   try {
     loading.value = true;
@@ -24,18 +27,23 @@ const fetchNotifications = async () => {
       },
     });
 
-    notifications.value = response.data.data.map((notification) => ({
+    notifications.value = response.data.map((notification) => ({
       id: notification.id,
       title: notification.title,
       subtitle: notification.message,
-      time: moment(notification.created_at).format('dddd, D MMMM YYYY HH:mm:ss'),
+      time: moment(notification.created_at).format(
+        "dddd, D MMMM YYYY HH:mm:ss"
+      ),
       isSeen: notification.status === "read",
-      img: notification.source?.avatar || null,
-      color: getNotificationColor(notification.category),
+      category: notification.category,
+      sourceId: notification.source_id,
     }));
 
-    // Update pagination data from meta
-    totalItems.value = response.data.meta.total;
+    // Update pagination from response
+    const pagination = response.pagination;
+    totalItems.value = pagination.total;
+    page.value = pagination.current_page;
+    itemsPerPage.value = pagination.per_page;
   } catch (error) {
     console.error("Error fetching notifications:", error);
   } finally {
@@ -51,7 +59,7 @@ const handlePageChange = async (newPage) => {
 
 const handleItemsPerPageChange = async (newItemsPerPage) => {
   itemsPerPage.value = newItemsPerPage;
-  page.value = 1; // Reset to first page when changing items per page
+  page.value = 1;
   await fetchNotifications();
 };
 
@@ -111,18 +119,18 @@ const handleNotificationClick = async (notification) => {
   if (!notification.isSeen) {
     await markAsRead(notification.id);
   }
+
+  if (notification.category === "approval") {
+    await openDetailPage(notification.sourceId);
+  }
 };
 
-// Helper function to determine notification color based on category
-const getNotificationColor = (category) => {
-  const colors = {
-    info: "info",
-    success: "success",
-    warning: "warning",
-    error: "error",
-  };
-  return colors[category] || "primary";
-};
+async function openDetailPage(id) {
+  await router.push({
+    path: "/maintenance-database-system/department-request/detail",
+    query: { record_id: id, to_approve: "1" },
+  });
+}
 
 // Initialize component
 onMounted(async () => {
@@ -176,14 +184,11 @@ onMounted(async () => {
               >
                 <div class="d-flex align-start gap-3">
                   <VIcon
-                    v-if="!notification.isSeen"
                     size="10"
                     icon="tabler-circle-filled"
-                    color="primary"
+                    :color="notification.isSeen ? 'transparent' : 'primary'"
                     class="mb-2"
                   />
-
-                  <div v-else class="mx-1"></div>
 
                   <div>
                     <p class="text-sm font-weight-medium mb-1">
@@ -281,5 +286,13 @@ onMounted(async () => {
     margin: 0 !important;
     padding-block: 0.75rem !important;
   }
+}
+
+.max-width-200 {
+  max-width: 200px;
+}
+
+.max-width-300 {
+  max-width: 300px;
 }
 </style>
