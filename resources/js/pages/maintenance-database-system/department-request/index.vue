@@ -48,7 +48,7 @@ const headers = [
   },
   {
     title: "APPROVAL",
-    key: "approval",
+    key: "approval_status",
   },
   {
     title: "PEMOHON",
@@ -95,12 +95,16 @@ const maintenanceCodes = [
 ];
 const status = ["GRAY", "GREEN", "YELLOW", "ORANGE"];
 
-function convertApproval(approval) {
-  let result = "";
-  (parseInt(approval) & 1) === 1 ? (result += "S") : (result += "B");
-  (parseInt(approval) & 2) === 2 ? (result += "S") : (result += "B");
-  (parseInt(approval) & 4) === 4 ? (result += "S") : (result += "B");
-  return result;
+function convertApprovalStatus(status) {
+  const statusMap = {
+    approved: "Approved",
+    partially_approved: "Partially Approved",
+    rejected: "Rejected",
+    revision: "Need Revise",
+    finish: "Finish",
+    pending: "Pending",
+  };
+  return statusMap[status] || "-";
 }
 
 async function fetchData() {
@@ -264,17 +268,6 @@ async function handleExport() {
     console.error("Export failed:", error);
   } finally {
     loadingExport.value = false;
-  }
-}
-
-function getApprovalIdColor(approval) {
-  let approvalId = parseInt(approval);
-  if ((approvalId & 4) === 4) {
-    return "status-white";
-  } else if ((approvalId & 1) === 1 && (approvalId & 2) === 2) {
-    return "status-blue";
-  } else if ((approvalId & 1) === 1) {
-    return "status-light-blue";
   }
 }
 
@@ -488,14 +481,8 @@ onMounted(() => {
           </div>
         </template>
 
-        <template #item.approval="{ item }">
-          <div class="d-flex align-center">
-            {{ convertApproval(item.approval) }}
-            <div
-              class="status-indicator mx-2"
-              :class="getApprovalIdColor(item.approval)"
-            />
-          </div>
+        <template #item.approval_status="{ item }">
+          {{ convertApprovalStatus(item.approval_status) }}
         </template>
 
         <!-- date -->
