@@ -535,9 +535,9 @@ onMounted(() => {
 
         <!-- Actions -->
         <template #item.actions="{ item }">
-          <div class="d-flex justify-center gap-2">
+          <div class="d-flex justify-right gap-0">
             <div
-              class="status-indicator mx-2"
+              class="status-indicator ml-2 mr-4"
               :class="getApprovalColor(item.approval, item.planid)"
             />
             <IconBtn @click="openDetailPage(item.recordid)">
