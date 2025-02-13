@@ -512,6 +512,14 @@ class MaintenanceRequestController extends Controller
                 && in_array($user->role_access, ['2', '3'], true)
                 && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true);
 
+            if (
+                $user->department->code === 'MTC'
+                && $spkRecord->approvalRecord->department->code !== 'MTC'
+                && $canApprove
+            ) {
+                $canApprove = $spkRecord->approvalRecord->manager_approved_by !== null;
+            }
+
             // Merge machine details with SPK record
             $responseData = array_merge(
                 $spkRecord->toArray(),

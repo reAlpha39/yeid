@@ -5,63 +5,99 @@
     <meta charset="utf-8">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
             margin: 0;
             padding: 0;
+            font-family: 'Rubik', Arial, sans-serif;
+            line-height: 1.6;
+            color: #3A383A;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            width: 600px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
-            background-color: #f8f9fa;
-            padding: 20px;
+            padding: 32px 24px;
+            background: #F9F9F9;
+            border-bottom: 1px solid #DBDADE;
             text-align: center;
-            border-bottom: 3px solid #007bff;
+        }
+
+        .header img {
+            width: 107.88px;
+            height: 24px;
+            margin-bottom: 24px;
+        }
+
+        .header-text {
+            font-size: 16px;
+            font-weight: 500;
         }
 
         .content {
-            padding: 20px;
-            background-color: #ffffff;
+            padding: 48px 84px;
         }
 
-        .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #666;
-            background-color: #f8f9fa;
+        .greeting {
+            margin-bottom: 24px;
+            line-height: 20px;
+            font-size: 14px;
+        }
+
+        .info-container {
+            margin-bottom: 24px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 20px;
+        }
+
+        .info-label {
+            width: 140px;
+        }
+
+        .info-separator {
+            margin: 0 8px;
         }
 
         .button {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #ffffff !important;
+            padding: 10px 24px;
+            background: #0095F6;
+            border-radius: 8px;
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
-            margin: 20px 0;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 20px;
+            margin: 24px 0;
         }
 
-        .details {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+        .link-info {
+            font-size: 14px;
+            line-height: 20px;
+            margin-bottom: 8px;
         }
 
-        .info-row {
-            margin: 10px 0;
+        .link {
+            color: #0095F6;
+            text-decoration: underline;
+            font-size: 14px;
+            line-height: 20px;
         }
 
-        .label {
-            font-weight: bold;
-            color: #555;
+        .footer {
+            padding: 32px 84px;
+            background: #F9F9F9;
+            font-size: 14px;
+            line-height: 20px;
         }
     </style>
 </head>
@@ -69,55 +105,48 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>SPK Record Approval Request</h1>
+            {{-- <img src="{{ asset('images/logo-name.png') }}" alt="Logo"> --}}
+            <div class="header-text">You have a new SPK Record waiting for your approval.</div>
         </div>
 
         <div class="content">
-            <p>Dear {{ $approver->name }},</p>
+            <div class="greeting">
+                Halo <strong>{{ $approver->name }}</strong>,<br><br>
+                Anda diminta untuk menyetujui sebuah permintaan. Berikut adalah informasi singkatnya.
+            </div>
 
-            <p>You have a new SPK Record waiting for your approval.</p>
-
-            <div class="details">
+            <div class="info-container">
                 <div class="info-row">
-                    <span class="label">Record ID:</span>
-                    <span>{{ $spkRecord->recordid }}</span>
+                    <div class="info-label">Nomor SPK</div>
+                    <div class="info-separator">:</div>
+                    <div>{{ $spkRecord->recordid }}</div>
                 </div>
                 <div class="info-row">
-                    <span class="label">Requester:</span>
-                    <span>{{ $spkRecord->orderempname }}</span>
+                    <div class="info-label">Nama pembuat</div>
+                    <div class="info-separator">:</div>
+                    <div>{{ $spkRecord->approvalRecord->createdBy->name }}</div>
                 </div>
                 <div class="info-row">
-                    <span class="label">Shop:</span>
-                    <span>{{ $spkRecord->ordershop }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Machine:</span>
-                    <span>{{ $spkRecord->machinename }} ({{ $spkRecord->machineno }})</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Title:</span>
-                    <span>{{ $spkRecord->ordertitle }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="label">Request Date:</span>
-                    <span>{{ \Carbon\Carbon::parse($spkRecord->orderdatetime)->format('Y-m-d H:i') }}</span>
+                    <div class="info-label">Department</div>
+                    <div class="info-separator">:</div>
+                    <div>{{ $spkRecord->approvalRecord->department->name }}</div>
                 </div>
             </div>
 
-            <center>
-                <a href="{{ config('app.url') }}/approvals/{{ $spkRecord->recordid }}" class="button">
-                    View Approval Request
-                </a>
-            </center>
+            <div>Untuk melihat detail lengkap dan melakukan persetujuan, silakan klik tombol berikut:</div>
 
-            <p>Please review and process this request at your earliest convenience.</p>
+            <a href="{{ config('app.url') }}/maintenance-database-system/department-request/detail?record_id={{ $spkRecord->recordid }}&to_approve=1"
+                class="button">Lihat Detail</a>
 
-            <p>Best regards,<br>{{ config('app.name') }}</p>
+            <div class="link-info">Jika tombol diatas tidak berfungsi, kamu dapat membuka detail melalui link berikut:
+            </div>
+            <a href="{{ config('app.url') }}/maintenance-database-system/department-request/detail?record_id={{ $spkRecord->recordid }}&to_approve=1"
+                class="link">{{ config('app.url') }}/maintenance-database-system/department-request/detail?record_id={{ $spkRecord->recordid }}&to_approve=1</a>
         </div>
 
         <div class="footer">
-            <p>This is an automated email. Please do not reply to this message.</p>
-            <p>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
+            Mohon untuk segera meninjau dan memberikan keputusan agar pekerjaan dapat terus berjalan. Terima kasih atas
+            perhatian dan kerjasama.
         </div>
     </div>
 </body>

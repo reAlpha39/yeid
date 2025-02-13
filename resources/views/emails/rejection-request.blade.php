@@ -67,26 +67,13 @@
             margin: 0 8px;
         }
 
-        .revision-note {
-            background: #FFF3CD;
-            border-left: 4px solid #FFC107;
+        .rejection-note {
+            background: #FDE7E9;
+            border-left: 4px solid #DC3545;
             padding: 16px;
             margin: 24px 0;
             font-size: 14px;
             line-height: 20px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 24px;
-            background: #0095F6;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            line-height: 20px;
-            margin: 24px 0;
         }
 
         .link-info {
@@ -115,13 +102,13 @@
     <div class="container">
         <div class="header">
             {{-- <img src="{{ asset('image/logo-name.png') }}" alt="Logo"> --}}
-            <div class="header-text">Revisi Diperlukan untuk SPK Record</div>
+            <div class="header-text">SPK Record Ditolak</div>
         </div>
 
         <div class="content">
             <div class="greeting">
                 Halo <strong>{{ $spkRecord->approvalRecord->createdBy->name }}</strong>,<br><br>
-                SPK Record Anda memerlukan revisi. Berikut adalah informasi detailnya.
+                SPK Record Anda telah ditolak. Berikut adalah informasi detailnya.
             </div>
 
             <div class="info-container">
@@ -131,14 +118,14 @@
                     <div>#{{ $spkRecord->recordid }}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Reviewer</div>
+                    <div class="info-label">Penolak</div>
                     <div class="info-separator">:</div>
-                    <div>{{ $reviewer->name }}</div>
+                    <div>{{ $rejector->name }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Departement</div>
                     <div class="info-separator">:</div>
-                    <div>{{ $reviewer->department->name }}</div>
+                    <div>{{ $rejector->department->name }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Shop</div>
@@ -157,25 +144,19 @@
                 </div>
             </div>
 
-            <div class="revision-note">
-                <strong>Catatan Revisi:</strong><br>
+            <div class="rejection-note">
+                <strong>Alasan Penolakan:</strong><br>
                 {{ $note }}
             </div>
 
-            <div>Untuk melihat detail lengkap dan melakukan revisi, silakan klik tombol berikut:</div>
-
-            <a href="{{ config('app.url') }}/maintenance-database-system/department-request/add?record_id={{ $spkRecord->recordid }}"
-                class="button">Revisi Request</a>
-
-            <div class="link-info">Jika tombol diatas tidak berfungsi, kamu dapat membuka detail melalui link berikut:
-            </div>
-            <a href="{{ config('app.url') }}/maintenance-database-system/department-request/add?record_id={{ $spkRecord->recordid }}"
-                class="link">{{ config('app.url') }}/maintenance-database-system/department-request/add?record_id={{ $spkRecord->recordid }}&to_approve=1</a>
+            <div class="link-info">Untuk melihat detail lengkap, kamu dapat membuka detail melalui link berikut:</div>
+            <a href="{{ config('app.url') }}/maintenance-database-system/department-request/detail?record_id={{ $spkRecord->recordid }}"
+                class="link">{{ config('app.url') }}/maintenance-database-system/department-request/detail?record_id={{ $spkRecord->recordid }}</a>
         </div>
 
         <div class="footer">
-            Mohon untuk segera melakukan revisi sesuai dengan catatan yang diberikan. Setelah diperbarui, proses
-            persetujuan akan dimulai kembali. Terima kasih atas perhatian dan kerjasama.
+            SPK Record ini telah ditolak dan tidak dapat diproses lebih lanjut. Jika Anda memiliki pertanyaan, silakan
+            hubungi penolak yang tercantum di atas. Terima kasih atas perhatian dan kerjasama.
         </div>
     </div>
 </body>
