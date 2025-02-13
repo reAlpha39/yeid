@@ -119,15 +119,29 @@ const handleNotificationClick = async (notification) => {
   if (notification.category === "approval") {
     menuOpen.value = false;
     await openDetailPage(notification.sourceId);
+    await router.push({
+      path: "/maintenance-database-system/department-request/detail",
+      query: { record_id: notification.sourceId, to_approve: "1" },
+    });
+  }
+
+  if (notification.category === "rejection") {
+    menuOpen.value = false;
+    await openDetailPage(notification.sourceId);
+    await router.push({
+      path: "/maintenance-database-system/department-request/detail",
+      query: { record_id: notification.sourceId },
+    });
+  }
+
+  if (notification.category === "revision") {
+    menuOpen.value = false;
+    await router.push({
+      path: "/maintenance-database-system/department-request/add",
+      query: { record_id: notification.sourceId },
+    });
   }
 };
-
-async function openDetailPage(id) {
-  await router.push({
-    path: "/maintenance-database-system/department-request/detail",
-    query: { record_id: id, to_approve: "1" },
-  });
-}
 
 // Initialize component
 onMounted(async () => {
