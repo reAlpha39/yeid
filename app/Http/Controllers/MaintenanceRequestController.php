@@ -11,9 +11,7 @@ use App\Services\ApprovalService;
 use App\Models\MasUser;
 use App\Models\MasEmployee;
 use App\Models\SpkRecord;
-use App\Models\SpkRecordApproval;
 use Exception;
-use Log;
 
 class MaintenanceRequestController extends Controller
 {
@@ -491,7 +489,14 @@ class MaintenanceRequestController extends Controller
                         }]);
                     }
                 ]);
-            }])->findOrFail($spkNo);
+            }])->find($spkNo);
+
+            if (!$spkRecord) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record #' . $spkNo . ' not found'
+                ], 404);
+            }
 
             // Get machine details
             $machineDetails = DB::table('mas_machine')
@@ -550,7 +555,14 @@ class MaintenanceRequestController extends Controller
     public function update(Request $request, $recordId)
     {
         try {
-            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+            $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
+
+            if (!$spkRecord) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record #' . $recordId . ' not found'
+                ], 404);
+            }
 
             if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'revision', null], true)) {
                 return response()->json([
@@ -635,7 +647,14 @@ class MaintenanceRequestController extends Controller
         DB::beginTransaction();
 
         try {
-            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+            $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
+
+            if (!$spkRecord) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record #' . $recordId . ' not found'
+                ], 404);
+            }
 
             if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
                 return response()->json([
@@ -775,11 +794,17 @@ class MaintenanceRequestController extends Controller
             DB::commit();
 
             // Return success response
-            return response()->json(['message' => 'Report updated successfully'], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Report updated successfully'
+            ], 200);
         } catch (Exception $e) {
-            // Rollback the transaction in case of error
             DB::rollBack();
-            return response()->json(['error' => 'Failed to update report', 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update report',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -789,26 +814,46 @@ class MaintenanceRequestController extends Controller
         DB::beginTransaction();
 
         try {
-            $spkRecord = SpkRecord::with(['approvalRecord'])->findOrFail($recordId);
+            $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
+
+            if (!$spkRecord) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record #' . $recordId . ' not found'
+                ], 404);
+            }
 
             if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', null], true)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Request is cannot be deleted'
+                    'message' => 'Request cannot be deleted'
                 ], 400);
             }
+
+            DB::table('tbl_spkrecord_approval_note')
+                ->where('approval_id', $spkRecord->approvalRecord->id)
+                ->delete();
+
+            DB::table('tbl_spkrecord_approval')
+                ->where('record_id', $recordId)
+                ->delete();
 
             $deletedRows = DB::table('tbl_spkrecord')
                 ->where('recordid', $recordId)
                 ->delete();
 
-            // delete workdata data
-            DB::table('tbl_work')->where('recordid', $recordId)->delete();
+            // delete workdata
+            DB::table('tbl_work')
+                ->where('recordid', $recordId)
+                ->delete();
 
             // delete partdata
-            DB::table('tbl_part')->where('recordid', $recordId)->delete();
+            DB::table('tbl_part')
+                ->where('recordid', $recordId)
+                ->delete();
 
             if ($deletedRows === 0) {
+                DB::rollBack();
                 return response()->json([
                     'success' => false,
                     'error' => 'Record not found'
@@ -817,7 +862,6 @@ class MaintenanceRequestController extends Controller
 
             DB::commit();
 
-            // Return success response
             return response()->json([
                 'success' => true,
                 'message' => 'Record deleted successfully',
