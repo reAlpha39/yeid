@@ -6,10 +6,14 @@
     <style>
         body {
             margin: 0;
-            padding: 0;
+            padding: 20px;
             font-family: 'Rubik', Arial, sans-serif;
             line-height: 1.6;
             color: #3A383A;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
         }
 
         .container {
@@ -17,6 +21,8 @@
             border-radius: 8px;
             display: flex;
             flex-direction: column;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .header {
@@ -24,6 +30,7 @@
             background: #F9F9F9;
             border-bottom: 1px solid #DBDADE;
             text-align: center;
+            border-radius: 8px 8px 0 0;
         }
 
         .header img {
@@ -67,13 +74,26 @@
             margin: 0 8px;
         }
 
-        .rejection-note {
-            background: #FDE7E9;
-            border-left: 4px solid #DC3545;
+        .revision-note {
+            background: #FFF3CD;
+            border-left: 4px solid #FFC107;
             padding: 16px;
             margin: 24px 0;
             font-size: 14px;
             line-height: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #0095F6;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 20px;
+            margin: 24px 0;
         }
 
         .link-info {
@@ -87,6 +107,7 @@
             text-decoration: underline;
             font-size: 14px;
             line-height: 20px;
+            word-break: break-all;
         }
 
         .footer {
@@ -94,9 +115,29 @@
             background: #F9F9F9;
             font-size: 14px;
             line-height: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        @media screen and (max-width: 640px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+            }
+
+            .content {
+                padding: 24px;
+            }
+
+            .footer {
+                padding: 24px;
+            }
         }
     </style>
 </head>
+
 
 <body>
     <div class="container">
