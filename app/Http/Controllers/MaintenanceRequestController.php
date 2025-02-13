@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\DepartmentRequestsExport;
 use App\Exports\MaintenanceReportsExport;
+use App\Traits\PermissionCheckerTrait;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\ApprovalService;
 use App\Models\MasUser;
@@ -15,6 +16,8 @@ use Exception;
 
 class MaintenanceRequestController extends Controller
 {
+    use PermissionCheckerTrait;
+
     private $approvalService;
 
     public function __construct(ApprovalService $approvalService)
@@ -25,6 +28,10 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $date = $request->input('date');
             $shopCode = $request->input('shop_code');
             $machineCode = $request->input('machine_code');
@@ -153,6 +160,10 @@ class MaintenanceRequestController extends Controller
     public function indexWork($recordId)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $results = DB::table('tbl_work')
                 ->select(
                     'workid',
@@ -204,6 +215,10 @@ class MaintenanceRequestController extends Controller
     public function indexPart($recordId)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $parts = DB::table('tbl_part')
                 ->select(
                     'partid',
@@ -235,9 +250,13 @@ class MaintenanceRequestController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $maxRecordId = DB::table('tbl_spkrecord')
                 ->max('recordid');
 
@@ -310,8 +329,14 @@ class MaintenanceRequestController extends Controller
 
     public function reject(Request $request, $recordId)
     {
-        DB::beginTransaction();
+
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $spkRecord = SpkRecord::findOrFail($recordId);
             $rejector = MasUser::findOrFail(auth()->user()->id);
 
@@ -360,6 +385,12 @@ class MaintenanceRequestController extends Controller
     {
         DB::beginTransaction();
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $spkRecord = SpkRecord::findOrFail($recordId);
             $reviewer = MasUser::findOrFail(auth()->user()->id);
 
@@ -406,8 +437,13 @@ class MaintenanceRequestController extends Controller
 
     public function approve(Request $request, $recordId)
     {
-        DB::beginTransaction();
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $spkRecord = SpkRecord::findOrFail($recordId);
             $approver = MasUser::findOrFail(auth()->user()->id);
             $pic = MasEmployee::find($request->input('employee_code'));
@@ -475,6 +511,10 @@ class MaintenanceRequestController extends Controller
     public function show($spkNo)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $user = MasUser::findOrFail(auth()->user()->id);
 
             $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
@@ -555,6 +595,10 @@ class MaintenanceRequestController extends Controller
     public function update(Request $request, $recordId)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
 
             if (!$spkRecord) {
@@ -644,9 +688,13 @@ class MaintenanceRequestController extends Controller
 
     public function updateReport(Request $request, $recordId)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
 
             if (!$spkRecord) {
@@ -811,9 +859,13 @@ class MaintenanceRequestController extends Controller
 
     public function destroy($recordId)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $spkRecord = SpkRecord::with(['approvalRecord'])->find($recordId);
 
             if (!$spkRecord) {
@@ -879,6 +931,10 @@ class MaintenanceRequestController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $filename = 'department_requests_' . date('Y-m-d_His') . '.xlsx';
             return Excel::download(
                 new DepartmentRequestsExport($request),
@@ -909,6 +965,9 @@ class MaintenanceRequestController extends Controller
     public function exportMaintenanceReports(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             $filename = 'maintenance_reports_' . date('Y-m-d_His') . '.xlsx';
 
