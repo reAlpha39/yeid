@@ -254,11 +254,10 @@ onMounted(async () => {
   <VCard class="mb-6 pa-6">
     <VCard class="mb-6" variant="outlined" style="background-color: #f9f9f9">
       <VCardText>
-        <span
-          class="d-block font-weight-medium text-high-emphasis text-truncate"
-          >SPK NO : {{ data?.recordid }}</span
-        >
-        <p>{{ data?.orderdatetime }}</p>
+        <h3 class="d-block font-weight-medium text-high-emphasis text-truncate">
+          SPK NO : {{ data?.recordid }}
+        </h3>
+        <small>{{ data?.orderdatetime }}</small>
       </VCardText>
 
       <VRow class="pb-6">
@@ -307,10 +306,9 @@ onMounted(async () => {
 
     <VCard class="mb-6" variant="outlined" style="background-color: #f9f9f9">
       <VCardText>
-        <span
-          class="d-block font-weight-medium text-high-emphasis text-truncate"
-          >Informasi Machine</span
-        >
+        <h3 class="d-block font-weight-medium text-high-emphasis text-truncate">
+          Informasi Machine
+        </h3>
       </VCardText>
       <VCard variant="flat" rounded="0">
         <VCardText>
@@ -360,63 +358,114 @@ onMounted(async () => {
       </VCard>
     </VCard>
 
-    <template v-if="data?.approval_record?.notes">
-      <VCard
-        v-for="(note, index) in data.approval_record.notes"
-        :key="index"
-        class="mb-6"
-        variant="flat"
-        style="background-color: #f9f9f9"
-      >
-        <VCardText>
-          <VRow>
-            <VCol cols="8">
-              <div
-                class="d-block font-weight-medium text-high-emphasis text-truncate"
-              >
-                {{ note.user.name }}
-              </div>
-              <div class="d-block text-truncate mb-4">
-                {{ getRole(note.user.role_access) }}
-                -
-                {{ note.user.department.name }}
-              </div>
-              <div>
-                {{ note.note }}
-              </div>
-            </VCol>
-            <VCol cols="4" class="text-right">
-              <div class="d-flex align-center justify-end">
-                <VIcon
-                  :color="getStatusColor(note.type)"
-                  :icon="getStatusIcon(note.type)"
-                  class="me-2"
-                  size="small"
-                />
-                <span :class="`text-${getStatusColor(note.type)}`">
-                  {{ getStatusText(note.type) }}
-                </span>
-              </div>
-              <div
-                class="text-medium-emphasis mt-2"
-                style="font-size: 0.875rem"
-              >
-                {{
-                  moment(note.created_at).format("dddd, D MMMM YYYY HH:mm:ss")
-                }}
-              </div>
-            </VCol>
-          </VRow>
-        </VCardText>
-      </VCard>
-    </template>
+    <VCard class="mb-6" variant="outlined">
+      <VCardText class="d-flex flex-wrap gap-4">
+        <div>
+          <h3 class="font-weight-medium text-high-emphasis mt-2">
+            Penanggung Jawab Pengerjaan
+          </h3>
+        </div>
+
+        <VSpacer />
+
+        <div>
+          <VCard variant="flat" style="background-color: #f9f9f9" class="pa-2">
+            <small>{{ data?.approval_record?.pic?.employeename ?? "-" }}</small>
+          </VCard>
+        </div>
+      </VCardText>
+    </VCard>
+
+    <VCard class="mb-6" variant="outlined">
+      <VCardText>
+        <h3
+          class="d-block font-weight-medium text-high-emphasis text-truncate mb-4"
+        >
+          Approval
+        </h3>
+
+        <div class="d-block text-truncate mb-2">Created By</div>
+        <VRow>
+          <VCol cols="8">
+            <div
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+            >
+              {{ data?.approval_record?.created_by.name }}
+            </div>
+            <small class="d-block">
+              {{ getRole(data?.approval_record?.created_by.role_access) }}
+              -
+              {{ data?.approval_record?.department.name }}
+            </small>
+          </VCol>
+          <VCol cols="4" class="text-right">
+            <div class="text-medium-emphasis mt-2" style="font-size: 0.875rem">
+              {{
+                moment(data?.approval_record?.created_at).format(
+                  "dddd, D MMMM YYYY HH:mm:ss"
+                )
+              }}
+            </div>
+          </VCol>
+        </VRow>
+      </VCardText>
+
+      <template v-if="data?.approval_record?.notes">
+        <VCard
+          v-for="(note, index) in data.approval_record.notes"
+          :key="index"
+          variant="outlined"
+          class="mb-4 mx-6"
+        >
+          <VCardText>
+            <VRow>
+              <VCol cols="8">
+                <div
+                  class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >
+                  {{ note.user.name }}
+                </div>
+                <small class="d-block text-truncate mb-4">
+                  {{ getRole(note.user.role_access) }}
+                  -
+                  {{ note.user.department.name }}
+                </small>
+                <div>
+                  {{ note.note }}
+                </div>
+              </VCol>
+              <VCol cols="4" class="text-right">
+                <div class="d-flex align-center justify-end">
+                  <VIcon
+                    :color="getStatusColor(note.type)"
+                    :icon="getStatusIcon(note.type)"
+                    class="me-2"
+                    size="small"
+                  />
+                  <span :class="`text-${getStatusColor(note.type)}`">
+                    {{ getStatusText(note.type) }}
+                  </span>
+                </div>
+                <div
+                  class="text-medium-emphasis mt-2"
+                  style="font-size: 0.875rem"
+                >
+                  {{
+                    moment(note.created_at).format("dddd, D MMMM YYYY HH:mm:ss")
+                  }}
+                </div>
+              </VCol>
+            </VRow>
+          </VCardText>
+        </VCard>
+      </template>
+    </VCard>
 
     <VForm v-if="data?.can_approve" ref="form" lazy-validation>
-      <VCard class="mb-6" variant="outlined" style="background-color: #f9f9f9">
+      <VCard class="mb-6" variant="outlined">
         <VCardTitle>
           <AppAutocomplete
             v-if="data?.approval_record.pic === null"
-            style="background-color: #ffffff"
             v-model="selectedEmployee"
             label="Penanggung Jawab"
             :rules="
@@ -430,7 +479,6 @@ onMounted(async () => {
           />
 
           <AppTextarea
-            style="background-color: #ffffff"
             class="pt-4 pb-6"
             v-model="note"
             label="Catatan (opsional)"

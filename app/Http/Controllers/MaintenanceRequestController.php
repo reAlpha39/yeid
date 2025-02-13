@@ -482,7 +482,7 @@ class MaintenanceRequestController extends Controller
             $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
                 $query->with([
                     'department:id,name',
-                    'createdBy:id,name',
+                    'createdBy:id,name,role_access',
                     'pic:employeecode,employeename',
                     'notes' => function ($query) {
                         $query->with(['user' => function ($query) {

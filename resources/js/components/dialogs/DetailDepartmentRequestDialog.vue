@@ -1,4 +1,8 @@
 <script setup>
+import moment from "moment";
+import "moment/locale/id";
+
+moment.locale("id");
 const data = ref();
 const dataMachine = ref();
 
@@ -17,7 +21,8 @@ const props = defineProps({
 async function fetchData(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" + encodeURIComponent(id)
+      "/maintenance-database-system/department-requests/" +
+        encodeURIComponent(id)
     );
 
     data.value = response.data;
@@ -41,6 +46,51 @@ async function fetchDataMachine(id) {
     console.log(err);
   }
 }
+
+function getRole(id) {
+  if (id === "1") {
+    return "Operator";
+  }
+  if (id === "2") {
+    return "Supervisor";
+  }
+  if (id === "3") {
+    return "Manager";
+  }
+}
+
+const getStatusColor = (type) => {
+  switch (type) {
+    case "approved":
+      return "success";
+    case "revision":
+      return "warning";
+    default:
+      return "error";
+  }
+};
+
+const getStatusIcon = (type) => {
+  switch (type) {
+    case "approved":
+      return "tabler-check";
+    case "revision":
+      return "tabler-hourglass";
+    default:
+      return "tabler-x";
+  }
+};
+
+const getStatusText = (type) => {
+  switch (type) {
+    case "approved":
+      return "Telah disetujui";
+    case "revision":
+      return "Revisi";
+    default:
+      return "Ditolak";
+  }
+};
 
 const dialogVisibleUpdate = (val) => {
   emit("update:isDialogVisible", val);
@@ -70,122 +120,295 @@ watch(
     <!-- 👉 Dialog close btn -->
     <DialogCloseBtn @click="$emit('update:isDialogVisible', false)" />
 
-    <VCard class="share-project-dialog pa-2 pa-sm-10">
-      <VCardText>
-        <h4 class="text-h4 text-center mb-2">Detail Maintenance Request</h4>
-      </VCardText>
-
-      <VCard class="mb-6" variant="outlined" style="background-color: #f9f9f9">
-        <VCardText>
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >SPK NO : {{ data?.recordid }}</span
-          >
-          <p>{{ data?.orderdatetime }}</p>
-        </VCardText>
-
-        <VRow class="pb-6">
-          <VCol cols="6">
-            <VCard variant="flat" class="ml-6 mr-2">
-              <VCardText>
-                <VRow>
-                  <VCol cols="4"> Jenis Perbaikan </VCol>
-                  <VCol cols="8"> : {{ data?.maintenancecode }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Pemohon </VCol>
-                  <VCol cols="8"> : {{ data?.orderempname }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Shop yang Dituju </VCol>
-                  <VCol cols="8"> : {{ data?.shopcode }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Mengapa dan Bagaimana </VCol>
-                  <VCol cols="8"> : {{ data?.ordertitle }} </VCol>
-                </VRow>
-              </VCardText>
-            </VCard>
-          </VCol>
-          <VCol cols="6">
-            <VCard variant="flat" class="mr-6 ml-2">
-              <VCardText>
-                <VRow>
-                  <VCol cols="4"> Jenis Pekerjaan </VCol>
-                  <VCol cols="8"> : {{ data?.orderjobtype }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Jumlah </VCol>
-                  <VCol cols="8"> : {{ data?.orderqtty }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Minta Tanggal Selesai </VCol>
-                  <VCol cols="8"> : {{ data?.orderfinishdate }} </VCol>
-                </VRow>
-              </VCardText>
-            </VCard>
-          </VCol>
-        </VRow>
-      </VCard>
-
-      <VCard variant="outlined" style="background-color: #f9f9f9">
-        <VCardText>
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >Informasi Machine</span
-          >
-        </VCardText>
-        <VCard variant="flat" rounded="0">
+    <VCard>
+      <!-- Container div with max-height and overflow-y-auto -->
+      <div class="dialog-content overflow-y-auto" style="max-height: 80vh">
+        <div class="pa-2 pa-sm-10">
           <VCardText>
+            <h4 class="text-h4 text-center mb-2">Detail Maintenance Request</h4>
+          </VCardText>
+
+          <VCard
+            class="mb-6"
+            variant="outlined"
+            style="background-color: #f9f9f9"
+          >
+            <VCardText>
+              <h3
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >
+                SPK NO : {{ data?.recordid }}
+              </h3>
+              <small>{{ data?.orderdatetime }}</small>
+            </VCardText>
+
             <VRow class="pb-6">
               <VCol cols="6">
-                <VRow>
-                  <VCol cols="4"> Machine No </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.machineno || "-" }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Machine Name </VCol>
-                  <VCol cols="8">
-                    : {{ dataMachine?.machinename || "-" }}
-                  </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Model </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.modelname || "-" }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Maker </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.makername || "-" }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Shop </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.shopname || "-" }} </VCol>
-                </VRow>
+                <VCard variant="flat" class="ml-6 mr-2">
+                  <VCardText>
+                    <VRow>
+                      <VCol cols="4"> Jenis Perbaikan </VCol>
+                      <VCol cols="8"> : {{ data?.maintenancecode }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Pemohon </VCol>
+                      <VCol cols="8"> : {{ data?.orderempname }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Shop yang Dituju </VCol>
+                      <VCol cols="8"> : {{ data?.shopcode }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Mengapa dan Bagaimana </VCol>
+                      <VCol cols="8"> : {{ data?.ordertitle }} </VCol>
+                    </VRow>
+                  </VCardText>
+                </VCard>
               </VCol>
               <VCol cols="6">
-                <VRow>
-                  <VCol cols="4"> Plant </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.plantcode || "-" }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Tanggal Instalasi </VCol>
-                  <VCol cols="8">
-                    : {{ dataMachine?.installdate || "-" }}
-                  </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> Line </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.linecode || "-" }} </VCol>
-                </VRow>
-                <VRow>
-                  <VCol cols="4"> S/N </VCol>
-                  <VCol cols="8"> : {{ dataMachine?.serialno || "-" }} </VCol>
-                </VRow>
+                <VCard variant="flat" class="mr-6 ml-2">
+                  <VCardText>
+                    <VRow>
+                      <VCol cols="4"> Jenis Pekerjaan </VCol>
+                      <VCol cols="8"> : {{ data?.orderjobtype }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Jumlah </VCol>
+                      <VCol cols="8"> : {{ data?.orderqtty }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Minta Tanggal Selesai </VCol>
+                      <VCol cols="8"> : {{ data?.orderfinishdate }} </VCol>
+                    </VRow>
+                  </VCardText>
+                </VCard>
               </VCol>
             </VRow>
-          </VCardText>
-        </VCard>
-      </VCard>
+          </VCard>
+
+          <VCard
+            class="mb-6"
+            variant="outlined"
+            style="background-color: #f9f9f9"
+          >
+            <VCardText>
+              <h3
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >
+                Informasi Machine
+              </h3>
+            </VCardText>
+            <VCard variant="flat" rounded="0">
+              <VCardText>
+                <VRow class="pb-6">
+                  <VCol cols="6">
+                    <VRow>
+                      <VCol cols="4"> Machine No </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.machineno || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Machine Name </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.machinename || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Model </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.modelname || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Maker </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.makername || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Shop </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.shopname || "-" }}
+                      </VCol>
+                    </VRow>
+                  </VCol>
+                  <VCol cols="6">
+                    <VRow>
+                      <VCol cols="4"> Plant </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.plantcode || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Tanggal Instalasi </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.installdate || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Line </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.linecode || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> S/N </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.serialno || "-" }}
+                      </VCol>
+                    </VRow>
+                  </VCol>
+                </VRow>
+              </VCardText>
+            </VCard>
+          </VCard>
+
+          <VCard class="mb-6" variant="outlined">
+            <VCardText class="d-flex flex-wrap gap-4">
+              <div>
+                <h3 class="font-weight-medium text-high-emphasis mt-2">
+                  Penanggung Jawab Pengerjaan
+                </h3>
+              </div>
+
+              <VSpacer />
+
+              <div>
+                <VCard
+                  variant="flat"
+                  style="background-color: #f9f9f9"
+                  class="pa-2"
+                >
+                  <small>{{
+                    data?.approval_record?.pic?.employeename ?? "-"
+                  }}</small>
+                </VCard>
+              </div>
+            </VCardText>
+          </VCard>
+
+          <VCard class="mb-6" variant="outlined">
+            <VCardText>
+              <h3
+                class="d-block font-weight-medium text-high-emphasis text-truncate mb-4"
+              >
+                Approval
+              </h3>
+
+              <div class="d-block text-truncate mb-2">Created By</div>
+              <VRow>
+                <VCol cols="8">
+                  <div
+                    class="d-block font-weight-medium text-high-emphasis text-truncate"
+                  >
+                    {{ data?.approval_record?.created_by.name }}
+                  </div>
+                  <small class="d-block">
+                    {{ getRole(data?.approval_record?.created_by.role_access) }}
+                    -
+                    {{ data?.approval_record?.department.name }}
+                  </small>
+                </VCol>
+                <VCol cols="4" class="text-right">
+                  <div
+                    class="text-medium-emphasis mt-2"
+                    style="font-size: 0.875rem"
+                  >
+                    {{
+                      moment(data?.approval_record?.created_at).format(
+                        "dddd, D MMMM YYYY HH:mm:ss"
+                      )
+                    }}
+                  </div>
+                </VCol>
+              </VRow>
+            </VCardText>
+
+            <template v-if="data?.approval_record?.notes">
+              <VCard
+                v-for="(note, index) in data.approval_record.notes"
+                :key="index"
+                variant="outlined"
+                class="mb-4 mx-6"
+                style="background-color: #f9f9f9"
+              >
+                <VCardText>
+                  <VRow>
+                    <VCol cols="8">
+                      <div
+                        class="d-block font-weight-medium text-high-emphasis text-truncate"
+                      >
+                        {{ note.user.name }}
+                      </div>
+                      <small class="d-block text-truncate mb-4">
+                        {{ getRole(note.user.role_access) }}
+                        -
+                        {{ note.user.department.name }}
+                      </small>
+                      <div>
+                        {{ note.note }}
+                      </div>
+                    </VCol>
+                    <VCol cols="4" class="text-right">
+                      <div class="d-flex align-center justify-end">
+                        <VIcon
+                          :color="getStatusColor(note.type)"
+                          :icon="getStatusIcon(note.type)"
+                          class="me-2"
+                          size="small"
+                        />
+                        <span :class="`text-${getStatusColor(note.type)}`">
+                          {{ getStatusText(note.type) }}
+                        </span>
+                      </div>
+                      <div
+                        class="text-medium-emphasis mt-2"
+                        style="font-size: 0.875rem"
+                      >
+                        {{
+                          moment(note.created_at).format(
+                            "dddd, D MMMM YYYY HH:mm:ss"
+                          )
+                        }}
+                      </div>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </template>
+          </VCard>
+        </div>
+      </div>
     </VCard>
   </VDialog>
 </template>
+
+<style scoped>
+.dialog-content {
+  /* Smooth scrolling for modern browsers */
+  scroll-behavior: smooth;
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+}
+
+/* Custom scrollbar styling for webkit browsers */
+.dialog-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+</style>
