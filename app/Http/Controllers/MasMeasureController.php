@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasMeasure;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\MeasuresExport;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasMeasureController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all Measures with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('search');
 
             $query = MasMeasure::query();
@@ -47,6 +54,10 @@ class MasMeasureController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'measurecode' => [
                     'required',
@@ -87,6 +98,10 @@ class MasMeasureController extends Controller
     public function show($measureCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $measure = MasMeasure::find($measureCode);
 
             if (!$measure) {
@@ -113,6 +128,10 @@ class MasMeasureController extends Controller
     public function update(Request $request, $measureCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $measure = MasMeasure::find($measureCode);
 
             if (!$measure) {
@@ -147,6 +166,10 @@ class MasMeasureController extends Controller
     public function destroy($measureCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $measure = MasMeasure::find($measureCode);
 
             if (!$measure) {
@@ -173,6 +196,10 @@ class MasMeasureController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+            
             return Excel::download(new MeasuresExport($request->query('search')), 'measures.xlsx');
         } catch (Exception $e) {
             return response()->json([

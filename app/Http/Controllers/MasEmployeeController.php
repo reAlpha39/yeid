@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasEmployee;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasEmployeeController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all employee records with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = MasEmployee::query();
 
             // Check for search parameters
@@ -47,6 +54,10 @@ class MasEmployeeController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'employeecode' => [
                     'required',
@@ -88,6 +99,10 @@ class MasEmployeeController extends Controller
     public function show($employeeCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $employee = MasEmployee::find($employeeCode);
 
             if (!$employee) {
@@ -117,6 +132,10 @@ class MasEmployeeController extends Controller
     public function update(Request $request, $employeeCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $employee = MasEmployee::find($employeeCode);
 
             if (!$employee) {
@@ -152,6 +171,10 @@ class MasEmployeeController extends Controller
     public function destroy($employeeCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $employee = MasEmployee::find($employeeCode);
 
             if (!$employee) {
@@ -178,6 +201,10 @@ class MasEmployeeController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new EmployeesExport($request->input('search')), 'employees.xlsx');
         } catch (Exception $e) {
             return response()->json([

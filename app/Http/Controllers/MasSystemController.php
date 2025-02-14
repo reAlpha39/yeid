@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasSystem;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasSystemController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all system records with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('search');
 
             $query = MasSystem::query();
@@ -50,6 +57,10 @@ class MasSystemController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'year' => [
                     'required',
@@ -92,6 +103,10 @@ class MasSystemController extends Controller
     public function show($year)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $system = MasSystem::find($year);
 
             if (!$system) {
@@ -118,6 +133,10 @@ class MasSystemController extends Controller
     public function update(Request $request, $year)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $system = MasSystem::find($year);
 
             if (!$system) {
@@ -154,6 +173,10 @@ class MasSystemController extends Controller
     public function destroy($year)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $system = MasSystem::find($year);
 
             if (!$system) {
@@ -181,6 +204,10 @@ class MasSystemController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new CurrencyExport($request->query('search')), 'currency_rates.xlsx');
         } catch (Exception $e) {
             return response()->json([

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasPrevention;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\PreventionsExport;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasPreventionController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all Prevention records with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('search');
 
             $query = MasPrevention::query();
@@ -47,6 +54,10 @@ class MasPreventionController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'preventioncode' => [
                     'required',
@@ -87,6 +98,10 @@ class MasPreventionController extends Controller
     public function show($preventionCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $prevention = MasPrevention::find($preventionCode);
 
             if (!$prevention) {
@@ -113,6 +128,10 @@ class MasPreventionController extends Controller
     public function update(Request $request, $preventionCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $prevention = MasPrevention::find($preventionCode);
 
             if (!$prevention) {
@@ -147,6 +166,10 @@ class MasPreventionController extends Controller
     public function destroy($preventionCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $prevention = MasPrevention::find($preventionCode);
 
             if (!$prevention) {
@@ -173,6 +196,10 @@ class MasPreventionController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new PreventionsExport($request->query('search')), 'preventions.xlsx');
         } catch (Exception $e) {
             return response()->json([

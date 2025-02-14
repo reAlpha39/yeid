@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasMachine;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Exports\MachinesExport;
@@ -11,10 +12,15 @@ use Exception;
 
 class MasMachineController extends Controller
 {
+    use PermissionCheckerTrait;
 
     public function searchMachine(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = DB::table('mas_machine')
                 ->select([
                     'machineno',
@@ -75,6 +81,9 @@ class MasMachineController extends Controller
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             // Start building the query
             $query = MasMachine::query();
@@ -125,6 +134,10 @@ class MasMachineController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'machineno' => [
                     'required',
@@ -180,6 +193,10 @@ class MasMachineController extends Controller
     public function show($machineNo)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $machine = MasMachine::find($machineNo);
 
             if (!$machine) {
@@ -206,6 +223,10 @@ class MasMachineController extends Controller
     public function update(Request $request, $machineNo)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $machine = MasMachine::find($machineNo);
 
             if (!$machine) {
@@ -255,6 +276,10 @@ class MasMachineController extends Controller
     public function destroy($machineNo)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $machine = MasMachine::find($machineNo);
 
             if (!$machine) {
@@ -282,6 +307,10 @@ class MasMachineController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $export = new MachinesExport(
                 $request->query('search'),
                 $request->query('shopcode'),

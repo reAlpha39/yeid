@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasVendor;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasVendorController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Display a listing of vendors (with search functionality)
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->input('search');
 
             // Search by vendorcode or vendorname
@@ -41,6 +48,10 @@ class MasVendorController extends Controller
     public function show($vendorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $vendor = MasVendor::find($vendorCode);
 
             if ($vendor) {
@@ -68,6 +79,10 @@ class MasVendorController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validatedData = $request->validate([
                 'vendorcode' => [
                     'required',
@@ -108,6 +123,10 @@ class MasVendorController extends Controller
     public function update(Request $request, $vendorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $vendor = MasVendor::find($vendorCode);
 
             if (!$vendor) {
@@ -142,6 +161,10 @@ class MasVendorController extends Controller
     public function destroy($vendorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $vendor = MasVendor::find($vendorCode);
 
             if (!$vendor) {
@@ -170,6 +193,10 @@ class MasVendorController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new VendorsExport($request->input('search')), 'vendors.xlsx');
         } catch (Exception $e) {
             return response()->json([

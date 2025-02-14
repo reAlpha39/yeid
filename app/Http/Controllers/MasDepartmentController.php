@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasDepartment;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\DepartmentsExport;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasDepartmentController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all department records with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = MasDepartment::query();
 
             // Check for search parameters
@@ -43,6 +50,10 @@ class MasDepartmentController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'code' => [
                     'required',
@@ -83,6 +94,10 @@ class MasDepartmentController extends Controller
     public function show($id)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $department = MasDepartment::find($id);
 
             if (!$department) {
@@ -112,6 +127,10 @@ class MasDepartmentController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $department = MasDepartment::find($id);
 
             if (!$department) {
@@ -161,6 +180,10 @@ class MasDepartmentController extends Controller
     public function destroy($id)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $department = MasDepartment::find($id);
 
             if (!$department) {
@@ -188,6 +211,10 @@ class MasDepartmentController extends Controller
     public function restore($id)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $department = MasDepartment::withTrashed()->find($id);
 
             if ($department && $department->trashed()) {
@@ -214,6 +241,10 @@ class MasDepartmentController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new DepartmentsExport($request->input('search')), 'departments.xlsx');
         } catch (Exception $e) {
             return response()->json([

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasFactor;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,15 @@ use Exception;
 
 class MasFactorController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all factors with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             $search = $request->query('search');
 
@@ -49,6 +55,10 @@ class MasFactorController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'factorcode' => [
                     'required',
@@ -89,6 +99,10 @@ class MasFactorController extends Controller
     public function show($factorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $factor = MasFactor::find($factorCode);
 
             if (!$factor) {
@@ -115,6 +129,10 @@ class MasFactorController extends Controller
     public function update(Request $request, $factorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $factor = MasFactor::find($factorCode);
 
             if (!$factor) {
@@ -149,6 +167,10 @@ class MasFactorController extends Controller
     public function destroy($factorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $factor = MasFactor::find($factorCode);
 
             if (!$factor) {
@@ -175,6 +197,10 @@ class MasFactorController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new FactorsExport($request->query('search')), 'factors.xlsx');
         } catch (Exception $e) {
             return response()->json([

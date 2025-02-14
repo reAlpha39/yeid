@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasUser;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -15,10 +16,16 @@ use Exception;
 
 class MasUserController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all user records with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('user', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = MasUser::query();
 
             $search = $request->input('search');
@@ -83,6 +90,10 @@ class MasUserController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('user', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:64',
                 'email' => [
@@ -152,6 +163,10 @@ class MasUserController extends Controller
     public function show($id)
     {
         try {
+            if (!$this->checkAccess('user', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $user = MasUser::find($id);
 
             if (!$user) {
@@ -181,6 +196,10 @@ class MasUserController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            if (!$this->checkAccess('user', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $user = MasUser::find($id);
 
             if (!$user) {
@@ -277,6 +296,10 @@ class MasUserController extends Controller
     public function updateStatus(Request $request, $id)
     {
         try {
+            if (!$this->checkAccess('user', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate the input
             $validator = Validator::make($request->all(), [
                 'status' => 'required|string|max:1'
@@ -326,6 +349,10 @@ class MasUserController extends Controller
     public function destroy($id)
     {
         try {
+            if (!$this->checkAccess('user', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $user = MasUser::find($id);
 
             if (!$user) {
@@ -353,6 +380,10 @@ class MasUserController extends Controller
     public function restore($id)
     {
         try {
+            if (!$this->checkAccess('user', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $user = MasUser::withTrashed()->find($id);
 
             if ($user && $user->trashed()) {
@@ -379,6 +410,10 @@ class MasUserController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('user', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(
                 new UsersExport(
                     $request->input('search'),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasShop;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasShopController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all shops
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get query parameters for filtering
             $shopCode = $request->query('shop_code');
             $shopName = $request->query('shop_name');
@@ -52,6 +59,10 @@ class MasShopController extends Controller
     public function show($shopCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $shop = MasShop::find($shopCode);
 
             if ($shop) {
@@ -79,6 +90,10 @@ class MasShopController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'shopcode' => [
                     'required',
@@ -121,6 +136,10 @@ class MasShopController extends Controller
     public function update(Request $request, $shopCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $shop = MasShop::find($shopCode);
 
             if (!$shop) {
@@ -157,6 +176,10 @@ class MasShopController extends Controller
     public function destroy($shopCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $shop = MasShop::find($shopCode);
 
             if (!$shop) {
@@ -185,6 +208,10 @@ class MasShopController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(
                 new ShopsExport(
                     $request->query('shop_code'),

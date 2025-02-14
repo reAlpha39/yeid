@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasLTFactor;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,15 @@ use Exception;
 
 class MasLTFactorController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all LTFactors with optional searching
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             $search = $request->query('search');
 
@@ -48,6 +54,10 @@ class MasLTFactorController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'ltfactorcode' => [
                     'required',
@@ -88,6 +98,10 @@ class MasLTFactorController extends Controller
     public function show($ltFactorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $ltFactor = MasLTFactor::find($ltFactorCode);
 
             if (!$ltFactor) {
@@ -114,6 +128,10 @@ class MasLTFactorController extends Controller
     public function update(Request $request, $ltFactorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $ltFactor = MasLTFactor::find($ltFactorCode);
 
             if (!$ltFactor) {
@@ -148,6 +166,10 @@ class MasLTFactorController extends Controller
     public function destroy($ltFactorCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $ltFactor = MasLTFactor::find($ltFactorCode);
 
             if ($ltFactor) {
@@ -174,6 +196,10 @@ class MasLTFactorController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new LTFactorExport($request->query('search')), 'ltfactors.xlsx');
         } catch (Exception $e) {
             return response()->json([

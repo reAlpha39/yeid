@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -14,9 +15,15 @@ use Exception;
 
 class MasterPartController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function getMasterPartList(Request $request)
     {
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Retrieve search parameters from the request
             $search = $request->input('search', '');
             $status = $request->input('status');
@@ -233,6 +240,10 @@ class MasterPartController extends Controller
     public function show(Request $request)
     {
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $partCode = $request->input('part_code', '');
 
             // Build the query
@@ -342,6 +353,10 @@ class MasterPartController extends Controller
         DB::beginTransaction();
 
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate the input including image
             $request->validate([
                 'part_code' => 'required',
@@ -523,6 +538,10 @@ class MasterPartController extends Controller
     public function updateOrder(Request $request)
     {
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate request data
             $validated = $request->validate([
                 'part_code' => 'required',
@@ -572,12 +591,15 @@ class MasterPartController extends Controller
 
     public function deleteMasterPart(Request $request)
     {
-        // Validate incoming data
-        $request->validate([
-            'part_code' => 'required|string'
-        ]);
-
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $request->validate([
+                'part_code' => 'required|string'
+            ]);
+
             // Get the target part_code from the request
             $partCode = $request->input('part_code');
 
@@ -619,6 +641,10 @@ class MasterPartController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $filters = [
                 'search' => $request->input('search'),
                 'status' => $request->input('status'),
@@ -651,6 +677,10 @@ class MasterPartController extends Controller
     public function inventoryExport(Request $request)
     {
         try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $filters = [
                 'search' => $request->input('search', ''),
                 'status' => $request->input('status'),

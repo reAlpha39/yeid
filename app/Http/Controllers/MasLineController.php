@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasLine;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasLineController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all lines
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('query');
             $shopCode = $request->query('shop_code');
 
@@ -52,6 +59,10 @@ class MasLineController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'shopcode' => 'required|string|max:4',
                 'linecode' => 'required|string|max:2',
@@ -81,6 +92,10 @@ class MasLineController extends Controller
     public function show($shopCode, $lineCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $line = MasLine::where('shopcode', $shopCode)
                 ->where('linecode', $lineCode)
                 ->first();
@@ -109,6 +124,10 @@ class MasLineController extends Controller
     public function update(Request $request, $shopCode, $lineCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate the incoming request data
             $validated = $request->validate([
                 'linename' => 'nullable|string|max:50',
@@ -143,6 +162,10 @@ class MasLineController extends Controller
     public function destroy($shopCode, $lineCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $line = MasLine::where('shopcode', $shopCode)
                 ->where('linecode', $lineCode)
                 ->first();
@@ -176,6 +199,10 @@ class MasLineController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(
                 new LinesExport(
                     $request->query('query'),

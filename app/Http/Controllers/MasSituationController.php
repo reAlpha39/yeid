@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasSituation;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\SituationsExport;
@@ -11,10 +12,16 @@ use Exception;
 
 class MasSituationController extends Controller
 {
+    use PermissionCheckerTrait;
+
     // Fetch all situations
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('search');
 
             $query = MasSituation::query();
@@ -45,6 +52,10 @@ class MasSituationController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'situationcode' => [
                     'required',
@@ -85,6 +96,10 @@ class MasSituationController extends Controller
     public function show($situationCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $situation = MasSituation::find($situationCode);
 
             if (!$situation) {
@@ -111,6 +126,10 @@ class MasSituationController extends Controller
     public function update(Request $request, $situationCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $situation = MasSituation::find($situationCode);
 
             if (!$situation) {
@@ -145,6 +164,10 @@ class MasSituationController extends Controller
     public function destroy($situationCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $situation = MasSituation::find($situationCode);
 
             if (!$situation) {
@@ -159,7 +182,7 @@ class MasSituationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Situation deleted successfully!'
-        ], 200);
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -172,6 +195,10 @@ class MasSituationController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new SituationsExport($request->query('search')), 'situations.xlsx');
         } catch (Exception $e) {
             return response()->json([

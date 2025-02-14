@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MasMaker;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,10 +12,15 @@ use Exception;
 
 class MasMakerController extends Controller
 {
+    use PermissionCheckerTrait;
     // Fetch all makers
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->query('search');
 
             // Start building the query
@@ -50,6 +56,10 @@ class MasMakerController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'makercode' => [
                     'required',
@@ -91,6 +101,10 @@ class MasMakerController extends Controller
     public function show($makerCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $maker = MasMaker::find($makerCode);
 
             if (!$maker) {
@@ -117,6 +131,10 @@ class MasMakerController extends Controller
     public function update(Request $request, $makerCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $maker = MasMaker::find($makerCode);
 
             if (!$maker) {
@@ -152,6 +170,10 @@ class MasMakerController extends Controller
     public function destroy($makerCode)
     {
         try {
+            if (!$this->checkAccess('masterData', 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             $maker = MasMaker::find($makerCode);
 
             if (!$maker) {
@@ -180,6 +202,10 @@ class MasMakerController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('masterData', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             return Excel::download(new MakersExport($request->query('search')), 'makers.xlsx');
         } catch (Exception $e) {
             return response()->json([
