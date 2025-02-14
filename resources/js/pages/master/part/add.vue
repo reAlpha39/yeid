@@ -5,8 +5,8 @@ import { useToast } from "vue-toastification";
 
 definePage({
   meta: {
-    action: ["create", "masterDataPart"],
-    subject: "part",
+    action: ["create", "update"],
+    subject: "masterDataPart",
   },
 });
 
