@@ -351,68 +351,73 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :sort-by="[{ key: 'name', order: 'asc' }]"
-      class="text-no-wrap"
-      height="562"
-    >
-      <!-- part name -->
-      <template #item.name="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.name }}</span
-          >
-        </div>
-      </template>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        :sort-by="[{ key: 'name', order: 'asc' }]"
+        class="text-no-wrap"
+        height="562"
+      >
+        <!-- part name -->
+        <template #item.name="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ item.name }}</span
+            >
+          </div>
+        </template>
 
-      <template #item.status="{ item }">
-        <div class="d-flex align-center">
-          {{ statusType(item.status) }}
-        </div>
-      </template>
+        <template #item.status="{ item }">
+          <div class="d-flex align-center">
+            {{ statusType(item.status) }}
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn v-if="$can('update', 'user')" @click="openEditPage(item.id)">
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'user')"
-            @click="openDeleteDialog(item.id)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-          <VMenu v-model="item.menu">
-            <!-- Each row has its own menu state -->
-            <template #activator="{ props }">
-              <IconBtn v-if="$can('update', 'user')" v-bind="props">
-                <VIcon icon="tabler-dots-vertical" />
-              </IconBtn>
-            </template>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="align-center">
+            <IconBtn
+              v-if="$can('update', 'user')"
+              @click="openEditPage(item.id)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'user')"
+              @click="openDeleteDialog(item.id)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+            <VMenu v-model="item.menu">
+              <!-- Each row has its own menu state -->
+              <template #activator="{ props }">
+                <IconBtn v-if="$can('update', 'user')" v-bind="props">
+                  <VIcon icon="tabler-dots-vertical" />
+                </IconBtn>
+              </template>
 
-            <VCard>
-              <VList>
-                <VListItem
-                  @click="
-                    updateStatus(item.id, item.status === '0' ? '1' : '0')
-                  "
-                >
-                  <span>{{
-                    item.status === "0" ? "Activate" : "Deactivate"
-                  }}</span>
-                </VListItem>
-              </VList>
-            </VCard>
-          </VMenu>
-        </div>
-      </template>
-    </VDataTable>
+              <VCard>
+                <VList>
+                  <VListItem
+                    @click="
+                      updateStatus(item.id, item.status === '0' ? '1' : '0')
+                    "
+                  >
+                    <span>{{
+                      item.status === "0" ? "Activate" : "Deactivate"
+                    }}</span>
+                  </VListItem>
+                </VList>
+              </VCard>
+            </VMenu>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->

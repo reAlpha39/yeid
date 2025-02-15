@@ -228,69 +228,71 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :sort-by="[{ key: 'year', order: 'desc' }]"
-      class="text-no-wrap"
-      height="562"
-    >
-      <!-- part name -->
-      <template #item.year="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.year }}</span
-          >
-        </div>
-      </template>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        :sort-by="[{ key: 'year', order: 'desc' }]"
+        class="text-no-wrap"
+        height="562"
+      >
+        <!-- part name -->
+        <template #item.year="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ item.year }}</span
+            >
+          </div>
+        </template>
 
-      <!-- date -->
-      <template #item.usd2idr="{ item }">
-        <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.usd2idr)) }}
-        </div>
-      </template>
+        <!-- date -->
+        <template #item.usd2idr="{ item }">
+          <div class="d-flex align-center">
+            {{ idr.format(parseFloat(item.usd2idr)) }}
+          </div>
+        </template>
 
-      <!-- vendor -->
-      <template #item.jpy2idr="{ item }">
-        <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.jpy2idr)) }}
-        </div>
-      </template>
+        <!-- vendor -->
+        <template #item.jpy2idr="{ item }">
+          <div class="d-flex align-center">
+            {{ idr.format(parseFloat(item.jpy2idr)) }}
+          </div>
+        </template>
 
-      <template #item.eur2idr="{ item }">
-        <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.eur2idr)) }}
-        </div>
-      </template>
+        <template #item.eur2idr="{ item }">
+          <div class="d-flex align-center">
+            {{ idr.format(parseFloat(item.eur2idr)) }}
+          </div>
+        </template>
 
-      <template #item.sgd2idr="{ item }">
-        <div class="d-flex align-center">
-          {{ idr.format(parseFloat(item.sgd2idr)) }}
-        </div>
-      </template>
+        <template #item.sgd2idr="{ item }">
+          <div class="d-flex align-center">
+            {{ idr.format(parseFloat(item.sgd2idr)) }}
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openEditPartPage(item.year)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'masterData')"
-            @click="openDeleteDialog(item.year)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="align-center">
+            <IconBtn
+              v-if="$can('update', 'masterData')"
+              @click="openEditPartPage(item.year)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'masterData')"
+              @click="openDeleteDialog(item.year)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->

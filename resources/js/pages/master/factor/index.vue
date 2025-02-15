@@ -215,57 +215,59 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :sort-by="[{ key: 'factorcode', order: 'asc' }]"
-      class="text-no-wrap"
-      height="562"
-    >
-      <!-- part name -->
-      <template #item.factorcode="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.factorcode }}</span
-          >
-        </div>
-      </template>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        :sort-by="[{ key: 'factorcode', order: 'asc' }]"
+        class="text-no-wrap"
+        height="562"
+      >
+        <!-- part name -->
+        <template #item.factorcode="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ item.factorcode }}</span
+            >
+          </div>
+        </template>
 
-      <!-- date -->
-      <template #item.factorname="{ item }">
-        <div class="d-flex align-center">
-          {{ item.factorname }}
-        </div>
-      </template>
+        <!-- date -->
+        <template #item.factorname="{ item }">
+          <div class="d-flex align-center">
+            {{ item.factorname }}
+          </div>
+        </template>
 
-      <!-- vendor -->
-      <template #item.remark="{ item }">
-        <div class="d-flex align-center">
-          {{ item.remark }}
-        </div>
-      </template>
+        <!-- vendor -->
+        <template #item.remark="{ item }">
+          <div class="d-flex align-center">
+            {{ item.remark }}
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openEditPartPage(item.factorcode)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('delete', 'masterData')"
-            @click="openDeleteDialog(item.factorcode)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="align-center">
+            <IconBtn
+              v-if="$can('update', 'masterData')"
+              @click="openEditPartPage(item.factorcode)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('delete', 'masterData')"
+              @click="openDeleteDialog(item.factorcode)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->

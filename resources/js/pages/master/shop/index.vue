@@ -224,43 +224,45 @@ onMounted(() => {
     <VDivider class="mt-4" />
 
     <!-- 👉 Datatable  -->
-    <VDataTable
-      v-model:items-per-page="itemsPerPage"
-      v-model:page="page"
-      :items="data"
-      :headers="headers"
-      :sort-by="[{ key: 'shopcode', order: 'asc' }]"
-      class="text-no-wrap"
-      height="562"
-    >
-      <!-- part name -->
-      <template #item.partcode="{ item }">
-        <div class="d-flex align-center">
-          <span
-            class="d-block font-weight-medium text-high-emphasis text-truncate"
-            >{{ item.shopcode }}</span
-          >
-        </div>
-      </template>
+    <div class="sticky-actions-wrapper">
+      <VDataTable
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items="data"
+        :headers="headers"
+        :sort-by="[{ key: 'shopcode', order: 'asc' }]"
+        class="text-no-wrap"
+        height="562"
+      >
+        <!-- part name -->
+        <template #item.partcode="{ item }">
+          <div class="d-flex align-center">
+            <span
+              class="d-block font-weight-medium text-high-emphasis text-truncate"
+              >{{ item.shopcode }}</span
+            >
+          </div>
+        </template>
 
-      <!-- Actions -->
-      <template #item.actions="{ item }">
-        <div class="align-center">
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openEditPartPage(item.shopcode)"
-          >
-            <VIcon icon="tabler-edit" />
-          </IconBtn>
-          <IconBtn
-            v-if="$can('update', 'masterData')"
-            @click="openDeleteDialog(item.shopcode)"
-          >
-            <VIcon icon="tabler-trash" />
-          </IconBtn>
-        </div>
-      </template>
-    </VDataTable>
+        <!-- Actions -->
+        <template #item.actions="{ item }">
+          <div class="align-center">
+            <IconBtn
+              v-if="$can('update', 'masterData')"
+              @click="openEditPartPage(item.shopcode)"
+            >
+              <VIcon icon="tabler-edit" />
+            </IconBtn>
+            <IconBtn
+              v-if="$can('update', 'masterData')"
+              @click="openDeleteDialog(item.shopcode)"
+            >
+              <VIcon icon="tabler-trash" />
+            </IconBtn>
+          </div>
+        </template>
+      </VDataTable>
+    </div>
   </VCard>
 
   <!-- 👉 Delete Dialog  -->
