@@ -311,6 +311,7 @@ watch(
           <VCol cols="4">
             <AppTextField
               v-model.number="changePart.qtty"
+              :rules="[requiredValidator]"
               label="Quantity"
               placeholder="0"
               @keypress="isNumber($event)"
