@@ -118,7 +118,6 @@ const handleNotificationClick = async (notification) => {
 
   if (notification.category === "approval") {
     menuOpen.value = false;
-    await openDetailPage(notification.sourceId);
     await router.push({
       path: "/maintenance-database-system/department-request/detail",
       query: { record_id: notification.sourceId, to_approve: "1" },
@@ -127,7 +126,6 @@ const handleNotificationClick = async (notification) => {
 
   if (notification.category === "rejection") {
     menuOpen.value = false;
-    await openDetailPage(notification.sourceId);
     await router.push({
       path: "/maintenance-database-system/department-request/detail",
       query: { record_id: notification.sourceId },
