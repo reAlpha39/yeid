@@ -213,7 +213,7 @@ class ApprovalService
         $approval->save();
 
         // Get the associated record
-        $spkRecord = SpkRecord::find($approval->record_id);
+        // $spkRecord = SpkRecord::find($approval->record_id);
 
         // Send notification if mail service is needed
         // $this->mailService->sendFinishNotification($spkRecord, $user, $note);

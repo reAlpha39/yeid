@@ -828,7 +828,7 @@ class MaintenanceRequestController extends Controller
 
             $user = MasUser::findOrFail(auth()->user()->id);
 
-            $approval = $this->approvalService->finish(
+            $this->approvalService->finish(
                 $spkRecord->approvalRecord,
                 $user,
                 $request->input('note')
