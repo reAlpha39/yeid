@@ -329,7 +329,6 @@ class MaintenanceRequestController extends Controller
 
     public function reject(Request $request, $recordId)
     {
-
         try {
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
                 return $this->unauthorizedResponse();
@@ -383,7 +382,6 @@ class MaintenanceRequestController extends Controller
 
     public function requestRevision(Request $request, $recordId)
     {
-        DB::beginTransaction();
         try {
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
                 return $this->unauthorizedResponse();
