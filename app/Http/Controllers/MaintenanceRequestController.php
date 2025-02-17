@@ -82,7 +82,7 @@ class MaintenanceRequestController extends Controller
                         WHEN a.approval_status = \'approved\' AND EXISTS (
                             SELECT 1 FROM mas_department md
                             WHERE md.id = ' . $user->department_id . '
-                            AND md.code = \'MTC\'
+                            AND md.code =  ' . '\'' . self::MTC_DEPARTMENT . '\'' . '
                         ) THEN true
                         ELSE false
                     END AS can_update_report')
@@ -537,7 +537,7 @@ class MaintenanceRequestController extends Controller
                     'notes' => function ($query) {
                         $query->with(['user' => function ($query) {
                             $query->select('id', 'name', 'role_access', 'department_id')
-                            ->with('department:id,name');
+                                ->with('department:id,name');
                         }]);
                     }
                 ]);
@@ -552,16 +552,16 @@ class MaintenanceRequestController extends Controller
 
             // Get machine details
             $machineDetails = DB::table('mas_machine')
-            ->select([
-                'machinename',
-                'plantcode',
-                'shopcode',
-                'linecode',
-                'modelname',
-                'serialno',
-                'installdate',
-                DB::raw('(SELECT shopname FROM mas_shop WHERE shopcode = mas_machine.shopcode) AS shopname')
-            ])
+                ->select([
+                    'machinename',
+                    'plantcode',
+                    'shopcode',
+                    'linecode',
+                    'modelname',
+                    'serialno',
+                    'installdate',
+                    DB::raw('(SELECT shopname FROM mas_shop WHERE shopcode = mas_machine.shopcode) AS shopname')
+                ])
                 ->where('machineno', $spkRecord->machineno)
                 ->first();
 
