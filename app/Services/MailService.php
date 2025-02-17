@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ApprovalRequestMail;
 use App\Mail\RevisionRequestMail;
 use App\Mail\RejectedRequestMail;
+use App\Mail\RevisedApprovalRequestMail;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -58,6 +59,43 @@ class MailService
         }
     }
 
+    public function sendRevisedApprovalRequest(MasUser $approver, SpkRecord $spkRecord)
+    {
+        $this->inboxService->createRevisedApprovalRequest($approver, $spkRecord);
+        try {
+            if ($this->validateEmail($approver->email)) {
+                Mail::to($approver->email)
+                    ->queue(new RevisedApprovalRequestMail($approver, $spkRecord));
+            }
+        } catch (Exception $e) {
+            Log::error('Failed to send approval request email to ' . $approver->email . ': ' . $e->getMessage());
+            // throw new Exception('Failed to send email: ' . $e->getMessage());
+        }
+    }
+
+    public function sendRevisedApprovalRequestBatch(Collection|array $approvers, SpkRecord $spkRecord)
+    {
+        $validApprovers = collect($approvers)->filter(function (MasUser $approver) {
+            return $this->validateEmail($approver->email);
+        });
+
+        if ($validApprovers->isEmpty()) {
+            Log::warning('No valid email addresses found in approvers list');
+        }
+
+        /** @var Collection<MasUser> $validApprovers */
+        foreach ($validApprovers as $approver) {
+            $this->inboxService->createRevisedApprovalRequest($approver, $spkRecord);
+            try {
+                Mail::to($approver->email)
+                    ->queue(new RevisedApprovalRequestMail($approver, $spkRecord));
+            } catch (Exception $e) {
+                Log::error('Failed to send approval request email to ' . $approver->email . ': ' . $e->getMessage());
+                continue;
+            }
+        }
+    }
+
     public function sendRevisionRequest(SpkRecord $spkRecord, MasUser $reviewer, string $note)
     {
         $requester = MasUser::find($spkRecord->approvalRecord->created_by);
@@ -90,7 +128,7 @@ class MailService
                         ->queue(new RejectedRequestMail($spkRecord, $rejector, $note));
                 }
             } catch (Exception $e) {
-                Log::error('Failed to send rejection notification: '. $requester->email . ': '. $e->getMessage());
+                Log::error('Failed to send rejection notification: ' . $requester->email . ': ' . $e->getMessage());
                 // throw $e;
             }
         }

@@ -47,6 +47,22 @@ class InboxService
         );
     }
 
+    public function createRevisedApprovalRequest(MasUser $user, SpkRecord $record): Inbox
+    {
+        return $this->createMessage(
+            $record,
+            $user,
+            "Revised Approval Request #{$record->recordid}",
+            "You have a revised request waiting for your approval from {$user->name}.",
+            'approval',
+            [
+                'request_type' => 'spk_approval',
+                'requester_id' => $user->id,
+                'requester_name' => $user->name
+            ]
+        );
+    }
+
     public function createRevisionRequest(SpkRecord $record, MasUser $reviewer, string $note): ?Inbox
     {
         $requester = MasUser::find(

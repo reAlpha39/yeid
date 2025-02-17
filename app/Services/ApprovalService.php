@@ -74,18 +74,18 @@ class ApprovalService
         $approval->approval_status = self::STATUS_REVISED;
 
         if ($requester->role_access === '3') { // Manager
-            $this->autoApproveForManager($approval, $requester, $isMtcDepartment, $pic);
+            $this->autoApproveForManager($approval, $requester, $isMtcDepartment, $pic, true);
         } elseif ($requester->role_access === '2') { // Supervisor
-            $this->autoApproveForSupervisor($approval, $requester, $department, $spkRecord, $pic);
+            $this->autoApproveForSupervisor($approval, $requester, $department, $spkRecord, $pic, true);
         } else {
-            $this->notifyDepartmentApprovers($department, $spkRecord);
+            $this->notifyDepartmentApprovers($department, $spkRecord, true);
         }
 
         $approval->save();
         return $approval;
     }
 
-    private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment, MasEmployee $pic)
+    private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment, MasEmployee $pic, bool $isRevisedRequest = false)
     {
         $approval->manager_approved_by = $requester->id;
         $approval->manager_approved_at = now();
@@ -97,11 +97,11 @@ class ApprovalService
         if ($isMtcDepartment) {
             $approval->approval_status = self::STATUS_APPROVED;
         } else {
-            $this->notifyMtcApprovers(SpkRecord::find($approval->record_id));
+            $this->notifyMtcApprovers(SpkRecord::find($approval->record_id), $isRevisedRequest);
         }
     }
 
-    private function autoApproveForSupervisor(SpkRecordApproval $approval, MasUser $requester, MasDepartment $department, SpkRecord $spkRecord, ?MasEmployee $pic = null)
+    private function autoApproveForSupervisor(SpkRecordApproval $approval, MasUser $requester, MasDepartment $department, SpkRecord $spkRecord, ?MasEmployee $pic = null, bool $isRevisedRequest = false)
     {
         $approval->supervisor_approved_by = $requester->id;
         $approval->supervisor_approved_at = now();
@@ -111,7 +111,7 @@ class ApprovalService
             $approval->pic = $pic->employeecode;
         }
 
-        $this->notifyDepartmentManager($department, $spkRecord);
+        $this->notifyDepartmentManager($department, $spkRecord, $isRevisedRequest);
     }
 
     public function requestRevision(SpkRecordApproval $approval, MasUser $reviewer, string $note)
@@ -329,27 +329,27 @@ class ApprovalService
         return $approval;
     }
 
-    private function notifyDepartmentApprovers(MasDepartment $department, SpkRecord $spkRecord)
+    private function notifyDepartmentApprovers(MasDepartment $department, SpkRecord $spkRecord, bool $isRevisedRequest = false)
     {
         $approvers = MasUser::where('department_id', $department->id)
             ->whereIn('role_access', ['2', '3'])
             ->get();
 
-        $this->mailService->sendApprovalRequestBatch($approvers, $spkRecord);
+        $isRevisedRequest ?  $this->mailService->sendRevisedApprovalRequestBatch($approvers, $spkRecord) : $this->mailService->sendApprovalRequestBatch($approvers, $spkRecord);
     }
 
-    private function notifyDepartmentManager(MasDepartment $department, SpkRecord $spkRecord)
+    private function notifyDepartmentManager(MasDepartment $department, SpkRecord $spkRecord, bool $isRevisedRequest = false)
     {
         $manager = MasUser::where('department_id', $department->id)
             ->where('role_access', '3')
             ->first();
 
         if ($manager) {
-            $this->mailService->sendApprovalRequest($manager, $spkRecord);
+            $isRevisedRequest ? $this->mailService->sendRevisedApprovalRequest($manager, $spkRecord) :  $this->mailService->sendApprovalRequest($manager, $spkRecord);
         }
     }
 
-    private function notifyMtcApprovers(SpkRecord $spkRecord)
+    private function notifyMtcApprovers(SpkRecord $spkRecord, bool $isRevisedRequest = false)
     {
         $mtcDepartment = MasDepartment::where('code', self::MTC_DEPARTMENT)->first();
 
@@ -357,7 +357,7 @@ class ApprovalService
             ->whereIn('role_access', ['2', '3'])
             ->get();
 
-        $this->mailService->sendApprovalRequestBatch($approvers, $spkRecord);
+        $isRevisedRequest ? $this->mailService->sendRevisedApprovalRequestBatch($approvers, $spkRecord) :  $this->mailService->sendApprovalRequestBatch($approvers, $spkRecord);
     }
 
     private function notifyMtcManager(SpkRecord $spkRecord)
