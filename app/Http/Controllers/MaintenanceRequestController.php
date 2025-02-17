@@ -361,11 +361,14 @@ class MaintenanceRequestController extends Controller
                 ], 400);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+            if (
+                !in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
+                && $rejector->role_access === '2'
+            ) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Request cannot be approved'
+                    'message' => 'Request cannot be reject'
                 ], 400);
             }
 
@@ -414,11 +417,14 @@ class MaintenanceRequestController extends Controller
                 ], 400);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+            if (
+                !in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
+                && $reviewer->role_access === '2'
+            ) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Request cannot be approved'
+                    'message' => 'Request cannot be revise'
                 ], 400);
             }
 
@@ -458,7 +464,8 @@ class MaintenanceRequestController extends Controller
 
             $spkRecord = SpkRecord::findOrFail($recordId);
             $approver = MasUser::findOrFail(auth()->user()->id);
-            $pic = MasEmployee::find($request->input('employee_code'));
+
+            $pic =  MasEmployee::find($request->input('employee_code'));
 
             if ($this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $approver)) {
                 DB::rollBack();
@@ -468,11 +475,14 @@ class MaintenanceRequestController extends Controller
                 ], 400);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true)) {
+            if (
+                !in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
+                && $approver->role_access === '2'
+            ) {
                 DB::rollBack();
                 return response()->json([
                     'success' => false,
-                    'message' => 'Request cannot be approved'
+                    'message' => 'Request cannot be approve'
                 ], 400);
             }
 
@@ -524,12 +534,14 @@ class MaintenanceRequestController extends Controller
     {
         try {
             $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
 
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
                 return $this->unauthorizedResponse();
             }
 
-            $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
+            $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) use ($isMtcDepartment) {
                 $query->with([
                     'department:id,name',
                     'createdBy:id,name,role_access',
@@ -540,7 +552,7 @@ class MaintenanceRequestController extends Controller
                                 ->with('department:id,name');
                         }]);
                     }
-                ]);
+                ])->addSelect(['*', DB::raw($isMtcDepartment ? 'true as can_add_pic' : 'false as can_add_pic')]);
             }])->find($spkNo);
 
             if (!$spkRecord) {
@@ -565,13 +577,26 @@ class MaintenanceRequestController extends Controller
                 ->where('machineno', $spkRecord->machineno)
                 ->first();
 
-            $canApprove = !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
-                && in_array($user->role_access, ['2', '3'], true)
-                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true);
+            $canApprove = false;
 
             if (
-                $user->department->code === 'MTC'
-                && $spkRecord->approvalRecord->department->code !== 'MTC'
+                !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
+                && $user->role_access === '2'
+                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
+            ) {
+                $canApprove = true;
+            }
+
+            if (
+                !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
+                && $user->role_access === '3'
+            ) {
+                $canApprove = true;
+            }
+
+            if (
+                $user->department->code === self::MTC_DEPARTMENT
+                && $spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT
                 && $canApprove
             ) {
                 $canApprove = $spkRecord->approvalRecord->manager_approved_by !== null;
@@ -658,17 +683,6 @@ class MaintenanceRequestController extends Controller
                 ->where('machineno', $spkRecord->machineno)
                 ->first();
 
-            $canApprove = !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
-                && in_array($user->role_access, ['2', '3'], true)
-                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true);
-
-            if (
-                $user->department->code === 'MTC'
-                && $spkRecord->approvalRecord->department->code !== 'MTC'
-                && $canApprove
-            ) {
-                $canApprove = $spkRecord->approvalRecord->manager_approved_by !== null;
-            }
 
             // Merge machine details with SPK record
             $responseData = array_merge(
@@ -679,7 +693,6 @@ class MaintenanceRequestController extends Controller
                     'approval' => $spkRecord->approval ?? 0,
                     'createempcode' => $spkRecord->createempcode ?? '',
                     'createempname' => $spkRecord->createempname ?? '',
-                    'can_approve' => $canApprove,
                 ],
             );
 

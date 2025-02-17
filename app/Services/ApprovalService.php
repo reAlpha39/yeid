@@ -21,6 +21,7 @@ class ApprovalService
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
     const STATUS_REVISION = 'revision';
+    const STATUS_REVISED = 'revised';
     const STATUS_FINISH = 'finish';
 
     public function __construct(MailService $mailService)
@@ -59,7 +60,18 @@ class ApprovalService
 
         $approval = $spkRecord->approvalRecord;
 
-        $approval->approval_status = self::STATUS_PENDING;
+        // reset approval
+        $approval->pic = null;
+        $approval->supervisor_approved_by = null;
+        $approval->supervisor_approved_at = null;
+        $approval->manager_approved_by = null;
+        $approval->manager_approved_at = null;
+        $approval->supervisor_mtc_approved_by = null;
+        $approval->supervisor_mtc_approved_at = null;
+        $approval->manager_mtc_approved_by = null;
+        $approval->manager_mtc_approved_at = null;
+
+        $approval->approval_status = self::STATUS_REVISED;
 
         if ($requester->role_access === '3') { // Manager
             $this->autoApproveForManager($approval, $requester, $isMtcDepartment, $pic);
@@ -269,7 +281,7 @@ class ApprovalService
         }
 
 
-        $approval->pic = $approval->pic ?? $pic->employeecode;
+        $approval->pic = $approval->pic ?? $pic->employeecode ?? null;
 
         $approval->save();
 
@@ -310,7 +322,7 @@ class ApprovalService
             // $this->notifyMtcManager($spkRecord);
         }
 
-        $approval->pic = $approval->pic ?? $pic->employeecode;
+        $approval->pic = $approval->pic ?? $pic->employeecode ?? null;
 
         $approval->save();
 

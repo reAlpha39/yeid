@@ -101,6 +101,7 @@ function convertApprovalStatus(status) {
     partially_approved: "Partially Approved",
     rejected: "Rejected",
     revision: "Need Revise",
+    revised: "Revised",
     finish: "Finish",
     pending: "Pending",
   };

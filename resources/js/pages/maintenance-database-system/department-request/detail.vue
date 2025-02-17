@@ -42,6 +42,7 @@ async function fetchData(id) {
     );
 
     data.value = response.data;
+
     fetchDataMachine(data.value.machineno);
   } catch (err) {
     console.log(err);
@@ -74,6 +75,13 @@ async function fetchDataEmployee() {
     employees.value.forEach((data) => {
       data.title = data.employeename;
     });
+
+    const approvalRecord = data.value?.approval_record;
+
+    selectedEmployee.value = employees.value.find(
+      (employee) => employee.employeecode === approvalRecord?.pic?.employeecode
+    );
+
   } catch (err) {
     console.log(err);
   }
@@ -465,17 +473,18 @@ onMounted(async () => {
       <VCard class="mb-6" variant="outlined">
         <VCardTitle>
           <AppAutocomplete
-            v-if="data?.approval_record.pic === null"
+            v-if="data?.approval_record.can_add_pic"
             v-model="selectedEmployee"
             label="Penanggung Jawab"
             :rules="
-              data?.approval_record.pic === null ? [requiredValidator] : []
+              data?.approval_record.can_add_pic ? [requiredValidator] : []
             "
             placeholder="Pilih penanggung jawab"
             item-title="title"
             :items="employees"
             return-object
             outlined
+            :readonly="!data?.approval_record.can_add_pic"
           />
 
           <AppTextarea
