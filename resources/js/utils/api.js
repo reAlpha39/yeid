@@ -11,4 +11,11 @@ export const $api = ofetch.create({
       }
     }
   },
+  async onResponse({ response }) {
+    const data = response._data
+
+    if (data && data.not_authorized === true) {
+      window.location.href = '/not-authorized'
+    }
+  },
 })

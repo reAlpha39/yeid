@@ -48,6 +48,7 @@ trait PermissionCheckerTrait
     {
         return response()->json([
             'success' => false,
+            'not_authorized' => true,
             'message' => 'Unauthorized access'
         ], 403);
     }
