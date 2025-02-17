@@ -12,6 +12,7 @@ use App\Services\ApprovalService;
 use App\Models\MasUser;
 use App\Models\MasEmployee;
 use App\Models\SpkRecord;
+use App\Models\MasDepartment;
 use Exception;
 
 class MaintenanceRequestController extends Controller
@@ -19,6 +20,8 @@ class MaintenanceRequestController extends Controller
     use PermissionCheckerTrait;
 
     private $approvalService;
+
+    const MTC_DEPARTMENT = 'MTC';
 
     public function __construct(ApprovalService $approvalService)
     {
@@ -31,6 +34,8 @@ class MaintenanceRequestController extends Controller
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
                 return $this->unauthorizedResponse();
             }
+
+            $user = MasUser::findOrFail(auth()->user()->id);
 
             $date = $request->input('date');
             $shopCode = $request->input('shop_code');
@@ -72,7 +77,15 @@ class MaintenanceRequestController extends Controller
                         WHEN a.approval_status IS NULL THEN true
                         WHEN a.approval_status IN (\'pending\')  THEN true
                         ELSE false
-                    END AS can_delete')
+                    END AS can_delete'),
+                    DB::raw('CASE
+                        WHEN a.approval_status = \'approved\' AND EXISTS (
+                            SELECT 1 FROM mas_department md
+                            WHERE md.id = ' . $user->department_id . '
+                            AND md.code = \'MTC\'
+                        ) THEN true
+                        ELSE false
+                    END AS can_update_report')
                 ]);
 
             if (!empty($date)) {
@@ -138,6 +151,7 @@ class MaintenanceRequestController extends Controller
             if (!empty($approvedOnly)) {
                 $query->where(function ($q) {
                     $q->where('a.approval_status', 'approved')
+                        ->orWhere('a.approval_status', 'finish')
                         ->orWhereNull('a.approval_status');
                 });
             }
@@ -509,11 +523,96 @@ class MaintenanceRequestController extends Controller
     public function show($spkNo)
     {
         try {
+            $user = MasUser::findOrFail(auth()->user()->id);
+
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
                 return $this->unauthorizedResponse();
             }
 
+            $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
+                $query->with([
+                    'department:id,name',
+                    'createdBy:id,name,role_access',
+                    'pic:employeecode,employeename',
+                    'notes' => function ($query) {
+                        $query->with(['user' => function ($query) {
+                            $query->select('id', 'name', 'role_access', 'department_id')
+                            ->with('department:id,name');
+                        }]);
+                    }
+                ]);
+            }])->find($spkNo);
+
+            if (!$spkRecord) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Record #' . $spkNo . ' not found'
+                ], 404);
+            }
+
+            // Get machine details
+            $machineDetails = DB::table('mas_machine')
+            ->select([
+                'machinename',
+                'plantcode',
+                'shopcode',
+                'linecode',
+                'modelname',
+                'serialno',
+                'installdate',
+                DB::raw('(SELECT shopname FROM mas_shop WHERE shopcode = mas_machine.shopcode) AS shopname')
+            ])
+                ->where('machineno', $spkRecord->machineno)
+                ->first();
+
+            $canApprove = !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
+                && in_array($user->role_access, ['2', '3'], true)
+                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', null], true);
+
+            if (
+                $user->department->code === 'MTC'
+                && $spkRecord->approvalRecord->department->code !== 'MTC'
+                && $canApprove
+            ) {
+                $canApprove = $spkRecord->approvalRecord->manager_approved_by !== null;
+            }
+
+            // Merge machine details with SPK record
+            $responseData = array_merge(
+                $spkRecord->toArray(),
+                $machineDetails ? (array)$machineDetails : [],
+                [
+                    'orderfinishdate' => $spkRecord->orderfinishdate ?? '',
+                    'approval' => $spkRecord->approval ?? 0,
+                    'createempcode' => $spkRecord->createempcode ?? '',
+                    'createempname' => $spkRecord->createempname ?? '',
+                    'can_approve' => $canApprove,
+                ],
+            );
+
+            return response()->json([
+                'success' => true,
+                'data' => $responseData,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showReport($spkNo)
+    {
+        try {
             $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
+
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view') || !$isMtcDepartment) {
+                return $this->unauthorizedResponse();
+            }
 
             $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) {
                 $query->with([
@@ -534,6 +633,14 @@ class MaintenanceRequestController extends Controller
                     'success' => false,
                     'message' => 'Record #' . $spkNo . ' not found'
                 ], 404);
+            }
+
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
+                return response()->json([
+                    'success' => false,
+                    'not_authorized' => true,
+                    'message' => 'Request is cannot be edited before approved or already finished'
+                ], 400);
             }
 
             // Get machine details
@@ -687,7 +794,11 @@ class MaintenanceRequestController extends Controller
     public function updateReport(Request $request, $recordId)
     {
         try {
-            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update')) {
+            $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
+
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'update') || !$isMtcDepartment) {
                 return $this->unauthorizedResponse();
             }
 
@@ -705,7 +816,8 @@ class MaintenanceRequestController extends Controller
             if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Request is cannot be edited before approved'
+                    'not_authorized' => true,
+                    'message' => 'Request is cannot be edited before approved or already finished'
                 ], 400);
             }
 

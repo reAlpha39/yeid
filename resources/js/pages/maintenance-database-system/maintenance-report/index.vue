@@ -470,7 +470,7 @@ onMounted(() => {
         </template>
         <!-- Actions -->
         <template #item.actions="{ item }">
-          <div class="d-flex justify-center gap-2">
+          <div class="d-flex justify-left gap-2">
             <div
               class="status-indicator mx-2"
               :class="getApprovalColor(item.approval, item.planid)"
@@ -479,7 +479,7 @@ onMounted(() => {
               <VIcon icon="tabler-eye" />
             </IconBtn>
             <IconBtn
-              v-if="$can('update', 'mtDbsMtReport')"
+              v-if="$can('update', 'mtDbsMtReport') && item.can_update_report"
               @click="openEditPage(item.recordid)"
             >
               <VIcon icon="tabler-edit" />

@@ -242,8 +242,13 @@ function calculateTotalWorkTime() {
 async function fetchDataEdit(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/department-requests/" +
-        encodeURIComponent(id)
+      "/maintenance-database-system/maintenance-report/" +
+        encodeURIComponent(id),
+      {
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
+      }
     );
     prevData.value = response.data;
 
@@ -255,7 +260,11 @@ async function fetchDataEdit(id) {
 
 async function fetchDataMachine(id) {
   try {
-    const response = await $api("/master/machines/" + encodeURIComponent(id));
+    const response = await $api("/master/machines/" + encodeURIComponent(id), {
+      onResponseError({ response }) {
+        toast.error(response._data.message);
+      },
+    });
 
     let data = response.data;
 
@@ -341,7 +350,12 @@ async function initEditData(id) {
 async function fetchWorks(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/work/" + encodeURIComponent(id)
+      "/maintenance-database-system/work/" + encodeURIComponent(id),
+      {
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
+      }
     );
 
     addedWorkTime.value = response.data;
@@ -356,7 +370,12 @@ async function fetchWorks(id) {
 async function fetchParts(id) {
   try {
     const response = await $api(
-      "/maintenance-database-system/part/" + encodeURIComponent(id)
+      "/maintenance-database-system/part/" + encodeURIComponent(id),
+      {
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
+      }
     );
 
     addedChangedPart.value = response.data;
@@ -595,7 +614,7 @@ async function addData() {
       approval: approvalId(parseInt(prevData.value.approval)),
     };
 
-    console.log(requestData);
+    // console.log(requestData);
 
     const response = await $api(
       "/maintenance-database-system/maintenance-report/" +
@@ -603,6 +622,10 @@ async function addData() {
       {
         method: "PUT",
         body: requestData,
+
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
       }
     );
 

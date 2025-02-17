@@ -200,6 +200,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/maintenance-database-system/work/{recordId}', [MaintenanceRequestController::class, 'indexWork']);
     Route::get('/maintenance-database-system/part/{recordId}', [MaintenanceRequestController::class, 'indexPart']);
     Route::get('/maintenance-database-system/maintenance-report/export', [MaintenanceRequestController::class, 'exportMaintenanceReports']);
+    Route::get('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'showReport']);
     Route::put('/maintenance-database-system/maintenance-report/{id}', [MaintenanceRequestController::class, 'updateReport']);
 
     // Approval
