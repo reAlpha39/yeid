@@ -116,28 +116,64 @@ const handleNotificationClick = async (notification) => {
     await markAsRead(notification.id);
   }
 
-  if (notification.category === "approval") {
-    menuOpen.value = false;
-    await router.push({
-      path: "/maintenance-database-system/department-request/detail",
-      query: { record_id: notification.sourceId, to_approve: "1" },
-    });
-  }
+  menuOpen.value = false;
+  const currentRoute = router.currentRoute.value;
+  const newQuery = { record_id: notification.sourceId };
 
-  if (notification.category === "rejection") {
-    menuOpen.value = false;
-    await router.push({
-      path: "/maintenance-database-system/department-request/detail",
-      query: { record_id: notification.sourceId },
-    });
-  }
-
-  if (notification.category === "revision") {
-    menuOpen.value = false;
-    await router.push({
-      path: "/maintenance-database-system/department-request/add",
-      query: { record_id: notification.sourceId },
-    });
+  try {
+    if (notification.category === "approval") {
+      newQuery.to_approve = "1";
+      if (
+        currentRoute.path ===
+        "/maintenance-database-system/department-request/detail"
+      ) {
+        // Force reload by replacing current route
+        await router.replace({
+          path: "/maintenance-database-system/department-request/detail",
+          query: { ...newQuery, _reload: Date.now() },
+        });
+        window.location.reload();
+      } else {
+        await router.push({
+          path: "/maintenance-database-system/department-request/detail",
+          query: newQuery,
+        });
+      }
+    } else if (notification.category === "rejection") {
+      if (
+        currentRoute.path ===
+        "/maintenance-database-system/department-request/detail"
+      ) {
+        await router.replace({
+          path: "/maintenance-database-system/department-request/detail",
+          query: { ...newQuery, _reload: Date.now() },
+        });
+        window.location.reload();
+      } else {
+        await router.push({
+          path: "/maintenance-database-system/department-request/detail",
+          query: newQuery,
+        });
+      }
+    } else if (notification.category === "revision") {
+      if (
+        currentRoute.path ===
+        "/maintenance-database-system/department-request/add"
+      ) {
+        await router.replace({
+          path: "/maintenance-database-system/department-request/add",
+          query: { ...newQuery, _reload: Date.now() },
+        });
+        window.location.reload();
+      } else {
+        await router.push({
+          path: "/maintenance-database-system/department-request/add",
+          query: newQuery,
+        });
+      }
+    }
+  } catch (error) {
+    console.error("Navigation error:", error);
   }
 };
 
