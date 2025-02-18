@@ -85,7 +85,7 @@ class ApprovalService
         return $approval;
     }
 
-    private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment, MasEmployee $pic, bool $isRevisedRequest = false)
+    private function autoApproveForManager(SpkRecordApproval $approval, MasUser $requester, bool $isMtcDepartment, ?MasEmployee $pic = null, bool $isRevisedRequest = false)
     {
         $approval->manager_approved_by = $requester->id;
         $approval->manager_approved_at = now();
