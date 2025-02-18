@@ -141,6 +141,13 @@ const handleNotificationClick = async (notification) => {
   }
 };
 
+const handleViewAllNotificationClick = async () => {
+  menuOpen.value = false;
+  await router.push({
+    path: "/notifications",
+  });
+};
+
 // Initialize component
 onMounted(async () => {
   await fetchNotifications();
@@ -260,14 +267,14 @@ onMounted(async () => {
                   </div>
                   <VSpacer />
 
-                  <div class="d-flex flex-column align-end">
+                  <!-- <div class="d-flex flex-column align-end">
                     <VIcon
                       size="20"
                       icon="tabler-trash"
                       class="visible-in-hover"
                       @click.stop="deleteNotification(notification.id)"
                     />
-                  </div>
+                  </div> -->
                 </div>
               </VListItem>
             </template>
@@ -286,7 +293,7 @@ onMounted(async () => {
 
         <!-- Footer -->
         <VCardText v-if="notifications.length" class="pa-4">
-          <VBtn block size="small" to="/notifications">
+          <VBtn block size="small" @click="handleViewAllNotificationClick">
             View All Notifications
           </VBtn>
         </VCardText>
