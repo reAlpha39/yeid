@@ -123,6 +123,14 @@ const handleNotificationClick = async (notification) => {
   if (notification.category === "approval") {
     await openDetailPage(notification.sourceId);
   }
+
+  if (notification.category === "rejection") {
+    await openDetailPage(notification.sourceId);
+  }
+
+  if (notification.category === "revision") {
+    await openDetailPage(notification.sourceId);
+  }
 };
 
 async function openDetailPage(id) {
