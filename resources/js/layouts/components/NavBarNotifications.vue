@@ -27,6 +27,31 @@ const loading = ref(false);
 const unreadCount = ref(0);
 const perPage = 10;
 
+// get notification URL
+const getNotificationUrl = (notification) => {
+  const baseUrl = window.location.origin;
+  let path = "";
+
+  if (!notification) {
+    return `${baseUrl}/notifications`;
+  }
+
+  const query = `record_id=${notification.sourceId}`;
+
+  if (notification.category === "approval") {
+    path = "/maintenance-database-system/department-request/detail";
+    return `${baseUrl}${path}?${query}&to_approve=1`;
+  } else if (notification.category === "rejection") {
+    path = "/maintenance-database-system/department-request/detail";
+    return `${baseUrl}${path}?${query}`;
+  } else if (notification.category === "revision") {
+    path = "/maintenance-database-system/department-request/add";
+    return `${baseUrl}${path}?${query}`;
+  }
+
+  return `${baseUrl}/notifications`;
+};
+
 // Fetch notifications
 const fetchNotifications = async () => {
   try {
@@ -266,6 +291,7 @@ onMounted(async () => {
                 min-height="66px"
                 class="list-item-hover-class"
                 @click="handleNotificationClick(notification)"
+                :href="getNotificationUrl(notification)"
               >
                 <div class="d-flex align-start gap-3">
                   <VIcon
@@ -329,7 +355,12 @@ onMounted(async () => {
 
         <!-- Footer -->
         <VCardText v-if="notifications.length" class="pa-4">
-          <VBtn block size="small" @click="handleViewAllNotificationClick">
+          <VBtn
+            block
+            size="small"
+            @click="handleViewAllNotificationClick"
+            :href="getNotificationUrl()"
+          >
             View All Notifications
           </VBtn>
         </VCardText>
