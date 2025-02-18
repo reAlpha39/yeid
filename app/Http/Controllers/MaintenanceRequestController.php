@@ -530,6 +530,32 @@ class MaintenanceRequestController extends Controller
         }
     }
 
+    public function canAddPic()
+    {
+        try {
+            $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
+
+            if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'can_add_pic' => $isMtcDepartment
+                ],
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function show($spkNo)
     {
         try {
@@ -543,7 +569,7 @@ class MaintenanceRequestController extends Controller
 
             $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) use ($isMtcDepartment) {
                 $query->with([
-                    'department:id,name',
+                    'department:id,code,name',
                     'createdBy:id,name,role_access',
                     'pic:employeecode,employeename',
                     'notes' => function ($query) {
@@ -579,6 +605,7 @@ class MaintenanceRequestController extends Controller
 
             $canApprove = false;
 
+            // check approval for supervisor
             if (
                 !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
                 && $user->role_access === '2'
@@ -587,6 +614,7 @@ class MaintenanceRequestController extends Controller
                 $canApprove = true;
             }
 
+            // check approval for manager
             if (
                 !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
                 && $user->role_access === '3'
@@ -594,6 +622,7 @@ class MaintenanceRequestController extends Controller
                 $canApprove = true;
             }
 
+            // check manager approval before mtc can approve
             if (
                 $user->department->code === self::MTC_DEPARTMENT
                 && $spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT

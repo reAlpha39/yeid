@@ -43,11 +43,13 @@ const finishedDate = ref("");
 const qty = ref();
 const jenisPekerjaanRadio = ref("1");
 const selectedMachine = ref();
+const selectedPic = ref();
 
 const prevData = ref();
 const user = ref();
 const isEdit = ref(false);
 const isLoadingEditData = ref(false);
+const canAddPic = ref(false);
 
 function handleMachinesSelected(items) {
   selectedMachine.value = items;
@@ -58,6 +60,18 @@ async function fetchUser() {
   user.value = response.data;
 
   // console.log(user.value);
+}
+
+async function fetchDataCanAddPic() {
+  try {
+    const response = await $api(
+      "/maintenance-database-system/department-requests/can-add-pic"
+    );
+
+    canAddPic.value = response.data?.can_add_pic;
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 async function addData() {
@@ -82,6 +96,7 @@ async function addData() {
       orderfinishdate: finishedDate.value,
       orderjobtype: jenisPekerjaanRadio.value,
       orderqtty: qty.value,
+      pic: selectedPic.value?.employeecode ?? null,
     };
 
     if (isEdit.value) {
@@ -196,6 +211,13 @@ async function fetchDataEmployee(id) {
       pemohons.value.forEach((data) => {
         data.title = data.employeename;
       });
+
+      // find pic
+      const approvalRecord = prevData.value?.approval_record;
+      selectedPic.value = pemohons.value.find(
+        (employee) =>
+          employee.employeecode === approvalRecord?.pic?.employeecode
+      );
     }
   } catch (err) {
     toast.error("Failed to fetch data");
@@ -256,18 +278,19 @@ function isNumber(evt) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // fetchData();
-  fetchUser();
-  fetchDataShop();
-  fetchDataEmployee();
-
   const id = route.query.record_id;
   console.log("Fetching data for record_id:", id);
   if (id) {
     isEdit.value = true;
-    initEditData(route.query.record_id);
+    await initEditData(route.query.record_id);
   }
+
+  await fetchUser();
+  await fetchDataShop();
+  await fetchDataEmployee();
+  await fetchDataCanAddPic();
 });
 </script>
 
@@ -489,6 +512,22 @@ onMounted(() => {
             </VCol>
           </VRow>
         </VCard>
+      </VCardTitle>
+    </VCard>
+
+    <VCard class="mt-6 pa-4" v-if="canAddPic">
+      <VCardTitle>
+        <AppAutocomplete
+          v-model="selectedPic"
+          label="Penanggung Jawab"
+          :rules="canAddPic ? [requiredValidator] : []"
+          placeholder="Pilih penanggung jawab"
+          item-title="title"
+          :items="pemohons"
+          return-object
+          outlined
+          :readonly="!canAddPic"
+        />
       </VCardTitle>
     </VCard>
 
