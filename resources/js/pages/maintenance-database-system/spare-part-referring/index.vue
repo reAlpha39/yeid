@@ -176,12 +176,13 @@ onMounted(async () => {
     </div>
   </div>
 
-  <VProgressCircular
+  <div
     v-if="isLoading"
-    indeterminate
-    color="primary"
-    class="mt-4"
-  ></VProgressCircular>
+    class="d-flex justify-center align-center"
+    style="min-height: 200px"
+  >
+    <VProgressCircular indeterminate color="primary" />
+  </div>
 
   <div v-else>
     <div v-if="onUpdate">
