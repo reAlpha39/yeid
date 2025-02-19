@@ -6,6 +6,7 @@ use App\Models\MasEmployee;
 use App\Models\ScheduleTask;
 use App\Models\ScheduleTaskItem;
 use App\Models\ScheduleUserAssignment;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -13,12 +14,18 @@ use Exception;
 
 class ScheduleTaskController extends Controller
 {
+    use PermissionCheckerTrait;
+
     /**
      * Display a listing of schedule tasks
      */
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = ScheduleTask::with(['machine', 'activity', 'executions']);
 
             // Filter by activity if provided
@@ -49,14 +56,18 @@ class ScheduleTaskController extends Controller
     public function availableMachines(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
             $shopId = $request->input('shop');
             $department = $request->input('department');
 
             // Start with ScheduleTask
             $query = ScheduleTask::with('machine')
-            ->select('machine_id')
-            ->distinct();
+                ->select('machine_id')
+                ->distinct();
 
             // Filter by year if provided
             if (!empty($year)) {
@@ -101,29 +112,33 @@ class ScheduleTaskController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'activity_id' => 'required|exists:schedule_activities,activity_id',
-            'machine_id' => 'required|exists:mas_machine,machineno',
-            'task_name' => 'nullable|string|max:255',
-            'frequency_times' => 'required|integer|min:1',
-            'frequency_period' => 'required|string|in:week,month,year',
-            'start_week' => 'required|integer|min:1|max:48',
-            'duration' => 'required|integer|min:1',
-            'manpower_required' => 'required|integer|min:1',
-            'cycle_time' => 'required|integer|min:1',
-            'year' => 'required|integer',
-            'assigned_employees' => 'required|array',
-            'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()->first()
-            ], 422);
-        }
-
         try {
+            if (!$this->checkAccess(['schedule'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'activity_id' => 'required|exists:schedule_activities,activity_id',
+                'machine_id' => 'required|exists:mas_machine,machineno',
+                'task_name' => 'nullable|string|max:255',
+                'frequency_times' => 'required|integer|min:1',
+                'frequency_period' => 'required|string|in:week,month,year',
+                'start_week' => 'required|integer|min:1|max:48',
+                'duration' => 'required|integer|min:1',
+                'manpower_required' => 'required|integer|min:1',
+                'cycle_time' => 'required|integer|min:1',
+                'year' => 'required|integer',
+                'assigned_employees' => 'required|array',
+                'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'errors' => $validator->errors()->first()
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $task = ScheduleTask::create($request->except('assigned_employees'));
@@ -154,6 +169,10 @@ class ScheduleTaskController extends Controller
     public function show($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $task = ScheduleTask::with(['machine', 'activity', 'executions.userAssignments.user'])
                 ->findOrFail($id);
 
@@ -175,27 +194,31 @@ class ScheduleTaskController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'activity_id' => 'sometimes|required|exists:schedule_activities,activity_id',
-            'machine_id' => 'sometimes|required|exists:mas_machine,machineno',
-            'frequency_times' => 'sometimes|required|integer|min:1',
-            'frequency_period' => 'sometimes|required|string|in:,week,month,year',
-            'start_week' => 'sometimes|required|integer|min:1|max:48',
-            'duration' => 'sometimes|required|integer|min:1',
-            'manpower_required' => 'sometimes|required|integer|min:1',
-            'cycle_time' => 'sometimes|required|integer|min:1',
-            'assigned_employees' => 'sometimes|required|array',
-            'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()->first()
-            ], 422);
-        }
-
         try {
+            if (!$this->checkAccess(['schedule'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'activity_id' => 'sometimes|required|exists:schedule_activities,activity_id',
+                'machine_id' => 'sometimes|required|exists:mas_machine,machineno',
+                'frequency_times' => 'sometimes|required|integer|min:1',
+                'frequency_period' => 'sometimes|required|string|in:,week,month,year',
+                'start_week' => 'sometimes|required|integer|min:1|max:48',
+                'duration' => 'sometimes|required|integer|min:1',
+                'manpower_required' => 'sometimes|required|integer|min:1',
+                'cycle_time' => 'sometimes|required|integer|min:1',
+                'assigned_employees' => 'sometimes|required|array',
+                'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()->first()
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             $task = ScheduleTask::findOrFail($id);
@@ -237,6 +260,10 @@ class ScheduleTaskController extends Controller
     public function destroy($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             DB::beginTransaction();
 
             $task = ScheduleTask::findOrFail($id);

@@ -8,16 +8,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ScheduleActivitiesExport;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class ScheduleActivityController extends Controller
 {
+    use PermissionCheckerTrait;
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $activityName = $request->input('activity_name');
             $shopId = $request->input('shop_id');
             $departmentId = $request->input('dept_id');
@@ -61,6 +68,10 @@ class ScheduleActivityController extends Controller
     public function indexTableSchedule(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
             $month = $request->input('month');
             $week = $request->input('week');
@@ -147,6 +158,10 @@ class ScheduleActivityController extends Controller
     public function store(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'shop_id' => 'required|exists:mas_shop,shopcode',
                 'dept_id' => 'required|exists:mas_department,id',
@@ -180,6 +195,10 @@ class ScheduleActivityController extends Controller
     public function show($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $activity = ScheduleActivity::with(['shop', 'tasks'])
                 ->findOrFail($id);
 
@@ -202,6 +221,10 @@ class ScheduleActivityController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'shop_id' => 'sometimes|required|exists:mas_shop,shopcode',
                 'activity_name' => 'sometimes|required|string|max:255'
@@ -235,6 +258,10 @@ class ScheduleActivityController extends Controller
     public function destroy($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             DB::beginTransaction();
 
             $activity = ScheduleActivity::findOrFail($id);
@@ -259,6 +286,10 @@ class ScheduleActivityController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
             $month = $request->input('month');
             $week = $request->input('week');

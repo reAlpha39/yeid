@@ -7,13 +7,20 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartExchangeExport;
 use App\Services\ActivityLogger;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class ExchangeDataController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->input('search');
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
@@ -92,6 +99,10 @@ class ExchangeDataController extends Controller
     public function indexModelDie(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $machineNo = $request->input('machine_no');
 
             $query = DB::table('mas_presspart')
@@ -126,6 +137,10 @@ class ExchangeDataController extends Controller
     public function indexMachineNo()
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = DB::table('mas_presspart as p')
                 ->select('p.machineno', DB::raw("COALESCE(MAX(m.machinename), ' ') as machinename"))
                 ->leftJoin('mas_machine as m', 'p.machineno', '=', 'm.machineno')
@@ -150,6 +165,10 @@ class ExchangeDataController extends Controller
     public function indexDieUnit()
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $results = DB::table('mas_presspart')
                 ->distinct()
                 ->whereNotNull('dieunitno')
@@ -172,6 +191,10 @@ class ExchangeDataController extends Controller
     public function showQtyPerDie(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $machineNo = $request->input('machine_no');
             $model =  $request->input('model');
             $dieNo =  $request->input('die_no');
@@ -217,6 +240,9 @@ class ExchangeDataController extends Controller
     public function show($exchangeId)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             $query = DB::table('tbl_exchangework')
                 ->select([
@@ -257,6 +283,10 @@ class ExchangeDataController extends Controller
         DB::beginTransaction();
 
         try {
+            if (!$this->checkAccess(['pressShotPartList'], ['create', 'update'])) {
+                return $this->unauthorizedResponse();
+            }
+
             $exchangeDateTime = $request->input('exchange_date_time'); // Format: 'YYYYMMDDHHMMSS'
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
@@ -363,6 +393,10 @@ class ExchangeDataController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $search = $request->input('search');
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');

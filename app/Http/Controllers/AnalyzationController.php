@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -17,9 +18,15 @@ use Carbon\Carbon;
 
 class AnalyzationController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function analyze(Request $request)
     {
         try {
+            if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validatedData = $request->validate([
                 'targetTerm' => 'nullable|integer|min:1|max:11',
                 'targetItem' => 'required|integer|min:0|max:10',
@@ -168,6 +175,10 @@ class AnalyzationController extends Controller
 
     public function getProcessedData(Request $request)
     {
+        if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $analysisResponse = $this->analyze($request);
         $rawData = json_decode($analysisResponse->getContent(), true)['data'];
         $method = $request->input('method');
@@ -293,6 +304,10 @@ class AnalyzationController extends Controller
     public function exportSummaryExcel(Request $request)
     {
         try {
+            if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $data = $this->getProcessedData($request);
             $method = $request->input('method');
             $series = $request->input('series', []);
@@ -450,6 +465,10 @@ class AnalyzationController extends Controller
     public function exportDetailExcel(Request $request)
     {
         try {
+            if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $data = $this->getProcessedData($request);
             $method = $request->input('method');
             $targetIndex = $request->input('targetItem');
@@ -758,6 +777,10 @@ class AnalyzationController extends Controller
     public function exportSvg(Request $request)
     {
         try {
+            if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get the SVG content from the request
             $svgContent = $request->input('svgContent');
 

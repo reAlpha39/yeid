@@ -7,13 +7,20 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartProductionExport;
 use App\Services\ActivityLogger;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class ProductionDataController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotProdData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $isSummary = $request->input('is_summary', false);
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
@@ -83,6 +90,10 @@ class ProductionDataController extends Controller
     public function show(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotProdData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
             $machineNo = $request->input('machine_no');
@@ -130,9 +141,13 @@ class ProductionDataController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['pressShotProdData'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
@@ -205,6 +220,10 @@ class ProductionDataController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotProdData'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $isSummary = $request->input('is_summary', false);
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');

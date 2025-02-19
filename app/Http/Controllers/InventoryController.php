@@ -5,13 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Jobs\UpdateInventorySummaryJob;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Support\Facades\Cache;
 use App\Models\JobProgress;
 
 class InventoryController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function updateInventorySummary(Request $request)
     {
+        if (!$this->checkAccess('mtDbsSparePart', 'update')) {
+            return $this->unauthorizedResponse();
+        }
+
         // Check if there's already a job running
         $runningJob = JobProgress::where('job_type', 'inventory_summary_update')
             ->whereIn('status', ['processing', 'queued'])
@@ -37,6 +44,10 @@ class InventoryController extends Controller
 
     public function getJobProgress()
     {
+        if (!$this->checkAccess('mtDbsSparePart', 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $latestJob = JobProgress::where('job_type', 'inventory_summary_update')
             ->orderBy('created_at', 'desc')
             ->first();
@@ -56,6 +67,10 @@ class InventoryController extends Controller
 
     public function cancelJob(Request $request)
     {
+        if (!$this->checkAccess('mtDbsSparePart', 'update')) {
+            return $this->unauthorizedResponse();
+        }
+
         $runningJob = JobProgress::where('job_type', 'inventory_summary_update')
             ->whereIn('status', ['processing', 'queued'])
             ->first();

@@ -9,13 +9,20 @@ use App\Exports\SparePartReferringInventorySummaryExport;
 use App\Exports\SparePartReferringPartsCostExport;
 use App\Exports\SparePartReferringMachineCostExport;
 use App\Exports\SparePartReferringInventoryChangeCostExport;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class SparePartReferringController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function getCostSummary(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
 
             $costQuery = DB::table('tbl_costrecord as c')
@@ -69,6 +76,10 @@ class SparePartReferringController extends Controller
     public function getInventorySummary(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
 
             $orderQuery = DB::table('tbl_costrecord as c')
@@ -179,6 +190,10 @@ class SparePartReferringController extends Controller
     public function getPartsCost(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
 
             $query =
@@ -240,6 +255,10 @@ class SparePartReferringController extends Controller
     public function getMachinesCost(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
             $month = $request->input('month');
             $plantCode = $request->input('plant_code');
@@ -330,19 +349,23 @@ class SparePartReferringController extends Controller
 
     public function getInventoryChangeCost(Request $request)
     {
-        $year = $request->input('year');
-        $partCode = $request->input('part_code', '');
-        $partName = $request->input('part_name', '');
-        $brand = $request->input('brand', '');
-        $usedFlag = $request->input('used_flag', false);
-        $specification = $request->input('specification', '');
-        $address = $request->input('address', '');
-        $vendorCode = $request->input('vendor_code', '');
-        $note = $request->input('note', '');
-        $category = $request->input('category', ''); // M, F, O, J
-        $limit = $request->input('limit', 100);
-
         try {
+            if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $year = $request->input('year');
+            $partCode = $request->input('part_code', '');
+            $partName = $request->input('part_name', '');
+            $brand = $request->input('brand', '');
+            $usedFlag = $request->input('used_flag', false);
+            $specification = $request->input('specification', '');
+            $address = $request->input('address', '');
+            $vendorCode = $request->input('vendor_code', '');
+            $note = $request->input('note', '');
+            $category = $request->input('category', ''); // M, F, O, J
+            $limit = $request->input('limit', 100);
+
             // Step 1: Get max yearmonth
             $maxym = DB::table('tbl_invsummary')
                 ->where('yearmonth', 'like', $year . '%')
@@ -461,12 +484,20 @@ class SparePartReferringController extends Controller
 
     public function exportInventorySummary(Request $request)
     {
+        if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $year = $request->input('year');
         return Excel::download(new SparePartReferringInventorySummaryExport($year), 'inventory_summary_' . $year . '.xlsx');
     }
 
     public function exportPartsCost(Request $request)
     {
+        if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $year = $request->input('year');
 
         return Excel::download(
@@ -477,6 +508,10 @@ class SparePartReferringController extends Controller
 
     public function exportMachinesCost(Request $request)
     {
+        if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $year = $request->input('year');
 
         return Excel::download(
@@ -493,6 +528,10 @@ class SparePartReferringController extends Controller
 
     public function exportInventoryChangeCost(Request $request)
     {
+        if (!$this->checkAccess(['mtDbsSparePart'], 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         $filters = [
             'part_code' => $request->input('part_code'),
             'part_name' => $request->input('part_name'),

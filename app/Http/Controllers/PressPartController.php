@@ -8,14 +8,21 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartExport;
 use App\Exports\PressPartMasterPartExport;
 use App\Services\ActivityLogger;
+use App\Traits\PermissionCheckerTrait;
 use Carbon\Carbon;
 use Exception;
 
 class PressPartController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function indexParts(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Basic filters
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
@@ -243,6 +250,10 @@ class PressPartController extends Controller
     public function indexMaster(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Basic filters
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
@@ -416,6 +427,10 @@ class PressPartController extends Controller
     public function getProcessNames()
     {
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $processes = DB::table('mas_presspart')
                 ->select('processname')
                 ->whereNotNull('processname')
@@ -440,6 +455,9 @@ class PressPartController extends Controller
     public function show($exchangeid)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
 
             $query = DB::table('mas_presspart as m')
                 ->leftJoin('mas_inventory as i', function ($join) {
@@ -521,24 +539,27 @@ class PressPartController extends Controller
 
     public function showMaster(Request $request)
     {
-        // Get input parameters
-        $machineNo = $request->input('machine_no');
-        $model = $request->input('model');
-        $dieNo = $request->input('die_no');
-        $processName = $request->input('process_name');
-        $partCode = $request->input('part_code');
-
-        $query = DB::table('mas_presspart')->select();
-
-        // Apply filters based on input parameters
-        $query->where('machineno', $machineNo)
-            ->where('processname', $processName)
-            ->where('partcode', $partCode)
-            ->where('model', $model)
-            ->where('dieno', $dieNo);
-
-
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
+            // Get input parameters
+            $machineNo = $request->input('machine_no');
+            $model = $request->input('model');
+            $dieNo = $request->input('die_no');
+            $processName = $request->input('process_name');
+            $partCode = $request->input('part_code');
+
+            $query = DB::table('mas_presspart')->select();
+
+            // Apply filters based on input parameters
+            $query->where('machineno', $machineNo)
+                ->where('processname', $processName)
+                ->where('partcode', $partCode)
+                ->where('model', $model)
+                ->where('dieno', $dieNo);
+
             $result = $query->first();
 
             if (!$result) {
@@ -563,9 +584,13 @@ class PressPartController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
@@ -675,9 +700,13 @@ class PressPartController extends Controller
      */
     public function update(Request $request)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
@@ -784,9 +813,13 @@ class PressPartController extends Controller
 
     public function destroy(Request $request)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
@@ -852,6 +885,10 @@ class PressPartController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get all filter parameters
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
@@ -906,6 +943,10 @@ class PressPartController extends Controller
     public function pressPartMasterPartExport(Request $request)
     {
         try {
+            if (!$this->checkAccess(['pressShotMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $year = $request->input('year');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -10,8 +11,14 @@ use Carbon\Carbon;
 
 class ActivityLogController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function downloadTodayLog()
     {
+        if (!$this->checkAccess(['pressShotExcData', 'pressShotHistoryAct', 'pressShotMasterPart', 'pressShotPartList', 'pressShotProdData'], 'view')) {
+            return $this->unauthorizedResponse();
+        }
+
         // Get today's date in YYYYMMDD format
         $today = Carbon::now()->format('Ymd');
         $filename = $today . '.log';
@@ -47,6 +54,10 @@ class ActivityLogController extends Controller
 
     public function store(Request $request)
     {
+        if (!$this->checkAccess(['pressShotExcData', 'pressShotHistoryAct', 'pressShotMasterPart', 'pressShotPartList', 'pressShotProdData'], ['view', 'create', 'update', 'delete'])) {
+            return;
+        }
+
         $request->validate([
             'page' => 'required|string',
             'action' => 'required|string',

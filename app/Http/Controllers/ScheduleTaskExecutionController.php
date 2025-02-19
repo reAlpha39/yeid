@@ -5,18 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\ScheduleTaskItem;
 use App\Models\ScheduleUserAssignment;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 
 class ScheduleTaskExecutionController extends Controller
 {
+    use PermissionCheckerTrait;
+
     /**
      * Display a listing of schedule tasks
      */
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = ScheduleTaskItem::with(['task', 'userAssignments']);
 
             // Filter by status if provided
@@ -45,27 +52,31 @@ class ScheduleTaskExecutionController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'task_id' => 'required|exists:schedule_tasks,task_id',
-            'scheduled_week' => 'required|integer|min:1|max:48',
-            'status' => 'required|in:pending,completed,overdue',
-            'note' => 'nullable|string',
-            'completion_week' => 'nullable|integer',
-            'assigned_employees' => 'sometimes|required|array',
-            'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'errors' => $validator->errors()->first()
-                ],
-                422
-            );
-        }
-
         try {
+            if (!$this->checkAccess(['schedule'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'task_id' => 'required|exists:schedule_tasks,task_id',
+                'scheduled_week' => 'required|integer|min:1|max:48',
+                'status' => 'required|in:pending,completed,overdue',
+                'note' => 'nullable|string',
+                'completion_week' => 'nullable|integer',
+                'assigned_employees' => 'sometimes|required|array',
+                'assigned_employees.*' => 'required|exists:mas_employee,employeecode'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'errors' => $validator->errors()->first()
+                    ],
+                    422
+                );
+            }
+
             // Check if schedule week already exists
             $isDuplicate = ScheduleTaskItem::where('scheduled_week', $request->scheduled_week)
                 ->where('task_id', $request->task_id)
@@ -116,6 +127,10 @@ class ScheduleTaskExecutionController extends Controller
     public function show($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $item = ScheduleTaskItem::with(['task', 'userAssignments'])
                 ->findOrFail($id);
 
@@ -137,26 +152,29 @@ class ScheduleTaskExecutionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'task_id' => 'sometimes|required|exists:schedule_tasks,task_id',
-            'status' => 'required|in:pending,completed,overdue',
-            'note' => 'nullable|string',
-            'completion_week' => 'nullable|integer',
-            'scheduled_week' => 'nullable|integer'
-        ]);
-
-
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'errors' => $validator->errors()->first()
-                ],
-                422
-            );
-        }
-
         try {
+            if (!$this->checkAccess(['schedule'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'task_id' => 'sometimes|required|exists:schedule_tasks,task_id',
+                'status' => 'required|in:pending,completed,overdue',
+                'note' => 'nullable|string',
+                'completion_week' => 'nullable|integer',
+                'scheduled_week' => 'nullable|integer'
+            ]);
+
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'errors' => $validator->errors()->first()
+                    ],
+                    422
+                );
+            }
 
             // if schedule week not null check it is not duplicate with other schedule week
             if ($request->scheduled_week) {
@@ -208,6 +226,10 @@ class ScheduleTaskExecutionController extends Controller
     public function destroy($id)
     {
         try {
+            if (!$this->checkAccess(['schedule'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
             DB::beginTransaction();
 
             $item = ScheduleTaskItem::findOrFail($id);

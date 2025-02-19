@@ -7,34 +7,27 @@ use Exception;
 
 trait PermissionCheckerTrait
 {
-    protected function checkAccess($modules, $action)
+    protected function checkAccess($modules, $actions)
     {
         try {
             $user = MasUser::findOrFail(auth()->user()->id);
             $controlAccess = json_decode($user->control_access, true);
 
-            // Convert single module to array for consistent handling
+            // Convert single module/action to arrays for consistent handling
             $moduleArray = is_array($modules) ? $modules : [$modules];
+            $actionArray = is_array($actions) ? $actions : [$actions];
 
-            // Check if any of the modules grant permission
+            // Check if any of the modules grant permission for any of the actions
             foreach ($moduleArray as $module) {
                 if (!$controlAccess || !isset($controlAccess[$module])) {
                     continue;
                 }
 
-                switch ($action) {
-                    case 'view':
-                        if ($controlAccess[$module]['view'] ?? false) return true;
-                        break;
-                    case 'create':
-                        if ($controlAccess[$module]['create'] ?? false) return true;
-                        break;
-                    case 'update':
-                        if ($controlAccess[$module]['update'] ?? false) return true;
-                        break;
-                    case 'delete':
-                        if ($controlAccess[$module]['delete'] ?? false) return true;
-                        break;
+                foreach ($actionArray as $action) {
+                    // Check if the action exists and is allowed
+                    if (isset($controlAccess[$module][$action]) && $controlAccess[$module][$action]) {
+                        return true;
+                    }
                 }
             }
 

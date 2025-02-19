@@ -6,13 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PressPartHistoryActivityExport;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class HistoryActivityController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
@@ -88,6 +95,10 @@ class HistoryActivityController extends Controller
     public function show(Request $request)
     {
         try {
+            if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
@@ -133,6 +144,10 @@ class HistoryActivityController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');

@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Traits\PermissionCheckerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
 class OrderInventoryController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function processOrder(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlPartList'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get parts that need to be ordered
             $parts = $this->getOrderNumber();
 

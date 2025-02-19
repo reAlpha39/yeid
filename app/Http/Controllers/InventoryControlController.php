@@ -5,14 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\InventoryControlExport;
+use App\Traits\PermissionCheckerTrait;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
 
 class InventoryControlController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function getRecords(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $startDate = $request->input('start_date', '');
             $endDate = $request->input('end_date', '');
             $jobCode = $request->input('job_code', 'I');
@@ -189,6 +196,10 @@ class InventoryControlController extends Controller
     public function getPartInfo(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'pressShotPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $query = $request->input('query', '');
             $vendor = $request->input('vendorcode');
             $currency = $request->input('currency');
@@ -225,6 +236,10 @@ class InventoryControlController extends Controller
     public function getVendor(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get the query parameter from the request
             $query = $request->input('query', '');
 
@@ -253,6 +268,10 @@ class InventoryControlController extends Controller
     public function getStaff(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get the query parameter from the request
             $query = $request->input('query', '');
 
@@ -281,6 +300,10 @@ class InventoryControlController extends Controller
     public function getMachines(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Get the partCode from the request
             $partCode = $request->input('partCode');
 
@@ -341,6 +364,10 @@ class InventoryControlController extends Controller
         DB::beginTransaction();
 
         try {
+            if (!$this->checkAccess(['invControlOutbound'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             $validated = $request->validate([
                 'record_id' => 'required|integer',
                 'machine_no' => 'required|string',
@@ -403,6 +430,10 @@ class InventoryControlController extends Controller
     public function storeInvRecord(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], ['create', 'update'])) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate that the request contains an array of items
             $request->validate([
                 'records' => 'required|array',
@@ -497,12 +528,16 @@ class InventoryControlController extends Controller
 
     public function deleteRecord(Request $request)
     {
-        // Validate incoming data (RECORDID is required and must be an integer)
-        $request->validate([
-            'record_id' => 'required|integer'
-        ]);
-
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
+            // Validate incoming data
+            $request->validate([
+                'record_id' => 'required|integer'
+            ]);
+
             // Get the target RECORDID from the request
             $recordId = $request->input('record_id');
 
@@ -538,6 +573,10 @@ class InventoryControlController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $filters = [
                 'start_date' => $request->input('start_date', '20240417'),
                 'end_date' => $request->input('end_date', '20240516'),

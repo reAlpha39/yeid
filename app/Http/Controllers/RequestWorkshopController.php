@@ -6,13 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RequestToWorkshopsExport;
+use App\Traits\PermissionCheckerTrait;
 use Exception;
 
 class RequestWorkshopController extends Controller
 {
+    use PermissionCheckerTrait;
+
     public function index(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $request->validate([
                 'search' => 'nullable|string',
                 'year' => 'nullable|string',
@@ -85,6 +92,10 @@ class RequestWorkshopController extends Controller
     public function show($wsrid)
     {
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $result = DB::table('tbl_wsrrecord')
                 ->where('wsrid', $wsrid)
                 ->first();
@@ -112,9 +123,15 @@ class RequestWorkshopController extends Controller
 
     public function store(Request $request)
     {
-        DB::beginTransaction();
+
 
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'create')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             $newWsrId = DB::select("SELECT nextval('seq_wsr') as wsrid")[0]->wsrid;
 
             $newRecordId =
@@ -160,6 +177,10 @@ class RequestWorkshopController extends Controller
     public function update(Request $request, $wsrid)
     {
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
             // Validate the request data
             $request->validate([
                 'requestdate' => 'required|date',
@@ -228,9 +249,13 @@ class RequestWorkshopController extends Controller
 
     public function destroy($wsrid)
     {
-        DB::beginTransaction();
-
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'delete')) {
+                return $this->unauthorizedResponse();
+            }
+
+            DB::beginTransaction();
+
             DB::table('tbl_wsrrecord')
                 ->where('wsrid', $wsrid)
                 ->delete();
@@ -256,6 +281,10 @@ class RequestWorkshopController extends Controller
     public function export(Request $request)
     {
         try {
+            if (!$this->checkAccess(['mtDbsReqWork'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
             $filters = $request->only(['search', 'year', 'only_active', 'shop_code', 'employee_code']);
 
             return Excel::download(
