@@ -36,156 +36,171 @@ class MaintenanceRequestController extends Controller
             }
 
             $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
 
-            $date = $request->input('date');
-            $shopCode = $request->input('shop_code');
-            $machineCode = $request->input('machine_code');
-            $maintenanceCode = $request->input('maintenance_code');
-            $orderName = $request->input('order_name');
-            $search = $request->input('search');
-            $status = $request->input('status');
-            $approvedOnly = $request->input('approved_only');
-            $needApprovalOnly = $request->input('need_approval_only');
-
-            $query = DB::table('tbl_spkrecord as s')
-                ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
-                ->leftJoin('tbl_spkrecord_approval as a', 's.recordid', '=', 'a.record_id')
-                ->leftJoin('mas_department as d', 'a.department_id', '=', 'd.id')
+            $query = SpkRecord::with(['approvalRecord' => function ($query) {
+                $query->with([
+                    'department:id,code,name'
+                ]);
+            }])
+                ->leftJoin('mas_machine as m', 'tbl_spkrecord.machineno', '=', 'm.machineno')
                 ->select([
-                    's.recordid',
-                    's.maintenancecode',
-                    's.orderdatetime',
-                    's.orderempname',
-                    's.ordershop',
-                    's.machineno',
+                    'tbl_spkrecord.recordid',
+                    'tbl_spkrecord.maintenancecode',
+                    'tbl_spkrecord.orderdatetime',
+                    'tbl_spkrecord.orderempname',
+                    'tbl_spkrecord.ordershop',
+                    'tbl_spkrecord.machineno',
                     'm.machinename',
-                    's.ordertitle',
-                    's.orderfinishdate',
-                    's.orderjobtype',
-                    's.orderqtty',
-                    's.orderstoptime',
-                    's.updatetime',
-                    DB::raw('COALESCE(s.planid, 0) AS planid'),
-                    DB::raw('COALESCE(s.approval, 0) AS approval'),
-                    DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
-                    DB::raw('COALESCE(s.createempname, \'\') AS createempname'),
-                    'a.approval_status',
-                    DB::raw('CASE
-                        WHEN a.approval_status IS NULL THEN true
-                        WHEN a.approval_status IN (\'pending\', \'revision\') THEN true
-                        ELSE false
-                    END AS can_update'),
-                    DB::raw('CASE
-                        WHEN a.approval_status IS NULL THEN true
-                        WHEN a.approval_status IN (\'pending\')  THEN true
-                        ELSE false
-                    END AS can_delete'),
-                    DB::raw('CASE
-                        WHEN a.approval_status = \'approved\' AND EXISTS (
-                            SELECT 1 FROM mas_department md
-                            WHERE md.id = ' . $user->department_id . '
-                            AND md.code =  ' . '\'' . self::MTC_DEPARTMENT . '\'' . '
-                        ) THEN true
-                        ELSE false
-                    END AS can_update_report')
+                    'tbl_spkrecord.ordertitle',
+                    'tbl_spkrecord.orderfinishdate',
+                    'tbl_spkrecord.orderjobtype',
+                    'tbl_spkrecord.orderqtty',
+                    'tbl_spkrecord.orderstoptime',
+                    'tbl_spkrecord.updatetime',
+                    DB::raw('COALESCE(tbl_spkrecord.planid, 0) AS planid'),
+                    DB::raw('COALESCE(tbl_spkrecord.approval, 0) AS approval'),
+                    DB::raw('COALESCE(tbl_spkrecord.createempcode, \'\') AS createempcode'),
+                    DB::raw('COALESCE(tbl_spkrecord.createempname, \'\') AS createempname')
                 ]);
 
-            if (!empty($date)) {
-                $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$date]);
+            // Apply filters
+            if ($request->filled('date')) {
+                $query->whereRaw("TO_CHAR(tbl_spkrecord.orderdatetime, 'YYYY-MM') = ?", [$request->date]);
             }
 
-            if (!empty($shopCode)) {
-                $query->where('s.ordershop', $shopCode);
+            if ($request->filled('shop_code')) {
+                $query->where('tbl_spkrecord.ordershop', $request->shop_code);
             }
 
-            if (!empty($machineCode)) {
-                $query->where('s.machineno', $machineCode);
+            if ($request->filled('machine_code')) {
+                $query->where('tbl_spkrecord.machineno', $request->machine_code);
             }
 
-            if (!empty($maintenanceCode)) {
-                $query->where('s.maintenancecode', $maintenanceCode);
+            if ($request->filled('maintenance_code')) {
+                $query->where('tbl_spkrecord.maintenancecode', $request->maintenance_code);
             }
 
-            if (!empty($orderName)) {
-                $query->where('s.orderempname', $orderName);
+            if ($request->filled('order_name')) {
+                $query->where('tbl_spkrecord.orderempname', $request->order_name);
             }
 
-            if (!empty($search)) {
-                $searchTerm = $search . '%';
+            if ($request->filled('search')) {
+                $searchTerm = $request->search . '%';
                 $query->where(function ($query) use ($searchTerm) {
-                    $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
-                        ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
+                    $query->whereRaw("CAST(tbl_spkrecord.recordid AS TEXT) ILIKE ?", [$searchTerm])
+                        ->orWhere('tbl_spkrecord.ordertitle', 'ILIKE', $searchTerm);
                 });
             }
 
-            if (!empty($status)) {
-                $query->where(function ($query) use ($status) {
-                    switch ($status) {
+            if ($request->filled('status')) {
+                $query->where(function ($query) use ($request) {
+                    switch ($request->status) {
                         case 'GRAY':
-                            $query->where('s.approval', '>=', 112);
+                            $query->where('tbl_spkrecord.approval', '>=', 112);
                             break;
                         case 'GREEN':
-                            $query->where('s.approval', '>=', 4)
-                                ->where('s.approval', '<', 112);
+                            $query->where('tbl_spkrecord.approval', '>=', 4)
+                                ->where('tbl_spkrecord.approval', '<', 112);
                             break;
                         case 'YELLOW':
-                            $query->where('s.approval', '<', 4)
-                                ->where('s.planid', '>', 0);
+                            $query->where('tbl_spkrecord.approval', '<', 4)
+                                ->where('tbl_spkrecord.planid', '>', 0);
                             break;
                         case 'ORANGE':
-                            $query->where('s.approval', '<', 4)
-                                ->where('s.planid', '=', 0);
+                            $query->where('tbl_spkrecord.approval', '<', 4)
+                                ->where('tbl_spkrecord.planid', '=', 0);
                             break;
                         case 'WHITE':
                             $query->where(function ($q) {
                                 $q->whereRaw('NOT (
-                                    (s.approval >= 112) OR
-                                    (s.approval >= 4 AND s.approval < 112) OR
-                                    (s.approval < 4 AND s.planid > 0) OR
-                                    (s.approval < 4 AND s.planid = 0)
-                                )');
+                                (tbl_spkrecord.approval >= 112) OR
+                                (tbl_spkrecord.approval >= 4 AND tbl_spkrecord.approval < 112) OR
+                                (tbl_spkrecord.approval < 4 AND tbl_spkrecord.planid > 0) OR
+                                (tbl_spkrecord.approval < 4 AND tbl_spkrecord.planid = 0)
+                            )');
                             });
                             break;
                     }
                 });
             }
 
-            if (!empty($approvedOnly)) {
-                $query->where(function ($q) {
-                    $q->where('a.approval_status', 'approved')
-                        ->orWhere('a.approval_status', 'finish')
-                        ->orWhereNull('a.approval_status');
+            if ($request->filled('approved_only')) {
+                $query->whereHas('approvalRecord', function ($q) {
+                    $q->whereIn('approval_status', ['approved', 'finish']);
+                })->orWhereDoesntHave('approvalRecord');
+            }
+
+            if ($request->filled('need_approval_only')) {
+                $query->whereHas('approvalRecord', function ($q) use ($user, $isMtcDepartment) {
+                    if ($user->role_access === '2' && !$isMtcDepartment) {
+                        $q->whereNull('supervisor_approved_by')
+                            ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
+                    } elseif ($user->role_access === '3' && !$isMtcDepartment) {
+                        $q->whereNull('manager_approved_by');
+                    } elseif ($user->role_access === '2' && $isMtcDepartment) {
+                        $q->whereNull('supervisor_mtc_approved_by')
+                            ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
+                    } elseif ($user->role_access === '3' && $isMtcDepartment) {
+                        $q->whereNull('manager_mtc_approved_by');
+                    }
                 });
             }
 
-            if (!empty($needApprovalOnly)) {
+            // Add computed fields
+            $needApprovalOnly = $request->filled('need_approval_only');
+            $records = $query->orderByDesc('tbl_spkrecord.recordid')
+                ->get()
+                ->map(function ($record) use ($user, $isMtcDepartment, $needApprovalOnly) {
+                    $canApprove = false;
 
-                if ($user->role_access === '2' && $user->department->code !== self::MTC_DEPARTMENT) {
-                    $query->where(function ($q) {
-                        $q->whereNull('a.supervisor_approved_by')
-                            ->whereIn('a.approval_status', ['pending', 'partially_approved', 'revised']);
-                    });
-                } elseif ($user->role_access === '3' && $user->department->code !== self::MTC_DEPARTMENT) {
-                    $query->where(function ($q) {
-                        $q->whereNull('a.manager_approved_by');
-                    });
-                } elseif ($user->role_access === '2' && $user->department->code === self::MTC_DEPARTMENT) {
-                    $query->where(function ($q) {
-                        $q->whereNull('a.supervisor_mtc_approved_by')
-                            ->whereIn('a.approval_status', ['pending', 'partially_approved', 'revised']);
-                    });
-                } elseif ($user->role_access === '3' && $user->department->code === self::MTC_DEPARTMENT) {
-                    $query->where(function ($q) {
-                        $q->whereNull('a.manager_mtc_approved_by');
-                    });
-                }
-            }
+                    // check approval if $needApprovalOnly is not null
+                    if ($needApprovalOnly) {
+                        // check approval for supervisor
+                        if (
+                            !$this->approvalService->isAlreadyApproved($record->approvalRecord, $user)
+                            && $user->role_access === '2'
+                            && in_array($record->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
+                        ) {
+                            $canApprove = true;
+                        }
 
-            $results = $query->orderByDesc('s.recordid')->get();
+                        // check approval for manager
+                        if (
+                            !$this->approvalService->isAlreadyApproved($record->approvalRecord, $user)
+                            && $user->role_access === '3'
+                        ) {
+                            $canApprove = true;
+                        }
+
+                        // check manager approval before mtc can approve
+                        if (
+                            $user->department->code === self::MTC_DEPARTMENT
+                            && $record->approvalRecord->department->code !== self::MTC_DEPARTMENT
+                            && $canApprove
+                        ) {
+                            $canApprove = $record->approvalRecord->manager_approved_by !== null;
+                        }
+                    }
+
+
+
+                    return array_merge($record->toArray(), [
+                        'can_update' => !$record->approvalRecord ||
+                            in_array($record->approvalRecord->approval_status, ['pending', 'revision'], true),
+                        'can_delete' => !$record->approvalRecord ||
+                            $record->approvalRecord->approval_status === 'pending',
+                        'can_update_report' => $record->approvalRecord &&
+                            $record->approvalRecord->approval_status === 'approved' &&
+                            $isMtcDepartment,
+                        'can_approve' => $canApprove
+                    ]);
+                });
 
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $records
             ], 200);
         } catch (Exception $e) {
             return response()->json([

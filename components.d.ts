@@ -396,6 +396,8 @@ declare module 'vue' {
     I18n: typeof import('./resources/js/@core/components/I18n.vue')['default']
     InventoryConstChangeListTab: typeof import('./resources/js/components/InventoryConstChangeListTab.vue')['default']
     LoadingDialog: typeof import('./resources/js/components/dialogs/LoadingDialog.vue')['default']
+    MaintenanceDeptReqAllTab: typeof import('./resources/js/components/MaintenanceDeptReqAllTab.vue')['default']
+    MaintenanceDeptReqApprovalTab: typeof import('./resources/js/components/MaintenanceDeptReqApprovalTab.vue')['default']
     MoreBtn: typeof import('./resources/js/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./resources/js/@core/components/Notifications.vue')['default']
     PaymentProvidersDialog: typeof import('./resources/js/components/dialogs/PaymentProvidersDialog.vue')['default']
