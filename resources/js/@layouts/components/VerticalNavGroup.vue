@@ -236,7 +236,7 @@ const isMounted = useMounted();
 
       /* Style for the child item containers */
       .nav-group-label,
-      .nav-link {
+      .nav-link a {
         align-items: center;
         min-height: fit-content;
         flex-wrap: wrap;
