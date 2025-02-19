@@ -45,10 +45,12 @@ class MaintenanceRequestController extends Controller
             $search = $request->input('search');
             $status = $request->input('status');
             $approvedOnly = $request->input('approved_only');
+            $needApprovalOnly = $request->input('need_approval_only');
 
             $query = DB::table('tbl_spkrecord as s')
                 ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
                 ->leftJoin('tbl_spkrecord_approval as a', 's.recordid', '=', 'a.record_id')
+                ->leftJoin('mas_department as d', 'a.department_id', '=', 'd.id')
                 ->select([
                     's.recordid',
                     's.maintenancecode',
@@ -154,6 +156,29 @@ class MaintenanceRequestController extends Controller
                         ->orWhere('a.approval_status', 'finish')
                         ->orWhereNull('a.approval_status');
                 });
+            }
+
+            if (!empty($needApprovalOnly)) {
+
+                if ($user->role_access === '2' && $user->department->code !== self::MTC_DEPARTMENT) {
+                    $query->where(function ($q) {
+                        $q->whereNull('a.supervisor_approved_by')
+                            ->whereIn('a.approval_status', ['pending', 'partially_approved', 'revised']);
+                    });
+                } elseif ($user->role_access === '3' && $user->department->code !== self::MTC_DEPARTMENT) {
+                    $query->where(function ($q) {
+                        $q->whereNull('a.manager_approved_by');
+                    });
+                } elseif ($user->role_access === '2' && $user->department->code === self::MTC_DEPARTMENT) {
+                    $query->where(function ($q) {
+                        $q->whereNull('a.supervisor_mtc_approved_by')
+                            ->whereIn('a.approval_status', ['pending', 'partially_approved', 'revised']);
+                    });
+                } elseif ($user->role_access === '3' && $user->department->code === self::MTC_DEPARTMENT) {
+                    $query->where(function ($q) {
+                        $q->whereNull('a.manager_mtc_approved_by');
+                    });
+                }
             }
 
             $results = $query->orderByDesc('s.recordid')->get();
