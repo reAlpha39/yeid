@@ -157,7 +157,7 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             if ($this->request->filled('approved_only')) {
                 $query->where(function ($q) {
                     $q->whereHas('approvalRecord', function ($sq) {
-                        $sq->whereIn('approval_status', ['approved', 'finish']);
+                        $sq->whereIn('approval_status', ['approved', 'draft', 'finish']);
                     })->orWhereDoesntHave('approvalRecord');
                 });
             }

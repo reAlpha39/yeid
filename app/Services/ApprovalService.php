@@ -22,6 +22,7 @@ class ApprovalService
     const STATUS_REJECTED = 'rejected';
     const STATUS_REVISION = 'revision';
     const STATUS_REVISED = 'revised';
+    const STATUS_DRAFT = 'draft';
     const STATUS_FINISH = 'finish';
 
     public function __construct(MailService $mailService)
@@ -258,6 +259,24 @@ class ApprovalService
     public function isApprovalStatusFinish(SpkRecordApproval $approval): bool
     {
         return $approval->approval_status === self::STATUS_FINISH;
+    }
+
+    public function draft(SpkRecordApproval $approval, MasUser $user, string $note = null)
+    {
+        // Create a note if provided
+        if ($note) {
+            $approval->notes()->create([
+                'user_id' => $user->id,
+                'note' => $note,
+                'type' => self::STATUS_DRAFT
+            ]);
+        }
+
+        // Update approval status
+        $approval->approval_status = self::STATUS_DRAFT;
+        $approval->save();
+
+        return $approval;
     }
 
     public function finish(SpkRecordApproval $approval, MasUser $user, string $note = null)

@@ -286,23 +286,23 @@ async function initEditData(id) {
     data.occurdate?.substring(0, 4) ?? new Date().getFullYear()
   );
 
-  if (data.ltfactorcode) {
+  if (data.ltfactorcode !== null && data.ltfactorcode.trim() !== "") {
     await fetchLtfactors(data.ltfactorcode);
   }
 
-  if (data.situationcode) {
+  if (data.situationcode !== null && data.situationcode.trim() !== "") {
     await fetchSituations(data.situationcode);
   }
 
-  if (data.factorcode) {
+  if (data.factorcode !== null && data.factorcode.trim() !== "") {
     await fetchFactor(data.factorcode);
   }
 
-  if (data.measurecode) {
+  if (data.measurecode !== null && data.measurecode.trim() !== "") {
     await fetchMeasure(data.measurecode);
   }
 
-  if (data.preventioncode) {
+  if (data.preventioncode !== null && data.preventioncode.trim() !== "") {
     await fetchPrevention(data.preventioncode);
   }
 }
@@ -489,7 +489,7 @@ async function fetchUser() {
   // console.log(user.value);
 }
 
-async function addData() {
+async function addData(isDraft = false) {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
     return;
@@ -531,7 +531,7 @@ async function addData() {
       makerhour: makerManxJam.value,
       makerservice: makerServiceFee.value,
       makerparts: makerPartPrice.value,
-      ltfactorcode: selectedltfactor.value.ltfactorcode,
+      ltfactorcode: selectedltfactor.value?.ltfactorcode,
       ltfactor: ltfactorNote.value,
       situationcode: selectedSituation.value.situationcode,
       situation: situationNote.value,
@@ -571,6 +571,8 @@ async function addData() {
       partcostsum: totalPartCost.value,
       workdata: addedWorkTime.value,
       partdata: addedChangedPart.value,
+
+      is_draft: isDraft,
     };
 
     // console.log(requestData);
@@ -956,7 +958,6 @@ onMounted(() => {
                 style="background-color: #ffffff"
                 class="mx-4 mt-4"
                 v-model="selectedltfactor"
-                :rules="[requiredValidator]"
                 placeholder="Select"
                 item-title="title"
                 :items="ltfactor"
@@ -968,7 +969,6 @@ onMounted(() => {
                 style="background-color: #ffffff"
                 label="Catatan"
                 v-model="ltfactorNote"
-                :rules="[requiredValidator]"
                 outlined
                 maxlength="512"
               />
@@ -1110,7 +1110,6 @@ onMounted(() => {
                 style="background-color: #ffffff"
                 label="Catatan"
                 v-model="commentNote"
-                :rules="[requiredValidator]"
                 outlined
                 maxlength="512"
               />
@@ -1303,7 +1302,16 @@ onMounted(() => {
 
     <VRow class="d-flex justify-start py-8">
       <VCol>
-        <VBtn color="success" class="me-4" @click="addData">Save</VBtn>
+        <VBtn color="success" class="me-4" @click.prevent="addData(false)"
+          >Save</VBtn
+        >
+        <VBtn
+          variant="outlined"
+          color="warning"
+          class="me-4"
+          @click.prevent="addData(true)"
+          >Save as draft</VBtn
+        >
         <VBtn
           variant="outlined"
           color="error"

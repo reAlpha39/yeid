@@ -127,7 +127,7 @@ class MaintenanceRequestController extends Controller
 
             if ($request->filled('approved_only')) {
                 $query->whereHas('approvalRecord', function ($q) {
-                    $q->whereIn('approval_status', ['approved', 'finish']);
+                    $q->whereIn('approval_status', ['approved', 'draft', 'finish']);
                 })->orWhereDoesntHave('approvalRecord');
             }
 
@@ -211,7 +211,7 @@ class MaintenanceRequestController extends Controller
                                 && $record->approvalRecord->createdBy->id === $user->id),
 
                         'can_update_report' => $record->approvalRecord
-                            && $record->approvalRecord->approval_status === 'approved'
+                            && in_array($record->approvalRecord->approval_status, ['approved', 'draft', null])
                             && $isMtcDepartment,
 
                         'can_approve' => $canApprove
@@ -723,7 +723,7 @@ class MaintenanceRequestController extends Controller
                 ], 404);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', 'draft', null], true)) {
                 return response()->json([
                     'success' => false,
                     'not_authorized' => true,
@@ -889,7 +889,7 @@ class MaintenanceRequestController extends Controller
                 ], 404);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', null], true)) {
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', 'draft', null], true)) {
                 return response()->json([
                     'success' => false,
                     'not_authorized' => true,
@@ -1016,11 +1016,20 @@ class MaintenanceRequestController extends Controller
 
             $user = MasUser::findOrFail(auth()->user()->id);
 
-            $this->approvalService->finish(
-                $spkRecord->approvalRecord,
-                $user,
-                $request->input('note')
-            );
+            $isDraft = $request->input('is_draft', false);
+            if ($isDraft) {
+                $this->approvalService->draft(
+                    $spkRecord->approvalRecord,
+                    $user,
+                    $request->input('note')
+                );
+            } else {
+                $this->approvalService->finish(
+                    $spkRecord->approvalRecord,
+                    $user,
+                    $request->input('note')
+                );
+            }
 
             $spkRecord->save();
 
