@@ -47,7 +47,7 @@ const headers = [
     key: "recordid",
   },
   {
-    title: "APPROVAL",
+    title: "STATUS",
     key: "approval_status",
   },
   {
@@ -112,6 +112,7 @@ function convertApprovalStatus(status) {
     revision: "Need Revise",
     revised: "Revised",
     finish: "Finish",
+    draft: "Draft",
     pending: "Pending",
   };
   return statusMap[status] || "-";
@@ -282,15 +283,11 @@ async function handleExport() {
 }
 
 function getApprovalColor(approval) {
-  if (approval === "pending") {
+  if (approval === "pending" || approval === "draft") {
     return "status-pending";
   } else if (approval === "partially_approved") {
     return "status-partially-approved";
-  } else if (
-    approval === "revision" ||
-    approval === "revised" ||
-    approval === "draft"
-  ) {
+  } else if (approval === "revision" || approval === "revised") {
     return "status-revised";
   } else if (approval === "approved") {
     return "status-approved";

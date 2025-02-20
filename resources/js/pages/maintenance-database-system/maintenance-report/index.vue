@@ -46,8 +46,8 @@ const headers = [
     key: "recordid",
   },
   {
-    title: "APPROVAL",
-    key: "approval",
+    title: "STATUS",
+    key: "approval_status",
   },
   {
     title: "MESIN",
@@ -56,10 +56,6 @@ const headers = [
   {
     title: "KODE",
     key: "maintenancecode",
-  },
-  {
-    title: "KEADAAN",
-    key: "status",
   },
   {
     title: "SHOP",
@@ -97,14 +93,28 @@ const maintenanceCodes = [
   "09|LAYOUT",
 ];
 
-const status = ["GRAY", "GREEN", "YELLOW", "ORANGE"];
+const status = [
+  "PENDING",
+  "PARTIALLY APPROVED",
+  "APPROVED",
+  "REVISED",
+  "REVISION",
+  "REJECTED",
+  "FINISH",
+];
 
-function convertApproval(approval) {
-  let result = "";
-  (parseInt(approval) & 16) === 16 ? (result += "S") : (result += "B");
-  (parseInt(approval) & 32) === 32 ? (result += "S") : (result += "B");
-  (parseInt(approval) & 64) === 64 ? (result += "S") : (result += "B");
-  return result;
+function convertApprovalStatus(status) {
+  const statusMap = {
+    approved: "Approved",
+    partially_approved: "Partially Approved",
+    rejected: "Rejected",
+    revision: "Need Revise",
+    revised: "Revised",
+    finish: "Finish",
+    draft: "Draft",
+    pending: "Pending",
+  };
+  return statusMap[status] || "-";
 }
 
 async function fetchData() {
@@ -245,25 +255,19 @@ async function handleExport() {
   }
 }
 
-function getApprovalIdColor(approval) {
-  let approvalId = parseInt(approval);
-  if ((approvalId & 64) === 64) {
-    return "status-white";
-  } else if ((approvalId & 16) === 16 && (approvalId & 32) === 32) {
-    return "status-blue";
-  } else if ((approvalId & 16) === 16) {
-    return "status-light-blue";
-  }
-}
-
 function getApprovalColor(approval) {
-  let approvalId = parseInt(approval);
-  if (approvalId >= 64) {
-    return "status-indigo";
-  } else if (approvalId >= 4) {
-    return "status-green";
-  } else if (approvalId < 4) {
-    return "status-orange";
+  if (approval === "pending" || approval === "draft") {
+    return "status-pending";
+  } else if (approval === "partially_approved") {
+    return "status-partially-approved";
+  } else if (approval === "revision" || approval === "revised") {
+    return "status-revised";
+  } else if (approval === "approved") {
+    return "status-approved";
+  } else if (approval === "finish") {
+    return "status-finish";
+  } else if (approval === "rejected") {
+    return "status-rejected";
   }
 
   return "status-white";
@@ -438,14 +442,8 @@ onMounted(() => {
         class="text-no-wrap"
         height="562"
       >
-        <template #item.approval="{ item }">
-          <div class="d-flex align-center">
-            {{ convertApproval(item.approval) }}
-            <div
-              class="status-indicator mx-2"
-              :class="getApprovalIdColor(item.approval)"
-            />
-          </div>
+        <template #item.approval_status="{ item }">
+          {{ convertApprovalStatus(item.approval_record.approval_status) }}
         </template>
 
         <template #item.machineno="{ item }">
@@ -470,10 +468,10 @@ onMounted(() => {
         </template>
         <!-- Actions -->
         <template #item.actions="{ item }">
-          <div class="d-flex justify-left gap-2">
+          <div class="d-flex justify-right gap-0">
             <div
-              class="status-indicator mx-2"
-              :class="getApprovalColor(item.approval, item.planid)"
+              class="status-indicator ml-2 mr-4"
+              :class="getApprovalColor(item.approval_record.approval_status)"
             />
             <IconBtn @click="openDetailPage(item.recordid)">
               <VIcon icon="tabler-eye" />
@@ -522,31 +520,27 @@ onMounted(() => {
   margin: auto;
 }
 
-.status-green {
-  background-color: #4caf50;
+.status-finish {
+  background-color: #28c76f;
 }
 
-.status-yellow {
-  background-color: #ffeb3b;
+.status-revised {
+  background-color: #e87768;
 }
 
-.status-orange {
+.status-pending {
   background-color: #f87d02;
 }
 
-.status-light-blue {
+.status-partially-approved {
   background-color: #c2e9ff;
 }
 
-.status-blue {
+.status-approved {
   background-color: #2d9cdb;
 }
 
-.status-indigo {
-  background-color: #a59fb2;
-}
-
-.status-white {
-  background-color: #ffffff;
+.status-rejected {
+  background-color: #fa0202;
 }
 </style>
