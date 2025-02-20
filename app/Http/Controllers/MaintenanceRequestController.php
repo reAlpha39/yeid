@@ -95,32 +95,31 @@ class MaintenanceRequestController extends Controller
             }
 
             if ($request->filled('status')) {
-                $query->where(function ($query) use ($request) {
+                $query->whereHas('approvalRecord', function ($q) use ($request) {
                     switch ($request->status) {
-                        case 'GRAY':
-                            $query->where('tbl_spkrecord.approval', '>=', 112);
+                        case 'PENDING':
+                            $q->where('approval_status', 'pending');
                             break;
-                        case 'GREEN':
-                            $query->where('tbl_spkrecord.approval', '>=', 4)
-                                ->where('tbl_spkrecord.approval', '<', 112);
+                        case 'PARTIALLY APPROVED':
+                            $q->where('approval_status', 'partially_approved');
                             break;
-                        case 'YELLOW':
-                            $query->where('tbl_spkrecord.approval', '<', 4)
-                                ->where('tbl_spkrecord.planid', '>', 0);
+                        case 'APPROVED':
+                            $q->where('approval_status', 'approved');
                             break;
-                        case 'ORANGE':
-                            $query->where('tbl_spkrecord.approval', '<', 4)
-                                ->where('tbl_spkrecord.planid', '=', 0);
+                        case 'REVISION':
+                            $q->where('approval_status', 'revision');
                             break;
-                        case 'WHITE':
-                            $query->where(function ($q) {
-                                $q->whereRaw('NOT (
-                                (tbl_spkrecord.approval >= 112) OR
-                                (tbl_spkrecord.approval >= 4 AND tbl_spkrecord.approval < 112) OR
-                                (tbl_spkrecord.approval < 4 AND tbl_spkrecord.planid > 0) OR
-                                (tbl_spkrecord.approval < 4 AND tbl_spkrecord.planid = 0)
-                            )');
-                            });
+                        case 'REVISED':
+                            $q->where('approval_status', 'revised');
+                            break;
+                        case 'DRAFT':
+                            $q->where('approval_status', 'draft');
+                            break;
+                        case 'FINISH':
+                            $q->where('approval_status', 'finish');
+                            break;
+                        case 'REJECTED':
+                            $q->where('approval_status', 'rejected');
                             break;
                     }
                 });
