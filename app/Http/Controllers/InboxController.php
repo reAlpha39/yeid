@@ -151,10 +151,8 @@ class InboxController extends Controller
     public function batchMarkAsRead(Request $request)
     {
         try {
-            $request->validate(['ids' => 'required|array']);
-
             Inbox::where('user_id', $request->user()->id)
-                ->whereIn('id', $request->ids)
+                ->where('status', '!=', 'read')
                 ->update([
                     'status' => 'read',
                     'read_at' => now()
@@ -162,7 +160,7 @@ class InboxController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Messages marked as read'
+                'message' => 'All messages marked as read'
             ]);
         } catch (Exception $e) {
             return response()->json([

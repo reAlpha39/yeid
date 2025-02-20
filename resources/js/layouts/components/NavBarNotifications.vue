@@ -109,14 +109,9 @@ const markAsRead = async (id) => {
 
 const markAllAsRead = async () => {
   try {
-    const unreadIds = notifications.value
-      .filter((n) => !n.isSeen)
-      .map((n) => n.id);
-
     if (unreadIds.length) {
       await $api("/inbox/batch/read", {
         method: "POST",
-        body: { ids: unreadIds },
       });
       await fetchNotifications();
       await fetchUnreadCount();
