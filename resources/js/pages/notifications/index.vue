@@ -111,13 +111,11 @@ const markAsRead = async (id) => {
 
 const markAllAsRead = async () => {
   try {
-    if (unreadIds.length) {
-      await $api("/inbox/batch/read", {
-        method: "POST",
-      });
-      await fetchNotifications(); // Reset list to page 1
-      await fetchUnreadCount();
-    }
+    await $api("/inbox/batch/read", {
+      method: "POST",
+    });
+    await fetchNotifications(); // Reset list to page 1
+    await fetchUnreadCount();
   } catch (error) {
     console.error("Error marking all as read:", error);
   }
