@@ -2,6 +2,9 @@
 
 namespace App\Exports;
 
+use App\Models\SpkRecord;
+use App\Models\MasUser;
+use App\Models\MasDepartment;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +18,7 @@ use Illuminate\Http\Request;
 
 class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAutoSize, WithStyles, WithEvents
 {
+    protected const MTC_DEPARTMENT = 'MTC';
     protected $request;
     protected $chunkSize = 1000;
     protected $rowGroups = [];
@@ -25,12 +29,36 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         $this->request = $request;
     }
 
-    protected function convertApproval($approval)
+    protected function convertStatus($status)
     {
         $result = "";
-        (intval($approval) & 16) === 16 ? ($result .= "S") : ($result .= "B");
-        (intval($approval) & 32) === 32 ? ($result .= "S") : ($result .= "B");
-        (intval($approval) & 64) === 64 ? ($result .= "S") : ($result .= "B");
+        switch ($status) {
+            case 'pending':
+                $result = 'PENDING';
+                break;
+            case 'partially_approved':
+                $result = 'PARTIALLY APPROVED';
+                break;
+            case 'approved':
+                $result = 'APPROVED';
+                break;
+            case 'revision':
+                $result = 'REVISION';
+                break;
+            case 'revised':
+                $result = 'REVISED';
+                break;
+            case 'draft':
+                $result = 'DRAFT';
+                break;
+            case 'finish':
+                $result = 'FINISH';
+                break;
+            case 'rejected':
+                $result = 'REJECTED';
+                break;
+        }
+
         return $result;
     }
 
@@ -39,90 +67,118 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         try {
             $result = new Collection();
 
-            // Get main data query builder
-            $query = DB::table('tbl_spkrecord as s')
-                ->leftJoin('mas_machine as m', 's.machineno', '=', 'm.machineno')
-                ->select(
-                    's.*',
-                    DB::raw('COALESCE(s.planid, 0) AS planid'),
-                    DB::raw('COALESCE(s.approval, 0) AS approval'),
-                    DB::raw('COALESCE(s.createempcode, \'\') AS createempcode'),
-                    DB::raw('COALESCE(s.createempname, \'\') AS createempname')
-                );
+            $user = MasUser::findOrFail(auth()->user()->id);
+            $department = MasDepartment::find($user->department_id);
+            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
 
-            // Only active records filter
-            // if ($this->request->input('only_active') === 'true') {
-            //     $query->whereRaw('COALESCE(s.approval, 0) < 119');
-            // }
+            // Build base query using Eloquent
+            $query = SpkRecord::with(['approvalRecord' => function ($query) {
+                $query->with([
+                    'department:id,code,name'
+                ]);
+            }])
+                ->leftJoin('mas_machine as m', 'tbl_spkrecord.machineno', '=', 'm.machineno')
+                ->select([
+                    'tbl_spkrecord.*',
+                    'm.machinename',
+                    DB::raw('COALESCE(tbl_spkrecord.planid, 0) AS planid'),
+                    DB::raw('COALESCE(tbl_spkrecord.approval, 0) AS approval'),
+                    DB::raw('COALESCE(tbl_spkrecord.createempcode, \'\') AS createempcode'),
+                    DB::raw('COALESCE(tbl_spkrecord.createempname, \'\') AS createempname')
+                ]);
 
             // Date filter
-            if ($this->request->input('date')) {
-                $query->whereRaw("TO_CHAR(s.orderdatetime, 'YYYY-MM') = ?", [$this->request->input('date')]);
+            if ($this->request->filled('date')) {
+                $query->whereRaw("TO_CHAR(tbl_spkrecord.orderdatetime, 'YYYY-MM') = ?", [$this->request->date]);
             }
 
             // Shop code filter
-            if ($this->request->input('shop_code')) {
-                $query->where('s.ordershop', $this->request->input('shop_code'));
+            if ($this->request->filled('shop_code')) {
+                $query->where('tbl_spkrecord.ordershop', $this->request->shop_code);
             }
 
             // Machine code filter
-            if ($this->request->input('machine_code')) {
-                $query->where('s.machineno', $this->request->input('machine_code'));
+            if ($this->request->filled('machine_code')) {
+                $query->where('tbl_spkrecord.machineno', $this->request->machine_code);
             }
 
             // Maintenance code filter
-            if ($this->request->input('maintenance_code')) {
-                $query->where('s.maintenancecode', $this->request->input('maintenance_code'));
+            if ($this->request->filled('maintenance_code')) {
+                $query->where('tbl_spkrecord.maintenancecode', $this->request->maintenance_code);
             }
 
             // Order name filter
-            if ($this->request->input('order_name')) {
-                $query->where('s.orderempname', $this->request->input('order_name'));
+            if ($this->request->filled('order_name')) {
+                $query->where('tbl_spkrecord.orderempname', $this->request->order_name);
             }
 
             // Search filter
-            if ($this->request->input('search')) {
-                $searchTerm = $this->request->input('search') . '%';
+            if ($this->request->filled('search')) {
+                $searchTerm = $this->request->search . '%';
                 $query->where(function ($query) use ($searchTerm) {
-                    $query->whereRaw("CAST(s.recordid AS TEXT) ILIKE ?", [$searchTerm])
-                        ->orWhere('s.ordertitle', 'ILIKE', $searchTerm);
+                    $query->whereRaw("CAST(tbl_spkrecord.recordid AS TEXT) ILIKE ?", [$searchTerm])
+                        ->orWhere('tbl_spkrecord.ordertitle', 'ILIKE', $searchTerm);
                 });
             }
 
             // Status filter
-            if ($this->request->input('status')) {
-                $query->where(function ($query) {
-                    switch ($this->request->input('status')) {
-                        case 'GRAY':
-                            $query->where('s.approval', '>=', 112);
+            if ($this->request->filled('status')) {
+                $query->whereHas('approvalRecord', function ($q) {
+                    switch ($this->request->status) {
+                        case 'PENDING':
+                            $q->where('approval_status', 'pending');
                             break;
-                        case 'GREEN':
-                            $query->where('s.approval', '>=', 4)
-                                ->where('s.approval', '<', 112);
+                        case 'PARTIALLY APPROVED':
+                            $q->where('approval_status', 'partially_approved');
                             break;
-                        case 'YELLOW':
-                            $query->where('s.approval', '<', 4)
-                                ->where('s.planid', '>', 0);
+                        case 'APPROVED':
+                            $q->where('approval_status', 'approved');
                             break;
-                        case 'ORANGE':
-                            $query->where('s.approval', '<', 4)
-                                ->where('s.planid', '=', 0);
+                        case 'REVISION':
+                            $q->where('approval_status', 'revision');
                             break;
-                        case 'WHITE':
-                            $query->where(function ($q) {
-                                $q->whereRaw('NOT (
-                                (s.approval >= 112) OR
-                                (s.approval >= 4 AND s.approval < 112) OR
-                                (s.approval < 4 AND s.planid > 0) OR
-                                (s.approval < 4 AND s.planid = 0)
-                            )');
-                            });
+                        case 'REVISED':
+                            $q->where('approval_status', 'revised');
+                            break;
+                        case 'DRAFT':
+                            $q->where('approval_status', 'draft');
+                            break;
+                        case 'FINISH':
+                            $q->where('approval_status', 'finish');
+                            break;
+                        case 'REJECTED':
+                            $q->where('approval_status', 'rejected');
                             break;
                     }
                 });
             }
 
-            $query->orderBy('s.recordid', 'DESC')
+            // Approved only filter
+            if ($this->request->filled('approved_only')) {
+                $query->where(function ($q) {
+                    $q->whereHas('approvalRecord', function ($sq) {
+                        $sq->whereIn('approval_status', ['approved', 'finish']);
+                    })->orWhereDoesntHave('approvalRecord');
+                });
+            }
+
+            if ($this->request->filled('need_approval_only')) {
+                $query->whereHas('approvalRecord', function ($q) use ($user, $isMtcDepartment) {
+                    if ($user->role_access === '2' && !$isMtcDepartment) {
+                        $q->whereNull('supervisor_approved_by')
+                        ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
+                    } elseif ($user->role_access === '3' && !$isMtcDepartment) {
+                        $q->whereNull('manager_approved_by');
+                    } elseif ($user->role_access === '2' && $isMtcDepartment) {
+                        $q->whereNull('supervisor_mtc_approved_by')
+                        ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
+                    } elseif ($user->role_access === '3' && $isMtcDepartment) {
+                        $q->whereNull('manager_mtc_approved_by');
+                    }
+                });
+            }
+
+            $query->orderByDesc('tbl_spkrecord.recordid')
                 ->chunk($this->chunkSize, function ($records) use (&$result) {
                     foreach ($records as $row) {
                         $startRow = $this->rowCount + 1;
@@ -189,12 +245,12 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
     {
         return [
             $row->recordid ?? '',
-            $this->convertApproval($row->approval ?? 0),
-            $row->status ?? '',
+            $this->convertStatus($row->approvalRecord->approval_status ?? ''),
+            // $row->status ?? '',
             $row->maintenancecode ?? '',
             $row->machineno ?? '',
-            $row->createempcode ?? '',
-            $row->createempname ?? '',
+            $row->approvalRecord->createdBy->id ?? '',
+            $row->approvalRecord->createdBy->name ?? '',
             $row->ordershop ?? '',
             $row->ordertitle ?? '',
             $row->startdatetime ?? '',
@@ -271,8 +327,8 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
     {
         return [
             'SPK NO',
-            'Approval',
-            'Keadaan',
+            'Status',
+            // 'Keadaan',
             'Maintenance Code',
             'Machine No',
             'Login ID',

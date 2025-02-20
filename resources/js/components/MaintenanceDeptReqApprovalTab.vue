@@ -218,7 +218,7 @@ async function handleExport() {
   try {
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get(
-      "/api/maintenance-database-system/department-requests/export",
+      "/api/maintenance-database-system/maintenance-report/export",
       {
         responseType: "blob",
         headers: accessToken
@@ -238,6 +238,7 @@ async function handleExport() {
               : null,
           order_name: selectedStaff.value?.employeename,
           status: selectedStatus.value,
+          need_approval_only: true,
         },
       }
     );

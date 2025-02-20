@@ -244,7 +244,7 @@ async function handleExport() {
   try {
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get(
-      "/api/maintenance-database-system/department-requests/export",
+      "/api/maintenance-database-system/maintenance-report/export",
       {
         responseType: "blob",
         headers: accessToken
