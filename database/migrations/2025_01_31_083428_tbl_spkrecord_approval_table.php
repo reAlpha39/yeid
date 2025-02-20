@@ -13,7 +13,7 @@ return new class extends Migration
             $table->unsignedBigInteger('record_id');
             $table->unsignedBigInteger('department_id');
 
-            $table->unsignedBigInteger('creatad_by');
+            $table->unsignedBigInteger('created_by');
             $table->string('pic')->nullable();
 
             $table->unsignedBigInteger('supervisor_approved_by')->nullable();

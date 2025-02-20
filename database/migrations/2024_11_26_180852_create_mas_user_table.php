@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('nik')->unique();
             $table->string('role_access');
             $table->string('status');
-            $table->string('control_access');
+            $table->text('control_access');
             $table->string('password');
             $table->rememberToken();
             $table->timestamp('email_verified_at')->nullable();
