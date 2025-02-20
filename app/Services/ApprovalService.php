@@ -199,6 +199,44 @@ class ApprovalService
         return $field !== null && $approval->$field !== null;
     }
 
+    public function canApprove(SpkRecordApproval $approval, MasUser $user): bool
+    {
+        if ($this->isAlreadyApproved($approval, $user)) {
+            return false;
+        }
+
+        $isSameDepartment = $approval->department->code === $user->department->code;
+        $isMtcUser = $user->department->code === self::MTC_DEPARTMENT;
+        $isManagerDeptApproved = $approval->department->code === self::MTC_DEPARTMENT ? true :  $approval->manager_approved_by !== null;
+
+        $pendingStatuses = ['pending', 'partially_approved', 'revised', null];
+
+        // Supervisor approval rules
+        if ($user->role_access === '2' && in_array($approval->approval_status, $pendingStatuses, true)) {
+            if ($isSameDepartment) {
+                return true;
+            }
+
+            if ($isMtcUser && $isManagerDeptApproved) {
+                return true;
+            }
+        }
+
+        // Manager approval rules
+        if ($user->role_access === '3') {
+            if ($isSameDepartment) {
+                return true;
+            }
+
+            if ($isMtcUser && $isManagerDeptApproved) {
+                return true;
+            }
+        }
+
+
+        return false;
+    }
+
     public function isApprovalStatusRevise(SpkRecordApproval $approval): bool
     {
         if ($approval->approval_status === self::STATUS_REVISION) {

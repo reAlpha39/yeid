@@ -132,18 +132,60 @@ class MaintenanceRequestController extends Controller
             }
 
             if ($request->filled('need_approval_only')) {
-                $query->whereHas('approvalRecord', function ($q) use ($user, $isMtcDepartment) {
-                    if ($user->role_access === '2' && !$isMtcDepartment) {
-                        $q->whereNull('supervisor_approved_by')
-                            ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
-                    } elseif ($user->role_access === '3' && !$isMtcDepartment) {
-                        $q->whereNull('manager_approved_by');
-                    } elseif ($user->role_access === '2' && $isMtcDepartment) {
-                        $q->whereNull('supervisor_mtc_approved_by')
-                            ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
-                    } elseif ($user->role_access === '3' && $isMtcDepartment) {
-                        $q->whereNull('manager_mtc_approved_by');
-                    }
+                $query->whereHas('approvalRecord', function ($q) use ($user) {
+                    $isMtcUser = $user->department->code === 'MTC';
+                    $approvalMap = [
+                        true => [  // isMtcApprover
+                            '2' => 'supervisor_mtc_approved_by',
+                            '3' => 'manager_mtc_approved_by'
+                        ],
+                        false => [ // !isMtcApprover
+                            '2' => 'supervisor_approved_by',
+                            '3' => 'manager_approved_by'
+                        ]
+                    ];
+
+                    $pendingStatuses = ['pending', 'partially_approved', 'revised'];
+
+                    $q->where(function ($query) use ($user, $isMtcUser, $approvalMap, $pendingStatuses) {
+                        // Get approval field based on user role and department
+                        $approvalField = $approvalMap[$isMtcUser][$user->role_access] ?? null;
+
+                        if ($approvalField) {
+                            $query->where(function ($q) use ($user, $isMtcUser, $approvalField, $pendingStatuses) {
+                                // Same department approval path
+                                $q->where(function ($subQ) use ($user, $approvalField, $pendingStatuses) {
+                                    $subQ->whereNull($approvalField)
+                                        ->whereHas('department', function ($deptQ) use ($user) {
+                                            $deptQ->where('code', $user->department->code);
+                                        });
+
+                                    if ($user->role_access === '2') {
+                                        $subQ->whereIn('approval_status', $pendingStatuses);
+                                    }
+                                });
+
+                                // MTC approval path after department manager approval
+                                if ($isMtcUser) {
+                                    $q->orWhere(function ($subQ) use (
+                                        $approvalField,
+                                        $pendingStatuses,
+                                        $user
+                                    ) {
+                                        $subQ->whereNull($approvalField)
+                                            ->whereNotNull('manager_approved_by')
+                                            ->whereHas('department', function ($deptQ) {
+                                                $deptQ->where('code', '!=', 'MTC');
+                                            });
+
+                                        if ($user->role_access === '2') {
+                                            $subQ->whereIn('approval_status', $pendingStatuses);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 });
             }
 
@@ -156,43 +198,22 @@ class MaintenanceRequestController extends Controller
 
                     // check approval if $needApprovalOnly is not null
                     if ($needApprovalOnly) {
-                        // check approval for supervisor
-                        if (
-                            !$this->approvalService->isAlreadyApproved($record->approvalRecord, $user)
-                            && $user->role_access === '2'
-                            && in_array($record->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
-                        ) {
-                            $canApprove = true;
-                        }
-
-                        // check approval for manager
-                        if (
-                            !$this->approvalService->isAlreadyApproved($record->approvalRecord, $user)
-                            && $user->role_access === '3'
-                        ) {
-                            $canApprove = true;
-                        }
-
-                        // check manager approval before mtc can approve
-                        if (
-                            $user->department->code === self::MTC_DEPARTMENT
-                            && $record->approvalRecord->department->code !== self::MTC_DEPARTMENT
-                            && $canApprove
-                        ) {
-                            $canApprove = $record->approvalRecord->manager_approved_by !== null;
-                        }
+                        $canApprove = $this->approvalService->canApprove($record->approvalRecord, $user);
                     }
-
-
 
                     return array_merge($record->toArray(), [
                         'can_update' => !$record->approvalRecord ||
-                            in_array($record->approvalRecord->approval_status, ['pending', 'revision'], true),
+                            (in_array($record->approvalRecord->approval_status, ['pending', 'revision'], true)
+                                && $record->approvalRecord->createdBy->id === $user->id),
+
                         'can_delete' => !$record->approvalRecord ||
-                            $record->approvalRecord->approval_status === 'pending',
-                        'can_update_report' => $record->approvalRecord &&
-                            $record->approvalRecord->approval_status === 'approved' &&
-                            $isMtcDepartment,
+                            ($record->approvalRecord->approval_status === 'pending'
+                                && $record->approvalRecord->createdBy->id === $user->id),
+
+                        'can_update_report' => $record->approvalRecord
+                            && $record->approvalRecord->approval_status === 'approved'
+                            && $isMtcDepartment,
+
                         'can_approve' => $canApprove
                     ]);
                 });
@@ -642,33 +663,7 @@ class MaintenanceRequestController extends Controller
                 ->where('machineno', $spkRecord->machineno)
                 ->first();
 
-            $canApprove = false;
-
-            // check approval for supervisor
-            if (
-                !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
-                && $user->role_access === '2'
-                && in_array($spkRecord->approvalRecord->approval_status, ['pending', 'partially_approved', 'revised', null], true)
-            ) {
-                $canApprove = true;
-            }
-
-            // check approval for manager
-            if (
-                !$this->approvalService->isAlreadyApproved($spkRecord->approvalRecord, $user)
-                && $user->role_access === '3'
-            ) {
-                $canApprove = true;
-            }
-
-            // check manager approval before mtc can approve
-            if (
-                $user->department->code === self::MTC_DEPARTMENT
-                && $spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT
-                && $canApprove
-            ) {
-                $canApprove = $spkRecord->approvalRecord->manager_approved_by !== null;
-            }
+            $canApprove = $this->approvalService->canApprove($spkRecord->approvalRecord, $user);
 
             // Merge machine details with SPK record
             $responseData = array_merge(

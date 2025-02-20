@@ -163,18 +163,60 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             }
 
             if ($this->request->filled('need_approval_only')) {
-                $query->whereHas('approvalRecord', function ($q) use ($user, $isMtcDepartment) {
-                    if ($user->role_access === '2' && !$isMtcDepartment) {
-                        $q->whereNull('supervisor_approved_by')
-                        ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
-                    } elseif ($user->role_access === '3' && !$isMtcDepartment) {
-                        $q->whereNull('manager_approved_by');
-                    } elseif ($user->role_access === '2' && $isMtcDepartment) {
-                        $q->whereNull('supervisor_mtc_approved_by')
-                        ->whereIn('approval_status', ['pending', 'partially_approved', 'revised']);
-                    } elseif ($user->role_access === '3' && $isMtcDepartment) {
-                        $q->whereNull('manager_mtc_approved_by');
-                    }
+                $query->whereHas('approvalRecord', function ($q) use ($user) {
+                    $isMtcUser = $user->department->code === 'MTC';
+                    $approvalMap = [
+                        true => [  // isMtcApprover
+                            '2' => 'supervisor_mtc_approved_by',
+                            '3' => 'manager_mtc_approved_by'
+                        ],
+                        false => [ // !isMtcApprover
+                            '2' => 'supervisor_approved_by',
+                            '3' => 'manager_approved_by'
+                        ]
+                    ];
+
+                    $pendingStatuses = ['pending', 'partially_approved', 'revised'];
+
+                    $q->where(function ($query) use ($user, $isMtcUser, $approvalMap, $pendingStatuses) {
+                        // Get approval field based on user role and department
+                        $approvalField = $approvalMap[$isMtcUser][$user->role_access] ?? null;
+
+                        if ($approvalField) {
+                            $query->where(function ($q) use ($user, $isMtcUser, $approvalField, $pendingStatuses) {
+                                // Same department approval path
+                                $q->where(function ($subQ) use ($user, $approvalField, $pendingStatuses) {
+                                    $subQ->whereNull($approvalField)
+                                        ->whereHas('department', function ($deptQ) use ($user) {
+                                            $deptQ->where('code', $user->department->code);
+                                        });
+
+                                    if ($user->role_access === '2') {
+                                        $subQ->whereIn('approval_status', $pendingStatuses);
+                                    }
+                                });
+
+                                // MTC approval path after department manager approval
+                                if ($isMtcUser) {
+                                    $q->orWhere(function ($subQ) use (
+                                        $approvalField,
+                                        $pendingStatuses,
+                                        $user
+                                    ) {
+                                        $subQ->whereNull($approvalField)
+                                            ->whereNotNull('manager_approved_by')
+                                            ->whereHas('department', function ($deptQ) {
+                                                $deptQ->where('code', '!=', 'MTC');
+                                            });
+
+                                        if ($user->role_access === '2') {
+                                            $subQ->whereIn('approval_status', $pendingStatuses);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
                 });
             }
 
