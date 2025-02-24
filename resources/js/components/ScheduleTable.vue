@@ -309,7 +309,7 @@ onMounted(() => {
         </VBtn>
 
         <VBtn
-          v-if="$can('create', 'pressShot')"
+          v-if="$can('create', 'schedule')"
           prepend-icon="tabler-plus"
           to="schedules/add"
         >
