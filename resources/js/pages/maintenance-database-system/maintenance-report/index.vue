@@ -443,7 +443,7 @@ onMounted(() => {
         height="562"
       >
         <template #item.approval_status="{ item }">
-          {{ convertApprovalStatus(item.approval_record.approval_status) }}
+          {{ convertApprovalStatus(item?.approval_record?.approval_status) }}
         </template>
 
         <template #item.machineno="{ item }">
@@ -470,8 +470,9 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-right gap-0">
             <div
+              v-if="item?.approval_record?.approval_status !== undefined"
               class="status-indicator ml-2 mr-4"
-              :class="getApprovalColor(item.approval_record.approval_status)"
+              :class="getApprovalColor(item?.approval_record?.approval_status)"
             />
             <IconBtn @click="openDetailPage(item.recordid)">
               <VIcon icon="tabler-eye" />
