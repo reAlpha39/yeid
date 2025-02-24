@@ -18,10 +18,6 @@ class MasShopController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             // Get query parameters for filtering
             $shopCode = $request->query('shop_code');
             $shopName = $request->query('shop_name');

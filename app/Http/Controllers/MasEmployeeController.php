@@ -18,10 +18,6 @@ class MasEmployeeController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             $query = MasEmployee::query();
 
             // Check for search parameters

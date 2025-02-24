@@ -20,9 +20,9 @@ class MasterPartController extends Controller
     public function getMasterPartList(Request $request)
     {
         try {
-            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Retrieve search parameters from the request
             $search = $request->input('search', '');

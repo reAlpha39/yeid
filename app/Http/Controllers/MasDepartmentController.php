@@ -18,10 +18,6 @@ class MasDepartmentController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             $query = MasDepartment::query();
 
             // Check for search parameters

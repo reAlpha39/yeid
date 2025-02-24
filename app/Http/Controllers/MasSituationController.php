@@ -18,10 +18,6 @@ class MasSituationController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             $search = $request->query('search');
 
             $query = MasSituation::query();

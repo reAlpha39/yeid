@@ -18,10 +18,6 @@ class MasLineController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             $search = $request->query('query');
             $shopCode = $request->query('shop_code');
 

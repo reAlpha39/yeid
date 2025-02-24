@@ -17,10 +17,6 @@ class MasMachineController extends Controller
     public function searchMachine(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
-
             $query = DB::table('mas_machine')
                 ->select([
                     'machineno',
