@@ -446,7 +446,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Part',
+          title: 'Master Part',
           class: 'text-h4',
         },
       ]"

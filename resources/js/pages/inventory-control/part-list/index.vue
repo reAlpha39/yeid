@@ -461,7 +461,7 @@ onMounted(() => {
           class: 'text-h4',
         },
         {
-          title: 'Part',
+          title: 'Part List',
           class: 'text-h4',
         },
       ]"
