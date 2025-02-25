@@ -37,14 +37,14 @@ ALTER TABLE tbl_exchangework
     ADD employeecode VARCHAR(10),
     ADD employeename VARCHAR(30);
 
-ALTER TABLE tbl_employee
-    ADD employeecode VARCHAR(10),
-    ADD employeename VARCHAR(30);
+ALTER TABLE mas_employee
+    ALTER COLUMN employeecode TYPE VARCHAR(10),
+    ALTER COLUMN employeename TYPE VARCHAR(30);
 
 
-ALTER TABLE tbl_employee_press
-    ADD employeecode VARCHAR(10),
-    ADD employeename VARCHAR(30);
+ALTER TABLE mas_employee_press
+    ALTER COLUMN employeecode TYPE VARCHAR(10),
+    ALTER COLUMN employeename TYPE VARCHAR(30);
 
 -- Create indexes
 CREATE INDEX idx_invrecord_partcode_date ON tbl_invrecord(partcode, jobdate);
