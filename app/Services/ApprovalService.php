@@ -200,8 +200,12 @@ class ApprovalService
         return $field !== null && $approval->$field !== null;
     }
 
-    public function canApprove(SpkRecordApproval $approval, MasUser $user): bool
+    public function canApprove(?SpkRecordApproval $approval, MasUser $user): bool
     {
+        if ($approval === null) {
+            return false;
+        }
+
         if ($this->isAlreadyApproved($approval, $user)) {
             return false;
         }
