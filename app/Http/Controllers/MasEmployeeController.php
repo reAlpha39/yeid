@@ -95,9 +95,9 @@ class MasEmployeeController extends Controller
     public function show($employeeCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $employee = MasEmployee::find($employeeCode);
 

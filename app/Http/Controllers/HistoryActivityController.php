@@ -16,9 +16,9 @@ class HistoryActivityController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');
@@ -95,9 +95,9 @@ class HistoryActivityController extends Controller
     public function show(Request $request)
     {
         try {
-            if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('pressShotHistoryAct', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $targetDate = $request->input('target_date');
             $machineNo = $request->input('machine_no');

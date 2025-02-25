@@ -22,9 +22,9 @@ class MasUserController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('user', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('user', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $query = MasUser::query();
 

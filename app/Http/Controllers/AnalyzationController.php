@@ -23,9 +23,9 @@ class AnalyzationController extends Controller
     public function analyze(Request $request)
     {
         try {
-            if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('mtDbsDbAnl', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $validatedData = $request->validate([
                 'targetTerm' => 'nullable|integer|min:1|max:11',

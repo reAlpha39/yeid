@@ -95,9 +95,9 @@ class MasFactorController extends Controller
     public function show($factorCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $factor = MasFactor::find($factorCode);
 

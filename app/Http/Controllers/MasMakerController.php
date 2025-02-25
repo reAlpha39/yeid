@@ -97,9 +97,9 @@ class MasMakerController extends Controller
     public function show($makerCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $maker = MasMaker::find($makerCode);
 

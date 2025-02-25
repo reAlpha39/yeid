@@ -240,9 +240,9 @@ class MasterPartController extends Controller
     public function show(Request $request)
     {
         try {
-            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $partCode = $request->input('part_code', '');
 

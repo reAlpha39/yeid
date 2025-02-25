@@ -92,9 +92,9 @@ class MasSituationController extends Controller
     public function show($situationCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $situation = MasSituation::find($situationCode);
 

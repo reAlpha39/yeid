@@ -94,9 +94,9 @@ class MasPreventionController extends Controller
     public function show($preventionCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $prevention = MasPrevention::find($preventionCode);
 

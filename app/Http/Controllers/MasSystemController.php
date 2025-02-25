@@ -99,9 +99,9 @@ class MasSystemController extends Controller
     public function show($year)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $system = MasSystem::find($year);
 

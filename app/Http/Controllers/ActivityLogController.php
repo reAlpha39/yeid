@@ -15,9 +15,9 @@ class ActivityLogController extends Controller
 
     public function downloadTodayLog()
     {
-        if (!$this->checkAccess(['pressShotExcData', 'pressShotHistoryAct', 'pressShotMasterPart', 'pressShotPartList', 'pressShotProdData'], 'view')) {
-            return $this->unauthorizedResponse();
-        }
+        // if (!$this->checkAccess(['pressShotExcData', 'pressShotHistoryAct', 'pressShotMasterPart', 'pressShotPartList', 'pressShotProdData'], 'view')) {
+        //     return $this->unauthorizedResponse();
+        // }
 
         // Get today's date in YYYYMMDD format
         $today = Carbon::now()->format('Ymd');

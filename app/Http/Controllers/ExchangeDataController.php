@@ -17,9 +17,9 @@ class ExchangeDataController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $search = $request->input('search');
             $targetDate = $request->input('target_date');
@@ -99,9 +99,9 @@ class ExchangeDataController extends Controller
     public function indexModelDie(Request $request)
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $machineNo = $request->input('machine_no');
 
@@ -137,9 +137,9 @@ class ExchangeDataController extends Controller
     public function indexMachineNo()
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $query = DB::table('mas_presspart as p')
                 ->select('p.machineno', DB::raw("COALESCE(MAX(m.machinename), ' ') as machinename"))
@@ -165,9 +165,9 @@ class ExchangeDataController extends Controller
     public function indexDieUnit()
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $results = DB::table('mas_presspart')
                 ->distinct()
@@ -191,9 +191,9 @@ class ExchangeDataController extends Controller
     public function showQtyPerDie(Request $request)
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotMasterPart', 'pressShotProdData', 'pressShotHistoryAct', 'pressShotExcData'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $machineNo = $request->input('machine_no');
             $model =  $request->input('model');
@@ -240,9 +240,9 @@ class ExchangeDataController extends Controller
     public function show($exchangeId)
     {
         try {
-            if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['pressShotPartList', 'pressShotExcData', 'pressShotMasterPart'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $query = DB::table('tbl_exchangework')
                 ->select([

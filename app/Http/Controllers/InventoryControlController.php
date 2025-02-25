@@ -16,9 +16,9 @@ class InventoryControlController extends Controller
     public function getRecords(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlInbound', 'invControlOutbound'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $startDate = $request->input('start_date', '');
             $endDate = $request->input('end_date', '');
@@ -196,9 +196,9 @@ class InventoryControlController extends Controller
     public function getPartInfo(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'pressShotPartList'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'pressShotPartList'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $query = $request->input('query', '');
             $vendor = $request->input('vendorcode');
@@ -236,9 +236,9 @@ class InventoryControlController extends Controller
     public function getVendor(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Get the query parameter from the request
             $query = $request->input('query', '');
@@ -268,9 +268,9 @@ class InventoryControlController extends Controller
     public function getStaff(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Get the query parameter from the request
             $query = $request->input('query', '');
@@ -300,9 +300,9 @@ class InventoryControlController extends Controller
     public function getMachines(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlInbound', 'invControlOutbound', 'masterDataPart', 'invControlPartList', 'invControlMasterPart'], 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Get the partCode from the request
             $partCode = $request->input('partCode');

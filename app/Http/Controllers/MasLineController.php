@@ -88,9 +88,9 @@ class MasLineController extends Controller
     public function show($shopCode, $lineCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $line = MasLine::where('shopcode', $shopCode)
                 ->where('linecode', $lineCode)

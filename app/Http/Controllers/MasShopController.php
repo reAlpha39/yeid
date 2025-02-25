@@ -55,9 +55,9 @@ class MasShopController extends Controller
     public function show($shopCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $shop = MasShop::find($shopCode);
 

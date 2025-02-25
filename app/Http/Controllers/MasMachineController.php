@@ -77,9 +77,9 @@ class MasMachineController extends Controller
     public function index(Request $request)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Start building the query
             $query = MasMachine::query();
@@ -189,9 +189,9 @@ class MasMachineController extends Controller
     public function show($machineNo)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $machine = MasMachine::find($machineNo);
 

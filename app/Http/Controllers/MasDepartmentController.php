@@ -90,9 +90,9 @@ class MasDepartmentController extends Controller
     public function show($id)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $department = MasDepartment::find($id);
 

@@ -94,9 +94,9 @@ class MasMeasureController extends Controller
     public function show($measureCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $measure = MasMeasure::find($measureCode);
 

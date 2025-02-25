@@ -94,9 +94,9 @@ class MasLTFactorController extends Controller
     public function show($ltFactorCode)
     {
         try {
-            if (!$this->checkAccess('masterData', 'view')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess('masterData', 'view')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             $ltFactor = MasLTFactor::find($ltFactorCode);
 
