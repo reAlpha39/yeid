@@ -46,6 +46,9 @@ ALTER TABLE mas_employee_press
     ALTER COLUMN employeecode TYPE VARCHAR(10),
     ALTER COLUMN employeename TYPE VARCHAR(30);
 
+ALTER TABLE tbl_spkrecord
+    ALTER COLUMN ordertitle TYPE VARCHAR(512);
+
 -- Create indexes
 CREATE INDEX idx_invrecord_partcode_date ON tbl_invrecord(partcode, jobdate);
 CREATE INDEX idx_presswork_composite ON tbl_presswork(machineno, model, dieno, dieunitno, startdatetime);
