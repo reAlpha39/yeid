@@ -15,9 +15,9 @@ class OrderInventoryController extends Controller
     public function processOrder(Request $request)
     {
         try {
-            if (!$this->checkAccess(['invControlPartList'], 'create')) {
-                return $this->unauthorizedResponse();
-            }
+            // if (!$this->checkAccess(['invControlPartList'], 'create')) {
+            //     return $this->unauthorizedResponse();
+            // }
 
             // Get parts that need to be ordered
             $parts = $this->getOrderNumber();
@@ -53,6 +53,10 @@ class OrderInventoryController extends Controller
                     'data' => $vendors,
                     'success' => true,
                 ], 200);
+            }
+
+            if (!$this->checkAccess(['invControlPartList'], 'create')) {
+                return $this->unauthorizedResponse();
             }
 
             $vendorCode = $request->vendorcode;
