@@ -67,13 +67,12 @@ const saveInbound = async () => {
       },
 
       onResponseError({ response }) {
-        toast.error("Failed to save data");
-        errors.value = response._data.errors;
+        toast.error(response._data.message);
       },
     });
 
     // console.log(result);
-    toast.success("Save inbound success");
+    toast.success("Save outbound success");
     await router.push("/inventory-control/inventory-outbound");
   } catch (err) {
     console.log(err);
