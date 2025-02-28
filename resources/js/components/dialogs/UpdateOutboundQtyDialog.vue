@@ -160,7 +160,7 @@ watch(
         style="background-color: #e8776814; opacity: 8"
       >
         <VRow class="d-flex">
-          <VCol> Stock Quantity </VCol>
+          <VCol> Outbound Quantity </VCol>
           <VCol>
             <div style="text-align: right">
               <strong>
@@ -172,7 +172,7 @@ watch(
       </div>
 
       <VRow class="d-flex">
-        <VCol> Adjustment stock to </VCol>
+        <VCol> Adjustment outbound to </VCol>
         <VCol cols="12" md="2">
           <AppTextField
             v-model.number="quantity"
