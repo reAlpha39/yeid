@@ -236,6 +236,21 @@ async function openEditPage(id) {
   });
 }
 
+function getStatusDescription(item) {
+  if (parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)) {
+    return "Counter > Max Limit";
+  }
+
+  if (parseInt(item?.counter ?? 0) > parseInt(item?.makerlimit ?? 0)) {
+    return "Counter > Fix Limit";
+  }
+
+  if (parseInt(item?.minstock ?? 0) > parseInt(item?.currentstock ?? 0)) {
+    return "Min Stock > Actual Stock";
+  }
+  return "Normal";
+}
+
 function getStatusColor(item) {
   if (parseInt(item?.counter ?? 0) > parseInt(item?.companylimit ?? 0)) {
     return "status-red";
@@ -582,7 +597,11 @@ onMounted(() => {
 
         <template #item.actions="{ item }">
           <div class="d-flex justify-center gap-2">
-            <div class="status-indicator mx-2" :class="getStatusColor(item)" />
+            <div class="status-indicator mx-2" :class="getStatusColor(item)">
+              <v-tooltip activator="parent" location="top">
+                {{ getStatusDescription(item) }}</v-tooltip
+              >
+            </div>
             <!-- <IconBtn @click="openDetailPage(item.exchangedatetime)">
             <VIcon icon="tabler-eye" />
           </IconBtn> -->
