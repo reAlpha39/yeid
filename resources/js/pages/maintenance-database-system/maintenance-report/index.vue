@@ -95,6 +95,7 @@ const maintenanceCodes = [
 
 const status = [
   "PENDING",
+  "DRAFT",
   "PARTIALLY APPROVED",
   "APPROVED",
   "REVISED",
@@ -271,6 +272,28 @@ function getApprovalColor(approval) {
   }
 
   return "status-white";
+}
+
+function getApprovalStatusDescription(approval) {
+  if (approval === "pending") {
+    return "Pending";
+  } else if (approval === "draft") {
+    return "Draft";
+  } else if (approval === "partially_approved") {
+    return "Partially Approved";
+  } else if (approval === "revision") {
+    return "Revision";
+  } else if (approval === "revised") {
+    return "Revised";
+  } else if (approval === "approved") {
+    return "Approved";
+  } else if (approval === "finish") {
+    return "Finish";
+  } else if (approval === "rejected") {
+    return "Rejected";
+  }
+
+  return "-";
 }
 
 const debouncedFetchData = debounce(fetchData, 500);
@@ -473,7 +496,15 @@ onMounted(() => {
               v-if="item?.approval_record?.approval_status !== undefined"
               class="status-indicator ml-2 mr-4"
               :class="getApprovalColor(item?.approval_record?.approval_status)"
-            />
+            >
+              <v-tooltip activator="parent" location="top">
+                {{
+                  getApprovalStatusDescription(
+                    item?.approval_record?.approval_status
+                  )
+                }}</v-tooltip
+              >
+            </div>
             <IconBtn @click="openDetailPage(item.recordid)">
               <VIcon icon="tabler-eye" />
             </IconBtn>
