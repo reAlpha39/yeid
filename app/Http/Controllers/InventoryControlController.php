@@ -201,6 +201,8 @@ class InventoryControlController extends Controller
             // }
 
             $query = $request->input('query', '');
+            $partCode = $request->input('partCode');
+            $partName = $request->input('partName');
             $vendor = $request->input('vendorcode');
             $currency = $request->input('currency');
             $spec = $request->input('spec');
@@ -211,6 +213,13 @@ class InventoryControlController extends Controller
                     $q->where('partcode', 'ILIKE', $query . '%')
                         ->orWhere('partname', 'ILIKE', $query . '%');
                 });
+            if ($partCode) {
+                $query->where('partcode', 'ILIKE', $partCode . '%');
+            }
+
+            if ($partName) {
+                $query->where('partname', 'ILIKE', $partName . '%');
+            }
 
             if ($vendor) {
                 $query->where('vendorcode', $vendor);

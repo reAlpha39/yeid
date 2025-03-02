@@ -4,7 +4,8 @@ const vendors = ref();
 
 const data = ref({});
 
-const searchPart = ref("");
+const searchPartCode = ref("");
+const searchPartName = ref("");
 const selectedVendors = ref();
 const currency = ref();
 const specTf = ref();
@@ -35,7 +36,8 @@ async function fetchData() {
   try {
     const response = await $api("/getPartInfo", {
       params: {
-        query: searchPart.value,
+        partCode: searchPartCode.value,
+        partName: searchPartName.value,
         vendorcode: selectedVendors.value?.vendorcode,
         currency: currency.value,
         spec: specTf.value,
@@ -74,9 +76,12 @@ async function fetchDataVendor(id) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch([searchPart, specTf, brandTf, selectedVendors, currency], () => {
-  debouncedFetchData();
-});
+watch(
+  [searchPartCode, searchPartName, specTf, brandTf, selectedVendors, currency],
+  () => {
+    debouncedFetchData();
+  }
+);
 
 onMounted(() => {
   fetchData();
@@ -102,8 +107,15 @@ onMounted(() => {
       <VRow>
         <VCol md="4">
           <AppTextField
-            v-model="searchPart"
-            placeholder="Search part"
+            v-model="searchPartCode"
+            placeholder="Search part code"
+            variant="outlined"
+          />
+        </VCol>
+        <VCol md="4">
+          <AppTextField
+            v-model="searchPartName"
+            placeholder="Search part name"
             variant="outlined"
           />
         </VCol>
@@ -117,15 +129,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-          />
-        </VCol>
-        <VCol md="4">
-          <AppSelect
-            v-model="currency"
-            :items="currencies"
-            placeholder="Select Currency"
-            clearable
-            clear-icon="tabler-x"
           />
         </VCol>
       </VRow>
@@ -143,6 +146,15 @@ onMounted(() => {
             v-model="specTf"
             placeholder="Spec"
             variant="outlined"
+          />
+        </VCol>
+        <VCol md="4">
+          <AppSelect
+            v-model="currency"
+            :items="currencies"
+            placeholder="Select Currency"
+            clearable
+            clear-icon="tabler-x"
           />
         </VCol>
       </VRow>
