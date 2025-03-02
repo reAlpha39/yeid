@@ -366,15 +366,17 @@ function getStatusDescription(item) {
       const etd = moment(etddate, "YYYYMMDD");
       const today = moment().startOf("day");
 
-      return etd.isSameOrAfter(today) ? "ETD is today" : "ETD is " + etd;
+      return etd.isSameOrAfter(today)
+        ? "ETD is due (" + etd.format("MMM DD, YYYY") + ")"
+        : "ETD is overdue (" + etd.format("MMM DD, YYYY") + ")";
     }
   }
 
   // Check stock level status
   if (totalstock <= minstock) {
     return status === "O"
-      ? "(Outbound) Total Stock <= Min Stock"
-      : "(Inbound) Total Stock <= Min Stock";
+      ? "Total Stock <= Min Stock & Status is Order"
+      : "Total Stock <= Min Stock & Status is Not Order";
   }
 
   return "Normal";
