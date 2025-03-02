@@ -667,7 +667,7 @@ onMounted(() => {
 
                 <!-- Edit Action -->
                 <VListItem
-                  v-if="$can('update', 'masterDataPart')"
+                  v-if="$can('update', 'invControlPartList')"
                   @click="openEditPartPage(item.partcode)"
                   density="compact"
                 >
