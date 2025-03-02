@@ -16,6 +16,7 @@ const router = useRouter();
 const isSelectInventoryStaffDialogVisible = ref(false);
 const isSelectInventoryPartDialogVisible = ref(false);
 
+const form = ref();
 const selectedStaff = ref({}); // Store the selected item
 
 const machines = ref([]);
@@ -60,6 +61,11 @@ const getMachines = async (partCode) => {
 
 const saveInbound = async () => {
   try {
+    const { valid, errors } = await form.value?.validate();
+    if (valid === false) {
+      return;
+    }
+
     const result = await $api("/storeInvRecord", {
       method: "POST",
       body: {
@@ -247,160 +253,162 @@ function isNumber(evt) {
   </VCard>
 
   <!-- List Part Card -->
-  <VCard v-if="selectedStaff.employeecode" class="mb-6 pa-6">
-    <VRow class="d-flex pb-8 pt-4 pr-3 justify-space-between">
-      <VCardTitle>List Part</VCardTitle>
+  <VForm ref="form" lazy-validation>
+    <VCard v-if="selectedStaff.employeecode" class="mb-6 pa-6">
+      <VRow class="d-flex pb-8 pt-4 pr-3 justify-space-between">
+        <VCardTitle>List Part</VCardTitle>
 
-      <VBtn
-        color="primary"
-        @click="
-          isSelectInventoryPartDialogVisible =
-            !isSelectInventoryPartDialogVisible
-        "
-      >
-        Add Part
-      </VBtn>
-    </VRow>
+        <VBtn
+          color="primary"
+          @click="
+            isSelectInventoryPartDialogVisible =
+              !isSelectInventoryPartDialogVisible
+          "
+        >
+          Add Part
+        </VBtn>
+      </VRow>
 
-    <template v-for="(part, index) in parts" :key="index">
-      <VCard flat border>
-        <VCol>
-          <VRow class="pa-4">
-            <VCol cols="12" md="11">
-              <div class="d-flex flex-column">
-                <span
-                  class="d-block font-weight-medium text-high-emphasis text-truncate"
-                  >{{ part.partname }}</span
-                >
-                <small>{{ part.partcode }}</small>
-              </div>
-            </VCol>
-            <!-- 👉 Item Actions -->
-            <VCol cols="12" md="1" class="flex-column align-end">
-              <IconBtn @click="deleteItem(item)">
-                <VIcon icon="tabler-trash" />
-              </IconBtn>
-            </VCol>
-          </VRow>
-
-          <VDivider />
-
-          <VRow class="align-center px-2 py-4">
-            <VCol cols="12" md="2" sm="4">
-              <AppTextField
-                label="Quantity"
-                placeholder="Input quantity"
-                v-model.number="part.quantity"
-                type="number"
-                min="1"
-                v-on:input="updateQuantity(index)"
-                maxlength="8"
-                @keypress="isNumber($event)"
-              />
-            </VCol>
-            <VCol cols="12" md="1" sm="4">
-              <text>x</text>
-            </VCol>
-            <VCol cols="12" md="5" sm="4">
-              <p class="my-2">
-                {{ formatCurrency(part.currency, part.unitprice) }}
-              </p>
-            </VCol>
-            <VCol cols="12" md="4" sm="4">
-              <p class="my-2 align">
-                {{ formatCurrency(part.currency, part.price) }}
-              </p>
-            </VCol>
-          </VRow>
-
-          <VRow class="align-center px-2 pb-4">
-            <VCol cols="4" class="d-flex align-center justify-center">
-              <AppAutocomplete
-                v-model="selectedMachine[index]"
-                :items="machines[index]"
-                item-title="title"
-                label="Machine"
-                placeholder="Select machine"
-                return-object
-                @update:modelValue="handleMachineSelected(index)"
-              />
-            </VCol>
-            <VCol cols="8">
-              <AppTextField
-                v-model="part.note"
-                label="Note"
-                placeholder="Input note"
-                maxlength="128"
-              />
-            </VCol>
-          </VRow>
-
-          <VCard variant="tonal" class="px-4 py-4 ma-2">
-            <VRow class="align-center py-1" no-gutters>
-              <VCol cols="6" class="d-flex align-center">
-                <text class="align-left">
-                  <span class="text-high-emphasis">
-                    Machine No :
-                    {{ part.machineno }}
-                  </span>
-                </text>
+      <template v-for="(part, index) in parts" :key="index">
+        <VCard flat border>
+          <VCol>
+            <VRow class="pa-4">
+              <VCol cols="12" md="11">
+                <div class="d-flex flex-column">
+                  <span
+                    class="d-block font-weight-medium text-high-emphasis text-truncate"
+                    >{{ part.partname }}</span
+                  >
+                  <small>{{ part.partcode }}</small>
+                </div>
               </VCol>
-              <VCol cols="6">
-                <text class="align">
-                  <span class="text-high-emphasis">
-                    Specification :
-                    {{ part.specification }}
-                  </span>
-                </text>
+              <!-- 👉 Item Actions -->
+              <VCol cols="12" md="1" class="flex-column align-end">
+                <IconBtn @click="deleteItem(item)">
+                  <VIcon icon="tabler-trash" />
+                </IconBtn>
               </VCol>
             </VRow>
 
-            <VRow class="align-center py-1" no-gutters>
-              <VCol cols="6" class="d-flex align-center">
-                <text class="align-left">
-                  <span class="text-high-emphasis">
-                    Shop & Line :
-                    {{ part.shopname }}
-                    &
-                    {{ part.linecode }}
-                  </span>
-                </text>
+            <VDivider />
+
+            <VRow class="align-center px-2 py-4">
+              <VCol cols="12" md="2" sm="4">
+                <AppTextField
+                  label="Quantity"
+                  placeholder="Input quantity"
+                  v-model.number="part.quantity"
+                  type="number"
+                  min="1"
+                  v-on:input="updateQuantity(index)"
+                  maxlength="8"
+                  @keypress="isNumber($event)"
+                />
               </VCol>
-              <VCol cols="6">
-                <text class="align">
-                  <span class="text-high-emphasis">
-                    Vendor :
-                    {{ part.vendorcode }}
-                  </span>
-                </text>
+              <VCol cols="12" md="1" sm="4">
+                <text>x</text>
+              </VCol>
+              <VCol cols="12" md="5" sm="4">
+                <p class="my-2">
+                  {{ formatCurrency(part.currency, part.unitprice) }}
+                </p>
+              </VCol>
+              <VCol cols="12" md="4" sm="4">
+                <p class="my-2 align">
+                  {{ formatCurrency(part.currency, part.price) }}
+                </p>
               </VCol>
             </VRow>
 
-            <VRow class="align-center py-1" no-gutters>
-              <VCol cols="6" class="d-flex align-center">
-                <text class="align-left">
-                  <span class="text-high-emphasis">
-                    Brand :
-                    {{ part.brand }}
-                  </span>
-                </text>
+            <VRow class="align-center px-2 pb-4">
+              <VCol cols="4" class="d-flex align-center justify-center">
+                <AppAutocomplete
+                  v-model="selectedMachine[index]"
+                  :items="machines[index]"
+                  item-title="title"
+                  label="Machine"
+                  placeholder="Select machine"
+                  return-object
+                  @update:modelValue="handleMachineSelected(index)"
+                  :rules="[requiredValidator]"
+                />
               </VCol>
-              <VCol cols="6">
-                <text class="align">
-                  <span class="text-high-emphasis">
-                    Note :
-                    {{ part.note }}
-                  </span>
-                </text>
+              <VCol cols="8">
+                <AppTextField
+                  v-model="part.note"
+                  label="Note"
+                  placeholder="Input note"
+                  maxlength="128"
+                />
               </VCol>
             </VRow>
-          </VCard>
-        </VCol>
-      </VCard>
-      <br />
-    </template>
-  </VCard>
 
+            <VCard variant="tonal" class="px-4 py-4 ma-2">
+              <VRow class="align-center py-1" no-gutters>
+                <VCol cols="6" class="d-flex align-center">
+                  <text class="align-left">
+                    <span class="text-high-emphasis">
+                      Machine No :
+                      {{ part.machineno }}
+                    </span>
+                  </text>
+                </VCol>
+                <VCol cols="6">
+                  <text class="align">
+                    <span class="text-high-emphasis">
+                      Specification :
+                      {{ part.specification }}
+                    </span>
+                  </text>
+                </VCol>
+              </VRow>
+
+              <VRow class="align-center py-1" no-gutters>
+                <VCol cols="6" class="d-flex align-center">
+                  <text class="align-left">
+                    <span class="text-high-emphasis">
+                      Shop & Line :
+                      {{ part.shopname }}
+                      &
+                      {{ part.linecode }}
+                    </span>
+                  </text>
+                </VCol>
+                <VCol cols="6">
+                  <text class="align">
+                    <span class="text-high-emphasis">
+                      Vendor :
+                      {{ part.vendorcode }}
+                    </span>
+                  </text>
+                </VCol>
+              </VRow>
+
+              <VRow class="align-center py-1" no-gutters>
+                <VCol cols="6" class="d-flex align-center">
+                  <text class="align-left">
+                    <span class="text-high-emphasis">
+                      Brand :
+                      {{ part.brand }}
+                    </span>
+                  </text>
+                </VCol>
+                <VCol cols="6">
+                  <text class="align">
+                    <span class="text-high-emphasis">
+                      Note :
+                      {{ part.note }}
+                    </span>
+                  </text>
+                </VCol>
+              </VRow>
+            </VCard>
+          </VCol>
+        </VCard>
+        <br />
+      </template>
+    </VCard>
+  </VForm>
   <VRow class="d-flex justify-start">
     <VCol>
       <VBtn color="success" class="me-4" @click="saveInbound()">Save</VBtn>
