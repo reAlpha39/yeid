@@ -144,7 +144,7 @@ watch(
   >
     <!-- 👉 Header -->
     <AppDrawerHeaderSection
-      title="Add New Shop"
+      title="Add New Vendor"
       @cancel="$emit('update:isDrawerOpen', false)"
     />
 
