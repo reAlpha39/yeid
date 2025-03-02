@@ -93,16 +93,7 @@ const maintenanceCodes = [
   "09|LAYOUT",
 ];
 
-const status = [
-  "PENDING",
-  "DRAFT",
-  "PARTIALLY APPROVED",
-  "APPROVED",
-  "REVISED",
-  "REVISION",
-  "REJECTED",
-  "FINISH",
-];
+const status = ["DRAFT", "APPROVED", "FINISH"];
 
 function convertApprovalStatus(status) {
   const statusMap = {
