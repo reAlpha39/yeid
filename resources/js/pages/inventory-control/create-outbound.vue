@@ -155,7 +155,7 @@ const updateQuantity = (index) => {
   qty = parseInt(qty);
 
   if (isNaN(qty) || qty < 0) {
-    qty = 0;
+    qty = 1;
   }
 
   parts.value[index].quantity = qty;
@@ -165,6 +165,15 @@ const updateQuantity = (index) => {
 const deleteItem = (index) => {
   parts.value.splice(index, 1);
 };
+
+function isNumber(evt) {
+  const keysAllowed = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."];
+  const keyPressed = evt.key;
+
+  if (!keysAllowed.includes(keyPressed)) {
+    evt.preventDefault();
+  }
+}
 </script>
 
 <template>
@@ -279,12 +288,14 @@ const deleteItem = (index) => {
           <VRow class="align-center px-2 py-4">
             <VCol cols="12" md="2" sm="4">
               <AppTextField
+                label="Quantity"
+                placeholder="Input quantity"
                 v-model.number="part.quantity"
                 type="number"
-                placeholder="5"
-                min="0"
+                min="1"
                 v-on:input="updateQuantity(index)"
                 maxlength="8"
+                @keypress="isNumber($event)"
               />
             </VCol>
             <VCol cols="12" md="1" sm="4">
