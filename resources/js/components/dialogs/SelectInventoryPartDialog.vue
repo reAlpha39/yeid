@@ -7,6 +7,8 @@ const data = ref({});
 const searchPart = ref("");
 const selectedVendors = ref();
 const currency = ref();
+const specTf = ref();
+const brandTf = ref();
 
 const props = defineProps({
   isDialogVisible: {
@@ -36,6 +38,8 @@ async function fetchData() {
         query: searchPart.value,
         vendorcode: selectedVendors.value?.vendorcode,
         currency: currency.value,
+        spec: specTf.value,
+        brand: brandTf.value,
       },
     });
 
@@ -70,7 +74,7 @@ async function fetchDataVendor(id) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
-watch(searchPart, () => {
+watch([searchPart, specTf, brandTf, selectedVendors, currency], () => {
   debouncedFetchData();
 });
 
@@ -95,7 +99,7 @@ onMounted(() => {
         <p class="text-body-1 text-center mb-6">You can only select one part</p>
       </VCardText>
 
-      <VRow class="py-4">
+      <VRow>
         <VCol md="4">
           <AppTextField
             v-model="searchPart"
@@ -113,7 +117,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol md="4">
@@ -123,7 +126,23 @@ onMounted(() => {
             placeholder="Select Currency"
             clearable
             clear-icon="tabler-x"
-            @update:modelValue="fetchData()"
+          />
+        </VCol>
+      </VRow>
+
+      <VRow class="pb-4">
+        <VCol md="4">
+          <AppTextField
+            v-model="brandTf"
+            placeholder="Brand"
+            variant="outlined"
+          />
+        </VCol>
+        <VCol md="4">
+          <AppTextField
+            v-model="specTf"
+            placeholder="Spec"
+            variant="outlined"
           />
         </VCol>
       </VRow>

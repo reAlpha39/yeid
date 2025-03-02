@@ -203,6 +203,8 @@ class InventoryControlController extends Controller
             $query = $request->input('query', '');
             $vendor = $request->input('vendorcode');
             $currency = $request->input('currency');
+            $spec = $request->input('spec');
+            $brand = $request->input('brand');
 
             $query = DB::table('mas_inventory')
                 ->where(function ($q) use ($query) {
@@ -216,6 +218,14 @@ class InventoryControlController extends Controller
 
             if ($currency) {
                 $query->where('currency', $currency);
+            }
+
+            if ($spec) {
+                $query->where('specification', 'ILIKE', $spec . '%');
+            }
+
+            if ($brand) {
+                $query->where('brand', 'ILIKE', $brand  . '%');
             }
 
             $results = $query->limit(100)->get();
