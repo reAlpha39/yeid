@@ -126,9 +126,11 @@ class MaintenanceRequestController extends Controller
             }
 
             if ($request->filled('approved_only')) {
-                $query->whereHas('approvalRecord', function ($q) {
-                    $q->whereIn('approval_status', ['approved', 'draft', 'finish']);
-                })->orWhereDoesntHave('approvalRecord');
+                $query->where(function ($q) {
+                    $q->whereHas('approvalRecord', function ($subQuery) {
+                        $subQuery->whereIn('approval_status', ['approved', 'draft', 'finish']);
+                    })->orWhereDoesntHave('approvalRecord');
+                });
             }
 
             if ($request->filled('need_approval_only')) {
