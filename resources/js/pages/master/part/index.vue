@@ -261,6 +261,36 @@ function getStatusColor(item) {
   return "status-default";
 }
 
+function getStatusDescription(item) {
+  const status = (item.status || "").trim();
+  const posentdate = (item.posentdate || "").trim();
+  const totalstock = parseStock(item.totalstock);
+  const minstock = parseStock(item.minstock);
+
+  // Check if item has PO sent date (order status)
+  if (posentdate) {
+    const etddate = (item.etddate || "").trim();
+    if (etddate) {
+      // Parse YYYYMMDD format using moment
+      const etd = moment(etddate, "YYYYMMDD");
+      const today = moment().startOf("day");
+
+      return etd.isSameOrAfter(today)
+        ? "ETD is due (" + etd.format("MMM DD, YYYY") + ")"
+        : "ETD is overdue (" + etd.format("MMM DD, YYYY") + ")";
+    }
+  }
+
+  // Check stock level status
+  if (totalstock <= minstock) {
+    return status === "O"
+      ? "Total Stock <= Min Stock & Status is Order"
+      : "Total Stock <= Min Stock & Status is Not Order";
+  }
+
+  return "Normal";
+}
+
 function getTextStyle(item) {
   const status = (item.status || "").trim();
   const totalstock = parseStock(item.totalstock);
@@ -445,10 +475,11 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex justify-center gap-2">
             <div class="d-flex justify-center align-center">
-              <div
-                class="status-indicator mr-2"
-                :class="getStatusColor(item)"
-              />
+              <div class="status-indicator mr-2" :class="getStatusColor(item)">
+                <v-tooltip activator="parent" location="top">
+                  {{ getStatusDescription(item) }}</v-tooltip
+                >
+              </div>
             </div>
 
             <!-- Popup Menu -->
