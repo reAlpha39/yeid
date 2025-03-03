@@ -202,6 +202,16 @@ function getStatusColor(item) {
   return "status-green";
 }
 
+function getStatusDescription(item) {
+  if (item?.status === "C") {
+    return "Cancelled";
+  }
+  if (item?.status === "R") {
+    return "Requesting";
+  }
+  return "Finished";
+}
+
 const debouncedFetchData = debounce(fetchData, 500);
 
 watch(searchQuery, () => {
@@ -301,7 +311,11 @@ onMounted(() => {
         height="562"
       >
         <template #item.status="{ item }">
-          <div class="status-indicator" :class="getStatusColor(item)" />
+          <div class="status-indicator" :class="getStatusColor(item)">
+            <v-tooltip activator="parent" location="top">
+              {{ getStatusDescription(item) }}</v-tooltip
+            >
+          </div>
         </template>
 
         <template #item.wsrid="{ item }">
