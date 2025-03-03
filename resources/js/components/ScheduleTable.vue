@@ -106,6 +106,12 @@ function getStatusSymbol(status) {
   return "\u00A0"; // Return empty string for any unknown status
 }
 
+function getStatusDescription(status) {
+  if (status === "completed") return "Sudah dilakukan (on time)";
+  if (status === "overdue") return "Sudah dilakukan (delay)";
+  if (status === "pending") return "Belum dilakukan";
+}
+
 function isOddWeek(index) {
   return index % 2 === 0;
 }
@@ -457,6 +463,13 @@ onMounted(() => {
                       tabindex="0"
                     >
                       {{ getStatusSymbol(execution.status) }}
+                      <v-tooltip
+                        v-if="execution.status"
+                        activator="parent"
+                        location="top"
+                      >
+                        {{ getStatusDescription(execution.status) }}</v-tooltip
+                      >
                     </span>
                   </td>
                 </template>

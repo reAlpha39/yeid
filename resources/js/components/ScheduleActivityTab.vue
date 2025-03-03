@@ -98,6 +98,12 @@ function openEditPage(item) {
   isUpdateScheduleTaskDialogVisible.value = true;
 }
 
+function getStatusDescription(status) {
+  if (status === "completed") return "Sudah dilakukan (on time)";
+  if (status === "overdue") return "Sudah dilakukan (delay)";
+  if (status === "pending") return "Belum dilakukan";
+}
+
 const headers = [
   {
     title: "ACTIVITY",
@@ -264,7 +270,14 @@ onMounted(() => {
                 'status-orange': item.status === 'overdue',
                 'status-red': item.status === 'pending',
               }"
-            />
+            >
+              <v-tooltip
+                activator="parent"
+                location="top"
+              >
+                {{ getStatusDescription(item.status) }}
+              </v-tooltip>
+            </div>
 
             <IconBtn @click="openEditPage(item)">
               <VIcon icon="tabler-edit" />
