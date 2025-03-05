@@ -391,7 +391,7 @@ class InventoryControlController extends Controller
                 'record_id' => 'required|integer',
                 'machine_no' => 'required|string',
                 'machine_name' => 'required|string',
-                'quantity' => 'required|numeric|min:0'
+                'quantity' => 'required|numeric|min:1'
             ]);
 
             $record = DB::table('tbl_invrecord')
@@ -465,7 +465,7 @@ class InventoryControlController extends Controller
                 'records.*.specification' => 'nullable',
                 'records.*.brand' => 'nullable',
                 'records.*.usedflag' => 'nullable',
-                'records.*.quantity' => 'required|numeric',
+                'records.*.quantity' => 'required|numeric|min:1',
                 'records.*.unitprice' => 'required|numeric',
                 'records.*.price' => 'required|numeric',
                 'records.*.currency' => 'required',
