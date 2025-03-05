@@ -94,6 +94,28 @@ async function getMachines(partCode) {
   }
 }
 
+const updateQuantity = () => {
+  let qty = quantity.value;
+  qty = String(qty).replace(/[^\d]/g, "");
+
+  qty = parseInt(qty);
+
+  if (isNaN(qty) || qty < 1) {
+    qty = 1;
+  }
+
+  quantity.value = qty;
+};
+
+function isNumber(evt) {
+  const keysAllowed = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."];
+  const keyPressed = evt.key;
+
+  if (!keysAllowed.includes(keyPressed)) {
+    evt.preventDefault();
+  }
+}
+
 watch(
   () => props.isDialogVisible,
   (newVal) => {
@@ -185,8 +207,11 @@ watch(
             <AppTextField
               v-model.number="quantity"
               type="number"
-              placeholder="5"
-              min="0"
+              placeholder="Input quantity"
+              min="1"
+              v-on:input="updateQuantity()"
+              maxlength="8"
+              @keypress="isNumber($event)"
             />
           </VCol>
         </VRow>

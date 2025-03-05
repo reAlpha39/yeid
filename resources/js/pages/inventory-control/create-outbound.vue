@@ -160,7 +160,7 @@ const updateQuantity = (index) => {
 
   qty = parseInt(qty);
 
-  if (isNaN(qty) || qty < 0) {
+  if (isNaN(qty) || qty < 1) {
     qty = 1;
   }
 
