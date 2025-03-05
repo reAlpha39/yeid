@@ -538,7 +538,7 @@ class MasterPartController extends Controller
     public function updateOrder(Request $request)
     {
         try {
-            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+            if (!$this->checkAccess(['invControlPartList'], 'update')) {
                 return $this->unauthorizedResponse();
             }
 
