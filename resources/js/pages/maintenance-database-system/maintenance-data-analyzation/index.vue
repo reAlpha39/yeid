@@ -115,15 +115,15 @@ const counters = [
 ];
 
 const maintenanceCodes = [
-  "01|UM",
-  "02|BM",
-  "03|TBC",
-  "04|TBA",
-  "05|PvM",
-  "06|FM",
-  "07|CM",
-  "08|CHECH",
-  "09|LAYOUT",
+  "01|UM (Urgent Maintenance)",
+  "02|BM (Maintenance Setelah Kejadian)",
+  "03|TBC (Periodikal Checking)",
+  "04|TBA (Periodikal Maintenance)",
+  "05|PvM (Perawatan Pencegahan)",
+  "06|FM (Predikisi Maintenance)",
+  "07|CM (Corrective Maintenance/RHC)",
+  "08|CHECK (Check Tanpa Perencanaan)",
+  "09|LAYOUT (Tata Letak)",
 ];
 
 const sorts = ["ASC", "DESC"];
