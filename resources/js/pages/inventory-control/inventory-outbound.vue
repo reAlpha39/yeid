@@ -86,6 +86,10 @@ const headers = [
     key: "total",
   },
   {
+    title: "EMPLOYEE",
+    key: "employeecode",
+  },
+  {
     title: "NOTE",
     key: "note",
   },
@@ -504,6 +508,18 @@ onMounted(() => {
           <div class="d-flex align-center">
             <div class="d-flex flex-row">
               {{ formatCurrency(item.currency, item.total) }}
+            </div>
+          </div>
+        </template>
+
+        <template #item.employeecode="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ item.employeename }}</span
+              >
+              <small>{{ item.employeecode }}</small>
             </div>
           </div>
         </template>

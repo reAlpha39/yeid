@@ -55,7 +55,8 @@ class InventoryControlController extends Controller
 
             // Build the main query
             $query = DB::table('tbl_invrecord AS i')
-                ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno');
+                ->leftJoin('mas_machine AS m', 'i.machineno', '=', 'm.machineno')
+                ->leftJoin('mas_employee as e', 'i.employeecode', '=', 'e.employeecode');
 
             // Add joins for minus_flag and order_flag
             if ($minusFlag === '1' || $orderFlag === '1') {
@@ -99,6 +100,7 @@ class InventoryControlController extends Controller
                 DB::raw('COALESCE(m.shopname, \'-\') AS shopname'),
                 DB::raw('COALESCE(m.linecode, \'-\') AS linecode'),
                 'i.employeecode',
+                'e.employeename',
                 'i.note',
                 'i.vendorcode'
             );
