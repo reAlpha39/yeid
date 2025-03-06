@@ -66,6 +66,18 @@ class MaintenanceRequestController extends Controller
                 ]);
 
             // Apply filters
+
+            // Only show data per department unless user is MTC
+            $isMtcUser = $user->department->code === 'MTC';
+            if (!$isMtcUser) {
+                $query->where(function ($q) use ($user) {
+                    $q->whereHas('approvalRecord', function ($subQuery) use ($user) {
+                        $subQuery->where('department_id', $user->department->id);
+                    })->orWhereDoesntHave('approvalRecord');
+                });
+            }
+
+
             if ($request->filled('date')) {
                 $query->whereRaw("TO_CHAR(tbl_spkrecord.orderdatetime, 'YYYY-MM') = ?", [$request->date]);
             }
