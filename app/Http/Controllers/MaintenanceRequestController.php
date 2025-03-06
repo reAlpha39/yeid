@@ -618,7 +618,7 @@ class MaintenanceRequestController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'can_add_pic' => $isMtcDepartment
+                    'can_add_pic' => $isMtcDepartment && $user->role_access !== '1',
                 ],
             ]);
         } catch (Exception $e) {
