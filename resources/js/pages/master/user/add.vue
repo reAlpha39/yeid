@@ -545,9 +545,9 @@ onMounted(() => {
           <VCol>
             <AppTextField
               v-model="nik"
-              label="NIK"
+              label="NPK"
               :rules="[requiredValidator]"
-              placeholder="Input NIK"
+              placeholder="Input NPK"
               outlined
             />
           </VCol>

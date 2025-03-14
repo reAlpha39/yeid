@@ -116,8 +116,8 @@ const onSubmit = () => {
 
             <VTextField
               v-model="credentials.nik"
-              label="NIK"
-              placeholder="Input NIK"
+              label="NPK"
+              placeholder="Input NPK"
               variant="outlined"
               :rules="[requiredValidator]"
               :error-messages="errors.nik"
