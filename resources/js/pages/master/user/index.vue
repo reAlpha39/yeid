@@ -38,6 +38,10 @@ const headers = [
     key: "name",
   },
   {
+    title: "NPK",
+    key: "nik",
+  },
+  {
     title: "EMAIL ADDRESS",
     key: "email",
   },

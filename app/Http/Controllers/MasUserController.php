@@ -60,6 +60,7 @@ class MasUserController extends Controller
                 return [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'nik' => $user->nik,
                     'email' => $user->email,
                     'phone' => $user->phone,
                     'department_id' => $user->department_id,
