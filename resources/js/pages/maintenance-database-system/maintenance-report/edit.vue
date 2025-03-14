@@ -723,15 +723,23 @@ onMounted(() => {
               <text>Model</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.modelname }}</text>
+              <text>: {{ prevData?.modelname }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Shop</text>
+              <text>Shop Code</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.shopname }}</text>
+              <text>: {{ prevData?.shopcode }}</text>
+            </VCol>
+          </VRow>
+          <VRow class="py-1" no-gutters>
+            <VCol cols="4">
+              <text>Shop Name</text>
+            </VCol>
+            <VCol cols="4">
+              <text>: {{ prevData?.shopname }}</text>
             </VCol>
           </VRow>
           <VRow class="py-1" no-gutters>
@@ -739,7 +747,7 @@ onMounted(() => {
               <text>Line</text>
             </VCol>
             <VCol cols="4">
-              <text>: {{ selectedMachine?.linecode }}</text>
+              <text>: {{ prevData?.linecode }}</text>
             </VCol>
           </VRow>
         </VCol>
