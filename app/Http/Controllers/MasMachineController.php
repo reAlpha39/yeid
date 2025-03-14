@@ -21,6 +21,9 @@ class MasMachineController extends Controller
                 ->select([
                     'machineno',
                     'shopcode',
+                    'shopname',
+                    'plantcode',
+                    'makercode',
                     DB::raw("COALESCE(machinename, ' ') AS machinename"),
                     DB::raw("COALESCE(modelname, ' ') AS modelname"),
                     DB::raw("COALESCE(makername, ' ') AS makername"),
@@ -104,6 +107,11 @@ class MasMachineController extends Controller
             if ($request->query('maker')) {
                 $maker = $request->query('maker');
                 $query->where('makercode', $maker);
+            }
+
+            if ($request->query('linecode')) {
+                $linecode = $request->query('linecode');
+                $query->where('linecode', 'ILIKE', $linecode . '%');
             }
 
             if ($request->input('max_rows')) {

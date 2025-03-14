@@ -3,8 +3,11 @@ const search = ref("");
 
 const selectedMachine = ref();
 const selectedMaker = ref();
+const shop = ref();
+const line = ref();
 
 const makers = ref([]);
+const shops = ref([]);
 const data = ref([]);
 
 const props = defineProps({
@@ -29,8 +32,9 @@ async function fetchMachines() {
       params: {
         search: search.value,
         maker: selectedMaker.value?.makercode,
-        shopcode: props.shopcode,
-        max_rows: 10,
+        shopcode: shop.value?.shopcode,
+        linecode: line.value,
+        max_rows: 20,
       },
     });
     data.value = response.data;
@@ -44,7 +48,7 @@ async function fetchDataMaker(id) {
     if (id) {
       const response = await $api("/master/makers/" + encodeURIComponent(id), {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message);
         },
       });
 
@@ -54,7 +58,7 @@ async function fetchDataMaker(id) {
     } else {
       const response = await $api("/master/makers", {
         onResponseError({ response }) {
-          errors.value = response._data.errors;
+          toast.error(response._data.message);
         },
       });
 
@@ -65,7 +69,35 @@ async function fetchDataMaker(id) {
       });
     }
   } catch (err) {
-    toast.error("Failed to fetch maker data");
+    console.log(err);
+  }
+}
+
+async function fetchDataShop(id) {
+  try {
+    if (id) {
+      const response = await $api("/master/shops/" + encodeURIComponent(id), {
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
+      });
+      shop.value = response.data;
+      shop.value.title =
+        response.data.shopcode + " | " + response.data.shopname;
+    } else {
+      const response = await $api("/master/shops", {
+        onResponseError({ response }) {
+          toast.error(response._data.message);
+        },
+      });
+
+      shops.value = response.data;
+
+      shops.value.forEach((data) => {
+        data.title = data.shopcode + " | " + data.shopname;
+      });
+    }
+  } catch (err) {
     console.log(err);
   }
 }
@@ -86,7 +118,7 @@ const handleItemClick = (item) => {
 
 const debouncedFetchData = debounce(fetchMachines, 500);
 
-watch(search, () => {
+watch([search, selectedMaker, shop, line], () => {
   debouncedFetchData();
 });
 
@@ -98,6 +130,11 @@ watch(
 
       fetchMachines();
       fetchDataMaker();
+      fetchDataShop();
+
+      if (props.shopcode) {
+        fetchDataShop(props.shopcode);
+      }
 
       console.log("Dialog opened with items:", props.items);
     }
@@ -121,7 +158,7 @@ watch(
       </VCardText>
 
       <VRow class="pb-4">
-        <VCol cols="6">
+        <VCol>
           <AppTextField
             v-model="search"
             label="Search"
@@ -130,7 +167,21 @@ watch(
           />
         </VCol>
 
-        <VCol cols="6">
+        <VCol>
+          <AppAutocomplete
+            v-model="shop"
+            label="Shop"
+            placeholder="Select shop"
+            item-title="title"
+            :items="shops"
+            outlined
+            return-object
+            :clearable="props.shopcode === undefined"
+            :readonly="props.shopcode !== undefined"
+          />
+        </VCol>
+
+        <VCol>
           <AppAutocomplete
             v-model="selectedMaker"
             label="Maker"
@@ -140,7 +191,16 @@ watch(
             :items="makers"
             return-object
             outlined
-            @update:modelValue="fetchMachines()"
+            clearable
+          />
+        </VCol>
+
+        <VCol>
+          <AppTextField
+            v-model="line"
+            label="Line"
+            placeholder="Select line"
+            variant="outlined"
           />
         </VCol>
       </VRow>
@@ -151,12 +211,12 @@ watch(
         <VTable fixed-header class="text-no-wrap" height="500">
           <thead>
             <tr>
-              <th>Machine Name</th>
+              <th>Machine</th>
               <th>Plant</th>
               <th>Model</th>
               <th>Maker</th>
-              <th>Shop Code</th>
-
+              <th>Shop</th>
+              <th>Line</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -176,10 +236,19 @@ watch(
                 {{ item.modelname }}
               </td>
               <td>
-                {{ item.makername }}
+                <div class="d-flex flex-column">
+                  <span style="font-weight: 500">{{ item.makername }}</span>
+                  <small>{{ item.makercode }}</small>
+                </div>
               </td>
               <td>
-                {{ item.shopcode }}
+                <div class="d-flex flex-column">
+                  <span style="font-weight: 500">{{ item.shopname }}</span>
+                  <small>{{ item.shopcode }}</small>
+                </div>
+              </td>
+              <td>
+                {{ item.linecode }}
               </td>
 
               <td>

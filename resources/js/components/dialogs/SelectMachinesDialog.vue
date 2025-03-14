@@ -100,25 +100,10 @@ const toggleSelectAll = () => {
 
 const debouncedFetchData = debounce(fetchMachines, 500);
 
-watch(machineName, () => {
+watch([machineName, modelName, makerName, shopCode, lineCode], () => {
   debouncedFetchData();
 });
 
-watch(modelName, () => {
-  debouncedFetchData();
-});
-
-watch(makerName, () => {
-  debouncedFetchData();
-});
-
-watch(shopCode, () => {
-  debouncedFetchData();
-});
-
-watch(lineCode, () => {
-  debouncedFetchData();
-});
 watch(
   () => props.isDialogVisible,
   (newVal) => {
@@ -201,10 +186,11 @@ onMounted(() => {
         <VTable fixed-header class="text-no-wrap" height="500">
           <thead>
             <tr>
-              <th>Machine Name</th>
-              <th>Machine No</th>
+              <th>Machine</th>
+              <th>Plant</th>
+              <th>Model</th>
               <th>Maker</th>
-              <th>Shop Code</th>
+              <th>Shop</th>
               <th>Line</th>
               <th>
                 <VCheckbox
@@ -226,13 +212,22 @@ onMounted(() => {
                 </div>
               </td>
               <td>
+                {{ item.plantcode }}
+              </td>
+              <td>
                 {{ item.modelname }}
               </td>
               <td>
-                {{ item.machineno }}
+                <div class="d-flex flex-column">
+                  <span style="font-weight: 500">{{ item.makername }}</span>
+                  <small>{{ item.makercode }}</small>
+                </div>
               </td>
               <td>
-                {{ item.shopcode }}
+                <div class="d-flex flex-column">
+                  <span style="font-weight: 500">{{ item.shopname }}</span>
+                  <small>{{ item.shopcode }}</small>
+                </div>
               </td>
               <td>
                 {{ item.linecode }}
