@@ -86,7 +86,13 @@ function transformApiData(apiData) {
 
         return {
           task_id: task.task_id,
-          name: task.machine?.machinename + " Line " + task.machine?.plantcode,
+          name:
+            task.machine?.machinename +
+            " Plant " +
+            task.machine?.plantcode +
+            (task.machine?.linecode === null
+              ? ""
+              : " Line " + task.machine?.linecode),
           progress, // You might want to calculate this based on completed executions
           time: `1x/${task.frequency_times} ${task.frequency_period}`,
           ct: task.cycle_time,
