@@ -1,6 +1,10 @@
 <script setup>
 import VueBarcode from "@chenfengyuan/vue-barcode";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { useToast } from "vue-toastification";
+import { VCardText } from "vuetify/lib/components/index.mjs";
+
+const toast = useToast();
 
 const dialogVisible = ref(false);
 const barcodeValue = ref("");
@@ -8,6 +12,9 @@ const partName = ref("");
 const printing = ref(false);
 const printArea = ref(null);
 const barcodeRef = ref(null);
+
+const printers = ref([]);
+const printerName = ref(null);
 
 const barcodeOptions = {
   format: "CODE39",
@@ -83,54 +90,54 @@ const printBarcode = () => {
 };
 
 const printSato = async () => {
-  if (!navigator.serial) {
-    alert("Web Serial API not supported");
-    return;
+  printing.value = true;
+
+  if (printerName.value === null) {
+    console.error("Select printer first");
   }
 
-  printing.value = true;
   try {
-    const port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 9600 });
+    // Send the simplified request to the new endpoint
+    const response = await fetch("http://localhost:8085/print-sato", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        PrinterName: printerName.value,
+        Title: partName.value,
+        Barcode: barcodeValue.value,
+      }),
+    });
 
-    const writer = port.writable.getWriter();
-    const data = buildSatoCommand();
-    const encoder = new TextEncoder();
-    await writer.write(encoder.encode(data));
+    const result = await response.json();
 
-    writer.releaseLock();
-    await port.close();
-    dialogVisible.value = false;
+    if (!result.Success) {
+      throw new Error(result.Message);
+    }
+
+    toast.success("Print job sent successfully");
   } catch (error) {
     console.error("Print failed:", error);
-    alert("Printing failed: " + error.message);
+    toast.error("Printing failed: " + error.message);
   } finally {
     printing.value = false;
   }
 };
 
-const buildSatoCommand = () => {
-  const STX = String.fromCharCode(0x02);
-  const ESC = String.fromCharCode(0x1b);
-  const ETX = String.fromCharCode(0x03);
-  let EditWk = "";
+const fetchPrinters = async () => {
+  try {
+    const response = await fetch("http://localhost:8085/printers");
+    printers.value = await response.json();
 
-  EditWk = STX;
-  EditWk += ESC + "A";
-  EditWk += ESC + "A1V00200H0600";
-  EditWk +=
-    ESC + "%0" + ESC + "V0030" + ESC + "H0220" + ESC + "P00" + ESC + "L0101";
-  EditWk += ESC + "XM " + partName.value;
-  EditWk += ESC + "V0060" + ESC + "H0260";
-  EditWk += ESC + "D101060*" + barcodeValue.value + "*";
-  EditWk +=
-    ESC + "%0" + ESC + "V00130" + ESC + "H0230" + ESC + "P00" + ESC + "L0101";
-  EditWk += ESC + "X22,*" + barcodeValue.value + "*";
-  EditWk += ESC + "Q1";
-  EditWk += ESC + "Z";
-  EditWk += ETX;
-
-  return EditWk;
+    // Set default printer if one exists
+    if (printers.value.length > 0 && !printerName.value) {
+      printerName.value = printers.value[0];
+    }
+  } catch (error) {
+    console.error("Failed to fetch printers:", error);
+    printers.value = [];
+  }
 };
 
 const openDialog = (partcode, partname) => {
@@ -140,6 +147,10 @@ const openDialog = (partcode, partname) => {
 };
 
 defineExpose({ openDialog });
+
+onMounted(() => {
+  fetchPrinters();
+});
 </script>
 
 <template>
@@ -159,6 +170,21 @@ defineExpose({ openDialog });
           <div class="text-subtitle-1">{{ barcodeValue }}</div>
         </div>
       </VCardText>
+
+      <VCardText class="justify-center">
+        <AppSelect
+          v-model="printerName"
+          :items="printers"
+          label="Printer"
+          outlined
+          dense
+          class="mb-4"
+        />
+        <div class="text-subtitle-1">
+          Couldn't connect to the client printer helper
+        </div>
+      </VCardText>
+
       <VCardActions class="justify-center">
         <VBtn
           color="primary"
