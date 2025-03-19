@@ -463,6 +463,11 @@ function handleCheckAll(newValue) {
   });
 }
 
+const emailValidator = (value) => {
+  const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailPattern.test(value) || "Please enter a valid email address";
+};
+
 watch(
   controlAccess,
   () => {
@@ -536,7 +541,7 @@ onMounted(() => {
             <AppTextField
               v-model="email"
               label="Email Address"
-              :rules="[requiredValidator]"
+              :rules="[requiredValidator, emailValidator]"
               placeholder="Input email address"
               outlined
               maxlength="64"
