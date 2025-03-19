@@ -16,6 +16,7 @@ const router = useRouter();
 
 const isDeleteDialogVisible = ref(false);
 const isDetailDialogVisible = ref(false);
+const isSelectMachineDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
@@ -79,7 +80,6 @@ const headers = [
 
 // data table
 const data = ref([]);
-const machineNoData = ref([]);
 const staffs = ref([]);
 const shops = ref([]);
 const maintenanceCodes = [
@@ -143,21 +143,6 @@ async function fetchData() {
     );
 
     data.value = response.data;
-  } catch (err) {
-    toast.error("Failed to fetch data");
-    console.log(err);
-  }
-}
-
-async function fetchDataMachine() {
-  try {
-    const response = await $api("/master/machines");
-
-    machineNoData.value = response.data;
-
-    machineNoData.value.forEach((data) => {
-      data.title = data.machineno + " | " + data.machinename;
-    });
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
@@ -324,6 +309,11 @@ function getApprovalStatusDescription(approval) {
 
 const debouncedFetchData = debounce(fetchData, 500);
 
+function handleMachinesSelected(item) {
+  item.title = item.machineno + " | " + item.machinename;
+  selectedMachine.value = item;
+}
+
 watch(
   [
     searchQuery,
@@ -341,7 +331,6 @@ watch(
 
 onMounted(() => {
   fetchData();
-  fetchDataMachine();
   fetchDataEmployee();
   fetchDataShop();
 });
@@ -434,15 +423,19 @@ onMounted(() => {
           />
         </VCol>
         <VCol>
-          <AppAutocomplete
+          <VSelect
             v-model="selectedMachine"
-            placeholder="Select machine no"
-            :items="machineNoData"
+            placeholder="Select machine"
             item-title="title"
-            return-object
-            clearable
+            :items="[]"
             clear-icon="tabler-x"
             outlined
+            return-object
+            clearable
+            readonly
+            @click="
+              isSelectMachineDialogVisible = !isSelectMachineDialogVisible
+            "
           />
         </VCol>
         <VCol>
@@ -619,6 +612,11 @@ onMounted(() => {
   <DetailDepartmentRequestDialog
     v-model:isDialogVisible="isDetailDialogVisible"
     v-model:id="selectedItem"
+  />
+
+  <SelectMachineDialog
+    v-model:isDialogVisible="isSelectMachineDialogVisible"
+    @submit="handleMachinesSelected"
   />
 </template>
 

@@ -12,10 +12,10 @@ const currentMonth = now.getMonth() + 1;
 
 const isLoading = ref(false);
 const loadingExport = ref(false);
+const isSelectMachineDialogVisible = ref(false);
 
 const years = ref([]);
 const data = ref([]);
-const machines = ref([]);
 const shops = ref([]);
 const months = [
   { value: 1, label: "Januari" },
@@ -84,21 +84,6 @@ async function fetchDataShop() {
   }
 }
 
-async function fetchDataMachines() {
-  try {
-    const response = await $api("/master/machines");
-
-    machines.value = response.data;
-
-    machines.value.forEach((data) => {
-      data.title = data.machineno + " | " + data.machinename;
-    });
-  } catch (err) {
-    toast.error("Failed to fetch data machines");
-    console.log(err);
-  }
-}
-
 async function handleExport() {
   loadingExport.value = true;
   try {
@@ -135,11 +120,21 @@ async function handleExport() {
   }
 }
 
+function handleMachinesSelected(item) {
+  item.title = item.machineno + " | " + item.machinename;
+  machine.value = item;
+}
+
+const debouncedFetchData = debounce(fetchData, 500);
+
+watch([month, shop, machine, plantCode], () => {
+  debouncedFetchData();
+});
+
 onMounted(() => {
   getLastTenYears();
   fetchData();
   fetchDataShop();
-  fetchDataMachines();
 });
 </script>
 
@@ -179,7 +174,6 @@ onMounted(() => {
           return-object
           outlined
           clearable
-          @update:model-value="fetchData()"
         />
       </VCol>
       <VCol>
@@ -192,28 +186,24 @@ onMounted(() => {
           outlined
           return-object
           clearable
-          @update:model-value="fetchData()"
         />
       </VCol>
       <VCol>
-        <AppAutocomplete
+        <VSelect
           v-model="machine"
           placeholder="Select machine"
           item-title="title"
-          :items="machines"
+          :items="[]"
           clear-icon="tabler-x"
           outlined
           return-object
           clearable
-          @update:model-value="fetchData()"
+          readonly
+          @click="isSelectMachineDialogVisible = !isSelectMachineDialogVisible"
         />
       </VCol>
       <VCol>
-        <AppTextField
-          v-model="plantCode"
-          placeholder="Plant code"
-          v-on:input="fetchData()"
-        />
+        <AppTextField v-model="plantCode" placeholder="Plant code" />
       </VCol>
     </VRow>
 
@@ -266,6 +256,11 @@ onMounted(() => {
       </div>
     </VCard>
   </VCard>
+
+  <SelectMachineDialog
+    v-model:isDialogVisible="isSelectMachineDialogVisible"
+    @submit="handleMachinesSelected"
+  />
 </template>
 
 <style scoped>

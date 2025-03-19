@@ -17,9 +17,15 @@ const isDeleteDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
-// Data table options
+
+// Data table options for server-side pagination
+const loading = ref(false);
+const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
+const sortBy = ref([{ key: "machineno", order: "asc" }]);
+const sortDesc = ref([]);
+const appliedOptions = ref({});
 
 // headers
 const headers = [
@@ -65,22 +71,59 @@ const headers = [
 // data table
 const data = ref([]);
 
-async function fetchData() {
+async function fetchData(options = {}) {
+  loading.value = true;
+
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
     const response = await $api("/master/machines", {
       params: {
         search: searchQuery.value,
+        page: options.page || page.value,
+        per_page: options.itemsPerPage || itemsPerPage.value,
+        ...sortParams,
       },
       onResponseError({ response }) {
-        errors.value = response._data.errors;
+        toast.error(response._data.message);
       },
     });
 
+    // Update data and pagination info
     data.value = response.data;
+    totalItems.value = response.pagination.total;
   } catch (err) {
     toast.error("Failed to fetch data");
     console.log(err);
+  } finally {
+    loading.value = false;
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+
+  appliedOptions.value = options;
+
+  // Fetch the data with new options
+  fetchData(options);
 }
 
 async function deletePart() {
@@ -89,7 +132,6 @@ async function deletePart() {
       "/master/machines/" + encodeURIComponent(selectedItem.value),
       {
         method: "DELETE",
-
         onResponseError({ response }) {
           errors.value = response._data.errors;
         },
@@ -99,7 +141,7 @@ async function deletePart() {
     selectedItem.value = "";
     isDeleteDialogVisible.value = false;
     toast.success("Delete success");
-    fetchData();
+    fetchData(appliedOptions.value);
   } catch (err) {
     toast.error("Failed to delete data");
     isDeleteDialogVisible.value = true;
@@ -144,6 +186,7 @@ async function handleExport() {
       responseType: "blob",
       params: {
         search: searchQuery.value,
+        ...appliedOptions.value,
       },
       headers: accessToken
         ? {
@@ -165,14 +208,27 @@ async function handleExport() {
   }
 }
 
-const debouncedFetchData = debounce(fetchData, 500);
+const debouncedFetchData = debounce(() => {
+  page.value = 1; // Reset to first page when search changes
+  fetchData({
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+    sortBy: sortBy.value,
+    sortDesc: sortDesc.value,
+  });
+}, 500);
 
 watch(searchQuery, () => {
   debouncedFetchData();
 });
 
 onMounted(() => {
-  fetchData();
+  fetchData({
+    page: page.value,
+    itemsPerPage: itemsPerPage.value,
+    sortBy: sortBy.value,
+    sortDesc: sortDesc.value,
+  });
 });
 </script>
 
@@ -196,20 +252,6 @@ onMounted(() => {
   <!-- 👉 products -->
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4">
-      <!-- <div class="me-3 d-flex gap-3">
-        <AppSelect
-          :model-value="itemsPerPage"
-          :items="[
-            { value: 10, title: '10' },
-            { value: 25, title: '25' },
-            { value: 50, title: '50' },
-            { value: 100, title: '100' },
-            { value: -1, title: 'All' },
-          ]"
-          style="inline-size: 6.25rem"
-          @update:model-value="itemsPerPage = parseInt($event, 10)"
-        />
-      </div> -->
       <VSpacer />
 
       <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
@@ -243,13 +285,16 @@ onMounted(() => {
 
     <!-- 👉 Datatable  -->
     <div class="sticky-actions-wrapper">
-      <VDataTable
+      <VDataTableServer
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
-        :items="data"
+        :items-length="totalItems"
+        :loading="loading"
         :headers="headers"
-        :sort-by="[{ key: 'machineno', order: 'asc' }]"
+        :items="data"
+        :sort-by="sortBy"
         class="text-no-wrap"
+        @update:options="handleOptionsUpdate"
         height="562"
       >
         <!-- part name -->
@@ -286,7 +331,7 @@ onMounted(() => {
             </IconBtn>
           </div>
         </template>
-      </VDataTable>
+      </VDataTableServer>
     </div>
   </VCard>
 

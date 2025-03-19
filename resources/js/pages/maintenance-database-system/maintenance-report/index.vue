@@ -14,8 +14,8 @@ definePage({
 const toast = useToast();
 const router = useRouter();
 
-const isDeleteDialogVisible = ref(false);
 const isDetailDialogVisible = ref(false);
+const isSelectMachineDialogVisible = ref(false);
 
 const selectedItem = ref("");
 const searchQuery = ref("");
@@ -78,7 +78,6 @@ const headers = [
 
 // data table
 const data = ref([]);
-const machineNoData = ref([]);
 const staffs = ref([]);
 const shops = ref([]);
 const maintenanceCodes = [
@@ -136,21 +135,6 @@ async function fetchData() {
 
     data.value = response.data;
   } catch (err) {
-    console.log(err);
-  }
-}
-
-async function fetchDataMachine() {
-  try {
-    const response = await $api("/master/machines");
-
-    machineNoData.value = response.data;
-
-    machineNoData.value.forEach((data) => {
-      data.title = data.machineno + " | " + data.machinename;
-    });
-  } catch (err) {
-    toast.error("Failed to fetch data");
     console.log(err);
   }
 }
@@ -287,6 +271,11 @@ function getApprovalStatusDescription(approval) {
   return "-";
 }
 
+function handleMachinesSelected(item) {
+  item.title = item.machineno + " | " + item.machinename;
+  selectedMachine.value = item;
+}
+
 const debouncedFetchData = debounce(fetchData, 500);
 
 watch(
@@ -306,7 +295,6 @@ watch(
 
 onMounted(() => {
   fetchData();
-  fetchDataMachine();
   fetchDataEmployee();
   fetchDataShop();
 });
@@ -399,20 +387,22 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol>
-          <AppAutocomplete
+          <VSelect
             v-model="selectedMachine"
-            placeholder="Select machine no"
-            :items="machineNoData"
+            placeholder="Select machine"
             item-title="title"
-            return-object
-            clearable
+            :items="[]"
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
+            return-object
+            clearable
+            readonly
+            @click="
+              isSelectMachineDialogVisible = !isSelectMachineDialogVisible
+            "
           />
         </VCol>
         <VCol>
@@ -423,7 +413,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
         <VCol>
@@ -436,7 +425,6 @@ onMounted(() => {
             clearable
             clear-icon="tabler-x"
             outlined
-            @update:modelValue="fetchData()"
           />
         </VCol>
       </VRow>
@@ -514,6 +502,11 @@ onMounted(() => {
   <DetailDepartmentRequestDialog
     v-model:isDialogVisible="isDetailDialogVisible"
     v-model:id="selectedItem"
+  />
+
+  <SelectMachineDialog
+    v-model:isDialogVisible="isSelectMachineDialogVisible"
+    @submit="handleMachinesSelected"
   />
 </template>
 

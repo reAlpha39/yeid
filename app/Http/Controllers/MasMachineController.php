@@ -84,6 +84,25 @@ class MasMachineController extends Controller
             //     return $this->unauthorizedResponse();
             // }
 
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
+
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'desc');
+
+            // Handle Vuetify sorting format
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'desc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use original value
+                }
+            }
+
             // Start building the query
             $query = MasMachine::query();
 
@@ -100,8 +119,8 @@ class MasMachineController extends Controller
             }
 
             if ($request->query('shopcode')) {
-                $maker = $request->query('shopcode');
-                $query->where('shopcode', $maker);
+                $shopcode = $request->query('shopcode');
+                $query->where('shopcode', $shopcode);
             }
 
             if ($request->query('maker')) {
@@ -114,16 +133,30 @@ class MasMachineController extends Controller
                 $query->where('linecode', 'ILIKE', $linecode . '%');
             }
 
-            if ($request->input('max_rows')) {
-                $query->limit($request->input('max_rows'));
+            // Apply sorting
+            if ($sortBy) {
+                $query->orderBy($sortBy, $sortDirection);
+            } else {
+                // Default sorting if none specified
+                $query->orderBy('machineno', 'asc');
             }
 
-            // Execute the query and get the results
-            $machines = $query->get();
+            // Execute pagination
+            $results = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'success' => true,
-                'data' => $machines
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json([

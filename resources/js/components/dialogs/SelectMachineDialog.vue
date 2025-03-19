@@ -1,6 +1,5 @@
 <script setup>
 const search = ref("");
-
 const selectedMachine = ref();
 const selectedMaker = ref();
 const shop = ref();
@@ -9,6 +8,19 @@ const line = ref();
 const makers = ref([]);
 const shops = ref([]);
 const data = ref([]);
+const pagination = ref({
+  total: 0,
+  per_page: 10,
+  current_page: 1,
+  last_page: 1,
+  from: null,
+  to: null,
+  next_page_url: null,
+  prev_page_url: null,
+});
+
+// Sorting
+const sortBy = ref({ key: "machineno", order: "asc" });
 
 const props = defineProps({
   isDialogVisible: {
@@ -34,10 +46,15 @@ async function fetchMachines() {
         maker: selectedMaker.value?.makercode,
         shopcode: shop.value?.shopcode,
         linecode: line.value,
-        max_rows: 20,
+        page: pagination.value.current_page,
+        per_page: pagination.value.per_page,
+        sortBy: JSON.stringify(sortBy.value),
       },
     });
+
+    // Update data and pagination from response
     data.value = response.data;
+    pagination.value = response.pagination;
   } catch (err) {
     console.log(err);
   }
@@ -116,9 +133,20 @@ const handleItemClick = (item) => {
   emit("submit", item);
 };
 
+const handleSortChange = (event) => {
+  sortBy.value = event;
+  fetchMachines();
+};
+
+const handlePageChange = (page) => {
+  pagination.value.current_page = page;
+  fetchMachines();
+};
+
 const debouncedFetchData = debounce(fetchMachines, 500);
 
 watch([search, selectedMaker, shop, line], () => {
+  pagination.value.current_page = 1; // Reset to page 1 when filters change
   debouncedFetchData();
 });
 
@@ -127,6 +155,9 @@ watch(
   (newVal) => {
     if (newVal) {
       selectedMachine.value = props.items;
+
+      // Reset pagination to first page when dialog opens
+      pagination.value.current_page = 1;
 
       fetchMachines();
       fetchDataMaker();
@@ -154,7 +185,7 @@ watch(
     <VCard class="share-project-dialog pa-2 pa-sm-10">
       <VCardText>
         <h4 class="text-h4 text-center mb-2">Add Machine</h4>
-        <p class="text-body-1 text-center mb-6">Select Machine</p>
+        <p class="text-body-1 text-center mb-2">Select Machine</p>
       </VCardText>
 
       <VRow class="pb-4">
@@ -208,15 +239,141 @@ watch(
       <VDivider />
 
       <div class="table-container v-table-row-odd-even">
-        <VTable fixed-header class="text-no-wrap" height="500">
+        <VTable fixed-header class="text-no-wrap" height="560">
           <thead>
             <tr>
-              <th>Machine</th>
-              <th>Plant</th>
-              <th>Model</th>
-              <th>Maker</th>
-              <th>Shop</th>
-              <th>Line</th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'machinename',
+                    order:
+                      sortBy.key === 'machinename'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Machine
+                <VIcon
+                  v-if="sortBy.key === 'machinename'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'plantcode',
+                    order:
+                      sortBy.key === 'plantcode'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Plant
+                <VIcon
+                  v-if="sortBy.key === 'plantcode'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'linecode',
+                    order:
+                      sortBy.key === 'linecode'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Line
+                <VIcon
+                  v-if="sortBy.key === 'linecode'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'modelname',
+                    order:
+                      sortBy.key === 'modelname'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Model
+                <VIcon
+                  v-if="sortBy.key === 'modelname'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'makername',
+                    order:
+                      sortBy.key === 'makername'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Maker
+                <VIcon
+                  v-if="sortBy.key === 'makername'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
+              <th
+                @click="
+                  handleSortChange({
+                    key: 'shopname',
+                    order:
+                      sortBy.key === 'shopname'
+                        ? sortBy.order === 'asc'
+                          ? 'desc'
+                          : 'asc'
+                        : 'asc',
+                  })
+                "
+              >
+                Shop
+                <VIcon
+                  v-if="sortBy.key === 'shopname'"
+                  :icon="
+                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
+                  "
+                  small
+                />
+              </th>
               <th>Action</th>
             </tr>
           </thead>
@@ -233,6 +390,9 @@ watch(
                 {{ item.plantcode }}
               </td>
               <td>
+                {{ item.linecode }}
+              </td>
+              <td>
                 {{ item.modelname }}
               </td>
               <td>
@@ -246,9 +406,6 @@ watch(
                   <span style="font-weight: 500">{{ item.shopname }}</span>
                   <small>{{ item.shopcode }}</small>
                 </div>
-              </td>
-              <td>
-                {{ item.linecode }}
               </td>
 
               <td>
@@ -264,6 +421,26 @@ watch(
           </tbody>
         </VTable>
       </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-center mt-4">
+        <VPagination
+          v-model="pagination.current_page"
+          :length="pagination.last_page"
+          :total-visible="5"
+          @update:model-value="handlePageChange"
+        />
+      </div>
+
+      <!-- <div class="d-flex justify-end mt-2">
+        <VSelect
+          v-model="pagination.per_page"
+          :items="[5, 10, 15, 20, 25, 50]"
+          label="Items per page"
+          style="width: 150px"
+          @update:model-value="fetchMachines"
+        />
+      </div> -->
     </VCard>
   </VDialog>
 </template>
