@@ -304,7 +304,6 @@ watch(
           <AppAutocomplete
             v-model="selectedMaker"
             label="Maker"
-            :rules="[requiredValidator]"
             placeholder="Select maker"
             item-title="title"
             :items="makers"
