@@ -8,6 +8,9 @@ const line = ref();
 const makers = ref([]);
 const shops = ref([]);
 const data = ref([]);
+const loading = ref(false);
+
+// For server-side pagination
 const pagination = ref({
   total: 0,
   per_page: 10,
@@ -19,8 +22,10 @@ const pagination = ref({
   prev_page_url: null,
 });
 
-// Sorting
-const sortBy = ref({ key: "machineno", order: "asc" });
+// For VDataTableServer sorting
+const sortBy = ref([{ key: "machineno", order: "asc" }]);
+const sortDesc = ref([]);
+const appliedOptions = ref({});
 
 const props = defineProps({
   isDialogVisible: {
@@ -37,18 +42,47 @@ const props = defineProps({
   },
 });
 
-async function fetchMachines() {
+async function fetchMachines(options = {}) {
+  loading.value = true;
+
   try {
-    console.log(selectedMaker.value);
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      const sortDirection =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].order
+          : options.sortDesc?.[0]
+          ? "desc"
+          : "asc";
+
+      sortParams.sortBy = JSON.stringify({
+        key: sortColumn,
+        order: sortDirection,
+      });
+    } else if (sortBy.value[0]) {
+      // Use current sort if no sort in options
+      sortParams.sortBy = JSON.stringify({
+        key: sortBy.value[0].key,
+        order: sortBy.value[0].order,
+      });
+    }
+
     let response = await $api("/master/machines", {
       params: {
         search: search.value,
         maker: selectedMaker.value?.makercode,
         shopcode: shop.value?.shopcode,
         linecode: line.value,
-        page: pagination.value.current_page,
-        per_page: pagination.value.per_page,
-        sortBy: JSON.stringify(sortBy.value),
+        page: options.page || pagination.value.current_page,
+        per_page: options.itemsPerPage || pagination.value.per_page,
+        ...sortParams,
       },
     });
 
@@ -57,7 +91,24 @@ async function fetchMachines() {
     pagination.value = response.pagination;
   } catch (err) {
     console.log(err);
+  } finally {
+    loading.value = false;
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  pagination.value.current_page = options.page;
+  pagination.value.per_page = options.itemsPerPage;
+
+  appliedOptions.value = options;
+
+  // Fetch the data with new options
+  fetchMachines(options);
 }
 
 async function fetchDataMaker(id) {
@@ -133,20 +184,50 @@ const handleItemClick = (item) => {
   emit("submit", item);
 };
 
-const handleSortChange = (event) => {
-  sortBy.value = event;
-  fetchMachines();
-};
+// Create column headers
+const headers = [
+  {
+    title: "Machine",
+    key: "machinename",
+  },
+  {
+    title: "Plant",
+    key: "plantcode",
+  },
+  {
+    title: "Line",
+    key: "linecode",
+  },
+  {
+    title: "Model",
+    key: "modelname",
+  },
+  {
+    title: "Maker",
+    key: "makername",
+  },
+  {
+    title: "Shop",
+    key: "shopname",
+  },
+  {
+    title: "Action",
+    key: "actions",
+    sortable: false,
+  },
+];
 
-const handlePageChange = (page) => {
-  pagination.value.current_page = page;
-  fetchMachines();
-};
-
-const debouncedFetchData = debounce(fetchMachines, 500);
+const debouncedFetchData = debounce(() => {
+  pagination.value.current_page = 1; // Reset to page 1 when filters change
+  fetchMachines({
+    page: 1,
+    itemsPerPage: pagination.value.per_page,
+    sortBy: sortBy.value,
+    sortDesc: sortDesc.value,
+  });
+}, 500);
 
 watch([search, selectedMaker, shop, line], () => {
-  pagination.value.current_page = 1; // Reset to page 1 when filters change
   debouncedFetchData();
 });
 
@@ -159,7 +240,14 @@ watch(
       // Reset pagination to first page when dialog opens
       pagination.value.current_page = 1;
 
-      fetchMachines();
+      // Reset sort to default
+      sortBy.value = [{ key: "machineno", order: "asc" }];
+
+      fetchMachines({
+        page: 1,
+        itemsPerPage: pagination.value.per_page,
+        sortBy: sortBy.value,
+      });
       fetchDataMaker();
       fetchDataShop();
 
@@ -238,209 +326,53 @@ watch(
 
       <VDivider />
 
-      <div class="table-container v-table-row-odd-even">
-        <VTable fixed-header class="text-no-wrap" height="560">
-          <thead>
-            <tr>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'machinename',
-                    order:
-                      sortBy.key === 'machinename'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Machine
-                <VIcon
-                  v-if="sortBy.key === 'machinename'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'plantcode',
-                    order:
-                      sortBy.key === 'plantcode'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Plant
-                <VIcon
-                  v-if="sortBy.key === 'plantcode'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'linecode',
-                    order:
-                      sortBy.key === 'linecode'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Line
-                <VIcon
-                  v-if="sortBy.key === 'linecode'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'modelname',
-                    order:
-                      sortBy.key === 'modelname'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Model
-                <VIcon
-                  v-if="sortBy.key === 'modelname'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'makername',
-                    order:
-                      sortBy.key === 'makername'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Maker
-                <VIcon
-                  v-if="sortBy.key === 'makername'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th
-                @click="
-                  handleSortChange({
-                    key: 'shopname',
-                    order:
-                      sortBy.key === 'shopname'
-                        ? sortBy.order === 'asc'
-                          ? 'desc'
-                          : 'asc'
-                        : 'asc',
-                  })
-                "
-              >
-                Shop
-                <VIcon
-                  v-if="sortBy.key === 'shopname'"
-                  :icon="
-                    sortBy.order === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-                  "
-                  small
-                />
-              </th>
-              <th>Action</th>
-            </tr>
-          </thead>
+      <div class="sticky-actions-wrapper">
+        <VDataTableServer
+          v-model:items-per-page="pagination.per_page"
+          v-model:page="pagination.current_page"
+          :items-length="pagination.total"
+          :items="data"
+          :headers="headers"
+          :loading="loading"
+          :sort-by="sortBy"
+          class="text-no-wrap"
+          @update:options="handleOptionsUpdate"
+          height="560"
+        >
+          <!-- Machine column with machine number as small text -->
+          <template #item.machinename="{ item }">
+            <div class="d-flex flex-column">
+              <span style="font-weight: 500">{{ item.machinename }}</span>
+              <small>{{ item.machineno }}</small>
+            </div>
+          </template>
 
-          <tbody>
-            <tr v-for="item in data" :key="item.machino">
-              <td>
-                <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.machinename }}</span>
-                  <small>{{ item.machineno }}</small>
-                </div>
-              </td>
-              <td>
-                {{ item.plantcode }}
-              </td>
-              <td>
-                {{ item.linecode }}
-              </td>
-              <td>
-                {{ item.modelname }}
-              </td>
-              <td>
-                <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.makername }}</span>
-                  <small>{{ item.makercode }}</small>
-                </div>
-              </td>
-              <td>
-                <div class="d-flex flex-column">
-                  <span style="font-weight: 500">{{ item.shopname }}</span>
-                  <small>{{ item.shopcode }}</small>
-                </div>
-              </td>
+          <!-- Maker column with maker code as small text -->
+          <template #item.makername="{ item }">
+            <div class="d-flex flex-column">
+              <span style="font-weight: 500">{{ item.makername }}</span>
+              <small>{{ item.makercode }}</small>
+            </div>
+          </template>
 
-              <td>
-                <VCol cols="11" md="1">
-                  <a
-                    @click.prevent="handleItemClick(item)"
-                    style="cursor: pointer"
-                    >Select</a
-                  >
-                </VCol>
-              </td>
-            </tr>
-          </tbody>
-        </VTable>
+          <!-- Shop column with shop code as small text -->
+          <template #item.shopname="{ item }">
+            <div class="d-flex flex-column">
+              <span style="font-weight: 500">{{ item.shopname }}</span>
+              <small>{{ item.shopcode }}</small>
+            </div>
+          </template>
+
+          <!-- Action column -->
+          <template #item.actions="{ item }">
+            <VCol cols="11" md="1">
+              <a @click.prevent="handleItemClick(item)" style="cursor: pointer"
+                >Select</a
+              >
+            </VCol>
+          </template>
+        </VDataTableServer>
       </div>
-
-      <!-- Pagination -->
-      <div class="d-flex justify-center mt-4">
-        <VPagination
-          v-model="pagination.current_page"
-          :length="pagination.last_page"
-          :total-visible="5"
-          @update:model-value="handlePageChange"
-        />
-      </div>
-
-      <!-- <div class="d-flex justify-end mt-2">
-        <VSelect
-          v-model="pagination.per_page"
-          :items="[5, 10, 15, 20, 25, 50]"
-          label="Items per page"
-          style="width: 150px"
-          @update:model-value="fetchMachines"
-        />
-      </div> -->
     </VCard>
   </VDialog>
 </template>
