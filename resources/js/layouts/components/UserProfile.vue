@@ -144,6 +144,11 @@ const userProfileList = [
             <VListItemTitle class="font-weight-medium">
               {{ userData.name }}
             </VListItemTitle>
+            <VListItemTitle style="font-size: 12px">
+              {{ userData?.department?.name ?? "-" }} ({{
+                userData?.role_access
+              }})
+            </VListItemTitle>
             <VListItemTitle>
               <a
                 @click="

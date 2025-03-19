@@ -27,7 +27,9 @@ class AuthController extends Controller
         ]);
 
         // $user = MasUser::where('email', $request->email)->first();
-        $user = MasUser::where('nik', $request->nik)->first();
+        $user = MasUser::with('department:id,name')
+            ->where('nik', $request->nik)
+            ->first();
 
         // Check if user exists
         if (!$user) {
