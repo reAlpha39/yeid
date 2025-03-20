@@ -54,6 +54,10 @@ const selectedEndDate = ref(null);
 // headers
 const headers = [
   {
+    title: "EMPLOYEE",
+    key: "employeecode",
+  },
+  {
     title: "PART",
     key: "partcode",
   },
@@ -84,10 +88,6 @@ const headers = [
   {
     title: "TOTAL PRICE",
     key: "total",
-  },
-  {
-    title: "EMPLOYEE",
-    key: "employeecode",
   },
   {
     title: "NOTE",
