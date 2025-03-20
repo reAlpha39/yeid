@@ -359,6 +359,9 @@
     "watchTriggerable": true,
     "watchWithFilter": true,
     "weekOfYear": true,
-    "whenever": true
+    "whenever": true,
+    "maintenanceCodes": true,
+    "maintenanceNames": true,
+    "maintenanceTypes": true
   }
 }

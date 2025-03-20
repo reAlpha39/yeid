@@ -78,6 +78,9 @@ declare global {
   const logicAnd: typeof import('@vueuse/math')['logicAnd']
   const logicNot: typeof import('@vueuse/math')['logicNot']
   const logicOr: typeof import('@vueuse/math')['logicOr']
+  const maintenanceCodes: typeof import('./resources/js/utils/constants.js')['maintenanceCodes']
+  const maintenanceNames: typeof import('./resources/js/utils/constants.js')['maintenanceNames']
+  const maintenanceTypes: typeof import('./resources/js/utils/constants.js')['maintenanceTypes']
   const makeDestructurable: typeof import('@vueuse/core')['makeDestructurable']
   const mapActions: typeof import('pinia')['mapActions']
   const mapGetters: typeof import('pinia')['mapGetters']
@@ -439,6 +442,9 @@ declare module 'vue' {
     readonly logicAnd: UnwrapRef<typeof import('@vueuse/math')['logicAnd']>
     readonly logicNot: UnwrapRef<typeof import('@vueuse/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('@vueuse/math')['logicOr']>
+    readonly maintenanceCodes: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceCodes']>
+    readonly maintenanceNames: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceNames']>
+    readonly maintenanceTypes: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceTypes']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>
@@ -793,6 +799,9 @@ declare module '@vue/runtime-core' {
     readonly logicAnd: UnwrapRef<typeof import('@vueuse/math')['logicAnd']>
     readonly logicNot: UnwrapRef<typeof import('@vueuse/math')['logicNot']>
     readonly logicOr: UnwrapRef<typeof import('@vueuse/math')['logicOr']>
+    readonly maintenanceCodes: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceCodes']>
+    readonly maintenanceNames: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceNames']>
+    readonly maintenanceTypes: UnwrapRef<typeof import('./resources/js/utils/constants.js')['maintenanceTypes']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
     readonly mapActions: UnwrapRef<typeof import('pinia')['mapActions']>
     readonly mapGetters: UnwrapRef<typeof import('pinia')['mapGetters']>

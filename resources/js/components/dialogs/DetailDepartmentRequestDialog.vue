@@ -152,6 +152,16 @@ const getStatusText = (type) => {
   }
 };
 
+const getMaintenanceType = (type) => {
+  for (var maintenanceType of maintenanceTypes) {
+    if (maintenanceType.split("|")[0] === type) {
+      return maintenanceType;
+    }
+  }
+
+  return type;
+};
+
 const dialogVisibleUpdate = (val) => {
   emit("update:isDialogVisible", val);
 };
@@ -208,7 +218,9 @@ watch(
                   <VCardText>
                     <VRow>
                       <VCol cols="4"> Jenis Perbaikan </VCol>
-                      <VCol cols="8"> : {{ data?.maintenancecode }} </VCol>
+                      <VCol cols="8">
+                        : {{ getMaintenanceType(data?.maintenancecode) }}
+                      </VCol>
                     </VRow>
                     <VRow>
                       <VCol cols="4"> Pemohon </VCol>

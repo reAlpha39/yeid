@@ -81,7 +81,6 @@ async function fetchDataEmployee() {
     selectedEmployee.value = employees.value.find(
       (employee) => employee.employeecode === approvalRecord?.pic?.employeecode
     );
-
   } catch (err) {
     console.log(err);
   }
@@ -229,6 +228,16 @@ const getStatusText = (type) => {
   }
 };
 
+const getMaintenanceType = (type) => {
+  for (var maintenanceType of maintenanceTypes) {
+    if (maintenanceType.split("|")[0] === type) {
+      return maintenanceType;
+    }
+  }
+
+  return type;
+};
+
 onMounted(async () => {
   await fetchData(route.query.record_id);
   await fetchDataEmployee();
@@ -274,7 +283,9 @@ onMounted(async () => {
             <VCardText>
               <VRow>
                 <VCol cols="4"> Jenis Perbaikan </VCol>
-                <VCol cols="8"> : {{ data?.maintenancecode }} </VCol>
+                <VCol cols="8">
+                  : {{ getMaintenanceType(data?.maintenancecode) }}
+                </VCol>
               </VRow>
               <VRow>
                 <VCol cols="4"> Pemohon </VCol>

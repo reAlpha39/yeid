@@ -82,17 +82,6 @@ const headers = [
 const data = ref([]);
 const staffs = ref([]);
 const shops = ref([]);
-const maintenanceCodes = [
-  "01|UM (Urgent Maintenance)",
-  "02|BM (Maintenance Setelah Kejadian)",
-  "03|TBC (Periodikal Checking)",
-  "04|TBA (Periodikal Maintenance)",
-  "05|PvM (Perawatan Pencegahan)",
-  "06|FM (Predikisi Maintenance)",
-  "07|CM (Corrective Maintenance/RHC)",
-  "08|CHECK (Check Tanpa Perencanaan)",
-  "09|LAYOUT (Tata Letak)",
-];
 
 const status = [
   "PENDING",
@@ -282,6 +271,26 @@ function getApprovalStatusDescription(approval) {
   return "-";
 }
 
+const getMaintenanceCode = (type) => {
+  for (var code of maintenanceCodes) {
+    if (code.split("|")[0] === type) {
+      return code;
+    }
+  }
+
+  return type;
+};
+
+const getMaintenanceName = (type) => {
+  for (var name of maintenanceNames) {
+    if (name.split("|")[0] === type) {
+      return name.split("|")[1];
+    }
+  }
+
+  return type;
+};
+
 const debouncedFetchData = debounce(fetchData, 500);
 
 function handleMachinesSelected(item) {
@@ -417,7 +426,7 @@ onMounted(() => {
           <AppAutocomplete
             v-model="maintenanceCode"
             placeholder="Select perbaikan"
-            :items="maintenanceCodes"
+            :items="maintenanceTypes"
             clearable
             clear-icon="tabler-x"
             outlined
@@ -491,7 +500,13 @@ onMounted(() => {
         </template>
         <template #item.maintenancecode="{ item }">
           <div class="d-flex align-center">
-            {{ item.maintenancecode }}
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{ getMaintenanceName(item.maintenancecode) }}</span
+              >
+              <small>{{ getMaintenanceCode(item.maintenancecode) }}</small>
+            </div>
           </div>
         </template>
 
