@@ -6,6 +6,11 @@ moment.locale("id");
 const data = ref();
 const dataMachine = ref();
 
+const showSupervisorDeptList = ref(false);
+const showManagerDeptList = ref(false);
+const showSupervisorMtcList = ref(false);
+const showManagerMtcList = ref(false);
+
 const emit = defineEmits(["update:isDialogVisible", "submit"]);
 
 const props = defineProps({
@@ -26,6 +31,7 @@ async function fetchData(id) {
     );
 
     data.value = response.data;
+    checkApprovalUsers();
     fetchDataMachine(data.value.machineno);
   } catch (err) {
     console.log(err);
@@ -47,6 +53,54 @@ async function fetchDataMachine(id) {
   }
 }
 
+function checkApprovalUsers() {
+  console.log(data.value?.approval_record?.notes.length);
+  if (data.value.approval_record?.notes.length === 0) {
+    showManagerMtcList.value = true;
+    showSupervisorMtcList.value = true;
+    showManagerDeptList.value = true;
+    showSupervisorDeptList.value = true;
+    // console.log("aaaaaaa1");
+  } else {
+    var lastNote = data.value?.approval_record?.notes.at(-1);
+
+    if (lastNote.type === "revision" || lastNote.type === "rejected") {
+      showManagerMtcList.value = false;
+      showSupervisorMtcList.value = false;
+      showManagerDeptList.value = false;
+      showSupervisorDeptList.value = false;
+    } else if (lastNote.is_user_dept_mtc && lastNote.user.role_access === "2") {
+      showManagerMtcList.value = true;
+      // console.log("aaaaaaa2");
+    } else if (
+      !lastNote.is_user_dept_mtc &&
+      lastNote.user.role_access === "3"
+    ) {
+      showManagerMtcList.value = true;
+      showSupervisorMtcList.value = true;
+      // console.log("aaaaaaa3");
+    } else if (
+      !lastNote.is_user_dept_mtc &&
+      lastNote.user.role_access === "2"
+    ) {
+      showManagerMtcList.value = true;
+      showSupervisorMtcList.value = true;
+      showManagerDeptList.value = true;
+      // console.log("aaaaaaa4");
+    } else {
+      showManagerMtcList.value = false;
+      showSupervisorMtcList.value = false;
+      showManagerDeptList.value = false;
+      showSupervisorDeptList.value = false;
+      // console.log("aaaaaaa5");
+    }
+    // console.log(showManagerMtcList.value);
+    // console.log(showSupervisorMtcList.value);
+    // console.log(showManagerDeptList.value);
+    // console.log(showSupervisorDeptList.value);
+  }
+}
+
 function getRole(id) {
   if (id === "1") {
     return "Operator";
@@ -65,8 +119,10 @@ const getStatusColor = (type) => {
       return "success";
     case "revision":
       return "warning";
-    default:
+    case "rejected":
       return "error";
+    default:
+      return "black";
   }
 };
 
@@ -76,8 +132,10 @@ const getStatusIcon = (type) => {
       return "tabler-check";
     case "revision":
       return "tabler-hourglass";
-    default:
+    case "rejected":
       return "tabler-x";
+    default:
+      return "tabler-hourglass";
   }
 };
 
@@ -87,8 +145,10 @@ const getStatusText = (type) => {
       return "Telah disetujui";
     case "revision":
       return "Revisi";
-    default:
+    case "rejected":
       return "Ditolak";
+    default:
+      return "Menunggu";
   }
 };
 
@@ -371,6 +431,167 @@ watch(
                             "dddd, D MMMM YYYY HH:mm:ss"
                           )
                         }}
+                      </div>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </template>
+
+            <!--  -->
+            <template v-if="showSupervisorDeptList">
+              <VCard
+                v-for="(user, index) in data.supervisor_department"
+                :key="index"
+                variant="outlined"
+                class="mb-4 mx-6"
+                style="background-color: #f9f9f9"
+              >
+                <VCardText>
+                  <VRow>
+                    <VCol cols="8">
+                      <div
+                        class="d-block font-weight-medium text-high-emphasis text-truncate"
+                      >
+                        {{ user.name }}
+                      </div>
+                      <small class="d-block text-truncate mb-4">
+                        {{ getRole(user.role_access) }}
+                        -
+                        {{ user.department.name }}
+                      </small>
+                    </VCol>
+                    <VCol cols="4" class="text-right">
+                      <div class="d-flex align-center justify-end">
+                        <VIcon
+                          :color="getStatusColor()"
+                          :icon="getStatusIcon()"
+                          class="me-2"
+                          size="small"
+                        />
+                        <span :class="`text-${getStatusColor()}`">
+                          {{ getStatusText() }}
+                        </span>
+                      </div>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </template>
+
+            <template v-if="showManagerDeptList">
+              <VCard
+                v-for="(user, index) in data.manager_department"
+                :key="index"
+                variant="outlined"
+                class="mb-4 mx-6"
+                style="background-color: #f9f9f9"
+              >
+                <VCardText>
+                  <VRow>
+                    <VCol cols="8">
+                      <div
+                        class="d-block font-weight-medium text-high-emphasis text-truncate"
+                      >
+                        {{ user.name }}
+                      </div>
+                      <small class="d-block text-truncate mb-4">
+                        {{ getRole(user.role_access) }}
+                        -
+                        {{ user.department.name }}
+                      </small>
+                    </VCol>
+                    <VCol cols="4" class="text-right">
+                      <div class="d-flex align-center justify-end">
+                        <VIcon
+                          :color="getStatusColor()"
+                          :icon="getStatusIcon()"
+                          class="me-2"
+                          size="small"
+                        />
+                        <span :class="`text-${getStatusColor()}`">
+                          {{ getStatusText() }}
+                        </span>
+                      </div>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </template>
+
+            <template v-if="showSupervisorMtcList">
+              <VCard
+                v-for="(user, index) in data.supervisor_mtc"
+                :key="index"
+                variant="outlined"
+                class="mb-4 mx-6"
+                style="background-color: #f9f9f9"
+              >
+                <VCardText>
+                  <VRow>
+                    <VCol cols="8">
+                      <div
+                        class="d-block font-weight-medium text-high-emphasis text-truncate"
+                      >
+                        {{ user.name }}
+                      </div>
+                      <small class="d-block text-truncate mb-4">
+                        {{ getRole(user.role_access) }}
+                        -
+                        {{ user.department.name }}
+                      </small>
+                    </VCol>
+                    <VCol cols="4" class="text-right">
+                      <div class="d-flex align-center justify-end">
+                        <VIcon
+                          :color="getStatusColor()"
+                          :icon="getStatusIcon()"
+                          class="me-2"
+                          size="small"
+                        />
+                        <span :class="`text-${getStatusColor()}`">
+                          {{ getStatusText() }}
+                        </span>
+                      </div>
+                    </VCol>
+                  </VRow>
+                </VCardText>
+              </VCard>
+            </template>
+
+            <template v-if="showManagerMtcList">
+              <VCard
+                v-for="(user, index) in data.manager_mtc"
+                :key="index"
+                variant="outlined"
+                class="mb-4 mx-6"
+                style="background-color: #f9f9f9"
+              >
+                <VCardText>
+                  <VRow>
+                    <VCol cols="8">
+                      <div
+                        class="d-block font-weight-medium text-high-emphasis text-truncate"
+                      >
+                        {{ user.name }}
+                      </div>
+                      <small class="d-block text-truncate mb-4">
+                        {{ getRole(user.role_access) }}
+                        -
+                        {{ user.department.name }}
+                      </small>
+                    </VCol>
+                    <VCol cols="4" class="text-right">
+                      <div class="d-flex align-center justify-end">
+                        <VIcon
+                          :color="getStatusColor()"
+                          :icon="getStatusIcon()"
+                          class="me-2"
+                          size="small"
+                        />
+                        <span :class="`text-${getStatusColor()}`">
+                          {{ getStatusText() }}
+                        </span>
                       </div>
                     </VCol>
                   </VRow>

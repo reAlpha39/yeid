@@ -649,10 +649,20 @@ class MaintenanceRequestController extends Controller
                     'notes' => function ($query) {
                         $query->with(['user' => function ($query) {
                             $query->select('id', 'name', 'role_access', 'department_id')
-                                ->with('department:id,name');
-                        }]);
-                    }
-                ])->addSelect(['*', DB::raw($isMtcDepartment ? 'true as can_add_pic' : 'false as can_add_pic')]);
+                                ->with('department:id,code,name');
+                        }])->addSelect([
+                            '*',
+                            DB::raw("(CASE WHEN EXISTS (
+                            SELECT 1 FROM mas_user u
+                            JOIN mas_department d ON u.department_id = d.id
+                            WHERE u.id = tbl_spkrecord_approval_note.user_id AND d.code = '" . self::MTC_DEPARTMENT . "'
+                            ) THEN true ELSE false END) as is_user_dept_mtc")
+                        ]);
+                    },
+                ])->addSelect([
+                    '*',
+                    DB::raw($isMtcDepartment ? 'true as can_add_pic' : 'false as can_add_pic'),
+                ]);
             }])->find($spkNo);
 
             if (!$spkRecord) {
@@ -661,6 +671,44 @@ class MaintenanceRequestController extends Controller
                     'message' => 'Record #' . $spkNo . ' not found'
                 ], 404);
             }
+
+            if ($spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT) {
+                $supervisorDept = MasUser::with(['department' => function ($query) {
+                    $query->select('id', 'code', 'name');
+                }])
+                    ->where('department_id', $department->id)
+                    ->whereIn('role_access', ['2'])
+                    ->select('id', 'name', 'role_access', 'department_id')
+                    ->get();
+
+                $managerDept = MasUser::with(['department' => function ($query) {
+                    $query->select('id', 'code', 'name');
+                }])
+                    ->where('department_id', $department->id)
+                    ->whereIn('role_access', ['3'])
+                    ->select('id', 'name', 'role_access', 'department_id')
+                    ->get();
+            }
+
+            $supervisorMtc = MasUser::with(['department' => function ($query) {
+                $query->select('id', 'code', 'name');
+            }])
+                ->whereHas('department', function ($query) {
+                    $query->where('code', self::MTC_DEPARTMENT);
+                })
+                ->whereIn('role_access', ['2'])
+                ->select('id', 'name', 'role_access', 'department_id')
+                ->get();
+            $managerMtc = MasUser::with(['department' => function ($query) {
+                $query->select('id', 'code', 'name');
+            }])
+                ->whereHas('department', function ($query) {
+                    $query->where('code', self::MTC_DEPARTMENT);
+                })
+                ->whereIn('role_access', ['3'])
+                ->select('id', 'name', 'role_access', 'department_id')
+                ->get();
+
 
             // Get machine details
             $machineDetails = DB::table('mas_machine')
@@ -689,6 +737,10 @@ class MaintenanceRequestController extends Controller
                     'createempcode' => $spkRecord->createempcode ?? '',
                     'createempname' => $spkRecord->createempname ?? '',
                     'can_approve' => $canApprove,
+                    'supervisor_department' => $supervisorDept ?? null,
+                    'manager_department' => $managerDept ?? null,
+                    'supervisor_mtc' => $supervisorMtc,
+                    'manager_mtc' => $managerMtc,
                 ],
             );
 
