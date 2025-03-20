@@ -51,6 +51,35 @@ class ApprovalService
         }
 
         $approval->save();
+
+        if ($requester->role_access === '3') { // Manager
+
+            $spkRecord = SpkRecord::findOrFail($spkRecord->recordid);
+
+            $approval =  $spkRecord->approvalRecord;
+
+            $approval->notes()->create([
+                'user_id' => $requester->id,
+                'note' => '',
+                'type' => self::STATUS_APPROVED
+            ]);
+
+            $approval->save();
+        } elseif ($requester->role_access === '2') { // Supervisor
+
+            $spkRecord = SpkRecord::findOrFail($spkRecord->recordid);
+
+            $approval =  $spkRecord->approvalRecord;
+
+            $approval->notes()->create([
+                'user_id' => $requester->id,
+                'note' => '',
+                'type' => self::STATUS_APPROVED
+            ]);
+
+            $approval->save();
+        }
+
         return $approval;
     }
 
