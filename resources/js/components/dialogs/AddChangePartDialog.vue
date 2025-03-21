@@ -1,6 +1,7 @@
 <script setup>
 import { useToast } from "vue-toastification";
 import { VSwitch } from "vuetify/lib/components/index.mjs";
+import SelectInventoryPartDialog from "./SelectInventoryPartDialog.vue";
 
 const toast = useToast();
 
@@ -21,7 +22,8 @@ const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 const refVForm = ref();
 const isUpdate = ref(false);
 
-const parts = ref([]);
+const isSelectPartDialogVisible = ref(false);
+
 const selectedPart = ref();
 const changePart = ref({
   partcode: undefined,
@@ -68,22 +70,6 @@ async function submitData() {
   resetForm();
 }
 
-function handlePartSelection() {
-  let val = selectedPart.value;
-  if (val === null) return;
-  changePart.value = {
-    partid: changePart.value.partid,
-    partcode: val.partcode,
-    partname: val.partname,
-    specification: val.specification,
-    brand: val.brand,
-    qtty: val.qtty,
-    price: val.unitprice,
-    currency: val.currency,
-    isstock: "1",
-  };
-}
-
 async function fetchPart(id) {
   try {
     if (id) {
@@ -97,35 +83,6 @@ async function fetchPart(id) {
       if (selectedPart.value) {
         selectedPart.value.title =
           selectedPart.value.partcode + " | " + selectedPart.value.partname;
-      }
-    } else {
-      isLoading.value = true;
-      const response = await $api("/master/part-list", {
-        params: {
-          page: pagination.value.current_page,
-          per_page: pagination.value.per_page,
-          search: search.value,
-        },
-      });
-
-      if (response.success) {
-        if (Array.isArray(response.data)) {
-          parts.value = response.data;
-          parts.value.forEach((data) => {
-            data.title = data.partcode + " | " + data.partname;
-          });
-        }
-
-        if (response.pagination) {
-          const { total, per_page, current_page, last_page } =
-            response.pagination;
-          pagination.value = {
-            total: total || 0,
-            per_page: per_page || 10,
-            current_page: current_page || 1,
-            last_page: last_page || 1,
-          };
-        }
       }
     }
   } catch (err) {
@@ -141,6 +98,23 @@ const debouncedSearch = computed(() => {
   pagination.value.current_page = 1;
   fetchPart();
 });
+
+function handlePartSelected(item) {
+  item.title = item.partcode + " | " + item.partname;
+  selectedPart.value = item;
+  if (item === null) return;
+  changePart.value = {
+    partid: changePart.value.partid,
+    partcode: item.partcode,
+    partname: item.partname,
+    specification: item.specification,
+    brand: item.brand,
+    qtty: item.qtty,
+    price: item.unitprice,
+    currency: item.currency,
+    isstock: "1",
+  };
+}
 
 watch(
   search,
@@ -174,9 +148,6 @@ const resetForm = () => {
     current_page: 1,
     last_page: 1,
   };
-
-  // Clear parts list
-  parts.value = [];
 };
 
 function isNumber(evt) {
@@ -238,11 +209,11 @@ watch(
           :rules="[requiredValidator]"
           placeholder="Pilih kode part"
           item-title="title"
-          :items="parts"
-          :loading="isLoading"
+          :items="[]"
           outlined
           return-object
-          @update:model-value="handlePartSelection"
+          readonly
+          @click="isSelectPartDialogVisible = !isSelectPartDialogVisible"
         />
 
         <AppTextField
@@ -362,4 +333,9 @@ watch(
       </VCard>
     </VForm>
   </VDialog>
+
+  <SelectInventoryPartDialog
+    v-model:isDialogVisible="isSelectPartDialogVisible"
+    @submit="handlePartSelected"
+  />
 </template>

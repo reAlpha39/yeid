@@ -202,6 +202,7 @@ class InventoryControlController extends Controller
             //     return $this->unauthorizedResponse();
             // }
 
+            // Get search parameters
             $query = $request->input('query', '');
             $partCode = $request->input('partCode');
             $partName = $request->input('partName');
@@ -210,11 +211,33 @@ class InventoryControlController extends Controller
             $spec = $request->input('spec');
             $brand = $request->input('brand');
 
+            // Pagination parameters
+            $perPage = $request->input('per_page', 10);
+            $page = $request->input('page', 1);
+
+            // Sorting parameters
+            $sortBy = $request->input('sortBy');
+            $sortDirection = $request->input('sortDirection', 'desc');
+
+            // Handle Vuetify sorting format
+            if ($sortBy && is_string($sortBy) && str_contains($sortBy, '{')) {
+                try {
+                    $sortData = json_decode($sortBy, true);
+                    $sortBy = $sortData['key'] ?? null;
+                    $sortDirection = $sortData['order'] ?? 'desc';
+                } catch (Exception $e) {
+                    // If JSON decode fails, use original value
+                }
+            }
+
+            // Build the main query
             $query = DB::table('mas_inventory')
                 ->where(function ($q) use ($query) {
                     $q->where('partcode', 'ILIKE', $query . '%')
                         ->orWhere('partname', 'ILIKE', $query . '%');
                 });
+
+            // Apply filters
             if ($partCode) {
                 $query->where('partcode', 'ILIKE', $partCode . '%');
             }
@@ -236,14 +259,32 @@ class InventoryControlController extends Controller
             }
 
             if ($brand) {
-                $query->where('brand', 'ILIKE', $brand  . '%');
+                $query->where('brand', 'ILIKE', $brand . '%');
             }
 
-            $results = $query->limit(100)->get();
+            // Apply sorting
+            if ($sortBy) {
+                $query->orderBy($sortBy, $sortDirection);
+            } else {
+                $query->orderBy('partcode', 'asc');
+            }
+
+            // Execute pagination
+            $results = $query->paginate($perPage, ['*'], 'page', $page);
 
             return response()->json([
                 'success' => true,
-                'data' => $results
+                'data' => $results->items(),
+                'pagination' => [
+                    'total' => $results->total(),
+                    'per_page' => $results->perPage(),
+                    'current_page' => $results->currentPage(),
+                    'last_page' => $results->lastPage(),
+                    'from' => $results->firstItem(),
+                    'to' => $results->lastItem(),
+                    'next_page_url' => $results->nextPageUrl(),
+                    'prev_page_url' => $results->previousPageUrl(),
+                ]
             ], 200);
         } catch (Exception $e) {
             return response()->json([

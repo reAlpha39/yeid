@@ -2,14 +2,42 @@
 const currencies = ["IDR", "USD", "JPY", "EUR", "SGD"];
 const vendors = ref();
 
-const data = ref({});
+// Server-side data and pagination
+const data = ref([]);
+const loading = ref(false);
+const pagination = ref({
+  total: 0,
+  per_page: 10,
+  current_page: 1,
+  last_page: 1,
+  from: null,
+  to: null,
+  next_page_url: null,
+  prev_page_url: null,
+});
 
+// Sorting
+const sortBy = ref([{ key: "partcode", order: "asc" }]);
+const sortDesc = ref([]);
+const appliedOptions = ref({});
+
+// Search filters
 const searchPartCode = ref("");
 const searchPartName = ref("");
 const selectedVendors = ref();
 const currency = ref();
 const specTf = ref();
 const brandTf = ref();
+
+// Table headers
+const headers = [
+  { title: "PART", key: "partname", sortable: true },
+  { title: "BRAND", key: "brand", sortable: true },
+  { title: "SPECIFICATION", key: "specification", sortable: true },
+  { title: "CURRENCY", key: "currency", sortable: true },
+  { title: "UNIT PRICE", key: "unitprice", sortable: true },
+  { title: "ACTION", key: "actions", sortable: false },
+];
 
 const props = defineProps({
   isDialogVisible: {
@@ -25,15 +53,42 @@ const dialogVisibleUpdate = (val) => {
 };
 
 const handleItemClick = (item) => {
-  // Process the item data as needed
-  // console.log("Selected item:", item);
-
   emit("update:isDialogVisible", false);
   emit("submit", item);
 };
 
-async function fetchData() {
+async function fetchData(options = {}) {
+  loading.value = true;
+
   try {
+    // Format sort parameters
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      const sortDirection =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].order
+          : options.sortDesc?.[0]
+          ? "desc"
+          : "asc";
+
+      sortParams.sortBy = JSON.stringify({
+        key: sortColumn,
+        order: sortDirection,
+      });
+    } else if (sortBy.value[0]) {
+      // Use current sort if no sort in options
+      sortParams.sortBy = JSON.stringify({
+        key: sortBy.value[0].key,
+        order: sortBy.value[0].order,
+      });
+    }
+
     const response = await $api("/getPartInfo", {
       params: {
         partCode: searchPartCode.value,
@@ -42,13 +97,34 @@ async function fetchData() {
         currency: currency.value,
         spec: specTf.value,
         brand: brandTf.value,
+        page: options.page || pagination.value.current_page,
+        per_page: options.itemsPerPage || pagination.value.per_page,
+        ...sortParams,
       },
     });
 
     data.value = response.data;
+    pagination.value = response.pagination;
   } catch (err) {
     console.log(err);
+  } finally {
+    loading.value = false;
   }
+}
+
+function handleOptionsUpdate(options) {
+  // Update the sorting values
+  sortBy.value = options.sortBy || [];
+  sortDesc.value = options.sortDesc || [];
+
+  // Update the pagination values
+  pagination.value.current_page = options.page;
+  pagination.value.per_page = options.itemsPerPage;
+
+  appliedOptions.value = options;
+
+  // Fetch the data with new options
+  fetchData(options);
 }
 
 async function fetchDataVendor(id) {
@@ -74,7 +150,15 @@ async function fetchDataVendor(id) {
   }
 }
 
-const debouncedFetchData = debounce(fetchData, 500);
+const debouncedFetchData = debounce(() => {
+  pagination.value.current_page = 1; // Reset to first page when filters change
+  fetchData({
+    page: 1,
+    itemsPerPage: pagination.value.per_page,
+    sortBy: sortBy.value,
+    sortDesc: sortDesc.value,
+  });
+}, 500);
 
 watch(
   [searchPartCode, searchPartName, specTf, brandTf, selectedVendors, currency],
@@ -84,7 +168,11 @@ watch(
 );
 
 onMounted(() => {
-  fetchData();
+  fetchData({
+    page: pagination.value.current_page,
+    itemsPerPage: pagination.value.per_page,
+    sortBy: sortBy.value,
+  });
   fetchDataVendor();
 });
 </script>
@@ -161,60 +249,40 @@ onMounted(() => {
 
       <VDivider />
 
-      <div class="py-3 flex-grow-1">
-        <VRow class="me-10 pb-2">
-          <VCol cols="12" md="3">
-            <h6 class="text-h6">Part</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6 ps-2">Brand</h6>
-          </VCol>
-          <VCol cols="12" md="3">
-            <h6 class="text-h6 ps-2">Specification</h6>
-          </VCol>
-          <VCol cols="12" md="1">
-            <h6 class="text-h6">Curr</h6>
-          </VCol>
-          <VCol cols="12" md="2">
-            <h6 class="text-h6">Unit Price</h6>
-          </VCol>
-          <VCol cols="12" md="1">
-            <h6 class="text-h6">Action</h6>
-          </VCol>
-        </VRow>
-        <VDivider />
-      </div>
+      <div class="sticky-actions-wrapper">
+        <VDataTableServer
+          v-model:items-per-page="pagination.per_page"
+          v-model:page="pagination.current_page"
+          :items-length="pagination.total"
+          :loading="loading"
+          :headers="headers"
+          :items="data"
+          :sort-by="sortBy"
+          class="text-no-wrap"
+          @update:options="handleOptionsUpdate"
+          height="562"
+        >
+          <!-- Part name column with part code as small text -->
+          <template #item.partname="{ item }">
+            <div class="d-flex flex-column">
+              <span style="font-weight: 500">{{ item.partname }}</span>
+              <small>{{ item.partcode }}</small>
+            </div>
+          </template>
 
-      <template v-for="(item, index) in data" :key="index">
-        <div class="py-2">
-          <VRow class="me-10">
-            <VCol cols="12" md="3">
-              <div class="d-flex flex-column align-items-center">
-                <span style="font-weight: 500">{{ item.partname }}</span>
-                <small>{{ item.partcode }}</small>
-              </div>
-            </VCol>
-            <VCol cols="12" md="2">
-              <text> {{ item.brand }}</text>
-            </VCol>
-            <VCol cols="12" md="3">
-              <text>{{ item.specification }}</text>
-            </VCol>
-            <VCol cols="12" md="1">
-              <text> {{ item.currency }}</text>
-            </VCol>
-            <VCol cols="12" md="2">
-              <text>{{ item.unitprice.toLocaleString() }}</text>
-            </VCol>
-            <VCol cols="12" md="1">
-              <a @click.prevent="handleItemClick(item)" style="cursor: pointer"
-                >Select</a
-              >
-            </VCol>
-          </VRow>
-          <VDivider />
-        </div>
-      </template>
+          <!-- Unit price column with formatted number -->
+          <template #item.unitprice="{ item }">
+            {{ item.unitprice.toLocaleString() }}
+          </template>
+
+          <!-- Action column -->
+          <template #item.actions="{ item }">
+            <a @click.prevent="handleItemClick(item)" style="cursor: pointer">
+              Select
+            </a>
+          </template>
+        </VDataTableServer>
+      </div>
     </VCard>
   </VDialog>
 </template>
