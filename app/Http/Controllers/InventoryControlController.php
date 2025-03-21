@@ -203,7 +203,7 @@ class InventoryControlController extends Controller
             // }
 
             // Get search parameters
-            $query = $request->input('query', '');
+            $search = $request->input('query', '');
             $partCode = $request->input('partCode');
             $partName = $request->input('partName');
             $vendor = $request->input('vendorcode');
@@ -230,43 +230,71 @@ class InventoryControlController extends Controller
                 }
             }
 
-            // Build the main query
-            $query = DB::table('mas_inventory')
-                ->where(function ($q) use ($query) {
-                    $q->where('partcode', 'ILIKE', $query . '%')
-                        ->orWhere('partname', 'ILIKE', $query . '%');
-                });
+            // Build the main query with the totalstock calculation
+            $query = DB::table('mas_inventory as m')
+                ->select(
+                    'm.partcode',
+                    'm.partname',
+                    'm.specification',
+                    'm.brand',
+                    'm.vendorcode',
+                    'm.unitprice',
+                    'm.currency',
+                    DB::raw('m.laststocknumber + COALESCE(gi.sum_quantity, 0) as totalstock'),
+                    'm.minstock'
+                )
+                ->leftJoin(DB::raw('(
+                select
+                    t.partcode,
+                    sum(case
+                        when t.jobcode = \'O\' then -t.quantity
+                        when t.jobcode = \'I\' then t.quantity
+                        when t.jobcode = \'A\' then t.quantity
+                        else 0 end) as sum_quantity
+                from tbl_invrecord as t
+                left join mas_inventory as minv on t.partcode = minv.partcode
+                where t.updatetime > minv.updatetime
+                group by t.partcode
+            ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
+                ->where('m.status', '<>', 'D');
 
             // Apply filters
             if ($partCode) {
-                $query->where('partcode', 'ILIKE', $partCode . '%');
+                $query->where('m.partcode', 'ILIKE', $partCode . '%');
             }
 
             if ($partName) {
-                $query->where('partname', 'ILIKE', $partName . '%');
+                $query->where('m.partname', 'ILIKE', $partName . '%');
             }
 
             if ($vendor) {
-                $query->where('vendorcode', $vendor);
+                $query->where('m.vendorcode', $vendor);
             }
 
             if ($currency) {
-                $query->where('currency', $currency);
+                $query->where('m.currency', $currency);
             }
 
             if ($spec) {
-                $query->where('specification', 'ILIKE', $spec . '%');
+                $query->where('m.specification', 'ILIKE', $spec . '%');
             }
 
             if ($brand) {
-                $query->where('brand', 'ILIKE', $brand . '%');
+                $query->where('m.brand', 'ILIKE', $brand . '%');
             }
 
             // Apply sorting
             if ($sortBy) {
-                $query->orderBy($sortBy, $sortDirection);
+                // Handle the totalstock field separately since it's a calculated field
+                if ($sortBy === 'totalstock') {
+                    $query->orderByRaw('m.laststocknumber + COALESCE(gi.sum_quantity, 0) ' . $sortDirection);
+                } else {
+                    // For other fields, prefix with table alias
+                    $query->orderBy('m.' . $sortBy, $sortDirection);
+                }
             } else {
-                $query->orderBy('partcode', 'asc');
+                $query->orderBy('m.partcode', 'asc');
             }
 
             // Execute pagination
