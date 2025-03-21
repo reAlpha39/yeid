@@ -112,141 +112,173 @@ onMounted(() => {
     <VRow class="px-6 py-4" no-gutters>
       <VCol cols="6">
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
-            <text>Keadaan</text>
+          <VCol cols="3">
+            <text>Machine No</text>
           </VCol>
-          <VCol cols="4">
-            <text>: -</text>
+          <VCol cols="6">
+            <text>: {{ report?.machineno }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
+            <text>Machine Name</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.machinename }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
             <text>Order Shop</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.ordershop }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Nama Maker</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.makername }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Stop Panjang</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.ltfactor }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Uraian Masalah</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.situation }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Penyebab</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.factor }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Temporary Tindakan</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.measure }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Solution</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.prevention }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Name</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.orderempname }}</text>
           </VCol>
         </VRow>
       </VCol>
       <VCol cols="6">
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
-            <text>Kode</text>
+          <VCol cols="3">
+            <text>Jenis Perbaikan</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.maintenancecode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
-            <text>Mengapa dan<br />Bagaimana</text>
+          <VCol cols="3">
+            <text>Mengapa dan Bagaimana</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.ordertitle }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Kode S.P</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.ltfactorcode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Kode U.M</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.situationcode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Kode P</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.factorcode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Kode T.T</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.measurecode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Kode S</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.preventioncode }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
-          <VCol cols="4">
+          <VCol cols="3">
             <text>Komentar</text>
           </VCol>
-          <VCol cols="4">
+          <VCol cols="6">
             <text>: {{ report?.comments }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Waktu Mesin Stop</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.machinestoptime }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Waktu Line Stop</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.linestoptime }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Waktu Jalan Produksi</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.restoreddatetime }}</text>
           </VCol>
         </VRow>
       </VCol>
