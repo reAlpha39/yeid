@@ -1002,7 +1002,7 @@ class AnalyzationController extends Controller
             $query->where('mm.linecode', $params['line']);
         }
         if (!empty($params['machineNo'])) {
-            $query->where('r.machineno', 'like', $params['machineNo'] . '%');
+            $query->where('r.machineno', 'ilike', $params['machineNo'] . '%');
         }
         if (!empty($params['situation'])) {
             $query->where('r.situationcode', $params['situation']);
