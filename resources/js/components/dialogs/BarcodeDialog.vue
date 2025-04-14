@@ -131,9 +131,9 @@ const fetchPrinters = async () => {
     printers.value = await response.json();
 
     // Set default printer if one exists
-    if (printers.value.length > 0 && !printerName.value) {
-      printerName.value = printers.value[0];
-    }
+    // if (printers.value.length > 0 && !printerName.value) {
+    //   printerName.value = printers.value[0];
+    // }
   } catch (error) {
     console.error("Failed to fetch printers:", error);
     printers.value = [];
@@ -180,13 +180,14 @@ onMounted(() => {
           dense
           class="mb-4"
         />
-        <div class="text-subtitle-1">
+        <div v-if="printers.length === 0" class="text-subtitle-1">
           Couldn't connect to the client printer helper
         </div>
       </VCardText>
 
       <VCardActions class="justify-center">
         <VBtn
+          v-if="printerName"
           color="primary"
           @click="printSato"
           :loading="printing"
