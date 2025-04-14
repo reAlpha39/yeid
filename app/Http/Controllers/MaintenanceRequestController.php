@@ -368,7 +368,7 @@ class MaintenanceRequestController extends Controller
                 'planid' => $request->input('planid'),
                 'approval' => 0, // Set initial approval to 0
                 'updatetime' => now(),
-                'occurdate' => $request->input('occurdate'),
+                'occurdate' => date('Ymd', strtotime($request->input('orderdatetime'))), // OCCURDATE
                 'analysisquarter' => $request->input('analysisquarter'),
                 'analysishalf' => $request->input('analysishalf'),
                 'analysisterm' => $request->input('analysisterm'),
@@ -635,7 +635,7 @@ class MaintenanceRequestController extends Controller
         try {
             $user = MasUser::findOrFail(auth()->user()->id);
             $department = MasDepartment::find($user->department_id);
-            $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
+            $isMtcDepartment = $department ? $department->code === self::MTC_DEPARTMENT : false;
 
             if (!$this->checkAccess(['mtDbsDeptReq', 'mtDbsMtReport'], 'view')) {
                 return $this->unauthorizedResponse();
@@ -672,22 +672,30 @@ class MaintenanceRequestController extends Controller
                 ], 404);
             }
 
-            if ($spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT) {
-                $supervisorDept = MasUser::with(['department' => function ($query) {
-                    $query->select('id', 'code', 'name');
-                }])
-                    ->where('department_id', $department->id)
-                    ->whereIn('role_access', ['2'])
-                    ->select('id', 'name', 'role_access', 'department_id')
-                    ->get();
+            $supervisorDept = null;
+            $managerDept = null;
+            $canApprove = false;
 
-                $managerDept = MasUser::with(['department' => function ($query) {
-                    $query->select('id', 'code', 'name');
-                }])
-                    ->where('department_id', $department->id)
-                    ->whereIn('role_access', ['3'])
-                    ->select('id', 'name', 'role_access', 'department_id')
-                    ->get();
+            if ($spkRecord->approvalRecord && $spkRecord->approvalRecord->department) {
+                if ($spkRecord->approvalRecord->department->code !== self::MTC_DEPARTMENT) {
+                    $supervisorDept = MasUser::with(['department' => function ($query) {
+                        $query->select('id', 'code', 'name');
+                    }])
+                        ->where('department_id', $department ? $department->id : null)
+                        ->whereIn('role_access', ['2'])
+                        ->select('id', 'name', 'role_access', 'department_id')
+                        ->get();
+
+                    $managerDept = MasUser::with(['department' => function ($query) {
+                        $query->select('id', 'code', 'name');
+                    }])
+                        ->where('department_id', $department ? $department->id : null)
+                        ->whereIn('role_access', ['3'])
+                        ->select('id', 'name', 'role_access', 'department_id')
+                        ->get();
+                }
+
+                $canApprove = $this->approvalService->canApprove($spkRecord->approvalRecord, $user);
             }
 
             $supervisorMtc = MasUser::with(['department' => function ($query) {
@@ -699,6 +707,7 @@ class MaintenanceRequestController extends Controller
                 ->whereIn('role_access', ['2'])
                 ->select('id', 'name', 'role_access', 'department_id')
                 ->get();
+
             $managerMtc = MasUser::with(['department' => function ($query) {
                 $query->select('id', 'code', 'name');
             }])
@@ -725,8 +734,6 @@ class MaintenanceRequestController extends Controller
                 ->where('machineno', $spkRecord->machineno)
                 ->first();
 
-            $canApprove = $this->approvalService->canApprove($spkRecord->approvalRecord, $user);
-
             // Merge machine details with SPK record
             $responseData = array_merge(
                 $spkRecord->toArray(),
@@ -737,8 +744,8 @@ class MaintenanceRequestController extends Controller
                     'createempcode' => $spkRecord->createempcode ?? '',
                     'createempname' => $spkRecord->createempname ?? '',
                     'can_approve' => $canApprove,
-                    'supervisor_department' => $supervisorDept ?? null,
-                    'manager_department' => $managerDept ?? null,
+                    'supervisor_department' => $supervisorDept,
+                    'manager_department' => $managerDept,
                     'supervisor_mtc' => $supervisorMtc,
                     'manager_mtc' => $managerMtc,
                 ],
