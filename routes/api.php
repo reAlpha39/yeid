@@ -194,7 +194,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::get('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'index']);
     Route::get('/maintenance-database-system/department-requests/can-add-pic', [MaintenanceRequestController::class, 'canAddPic']);
     Route::get('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'show']);
-    Route::get('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'show']);
     Route::post('/maintenance-database-system/department-requests', [MaintenanceRequestController::class, 'store']);
     Route::put('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'update']);
     Route::delete('/maintenance-database-system/department-requests/{id}', [MaintenanceRequestController::class, 'destroy']);
