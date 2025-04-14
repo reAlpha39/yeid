@@ -280,13 +280,6 @@ class MaintenanceRequestController extends Controller
                     return $row;
                 });
 
-            if ($results->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No records found'
-                ], 404);
-            }
-
             return response()->json([
                 'success' => true,
                 'data' => $results
