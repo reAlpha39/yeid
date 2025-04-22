@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('approval_id');
             $table->unsignedBigInteger('user_id');
-            $table->text('note');
+            $table->text('note')->nullable();
             $table->enum('type', [
                 'approved',
                 'rejected',

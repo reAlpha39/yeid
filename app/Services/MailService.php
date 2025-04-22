@@ -96,7 +96,7 @@ class MailService
         }
     }
 
-    public function sendRevisionRequest(SpkRecord $spkRecord, MasUser $reviewer, string $note)
+    public function sendRevisionRequest(SpkRecord $spkRecord, MasUser $reviewer, ?string $note)
     {
         $requester = MasUser::find($spkRecord->approvalRecord->created_by);
 
@@ -115,7 +115,7 @@ class MailService
         }
     }
 
-    public function sendRejectionNotification(SpkRecord $spkRecord, MasUser $rejector, string $note)
+    public function sendRejectionNotification(SpkRecord $spkRecord, MasUser $rejector, ?string $note)
     {
         $requester = MasUser::find($spkRecord->approvalRecord->created_by);
 

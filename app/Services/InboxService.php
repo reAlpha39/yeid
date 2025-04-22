@@ -63,7 +63,7 @@ class InboxService
         );
     }
 
-    public function createRevisionRequest(SpkRecord $record, MasUser $reviewer, string $note): ?Inbox
+    public function createRevisionRequest(SpkRecord $record, MasUser $reviewer, ?string $note): ?Inbox
     {
         $requester = MasUser::find(
             SpkRecordApproval::where('record_id', $record->recordid)
@@ -86,7 +86,7 @@ class InboxService
         );
     }
 
-    public function createRejectionNotification(SpkRecord $record, MasUser $rejector, string $note): ?Inbox
+    public function createRejectionNotification(SpkRecord $record, MasUser $rejector, ?string $note): ?Inbox
     {
         $requester = MasUser::find(
             SpkRecordApproval::where('record_id', $record->recordid)

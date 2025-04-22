@@ -60,7 +60,7 @@ class ApprovalService
 
             $approval->notes()->create([
                 'user_id' => $requester->id,
-                'note' => '',
+                'note' => 'initial request',
                 'type' => self::STATUS_APPROVED
             ]);
 
@@ -157,7 +157,7 @@ class ApprovalService
         }
     }
 
-    public function requestRevision(SpkRecordApproval $approval, MasUser $reviewer, string $note)
+    public function requestRevision(SpkRecordApproval $approval, MasUser $reviewer, ?string $note)
     {
         $approval->notes()->create([
             'user_id' => $reviewer->id,
@@ -177,7 +177,7 @@ class ApprovalService
         return $approval;
     }
 
-    public function reject(SpkRecordApproval $approval, MasUser $rejector, string $note)
+    public function reject(SpkRecordApproval $approval, MasUser $rejector, ?string $note)
     {
         $approval->notes()->create([
             'user_id' => $rejector->id,
@@ -197,7 +197,7 @@ class ApprovalService
         return $approval;
     }
 
-    public function approve(SpkRecordApproval $approval, MasUser $approver, string $note = null, ?MasEmployee $pic = null)
+    public function approve(SpkRecordApproval $approval, MasUser $approver, ?string $note, ?MasEmployee $pic)
     {
         $department = MasDepartment::find($approval->department_id);
         $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
@@ -294,16 +294,14 @@ class ApprovalService
         return $approval->approval_status === self::STATUS_FINISH;
     }
 
-    public function draft(SpkRecordApproval $approval, MasUser $user, string $note = null)
+    public function draft(SpkRecordApproval $approval, MasUser $user, ?string $note)
     {
-        // Create a note if provided
-        if ($note) {
-            $approval->notes()->create([
-                'user_id' => $user->id,
-                'note' => $note,
-                'type' => self::STATUS_DRAFT
-            ]);
-        }
+
+        $approval->notes()->create([
+            'user_id' => $user->id,
+            'note' => $note,
+            'type' => self::STATUS_DRAFT
+        ]);
 
         // Update approval status
         $approval->approval_status = self::STATUS_DRAFT;
@@ -312,16 +310,13 @@ class ApprovalService
         return $approval;
     }
 
-    public function finish(SpkRecordApproval $approval, MasUser $user, string $note = null)
+    public function finish(SpkRecordApproval $approval, MasUser $user, ?string $note)
     {
-        // Create a note if provided
-        if ($note) {
-            $approval->notes()->create([
-                'user_id' => $user->id,
-                'note' => $note,
-                'type' => self::STATUS_FINISH
-            ]);
-        }
+        $approval->notes()->create([
+            'user_id' => $user->id,
+            'note' => $note,
+            'type' => self::STATUS_FINISH
+        ]);
 
         // Update approval status
         $approval->approval_status = self::STATUS_FINISH;
@@ -343,7 +338,7 @@ class ApprovalService
         MasUser $approver,
         ?string $note,
         bool $isMtcDepartment,
-        ?MasEmployee $pic = null
+        ?MasEmployee $pic
     ) {
         $spkRecord = SpkRecord::find($approval->record_id);
 
@@ -353,13 +348,11 @@ class ApprovalService
             $approval->supervisor_approved_by = $approval->supervisor_approved_by ?? $approver->id;
             $approval->supervisor_approved_at = $approval->supervisor_approved_at ?? now();
 
-            if ($note) {
-                $approval->notes()->create([
-                    'user_id' => $approver->id,
-                    'note' => $note,
-                    'type' => self::STATUS_APPROVED
-                ]);
-            }
+            $approval->notes()->create([
+                'user_id' => $approver->id,
+                'note' => $note,
+                'type' => self::STATUS_APPROVED
+            ]);
 
             if ($isMtcDepartment) {
                 $approval->approval_status = self::STATUS_APPROVED;
@@ -372,13 +365,11 @@ class ApprovalService
             $approval->supervisor_approved_at = now();
             $approval->approval_status = self::STATUS_PARTIALLY_APPROVED;
 
-            if ($note) {
-                $approval->notes()->create([
-                    'user_id' => $approver->id,
-                    'note' => $note,
-                    'type' => self::STATUS_APPROVED
-                ]);
-            }
+            $approval->notes()->create([
+                'user_id' => $approver->id,
+                'note' => $note,
+                'type' => self::STATUS_APPROVED
+            ]);
 
             // $this->notifyDepartmentManager(MasDepartment::find($approval->department_id), $spkRecord);
         }
@@ -391,7 +382,7 @@ class ApprovalService
         return $approval;
     }
 
-    private function handleMtcApproval(SpkRecordApproval $approval, MasUser $approver, ?string $note, ?MasEmployee $pic = null)
+    private function handleMtcApproval(SpkRecordApproval $approval, MasUser $approver, ?string $note, ?MasEmployee $pic)
     {
         $spkRecord = SpkRecord::find($approval->record_id);
 
@@ -402,25 +393,24 @@ class ApprovalService
             $approval->supervisor_mtc_approved_at = $approval->supervisor_mtc_approved_at ?? now();
             $approval->approval_status = self::STATUS_APPROVED;
 
-            if ($note) {
-                $approval->notes()->create([
-                    'user_id' => $approver->id,
-                    'note' => $note,
-                    'type' => self::STATUS_APPROVED
-                ]);
-            }
+
+            $approval->notes()->create([
+                'user_id' => $approver->id,
+                'note' => $note,
+                'type' => self::STATUS_APPROVED
+            ]);
         } elseif ($approver->role_access === '2' && !$approval->manager_mtc_approved_by) {
             $approval->supervisor_mtc_approved_by = $approver->id;
             $approval->supervisor_mtc_approved_at = now();
             $approval->approval_status = self::STATUS_PARTIALLY_APPROVED;
 
-            if ($note) {
-                $approval->notes()->create([
-                    'user_id' => $approver->id,
-                    'note' => $note,
-                    'type' => self::STATUS_APPROVED
-                ]);
-            }
+
+            $approval->notes()->create([
+                'user_id' => $approver->id,
+                'note' => $note,
+                'type' => self::STATUS_APPROVED
+            ]);
+
 
             // $this->notifyMtcManager($spkRecord);
         }
