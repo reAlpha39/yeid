@@ -54,7 +54,7 @@ async function fetchDataMachine(id) {
 }
 
 function checkApprovalUsers() {
-  console.log(data.value?.approval_record?.notes.length);
+  // console.log(data.value?.approval_record?.notes.length);
   if (data.value.approval_record?.notes.length === 0) {
     showManagerMtcList.value = true;
     showSupervisorMtcList.value = true;
@@ -63,8 +63,12 @@ function checkApprovalUsers() {
     // console.log("aaaaaaa1");
   } else {
     var lastNote = data.value?.approval_record?.notes.at(-1);
-
-    if (lastNote.type === "revision" || lastNote.type === "rejected") {
+    if (data.value?.approval_record?.approval_status === "revised") {
+      showManagerMtcList.value = true;
+      showSupervisorMtcList.value = true;
+      showManagerDeptList.value = true;
+      showSupervisorDeptList.value = true;
+    } else if (lastNote.type === "revision" || lastNote.type === "rejected") {
       showManagerMtcList.value = false;
       showSupervisorMtcList.value = false;
       showManagerDeptList.value = false;
