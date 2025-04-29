@@ -634,29 +634,32 @@ class MaintenanceRequestController extends Controller
                 return $this->unauthorizedResponse();
             }
 
-            $spkRecord = SpkRecord::with(['approvalRecord' => function ($query) use ($isMtcDepartment) {
-                $query->with([
-                    'department:id,code,name',
-                    'createdBy:id,name,role_access',
-                    'pic:employeecode,employeename',
-                    'notes' => function ($query) {
-                        $query->with(['user' => function ($query) {
-                            $query->select('id', 'name', 'role_access', 'department_id')
-                                ->with('department:id,code,name');
-                        }])->addSelect([
-                            '*',
-                            DB::raw("(CASE WHEN EXISTS (
+            $spkRecord = SpkRecord::with([
+                'shop:shopcode,shopname',
+                'approvalRecord' => function ($query) use ($isMtcDepartment) {
+                    $query->with([
+                        'department:id,code,name',
+                        'createdBy:id,name,role_access',
+                        'pic:employeecode,employeename',
+                        'notes' => function ($query) {
+                            $query->with(['user' => function ($query) {
+                                $query->select('id', 'name', 'role_access', 'department_id')
+                                    ->with('department:id,code,name');
+                            }])->addSelect([
+                                '*',
+                                DB::raw("(CASE WHEN EXISTS (
                             SELECT 1 FROM mas_user u
                             JOIN mas_department d ON u.department_id = d.id
                             WHERE u.id = tbl_spkrecord_approval_note.user_id AND d.code = '" . self::MTC_DEPARTMENT . "'
                             ) THEN true ELSE false END) as is_user_dept_mtc")
-                        ]);
-                    },
-                ])->addSelect([
-                    '*',
-                    DB::raw($isMtcDepartment ? 'true as can_add_pic' : 'false as can_add_pic'),
-                ]);
-            }])->find($spkNo);
+                            ]);
+                        },
+                    ])->addSelect([
+                        '*',
+                        DB::raw($isMtcDepartment ? 'true as can_add_pic' : 'false as can_add_pic'),
+                    ]);
+                }
+            ])->find($spkNo);
 
             if (!$spkRecord) {
                 return response()->json([

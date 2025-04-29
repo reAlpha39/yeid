@@ -129,10 +129,42 @@ onMounted(() => {
         </VRow>
         <VRow class="py-1" no-gutters>
           <VCol cols="3">
-            <text>Order Shop</text>
+            <text>Machine Shop Code</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.shopcode }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Machine Shop Name</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.shopname }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Machine Line</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.linecode }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Order Shop Code</text>
           </VCol>
           <VCol cols="6">
             <text>: {{ report?.ordershop }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Order Shop Name</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.shop?.shopname }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>
@@ -271,6 +303,22 @@ onMounted(() => {
           </VCol>
           <VCol cols="6">
             <text>: {{ report?.linestoptime }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Waktu Mulai</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.startdatetime }}</text>
+          </VCol>
+        </VRow>
+        <VRow class="py-1" no-gutters>
+          <VCol cols="3">
+            <text>Waktu Selesai</text>
+          </VCol>
+          <VCol cols="6">
+            <text>: {{ report?.enddatetime }}</text>
           </VCol>
         </VRow>
         <VRow class="py-1" no-gutters>

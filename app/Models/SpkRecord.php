@@ -74,4 +74,9 @@ class SpkRecord extends Model
     {
         return $this->hasOne(SpkRecordApproval::class, 'record_id', 'recordid');
     }
+
+    public function shop(): HasOne
+    {
+        return $this->hasOne(MasShop::class, 'shopcode', 'ordershop');
+    }
 }
