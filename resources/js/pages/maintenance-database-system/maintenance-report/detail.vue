@@ -145,7 +145,7 @@ onMounted(() => {
         </VRow>
         <VRow class="py-1" no-gutters>
           <VCol cols="3">
-            <text>Machine Line</text>
+            <text>Machine Line Code</text>
           </VCol>
           <VCol cols="6">
             <text>: {{ report?.linecode }}</text>
@@ -169,7 +169,7 @@ onMounted(() => {
         </VRow>
         <VRow class="py-1" no-gutters>
           <VCol cols="3">
-            <text>Nama Maker</text>
+            <text>Maker Name</text>
           </VCol>
           <VCol cols="6">
             <text>: {{ report?.makername }}</text>

@@ -704,7 +704,7 @@ onMounted(() => {
         <VCol cols="6">
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Nomor Mesin</text>
+              <text>Machine No</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.machineno }}</text>
@@ -712,7 +712,7 @@ onMounted(() => {
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Nama Mesin</text>
+              <text>Machine Name</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.machinename }}</text>
@@ -720,7 +720,7 @@ onMounted(() => {
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Model</text>
+              <text>Machine Model</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.modelname }}</text>
@@ -728,7 +728,7 @@ onMounted(() => {
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Shop Code</text>
+              <text>Machine Shop Code</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.shopcode }}</text>
@@ -736,7 +736,7 @@ onMounted(() => {
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Shop Name</text>
+              <text>Machine Shop Name</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.shopname }}</text>
@@ -744,7 +744,7 @@ onMounted(() => {
           </VRow>
           <VRow class="py-1" no-gutters>
             <VCol cols="4">
-              <text>Line</text>
+              <text>Machine Line Code</text>
             </VCol>
             <VCol cols="4">
               <text>: {{ prevData?.linecode }}</text>

@@ -231,8 +231,14 @@ watch(
                       <VCol cols="8"> : {{ data?.orderempname }} </VCol>
                     </VRow>
                     <VRow>
-                      <VCol cols="4"> Shop yang Dituju </VCol>
-                      <VCol cols="8"> : {{ data?.shopcode }} </VCol>
+                      <VCol cols="4"> Order Shop Code </VCol>
+                      <VCol cols="8"> : {{ data?.ordershop ?? "-" }} </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Order Shop Name</VCol>
+                      <VCol cols="8">
+                        : {{ data?.shop?.shopname ?? "-" }}
+                      </VCol>
                     </VRow>
                     <VRow>
                       <VCol cols="4"> Mengapa dan Bagaimana </VCol>
@@ -303,7 +309,13 @@ watch(
                       </VCol>
                     </VRow>
                     <VRow>
-                      <VCol cols="4"> Shop </VCol>
+                      <VCol cols="4"> Shop Code </VCol>
+                      <VCol cols="8">
+                        : {{ dataMachine?.shopcode || "-" }}
+                      </VCol>
+                    </VRow>
+                    <VRow>
+                      <VCol cols="4"> Shop Name </VCol>
                       <VCol cols="8">
                         : {{ dataMachine?.shopname || "-" }}
                       </VCol>
