@@ -225,7 +225,7 @@ class MaintenanceRequestController extends Controller
                                 && $record->approvalRecord->createdBy->id === $user->id),
 
                         'can_update_report' => $record->approvalRecord
-                            && in_array($record->approvalRecord->approval_status, ['approved', 'draft', null])
+                            && in_array($record->approvalRecord->approval_status, ['finish', 'approved', 'draft', null])
                             && $isMtcDepartment,
 
                         'can_approve' => $canApprove
@@ -792,11 +792,11 @@ class MaintenanceRequestController extends Controller
                 ], 404);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', 'draft', null], true)) {
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['finish', 'approved', 'draft', null], true)) {
                 return response()->json([
                     'success' => false,
                     'not_authorized' => true,
-                    'message' => 'Request is cannot be edited before approved or already finished'
+                    'message' => 'Request is cannot be edited before approved'
                 ], 400);
             }
 
@@ -958,11 +958,11 @@ class MaintenanceRequestController extends Controller
                 ], 404);
             }
 
-            if (!in_array($spkRecord->approvalRecord->approval_status, ['approved', 'draft', null], true)) {
+            if (!in_array($spkRecord->approvalRecord->approval_status, ['finish', 'approved', 'draft', null], true)) {
                 return response()->json([
                     'success' => false,
                     'not_authorized' => true,
-                    'message' => 'Request is cannot be edited before approved or already finished'
+                    'message' => 'Request is cannot be edited before approved'
                 ], 400);
             }
 
