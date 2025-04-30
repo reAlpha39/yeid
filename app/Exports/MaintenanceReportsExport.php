@@ -72,15 +72,25 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             $isMtcDepartment = $department->code === self::MTC_DEPARTMENT;
 
             // Build base query using Eloquent
-            $query = SpkRecord::with(['approvalRecord' => function ($query) {
-                $query->with([
-                    'department:id,code,name'
-                ]);
-            }])
+            $query = SpkRecord::with([
+                'shop:shopcode,shopname',
+                'approvalRecord' => function ($query) {
+                    $query->with([
+                        'department:id,code,name'
+                    ]);
+                }
+            ])
                 ->leftJoin('mas_machine as m', 'tbl_spkrecord.machineno', '=', 'm.machineno')
                 ->select([
                     'tbl_spkrecord.*',
                     'm.machinename',
+                    'm.plantcode',
+                    'm.shopcode',
+                    'm.linecode',
+                    'm.modelname',
+                    'm.serialno',
+                    'm.installdate',
+                    DB::raw('(SELECT shopname FROM mas_shop WHERE shopcode = m.shopcode) AS shopname'),
                     DB::raw('COALESCE(tbl_spkrecord.planid, 0) AS planid'),
                     DB::raw('COALESCE(tbl_spkrecord.approval, 0) AS approval'),
                     DB::raw('COALESCE(tbl_spkrecord.createempcode, \'\') AS createempcode'),
@@ -288,16 +298,21 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         return [
             $row->recordid ?? '',
             $this->convertStatus($row->approvalRecord->approval_status ?? ''),
+            $row->approvalRecord->createdBy->id ?? '',
+            $row->approvalRecord->createdBy->name ?? '',
             // $row->status ?? '',
             $row->maintenancecode ?? '',
             $row->machineno ?? '',
-            $row->approvalRecord->createdBy->id ?? '',
-            $row->approvalRecord->createdBy->name ?? '',
+            $row->machinename ?? '',
+            $row->shopcode ?? '',
+            $row->shopname ?? '',
+            $row->linecode ?? '',
             $row->ordershop ?? '',
+            $row->shop->shopname ?? '',
             $row->ordertitle ?? '',
             $row->startdatetime ?? '',
             $row->enddatetime ?? '',
-            $row->restoredatetime ?? '',
+            $row->restoreddatetime ?? '',
             $row->machinestoptime ?? '',
             $row->linestoptime ?? '',
             $row->makername ?? '',
@@ -315,6 +330,7 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             $row->prevention ?? '',
             $row->comments ?? '',
             $row->updatetime ?? '',
+            // Work details
             $workDetail?->workid ?? '',
             $workDetail?->staffname ?? '',
             $workDetail?->inactivetime ?? 0,
@@ -325,6 +341,7 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             $workDetail?->waittime ?? 0,
             $workDetail?->repairtime ?? 0,
             $workDetail?->confirmtime ?? 0,
+            // Part details
             $partDetail?->partid ?? '',
             $partDetail?->partcode ?? '',
             $partDetail?->partname ?? '',
@@ -342,8 +359,14 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 foreach ($this->rowGroups as $group) {
-                    // Merge cells for main data columns (A to Q)
-                    foreach (range('A', 'Q') as $column) {
+                    // Create a custom range of columns from A to AG
+                    $columns = [];
+                    for ($col = 'A'; $col !== 'AH'; $col++) {
+                        $columns[] = $col;
+                    }
+
+                    // Merge cells for main data column
+                    foreach ($columns as $column) {
                         $event->sheet->mergeCells(sprintf(
                             '%s%d:%s%d',
                             $column,
@@ -370,18 +393,23 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
         return [
             'SPK NO',
             'Status',
+            'Login ID',
+            'Login Name',
             // 'Keadaan',
             'Maintenance Code',
             'Machine No',
-            'Login ID',
-            'Login Name',
-            'Order Shop',
+            'Machine Name',
+            'Machine Shop Code',
+            'Machine Shop Name',
+            'Machine Line Code',
+            'Order Shop Code',
+            'Order Shop Name',
             'Mengapa dan Bagaimana',
-            'Wkt Mulai',
-            'Wkt Selesai',
-            'Wkt M.J.Prod',
-            'Wkt Mesin Stop',
-            'Wkt Line Stop',
+            'Waktu Mulai',
+            'Waktu Selesai',
+            'Waktu Jalan Prod',
+            'Waktu Mesin Stop',
+            'Waktu Line Stop',
             'Nama Maker',
             'Service Fee',
             'Biaya Ganti Parts',
@@ -396,7 +424,7 @@ class MaintenanceReportsExport implements FromCollection, WithHeadings, ShouldAu
             'Kode S',
             'Solution',
             'Komentar',
-            'Wkt Memperbarui',
+            'Waktu Memperbarui',
             // Work Details Headers
             'Work ID',
             'Staff Name',
