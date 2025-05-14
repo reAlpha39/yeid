@@ -99,11 +99,6 @@ function convertAsapFlagId(id) {
 // headers
 const headers = [
   {
-    title: "STATUS",
-    key: "status",
-    sortable: false,
-  },
-  {
     title: "REQUEST",
     key: "wsrid",
   },
@@ -310,14 +305,6 @@ onMounted(() => {
         class="text-no-wrap"
         height="562"
       >
-        <template #item.status="{ item }">
-          <div class="status-indicator" :class="getStatusColor(item)">
-            <v-tooltip activator="parent" location="top">
-              {{ getStatusDescription(item) }}</v-tooltip
-            >
-          </div>
-        </template>
-
         <template #item.wsrid="{ item }">
           <div class="d-flex align-center">
             <div class="d-flex flex-column">
@@ -359,7 +346,12 @@ onMounted(() => {
 
         <!-- Actions -->
         <template #item.actions="{ item }">
-          <div class="d-flex justify-center gap-2">
+          <div class="d-flex justify-right gap-0">
+            <div class="status-indicator ml-2 mr-4" :class="getStatusColor(item)">
+              <v-tooltip activator="parent" location="top">
+                {{ getStatusDescription(item) }}</v-tooltip
+              >
+            </div>
             <IconBtn @click="openDetailPage(item.wsrid)">
               <VIcon icon="tabler-eye" />
             </IconBtn>
