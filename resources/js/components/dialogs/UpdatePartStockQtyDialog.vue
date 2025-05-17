@@ -61,38 +61,39 @@ async function saveUpdatedQty() {
   try {
     const now = new Date();
     const item = data.value;
-    const substract = await $api("/storeInvRecord", {
-      method: "POST",
-      body: {
-        records: [
-          {
-            locationid: "P",
-            jobcode: "A",
-            jobdate: formatDate(now), // Format date as 'YYYYMMDD'
-            jobtime: formatTime(now), // Format time as 'HHMMSS'
-            partcode: item.partcode,
-            partname: item.partname,
-            specification: item.specification,
-            brand: item.brand,
-            usedflag: item.usedflag,
-            quantity: -parseInt(data.value.totalstock),
-            unitprice: item.unitprice,
-            price: item.unitprice,
-            currency: item.currency,
-            vendorcode: item.vendorcode,
-            machineno: "",
-            machinename: "",
-            note: "",
-            employeecode: "",
-          },
-        ],
-      },
+    if (data.value.totalstock !== "0") {
+      const substract = await $api("/storeInvRecord", {
+        method: "POST",
+        body: {
+          records: [
+            {
+              locationid: "P",
+              jobcode: "A",
+              jobdate: formatDate(now), // Format date as 'YYYYMMDD'
+              jobtime: formatTime(now), // Format time as 'HHMMSS'
+              partcode: item.partcode,
+              partname: item.partname,
+              specification: item.specification,
+              brand: item.brand,
+              usedflag: item.usedflag,
+              quantity: -parseInt(data.value.totalstock),
+              unitprice: item.unitprice,
+              price: item.unitprice,
+              currency: item.currency,
+              vendorcode: item.vendorcode,
+              machineno: "",
+              machinename: "",
+              note: "",
+              employeecode: "",
+            },
+          ],
+        },
 
-      onResponseError({ response }) {
-        toast.error("Failed to update data");
-        errors.value = response._data.errors;
-      },
-    });
+        onResponseError({ response }) {
+          toast.error(response._data.message ?? "Failed to update data");
+        },
+      });
+    }
 
     const result = await $api("/storeInvRecord", {
       method: "POST",
@@ -122,8 +123,7 @@ async function saveUpdatedQty() {
       },
 
       onResponseError({ response }) {
-        toast.error("Failed to update data");
-        errors.value = response._data.errors;
+        toast.error(response._data.message ?? "Failed to update data");
       },
     });
 
