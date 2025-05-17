@@ -275,25 +275,25 @@ class MasterPartController extends Controller
                     DB::raw("COALESCE(m.etddate, '') as etddate")
                 ])
                 ->leftJoin(DB::raw('(
-                SELECT
-                    t.partcode,
-                    SUM(CASE
-                        WHEN t.jobcode = \'O\' THEN -t.quantity
-                        WHEN t.jobcode IN (\'I\', \'A\') THEN t.quantity
-                        ELSE 0
-                    END) as sum_quantity
-                FROM tbl_invrecord as t
-                LEFT JOIN mas_inventory as minv ON t.partcode = minv.partcode
-                WHERE t.updatetime > minv.updatetime
-                GROUP BY t.partcode
-            ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                    select
+                        t.partcode,
+                        sum(case
+                            when t.jobcode = \'O\' then -t.quantity
+                            when t.jobcode = \'I\' then t.quantity
+                            when t.jobcode = \'A\' then t.quantity
+                            else 0 end) as sum_quantity
+                    from tbl_invrecord as t
+                    left join mas_inventory as minv on t.partcode = minv.partcode
+                    where t.updatetime > minv.updatetime
+                    group by t.partcode
+                ) as gi'), 'm.partcode', '=', 'gi.partcode')
                 ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
                 ->where('m.status', '<>', 'D');
 
             if (!empty($partCode)) {
                 $queryBuilder->where(function ($q) use ($partCode) {
                     $q->where('m.partcode', $partCode)
-                        ->orWhere(DB::raw('UPPER(m.partname)'), 'LIKE', '%' . strtoupper($partCode) . '%');
+                        ->orWhere(DB::raw('UPPER(m.partname)'), strtoupper($partCode));
                 });
             }
 
