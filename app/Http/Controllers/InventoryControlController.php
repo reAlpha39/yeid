@@ -536,7 +536,7 @@ class InventoryControlController extends Controller
                 'records.*.specification' => 'nullable',
                 'records.*.brand' => 'nullable',
                 'records.*.usedflag' => 'nullable',
-                'records.*.quantity' => 'required|numeric|min:0',
+                'records.*.quantity' => 'required|numeric',
                 'records.*.unitprice' => 'required|numeric',
                 'records.*.price' => 'required|numeric',
                 'records.*.currency' => 'required',
