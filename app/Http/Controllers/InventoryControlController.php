@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Exports\InventoryControlExport;
+use App\Exports\StockReportExport;
 use App\Traits\PermissionCheckerTrait;
 use Maatwebsite\Excel\Facades\Excel;
 use Exception;
@@ -244,18 +245,14 @@ class InventoryControlController extends Controller
                     'm.minstock'
                 )
                 ->leftJoin(DB::raw('(
-                select
-                    t.partcode,
-                    sum(case
-                        when t.jobcode = \'O\' then -t.quantity
-                        when t.jobcode = \'I\' then t.quantity
-                        when t.jobcode = \'A\' then t.quantity
-                        else 0 end) as sum_quantity
-                from tbl_invrecord as t
-                left join mas_inventory as minv on t.partcode = minv.partcode
-                where t.updatetime > minv.updatetime
-                group by t.partcode
-            ) as gi'), 'm.partcode', '=', 'gi.partcode')
+                    select
+                        t.partcode,
+                        sum(case when t.jobcode = \'O\' then -t.quantity else t.quantity end) as sum_quantity
+                    from tbl_invrecord as t
+                    left join mas_inventory as minv on t.partcode = minv.partcode
+                    where t.jobdate > minv.laststockdate
+                    group by t.partcode
+                ) as gi'), 'm.partcode', '=', 'gi.partcode')
                 ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
                 ->where('m.status', '<>', 'D');
 
@@ -698,6 +695,93 @@ class InventoryControlController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Export failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportStockReport(Request $request)
+    {
+        try {
+            if (!$this->checkAccess(['invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
+            return Excel::download(new StockReportExport(), 'StockTakenReport_' . date('Ymd') . '.xlsx');
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate stock report',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateQuantity(Request $request)
+    {
+        try {
+            if (!$this->checkAccess(['invControlPartList'], 'update')) {
+                return $this->unauthorizedResponse();
+            }
+
+            // Create a temporary table with aggregated inventory movements
+            DB::statement('
+            CREATE TEMPORARY TABLE temp_inventory_movements AS
+            SELECT 
+                t.partcode,
+                SUM(CASE 
+                    WHEN t.jobcode = \'O\' THEN -t.quantity 
+                    ELSE t.quantity 
+                END) as total_movement
+            FROM tbl_invrecord AS t
+            JOIN mas_inventory AS m ON t.partcode = m.partcode
+            WHERE t.jobdate > m.laststockdate
+            GROUP BY t.partcode
+        ');
+
+            // Create an index on the temporary table
+            DB::statement('CREATE INDEX idx_temp_movements_partcode ON temp_inventory_movements (partcode)');
+
+            // Update using the temporary table
+            $affected = DB::update('
+            UPDATE mas_inventory
+            SET 
+                laststocknumber = mas_inventory.laststocknumber + COALESCE(tmp.total_movement, 0),
+                laststockdate = ?
+            FROM temp_inventory_movements AS tmp
+            WHERE mas_inventory.partcode = tmp.partcode
+        ', [date('Ymd')]);
+
+            // Update records that don't have movements
+            $affectedNoMovement = DB::update('
+            UPDATE mas_inventory
+            SET laststockdate = ?
+            WHERE partcode NOT IN (SELECT partcode FROM temp_inventory_movements)
+        ', [date('Ymd')]);
+
+            $affected += $affectedNoMovement;
+
+            // Drop the temporary table
+            DB::statement('DROP TABLE IF EXISTS temp_inventory_movements');
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Successfully updated quantities',
+                'affected_rows' => $affected
+            ], 200);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            try {
+                DB::statement('DROP TABLE IF EXISTS temp_inventory_movements');
+            } catch (Exception $dropEx) {
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update quantities',
                 'error' => $e->getMessage()
             ], 500);
         }

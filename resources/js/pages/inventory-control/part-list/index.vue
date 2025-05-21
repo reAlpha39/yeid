@@ -18,6 +18,7 @@ definePage({
 const toast = useToast();
 const router = useRouter();
 
+const isUpdateLastStockQtyDialogVisible = ref(false);
 const isUpdateStockQtyDialogVisible = ref(false);
 const isSelectInventoryVendorDialogVisible = ref(false);
 const barcodeDialogRef = ref(null);
@@ -248,6 +249,7 @@ function revCategoryType(category) {
 }
 
 const loadingExport = ref(false);
+const loadingExportReport = ref(false);
 
 async function handleExport() {
   loadingExport.value = true;
@@ -305,6 +307,67 @@ async function handleExport() {
     console.error("Export failed:", error);
   } finally {
     loadingExport.value = false;
+  }
+}
+
+async function handleExportReport() {
+  loadingExportReport.value = true;
+
+  var options = appliedOptions.value;
+  try {
+    const sortParams = {};
+    if (options.sortBy?.[0]) {
+      // Check if sortBy is an object
+      const sortColumn =
+        typeof options.sortBy[0] === "object"
+          ? options.sortBy[0].key
+          : options.sortBy[0];
+
+      sortParams.sortBy = sortColumn;
+      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
+    }
+
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get("/api/inventory/stock-report/export", {
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {},
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "inventory_part_report.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+
+    // Open updateQuantity dialog
+    isUpdateLastStockQtyDialogVisible.value = true;
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExportReport.value = false;
+  }
+}
+
+async function updateQuantity() {
+  loadingExportReport.value = true;
+
+  const response = await $api("/inventory/update-last-quantity", {
+    method: "POST",
+  });
+
+  toast.success("Last stock quantity updated");
+
+  try {
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    isUpdateLastStockQtyDialogVisible.value = false;
+    loadingExportReport.value = false;
   }
 }
 
@@ -512,6 +575,15 @@ onMounted(() => {
           :loading="loadingExport"
         >
           Export
+        </VBtn>
+
+        <VBtn
+          v-if="$can('update', 'invControlPartList')"
+          prepend-icon="tabler-report"
+          @click="handleExportReport"
+          :loading="loadingExportReport"
+        >
+          Report
         </VBtn>
 
         <!-- 👉 Add button -->
@@ -796,6 +868,36 @@ onMounted(() => {
     v-model:isDialogVisible="isSelectInventoryVendorDialogVisible"
     @submit="orderPartItem"
   />
+
+  <VDialog v-model="isUpdateLastStockQtyDialogVisible" max-width="500px">
+    <VCard class="pa-4">
+      <VCardTitle class="text-center text-wrap">
+        Are you sure you want to update stock quantity? Please check the report
+        first before updating.
+      </VCardTitle>
+
+      <VCardActions class="pt-4">
+        <VSpacer />
+
+        <VBtn
+          color="error"
+          variant="outlined"
+          @click="
+            isUpdateLastStockQtyDialogVisible =
+              !isUpdateLastStockQtyDialogVisible
+          "
+        >
+          Cancel
+        </VBtn>
+
+        <VBtn color="success" variant="elevated" @click="updateQuantity()">
+          OK
+        </VBtn>
+
+        <VSpacer />
+      </VCardActions>
+    </VCard>
+  </VDialog>
 
   <LoadingDialog v-model="isLoadingOrderParts" />
 </template>

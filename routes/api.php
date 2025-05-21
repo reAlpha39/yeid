@@ -60,6 +60,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/storeInvRecord', [App\Http\Controllers\InventoryControlController::class, 'storeInvRecord']);
     Route::delete('/deleteRecord', [App\Http\Controllers\InventoryControlController::class, 'deleteRecord']);
     Route::post('/inventory/update-inv-outbound', [App\Http\Controllers\InventoryControlController::class, 'updateInventoryOutBound']);
+    Route::get('/inventory/stock-report/export', [App\Http\Controllers\InventoryControlController::class, 'exportStockReport']);
+    Route::post('/inventory/update-last-quantity', [App\Http\Controllers\InventoryControlController::class, 'updateQuantity']);
     Route::post('/orders', [OrderInventoryController::class, 'processOrder']);
 
     // Master Part
