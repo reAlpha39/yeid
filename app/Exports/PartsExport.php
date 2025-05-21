@@ -48,14 +48,10 @@ class PartsExport implements FromCollection, WithHeadings, WithMapping
             ->leftJoin(DB::raw('(
                 select
                     t.partcode,
-                    sum(case
-                        when t.jobcode = \'O\' then -t.quantity
-                        when t.jobcode = \'I\' then t.quantity
-                        when t.jobcode = \'A\' then t.quantity
-                        else 0 end) as sum_quantity
+                    sum(case when t.jobcode = \'O\' then -t.quantity else t.quantity end) as sum_quantity
                 from tbl_invrecord as t
                 left join mas_inventory as minv on t.partcode = minv.partcode
-                where t.updatetime > minv.updatetime
+                where t.jobdate > minv.laststockdate
                 group by t.partcode
             ) as gi'), 'm.partcode', '=', 'gi.partcode')
             ->leftJoin('mas_vendor as v', 'm.vendorcode', '=', 'v.vendorcode')
