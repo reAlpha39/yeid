@@ -313,20 +313,7 @@ async function handleExport() {
 async function handleExportReport() {
   loadingExportReport.value = true;
 
-  var options = appliedOptions.value;
   try {
-    const sortParams = {};
-    if (options.sortBy?.[0]) {
-      // Check if sortBy is an object
-      const sortColumn =
-        typeof options.sortBy[0] === "object"
-          ? options.sortBy[0].key
-          : options.sortBy[0];
-
-      sortParams.sortBy = sortColumn;
-      sortParams.sortDirection = options.sortDesc?.[0] ? "desc" : "asc";
-    }
-
     const accessToken = useCookie("accessToken").value;
     const response = await axios.get("/api/inventory/stock-report/export", {
       responseType: "blob",
