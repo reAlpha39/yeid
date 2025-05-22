@@ -22,6 +22,7 @@ const barcodeDialogRef = ref(null);
 const selectedPartCode = ref("");
 // Data table options
 const loading = ref(false);
+const loadingExportMachineList = ref(false);
 const totalItems = ref(0);
 const itemsPerPage = ref(10);
 const page = ref(1);
@@ -321,6 +322,33 @@ async function handleExport() {
   }
 }
 
+async function handleExportReport() {
+  loadingExportMachineList.value = true;
+
+  try {
+    const accessToken = useCookie("accessToken").value;
+    const response = await axios.get("/api/master/part-machine-list/export", {
+      responseType: "blob",
+      headers: accessToken
+        ? {
+            Authorization: `Bearer ${accessToken}`,
+          }
+        : {},
+    });
+
+    const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "machine_list.xlsx";
+    link.click();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error("Export failed:", error);
+  } finally {
+    loadingExportMachineList.value = false;
+  }
+}
+
 function getPartNamePrefix(item) {
   const status = (item.status || "").trim();
   const totalstock = parseStock(item.totalstock);
@@ -467,6 +495,15 @@ onMounted(() => {
           :loading="loadingExport"
         >
           Export
+        </VBtn>
+
+        <VBtn
+          variant="tonal"
+          prepend-icon="tabler-upload"
+          @click="handleExportReport"
+          :loading="loadingExportMachineList"
+        >
+          Machine List
         </VBtn>
 
         <!-- 👉 Add button -->

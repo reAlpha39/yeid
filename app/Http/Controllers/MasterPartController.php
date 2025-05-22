@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PartsExport;
 use App\Exports\InventoryPartsExport;
+use App\Exports\MachineListExport;
 use Exception;
 
 class MasterPartController extends Controller
@@ -764,6 +765,55 @@ class MasterPartController extends Controller
             if (file_exists($file)) {
                 unlink($file);
             }
+        }
+    }
+
+    public function exportMachineList(Request $request)
+    {
+        try {
+            if (!$this->checkAccess(['masterDataPart', 'invControlMasterPart', 'invControlPartList'], 'view')) {
+                return $this->unauthorizedResponse();
+            }
+
+            // Get the maximum machine count per part
+            $maxMachineCount = $this->getMaxMachineCount();
+
+            if ($maxMachineCount === 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No machine data found for export'
+                ], 404);
+            }
+
+            // Generate filename with current date
+            $filename = 'MachineNoList_' . date('dmY') . '.xlsx';
+
+            return Excel::download(
+                new MachineListExport($maxMachineCount),
+                $filename
+            );
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to export machine list',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function getMaxMachineCount(): int
+    {
+        try {
+            $result = DB::table('mas_invmachine')
+                ->select('partcode')
+                ->selectRaw('COUNT(machineno) as machine_count')
+                ->groupBy('partcode')
+                ->orderByDesc('machine_count')
+                ->first();
+
+            return $result ? (int) $result->machine_count : 0;
+        } catch (Exception $e) {
+            return 0;
         }
     }
 }
