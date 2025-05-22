@@ -195,13 +195,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
                 return false;
             }
 
-            // Validate date format (should be YYYYMMDD)
-            if (strlen($lastStockDate) !== 8 || !is_numeric($lastStockDate)) {
-                Log::warning("Part {$partCode} has invalid date format: {$lastStockDate}");
-                return false;
-            }
-
-            $lastStockMonth = substr($lastStockDate, 0, 6); // 202505 in your example
+            $lastStockMonth = substr($lastStockDate, 0, 6); // 202505
 
             Log::info("Processing part {$partCode}: stock={$lastStockNumber}, date={$lastStockDate}, month={$lastStockMonth}");
 
@@ -221,7 +215,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
             // Generate all months from 201111 to current month
             $allMonths = $this->generateMonthRange('201111', $lastStockMonth);
 
-            return $this->calculateStockLevels($partCode, $inventory, $movements, $allMonths, $lastStockMonth);
+            return $this->calculateBackward($partCode, $inventory, $movements, $allMonths, $lastStockMonth);
         } catch (\Exception $e) {
             Log::error("Error processing part {$partCode}: " . $e->getMessage());
             return false;
@@ -242,94 +236,60 @@ class UpdateInventorySummaryJob implements ShouldQueue
         return $months;
     }
 
-    private function calculateStockLevels(string $partCode, $inventory, $movements, array $allMonths, string $lastStockMonth): array
+    private function calculateBackward(string $partCode, $inventory, $movements, array $allMonths, string $lastStockMonth): array
     {
         $records = [];
         $lastStockNumber = floatval($inventory->laststocknumber);
         $lastStockDate = $inventory->laststockdate;
 
-        // Start from the last stock month and work backward
-        $runningStock = $lastStockNumber; // This is the current stock (end of last stock month)
-        $monthIndex = array_search($lastStockMonth, $allMonths);
+        // Find the index of the last stock month
+        $currentMonthIndex = array_search($lastStockMonth, $allMonths);
 
-        // First, handle the last stock month
-        if ($monthIndex !== false) {
-            // Get full month movements for display
-            $fullMonthMovement = $movements->get($lastStockMonth);
-            $fullInbound = floatval($fullMonthMovement->inbound ?? 0);
-            $fullOutbound = floatval($fullMonthMovement->outbound ?? 0);
-            $fullAdjust = floatval($fullMonthMovement->adjust ?? 0);
+        // Start with the current month - we know it ends with $lastStockNumber (700)
+        $currentEndStock = $lastStockNumber;
 
-            $records[$lastStockMonth] = [
-                'yearmonth' => $lastStockMonth,
+        // Process from current month backward to the first month
+        for ($i = $currentMonthIndex; $i >= 0; $i--) {
+            $yearMonth = $allMonths[$i];
+            $movement = $movements->get($yearMonth);
+
+            $inbound = floatval($movement->inbound ?? 0);
+            $outbound = floatval($movement->outbound ?? 0);
+            $adjust = floatval($movement->adjust ?? 0);
+
+            if ($i === $currentMonthIndex) {
+                // Current month - we know it ends with $lastStockNumber
+                $endStock = $currentEndStock;
+                $jobNumber = 1; // Current period
+            } else {
+                // Previous months - calculate what they should end with
+                $endStock = $currentEndStock;
+                $jobNumber = 0; // Historical data
+            }
+
+            $records[$yearMonth] = [
+                'yearmonth' => $yearMonth,
                 'partcode' => $partCode,
                 'laststocknumber' => $inventory->laststocknumber,
                 'laststockdate' => $inventory->laststockdate,
-                'inbound' => $fullInbound,
-                'outbound' => $fullOutbound,
-                'adjust' => $fullAdjust,
-                'stocknumber' => $runningStock, // Current stock (end of this month)
-                'jobnumber' => 1,
+                'inbound' => $inbound,
+                'outbound' => $outbound,
+                'adjust' => $adjust,
+                'stocknumber' => $endStock,
+                'jobnumber' => $jobNumber,
                 'status' => 'C',
                 'updatetime' => now()
             ];
-        }
 
-        // Now work backward through all previous months
-        // The key insight: Stock at end of previous month = Stock at end of current month - movements during current month
-        for ($i = $monthIndex - 1; $i >= 0; $i--) {
-            $currentMonth = $allMonths[$i];     // Month we're calculating 
-            $nextMonth = $allMonths[$i + 1];    // Month after the one we're calculating
-
-            // Get movements for the NEXT month (not current month)
-            $nextMonthMovement = $movements->get($nextMonth);
-            $nextInbound = floatval($nextMonthMovement->inbound ?? 0);
-            $nextOutbound = floatval($nextMonthMovement->outbound ?? 0);
-            $nextAdjust = floatval($nextMonthMovement->adjust ?? 0);
-
-            // Calculate stock at end of current month
-            // Stock at end of current month = Stock at end of next month - movements during next month
-            $runningStock = $runningStock - $nextInbound + $nextOutbound - $nextAdjust;
-
-            // Get movements for the current month (for display purposes)
-            $currentMonthMovement = $movements->get($currentMonth);
-            $currentInbound = floatval($currentMonthMovement->inbound ?? 0);
-            $currentOutbound = floatval($currentMonthMovement->outbound ?? 0);
-            $currentAdjust = floatval($currentMonthMovement->adjust ?? 0);
-
-            $records[$currentMonth] = [
-                'yearmonth' => $currentMonth,
-                'partcode' => $partCode,
-                'laststocknumber' => $inventory->laststocknumber,
-                'laststockdate' => $inventory->laststockdate,
-                'inbound' => $currentInbound,
-                'outbound' => $currentOutbound,
-                'adjust' => $currentAdjust,
-                'stocknumber' => $runningStock, // Stock at end of current month
-                'jobnumber' => 0, // Historical data
-                'status' => 'C',
-                'updatetime' => now()
-            ];
+            // Calculate what the previous month should end with
+            // If this month ends with X and had movements (I-O+A), 
+            // then previous month ended with: X - inbound + outbound - adjust
+            $currentEndStock = $endStock - $inbound + $outbound - $adjust;
         }
 
         // Return records in chronological order
         ksort($records);
         return array_values($records);
-    }
-
-    private function getMovementsFromDate(string $partCode, string $fromDate): object
-    {
-        $movements = DB::table('tbl_invrecord')
-            ->where('partcode', $partCode)
-            ->where('jobdate', '>=', $fromDate)
-            ->select(
-                DB::raw("SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound"),
-                DB::raw("SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound"),
-                DB::raw("SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust")
-            )
-            ->first();
-
-        return $movements ?? (object)['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
     }
 
     private function getMinimumDate(): string
