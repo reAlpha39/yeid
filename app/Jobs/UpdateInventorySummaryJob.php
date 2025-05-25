@@ -85,7 +85,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
             }
 
             $this->updateProgress(0, $totalParts, 0, 'processing');
-            $minDate = $this->getMinimumDate();
 
             // Process parts in chunks using lazy loading
             $processedCount = 0;
@@ -93,7 +92,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
             $batchData = [];
 
             $partCodesQuery->lazyById(self::CHUNK_SIZE, 'partcode')->each(function ($part) use (
-                $minDate,
                 &$processedCount,
                 &$errors,
                 $totalParts,
@@ -104,7 +102,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
                 }
 
                 $partCode = $part->partcode;
-                $inventoryData = $this->processPartInventory($partCode, $minDate);
+                $inventoryData = $this->processPartInventory($partCode);
 
                 if ($inventoryData === false) {
                     $errors[] = $partCode;
@@ -173,7 +171,7 @@ class UpdateInventorySummaryJob implements ShouldQueue
             ->insertOrIgnore($records);
     }
 
-    private function processPartInventory(string $partCode, string $minDate): array|false
+    private function processPartInventory(string $partCode): array|false
     {
         try {
             // Get inventory data
@@ -183,43 +181,202 @@ class UpdateInventorySummaryJob implements ShouldQueue
                 ->first();
 
             if (!$inventory) {
-                Log::warning("Inventory record not found for part: {$partCode}");
+                // Log::warning("Inventory record not found for part: {$partCode}");
                 return false;
             }
 
             $lastStockDate = $inventory->laststockdate;
             $lastStockNumber = floatval($inventory->laststocknumber);
 
-            if (is_null($lastStockDate) || is_null($lastStockNumber)) {
-                Log::warning("Part {$partCode} has null stock data");
-                return false;
-            }
+            // Log::info("Processing part {$partCode}: last_stock={$lastStockNumber}, last_date={$lastStockDate}");
 
-            $lastStockMonth = substr($lastStockDate, 0, 6); // 202505
-
-            Log::info("Processing part {$partCode}: stock={$lastStockNumber}, date={$lastStockDate}, month={$lastStockMonth}");
-
-            // Get all movements for the part at once
+            // Get all movements for the part, ordered by date
             $movements = DB::table('tbl_invrecord')
                 ->where('partcode', $partCode)
                 ->select(
+                    'jobdate',
                     DB::raw("substring(jobdate from 1 for 6) as yearmonth"),
                     DB::raw("SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound"),
                     DB::raw("SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound"),
                     DB::raw("SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust")
                 )
-                ->groupBy(DB::raw("substring(jobdate from 1 for 6)"))
-                ->get()
-                ->keyBy('yearmonth');
+                ->groupBy('jobdate', DB::raw("substring(jobdate from 1 for 6)"))
+                ->orderBy('jobdate')
+                ->get();
 
-            // Generate all months from 201111 to current month
-            $allMonths = $this->generateMonthRange('201111', $lastStockMonth);
+            // Group movements by month for easier processing
+            $monthlyMovements = [];
+            foreach ($movements as $movement) {
+                $yearMonth = $movement->yearmonth;
+                if (!isset($monthlyMovements[$yearMonth])) {
+                    $monthlyMovements[$yearMonth] = [
+                        'inbound' => 0,
+                        'outbound' => 0,
+                        'adjust' => 0
+                    ];
+                }
+                $monthlyMovements[$yearMonth]['inbound'] += floatval($movement->inbound);
+                $monthlyMovements[$yearMonth]['outbound'] += floatval($movement->outbound);
+                $monthlyMovements[$yearMonth]['adjust'] += floatval($movement->adjust);
+            }
 
-            return $this->calculateBackward($partCode, $inventory, $movements, $allMonths, $lastStockMonth);
+            return $this->calculateInventoryFlow($partCode, $inventory, $monthlyMovements);
         } catch (\Exception $e) {
-            Log::error("Error processing part {$partCode}: " . $e->getMessage());
+            // Log::error("Error processing part {$partCode}: " . $e->getMessage());
             return false;
         }
+    }
+
+    private function calculateInventoryFlow(string $partCode, $inventory, array $monthlyMovements): array
+    {
+        $records = [];
+        $lastStockNumber = floatval($inventory->laststocknumber);
+        $lastStockDate = $inventory->laststockdate;
+        $currentMonth = Carbon::now()->format('Ym');
+
+        // Convert lastStockDate to month format for comparison
+        $lastStockMonth = $lastStockDate ? substr($lastStockDate, 0, 6) : null;
+
+        // Generate all months from 201111 to current month
+        $allMonths = $this->generateMonthRange('201111', $currentMonth);
+
+        // Find the index of lastStockMonth in the array
+        $lastStockMonthIndex = array_search($lastStockMonth, $allMonths);
+
+        // Log::info("Part {$partCode}: Starting calculation with lastStock={$lastStockNumber}, lastDate={$lastStockDate}, lastMonth={$lastStockMonth}");
+
+        // New approach: calculate chronologically and adjust starting point to match reference
+        $stockLevels = [];
+
+        if ($lastStockMonthIndex !== false) {
+            // First, calculate what the stock would be at the reference point if we started from 0
+            $testStock = 0;
+
+            for ($i = 0; $i <= $lastStockMonthIndex; $i++) {
+                $yearMonth = $allMonths[$i];
+                $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+                $inbound = floatval($movements['inbound']);
+                $outbound = floatval($movements['outbound']);
+                $adjust = floatval($movements['adjust']);
+
+                if ($yearMonth === $lastStockMonth) {
+                    // For lastStockMonth, only count movements BEFORE the lastStockDate
+                    $movementsBeforeLastStock = DB::table('tbl_invrecord')
+                        ->where('partcode', $partCode)
+                        ->where('jobdate', '<=', $lastStockDate)
+                        ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
+                        ->selectRaw("
+                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
+                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
+                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
+                        ")
+                        ->first();
+
+                    $beforeInbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->inbound) : 0;
+                    $beforeOutbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->outbound) : 0;
+                    $beforeAdjust = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->adjust) : 0;
+
+                    $testStock += $beforeInbound - $beforeOutbound + $beforeAdjust;
+                } else {
+                    $testStock += $inbound - $outbound + $adjust;
+                }
+            }
+
+            // Calculate the adjustment needed to match the reference point
+            $adjustment = $lastStockNumber - $testStock;
+
+            // Log::info("Part {$partCode}: Test stock at reference = {$testStock}, target = {$lastStockNumber}, adjustment = {$adjustment}");
+
+            // Now calculate all stock levels using the adjusted starting point
+            $runningStock = $adjustment;
+
+            for ($i = 0; $i < count($allMonths); $i++) {
+                $yearMonth = $allMonths[$i];
+                $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+                $inbound = floatval($movements['inbound']);
+                $outbound = floatval($movements['outbound']);
+                $adjust = floatval($movements['adjust']);
+
+                if ($yearMonth === $lastStockMonth) {
+                    // Split movements for lastStockMonth
+                    $movementsBeforeLastStock = DB::table('tbl_invrecord')
+                        ->where('partcode', $partCode)
+                        ->where('jobdate', '<=', $lastStockDate)
+                        ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
+                        ->selectRaw("
+                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
+                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
+                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
+                        ")
+                        ->first();
+
+                    $movementsAfterLastStock = DB::table('tbl_invrecord')
+                        ->where('partcode', $partCode)
+                        ->where('jobdate', '>', $lastStockDate)
+                        ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
+                        ->selectRaw("
+                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
+                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
+                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
+                        ")
+                        ->first();
+
+                    $beforeInbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->inbound) : 0;
+                    $beforeOutbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->outbound) : 0;
+                    $beforeAdjust = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->adjust) : 0;
+
+                    $afterInbound = $movementsAfterLastStock ? floatval($movementsAfterLastStock->inbound) : 0;
+                    $afterOutbound = $movementsAfterLastStock ? floatval($movementsAfterLastStock->outbound) : 0;
+                    $afterAdjust = $movementsAfterLastStock ? floatval($movementsAfterLastStock->adjust) : 0;
+
+                    // Apply movements before lastStockDate
+                    $runningStock += $beforeInbound - $beforeOutbound + $beforeAdjust;
+
+                    // This should equal lastStockNumber at this point
+                    $stockLevels[$yearMonth] = $runningStock + $afterInbound - $afterOutbound + $afterAdjust;
+
+                    // Continue with movements after lastStockDate
+                    $runningStock += $afterInbound - $afterOutbound + $afterAdjust;
+                } else {
+                    // Apply movements for this month
+                    $runningStock += $inbound - $outbound + $adjust;
+                    $stockLevels[$yearMonth] = $runningStock;
+                }
+
+                // Log::info("Chronological calc - {$yearMonth}: movements=+{$inbound}-{$outbound}+{$adjust}, stock={$stockLevels[$yearMonth]}");
+            }
+        }
+
+        // Build the final records
+        foreach ($allMonths as $yearMonth) {
+            $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+            // Always use ALL movements for the month in the display fields
+            $inbound = floatval($movements['inbound']);
+            $outbound = floatval($movements['outbound']);
+            $adjust = floatval($movements['adjust']);
+
+            $isCurrentPeriod = ($yearMonth === $currentMonth) ? 1 : 0;
+            $endStock = $stockLevels[$yearMonth] ?? 0;
+
+            $records[] = [
+                'yearmonth' => $yearMonth,
+                'partcode' => $partCode,
+                'laststocknumber' => $inventory->laststocknumber,
+                'laststockdate' => $inventory->laststockdate,
+                'inbound' => $inbound,
+                'outbound' => $outbound,
+                'adjust' => $adjust,
+                'stocknumber' => $endStock,
+                'jobnumber' => $isCurrentPeriod,
+                'status' => 'C',
+                'updatetime' => now()
+            ];
+        }
+
+        return $records;
     }
 
     private function generateMonthRange(string $startMonth, string $endMonth): array
@@ -234,73 +391,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
         }
 
         return $months;
-    }
-
-    private function calculateBackward(string $partCode, $inventory, $movements, array $allMonths, string $lastStockMonth): array
-    {
-        $records = [];
-        $lastStockNumber = floatval($inventory->laststocknumber);
-        $lastStockDate = $inventory->laststockdate;
-
-        // Find the index of the last stock month
-        $currentMonthIndex = array_search($lastStockMonth, $allMonths);
-
-        // Start with the current month - we know it ends with $lastStockNumber (700)
-        $currentEndStock = $lastStockNumber;
-
-        // Process from current month backward to the first month
-        for ($i = $currentMonthIndex; $i >= 0; $i--) {
-            $yearMonth = $allMonths[$i];
-            $movement = $movements->get($yearMonth);
-
-            $inbound = floatval($movement->inbound ?? 0);
-            $outbound = floatval($movement->outbound ?? 0);
-            $adjust = floatval($movement->adjust ?? 0);
-
-            if ($i === $currentMonthIndex) {
-                // Current month - we know it ends with $lastStockNumber
-                $endStock = $currentEndStock;
-                $jobNumber = 1; // Current period
-            } else {
-                // Previous months - calculate what they should end with
-                $endStock = $currentEndStock;
-                $jobNumber = 0; // Historical data
-            }
-
-            $records[$yearMonth] = [
-                'yearmonth' => $yearMonth,
-                'partcode' => $partCode,
-                'laststocknumber' => $inventory->laststocknumber,
-                'laststockdate' => $inventory->laststockdate,
-                'inbound' => $inbound,
-                'outbound' => $outbound,
-                'adjust' => $adjust,
-                'stocknumber' => $endStock,
-                'jobnumber' => $jobNumber,
-                'status' => 'C',
-                'updatetime' => now()
-            ];
-
-            // Calculate what the previous month should end with
-            // If this month ends with X and had movements (I-O+A), 
-            // then previous month ended with: X - inbound + outbound - adjust
-            $currentEndStock = $endStock - $inbound + $outbound - $adjust;
-        }
-
-        // Return records in chronological order
-        ksort($records);
-        return array_values($records);
-    }
-
-    private function getMinimumDate(): string
-    {
-        $result = DB::table('tbl_invrecord')
-            ->select(DB::raw('MIN(jobdate) as min_date'))
-            ->first();
-
-        return $result && $result->min_date
-            ? $result->min_date
-            : Carbon::now()->subMonth()->format('Ymd');
     }
 
     private function updateProgress(
