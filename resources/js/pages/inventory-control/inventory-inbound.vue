@@ -1,5 +1,6 @@
 <script setup>
 import axios from "axios";
+import moment from "moment";
 import { useToast } from "vue-toastification";
 
 definePage({
@@ -94,6 +95,28 @@ const formatDate = (date) => {
 
   return `${year}${month}${day}`;
 };
+
+function formatDateTime(dateString) {
+  let momentDate;
+
+  // Check if the date is in numeric format (20241105094958)
+  if (/^\d{14}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYYMMDDHHmmss");
+  }
+  // Check if the date is in YYYY-MM-DD HH:mm:ss format
+  else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(dateString)) {
+    momentDate = moment(dateString, "YYYY-MM-DD HH:mm:ss");
+  } else {
+    return "Invalid date format";
+  }
+
+  moment.locale("id");
+
+  const formattedDate = momentDate.format("D/MM/YYYY");
+  const formattedTime = momentDate.format("HH:mm:ss");
+
+  return { formattedDate, formattedTime };
+}
 
 async function fetchData(options = {}) {
   loading.value = true;
@@ -465,6 +488,22 @@ onMounted(() => {
                 >{{ item.partname }}</span
               >
               <small>{{ item.partcode }}</small>
+            </div>
+          </div>
+        </template>
+
+        <template #item.jobdate="{ item }">
+          <div class="d-flex align-center">
+            <div class="d-flex flex-column">
+              <span
+                class="d-block font-weight-medium text-high-emphasis text-truncate"
+                >{{
+                  formatDateTime(item.jobdate + item.jobtime).formattedDate
+                }}</span
+              >
+              <small>{{
+                formatDateTime(item.jobdate + item.jobtime).formattedTime
+              }}</small>
             </div>
           </div>
         </template>
