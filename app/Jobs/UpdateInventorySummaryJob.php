@@ -185,11 +185,6 @@ class UpdateInventorySummaryJob implements ShouldQueue
         return false;
       }
 
-      $lastStockDate = $inventory->laststockdate;
-      $lastStockNumber = floatval($inventory->laststocknumber);
-
-      // Log::info("Processing part {$partCode}: last_stock={$lastStockNumber}, last_date={$lastStockDate}");
-
       // Get all movements for the part, ordered by date
       $movements = DB::table('tbl_invrecord')
         ->where('partcode', $partCode)
@@ -243,117 +238,118 @@ class UpdateInventorySummaryJob implements ShouldQueue
     // Find the index of lastStockMonth in the array
     $lastStockMonthIndex = array_search($lastStockMonth, $allMonths);
 
-    // Log::info("Part {$partCode}: Starting calculation with lastStock={$lastStockNumber}, lastDate={$lastStockDate}, lastMonth={$lastStockMonth}");
+    // Get corrected monthly movements and calculate the anchor point
+    $correctedMonthlyMovements = $monthlyMovements;
+    $anchorMonthIndex = null;
+    $anchorEndStock = null;
 
-    // New approach: calculate chronologically and adjust starting point to match reference
-    $stockLevels = [];
+    if ($lastStockMonthIndex !== false && $lastStockMonth) {
+      // Get movements in reference month BEFORE lastStockDate (not including)
+      $movementsBeforeReference = DB::table('tbl_invrecord')
+        ->where('partcode', $partCode)
+        ->where('jobdate', '<', $lastStockDate)
+        ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
+        ->selectRaw("
+                SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
+                SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
+                SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
+            ")
+        ->first();
 
-    if ($lastStockMonthIndex !== false) {
-      // First, calculate what the stock would be at the reference point if we started from 0
-      $testStock = 0;
+      // Get all movements for the reference month (for display purposes)
+      $allMovementsInMonth = $monthlyMovements[$lastStockMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+      $correctedMonthlyMovements[$lastStockMonth] = $allMovementsInMonth;
 
-      for ($i = 0; $i <= $lastStockMonthIndex; $i++) {
-        $yearMonth = $allMonths[$i];
-        $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+      // Calculate movements from start of reference month up to (but not including) lastStockDate
+      $beforeRefInbound = $movementsBeforeReference ? floatval($movementsBeforeReference->inbound) : 0;
+      $beforeRefOutbound = $movementsBeforeReference ? floatval($movementsBeforeReference->outbound) : 0;
+      $beforeRefAdjust = $movementsBeforeReference ? floatval($movementsBeforeReference->adjust) : 0;
 
-        $inbound = floatval($movements['inbound']);
-        $outbound = floatval($movements['outbound']);
-        $adjust = floatval($movements['adjust']);
+      $netMovementsBeforeRef = $beforeRefInbound - $beforeRefOutbound + $beforeRefAdjust;
 
-        if ($yearMonth === $lastStockMonth) {
-          // For lastStockMonth, only count movements BEFORE the lastStockDate
-          $movementsBeforeLastStock = DB::table('tbl_invrecord')
-            ->where('partcode', $partCode)
-            ->where('jobdate', '<=', $lastStockDate)
-            ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
-            ->selectRaw("
-                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
-                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
-                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
-                        ")
-            ->first();
+      // The stock at the end of the PREVIOUS month should be:
+      // lastStockNumber - netMovementsBeforeRef
+      // This is because: EndOfPrevMonth + MovementsBeforeRef = lastStockNumber
+      if ($lastStockMonthIndex > 0) {
+        $anchorMonthIndex = $lastStockMonthIndex - 1;
+        $anchorEndStock = $lastStockNumber - $netMovementsBeforeRef;
 
-          $beforeInbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->inbound) : 0;
-          $beforeOutbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->outbound) : 0;
-          $beforeAdjust = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->adjust) : 0;
-
-          $testStock += $beforeInbound - $beforeOutbound + $beforeAdjust;
-        } else {
-          $testStock += $inbound - $outbound + $adjust;
-        }
-      }
-
-      // Calculate the adjustment needed to match the reference point
-      $adjustment = $lastStockNumber - $testStock;
-
-      // Log::info("Part {$partCode}: Test stock at reference = {$testStock}, target = {$lastStockNumber}, adjustment = {$adjustment}");
-
-      // Now calculate all stock levels using the adjusted starting point
-      $runningStock = $adjustment;
-
-      for ($i = 0; $i < count($allMonths); $i++) {
-        $yearMonth = $allMonths[$i];
-        $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
-
-        $inbound = floatval($movements['inbound']);
-        $outbound = floatval($movements['outbound']);
-        $adjust = floatval($movements['adjust']);
-
-        if ($yearMonth === $lastStockMonth) {
-          // Split movements for lastStockMonth
-          $movementsBeforeLastStock = DB::table('tbl_invrecord')
-            ->where('partcode', $partCode)
-            ->where('jobdate', '<=', $lastStockDate)
-            ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
-            ->selectRaw("
-                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
-                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
-                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
-                        ")
-            ->first();
-
-          $movementsAfterLastStock = DB::table('tbl_invrecord')
-            ->where('partcode', $partCode)
-            ->where('jobdate', '>', $lastStockDate)
-            ->where(DB::raw("substring(jobdate from 1 for 6)"), $lastStockMonth)
-            ->selectRaw("
-                            SUM(CASE WHEN jobcode = 'I' THEN quantity ELSE 0 END) as inbound,
-                            SUM(CASE WHEN jobcode = 'O' THEN quantity ELSE 0 END) as outbound,
-                            SUM(CASE WHEN jobcode = 'A' THEN quantity ELSE 0 END) as adjust
-                        ")
-            ->first();
-
-          $beforeInbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->inbound) : 0;
-          $beforeOutbound = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->outbound) : 0;
-          $beforeAdjust = $movementsBeforeLastStock ? floatval($movementsBeforeLastStock->adjust) : 0;
-
-          $afterInbound = $movementsAfterLastStock ? floatval($movementsAfterLastStock->inbound) : 0;
-          $afterOutbound = $movementsAfterLastStock ? floatval($movementsAfterLastStock->outbound) : 0;
-          $afterAdjust = $movementsAfterLastStock ? floatval($movementsAfterLastStock->adjust) : 0;
-
-          // Apply movements before lastStockDate
-          $runningStock += $beforeInbound - $beforeOutbound + $beforeAdjust;
-
-          // This should equal lastStockNumber at this point
-          $stockLevels[$yearMonth] = $runningStock + $afterInbound - $afterOutbound + $afterAdjust;
-
-          // Continue with movements after lastStockDate
-          $runningStock += $afterInbound - $afterOutbound + $afterAdjust;
-        } else {
-          // Apply movements for this month
-          $runningStock += $inbound - $outbound + $adjust;
-          $stockLevels[$yearMonth] = $runningStock;
-        }
-
-        // Log::info("Chronological calc - {$yearMonth}: movements=+{$inbound}-{$outbound}+{$adjust}, stock={$stockLevels[$yearMonth]}");
+        // Log::info("Part {$partCode} anchor calculation", [
+        //   'anchorMonth' => $allMonths[$anchorMonthIndex],
+        //   'anchorEndStock' => $anchorEndStock,
+        //   'lastStockNumber' => $lastStockNumber,
+        //   'netMovementsBeforeRef' => $netMovementsBeforeRef,
+        //   'calculation' => "{$lastStockNumber} - ({$netMovementsBeforeRef}) = {$anchorEndStock}"
+        // ]);
+      } else {
+        // Reference month is the first month, so we anchor at the beginning
+        $anchorMonthIndex = 0;
+        // Stock at beginning of first month = lastStockNumber - movements before reference in first month
+        $anchorEndStock = $lastStockNumber - $netMovementsBeforeRef;
       }
     }
 
-    // Build the final records
-    foreach ($allMonths as $yearMonth) {
-      $movements = $monthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+    // Calculate stock levels for all months
+    $stockLevels = [];
 
-      // Always use ALL movements for the month in the display fields
+    if ($anchorMonthIndex !== null && $anchorEndStock !== null) {
+      // Calculate total movements from beginning to anchor month (inclusive)
+      $totalMovementsToAnchor = 0;
+      for ($i = 0; $i <= $anchorMonthIndex; $i++) {
+        $yearMonth = $allMonths[$i];
+        $movements = $correctedMonthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+        $inbound = floatval($movements['inbound']);
+        $outbound = floatval($movements['outbound']);
+        $adjust = floatval($movements['adjust']);
+        $netMovement = $inbound - $outbound + $adjust;
+
+        $totalMovementsToAnchor += $netMovement;
+      }
+
+      // Calculate what starting stock should be to reach anchor end stock
+      $startingStock = $anchorEndStock - $totalMovementsToAnchor;
+
+      // Log::info("Part {$partCode} starting stock calculation", [
+      //   'anchorMonth' => $allMonths[$anchorMonthIndex],
+      //   'anchorEndStock' => $anchorEndStock,
+      //   'totalMovementsToAnchor' => $totalMovementsToAnchor,
+      //   'calculatedStartingStock' => $startingStock
+      // ]);
+
+      // Now calculate forward from beginning using the calculated starting stock
+      $runningStock = $startingStock;
+      for ($i = 0; $i < count($allMonths); $i++) {
+        $yearMonth = $allMonths[$i];
+        $movements = $correctedMonthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+        $inbound = floatval($movements['inbound']);
+        $outbound = floatval($movements['outbound']);
+        $adjust = floatval($movements['adjust']);
+
+        $runningStock += $inbound - $outbound + $adjust;
+        $stockLevels[$yearMonth] = $runningStock;
+      }
+    } else {
+      // No reference point, calculate from beginning
+      $runningStock = 0;
+      for ($i = 0; $i < count($allMonths); $i++) {
+        $yearMonth = $allMonths[$i];
+        $movements = $correctedMonthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
+        $inbound = floatval($movements['inbound']);
+        $outbound = floatval($movements['outbound']);
+        $adjust = floatval($movements['adjust']);
+
+        $runningStock += $inbound - $outbound + $adjust;
+        $stockLevels[$yearMonth] = $runningStock;
+      }
+    }
+
+    // Build the final records using corrected movement data
+    foreach ($allMonths as $yearMonth) {
+      $movements = $correctedMonthlyMovements[$yearMonth] ?? ['inbound' => 0, 'outbound' => 0, 'adjust' => 0];
+
       $inbound = floatval($movements['inbound']);
       $outbound = floatval($movements['outbound']);
       $adjust = floatval($movements['adjust']);
