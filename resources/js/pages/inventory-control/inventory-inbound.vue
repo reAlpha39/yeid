@@ -422,7 +422,11 @@ onMounted(() => {
                 <AppDateTimePicker
                   v-model="selectedStartDate"
                   placeholder="Start Date"
-                  :config="{ dateFormat: 'Ymd' }"
+                  :config="{
+                    dateFormat: 'Ymd',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                  }"
                   append-inner-icon="tabler-calendar"
                 />
               </VCol>
@@ -430,7 +434,11 @@ onMounted(() => {
                 <AppDateTimePicker
                   v-model="selectedEndDate"
                   placeholder="End Date"
-                  :config="{ dateFormat: 'Ymd' }"
+                  :config="{
+                    dateFormat: 'Ymd',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                  }"
                   append-inner-icon="tabler-calendar"
                 />
               </VCol>
