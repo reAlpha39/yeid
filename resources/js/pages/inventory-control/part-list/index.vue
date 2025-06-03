@@ -570,7 +570,7 @@ onMounted(() => {
           @click="handleExportReport"
           :loading="loadingExportReport"
         >
-          Report
+          Adjustment Report
         </VBtn>
 
         <!-- 👉 Add button -->
