@@ -44,7 +44,7 @@ class WorkController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -92,7 +92,7 @@ class WorkController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -144,7 +144,7 @@ class WorkController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -179,7 +179,7 @@ class WorkController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

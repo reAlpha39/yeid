@@ -47,7 +47,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -80,7 +80,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -112,7 +112,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -150,7 +150,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -188,7 +188,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -211,7 +211,7 @@ class MasLineController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

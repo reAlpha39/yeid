@@ -49,7 +49,7 @@ class ScheduleTaskController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -103,7 +103,7 @@ class ScheduleTaskController extends Controller
                 'success' => false,
                 'message' => 'Failed to fetch available machine schedule',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -159,7 +159,7 @@ class ScheduleTaskController extends Controller
                 'status' => false,
                 'message' => 'Failed to create schedule task',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -185,7 +185,7 @@ class ScheduleTaskController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -250,7 +250,7 @@ class ScheduleTaskController extends Controller
                 'success' => false,
                 'message' => 'Failed to update schedule task',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -292,7 +292,7 @@ class ScheduleTaskController extends Controller
                 'success' => false,
                 'message' => 'Failed to delete schedule task and related data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 

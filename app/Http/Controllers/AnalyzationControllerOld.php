@@ -149,7 +149,7 @@ class AnalyzationControllerOld extends Controller
                 'success' => false,
                 'message' => 'Error performing analysis',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 

@@ -42,7 +42,7 @@ class MasMeasureController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -86,7 +86,7 @@ class MasMeasureController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -116,7 +116,7 @@ class MasMeasureController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -154,7 +154,7 @@ class MasMeasureController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -185,7 +185,7 @@ class MasMeasureController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -195,14 +195,14 @@ class MasMeasureController extends Controller
             if (!$this->checkAccess('masterData', 'view')) {
                 return $this->unauthorizedResponse();
             }
-            
+
             return Excel::download(new MeasuresExport($request->query('search')), 'measures.xlsx');
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

@@ -69,7 +69,7 @@ class SparePartReferringController extends Controller
                 'success' => false,
                 'message' => 'Error fetch cost summary data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -183,7 +183,7 @@ class SparePartReferringController extends Controller
                 'success' => false,
                 'message' => 'Error fetch inventory summary data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -247,7 +247,7 @@ class SparePartReferringController extends Controller
                 'success' => false,
                 'message' => 'Error fetch parts cost data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -343,7 +343,7 @@ class SparePartReferringController extends Controller
                 'success' => false,
                 'message' => 'Error fetch parts cost data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -478,7 +478,7 @@ class SparePartReferringController extends Controller
                 'success' => false,
                 'message' => 'Error fetch parts cost data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 

@@ -243,7 +243,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error fetching parts data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -420,7 +420,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error fetching parts data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -447,7 +447,7 @@ class PressPartController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error retrieving process names: ' . $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -533,7 +533,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error fetching data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -578,7 +578,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error fetching parts data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -691,7 +691,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error creating press part',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -807,7 +807,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Error updating press part',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -878,7 +878,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -936,7 +936,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -968,7 +968,7 @@ class PressPartController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

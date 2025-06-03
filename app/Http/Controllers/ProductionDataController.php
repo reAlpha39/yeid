@@ -83,7 +83,7 @@ class ProductionDataController extends Controller
                 'success' => false,
                 'message' => 'Error fetching data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -135,7 +135,7 @@ class ProductionDataController extends Controller
                 'success' => false,
                 'message' => 'Error fetching data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -213,7 +213,7 @@ class ProductionDataController extends Controller
                 'success' => false,
                 'message' => 'Error inserting data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -246,7 +246,7 @@ class ProductionDataController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

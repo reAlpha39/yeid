@@ -230,7 +230,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -316,7 +316,7 @@ class MasterPartController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while retrieving the inventory item'
-            ], 500);
+            ], 400);
         }
     }
 
@@ -524,7 +524,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -578,7 +578,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'Error updating record',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -627,7 +627,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -663,7 +663,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -710,7 +710,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -746,7 +746,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -797,7 +797,7 @@ class MasterPartController extends Controller
                 'success' => false,
                 'message' => 'Failed to export machine list',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 

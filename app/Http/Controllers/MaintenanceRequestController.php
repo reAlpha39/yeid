@@ -241,7 +241,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -289,7 +289,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -325,7 +325,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -404,7 +404,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -460,7 +460,7 @@ class MaintenanceRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -516,7 +516,7 @@ class MaintenanceRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -575,7 +575,7 @@ class MaintenanceRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -619,7 +619,7 @@ class MaintenanceRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -756,7 +756,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -837,7 +837,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -932,7 +932,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -1116,7 +1116,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'Failed to update report',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -1188,7 +1188,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -1209,7 +1209,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -1222,7 +1222,7 @@ class MaintenanceRequestController extends Controller
     //             'success' => false,
     //             'message' => 'Export failed',
     //             'error' => $e->getMessage()
-    //         ], 500);
+    //         ], 400);
     //     }
     // }
 
@@ -1250,7 +1250,7 @@ class MaintenanceRequestController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

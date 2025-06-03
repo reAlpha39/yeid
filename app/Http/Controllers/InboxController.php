@@ -58,7 +58,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -80,7 +80,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to mark message as read',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -102,7 +102,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to archive message',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -124,7 +124,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to delete message',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -144,7 +144,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to get unread count',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -167,7 +167,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to mark messages as read',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -192,7 +192,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to archive messages',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -217,7 +217,7 @@ class InboxController extends Controller
                 'status' => false,
                 'message' => 'Failed to delete messages',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

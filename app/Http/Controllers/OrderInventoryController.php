@@ -91,7 +91,7 @@ class OrderInventoryController extends Controller
                 return response()->json([
                     'message' => 'Failed to transfer order data',
                     'success' => false,
-                ], 500);
+                ], 400);
             }
 
             return response()->json([
@@ -103,7 +103,7 @@ class OrderInventoryController extends Controller
                 'message' => 'Error processing order',
                 'error' => $e->getMessage(),
                 'success' => false,
-            ], 500);
+            ], 400);
         }
     }
 

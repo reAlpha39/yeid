@@ -192,7 +192,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -316,7 +316,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while fetching data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -348,7 +348,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while fetching data',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -380,7 +380,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while fetching data',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -442,7 +442,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while fetching data',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -489,7 +489,7 @@ class InventoryControlController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Failed to update record'
-                ], 500);
+                ], 400);
             }
 
             $updatedRecord = DB::table('tbl_invrecord')
@@ -510,7 +510,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred while updating the record',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -609,7 +609,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -653,7 +653,7 @@ class InventoryControlController extends Controller
                 'status' => 'error',
                 'message' => 'An error occurred while deleting the record.',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -696,7 +696,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -713,7 +713,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'Failed to generate stock report',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -783,7 +783,7 @@ class InventoryControlController extends Controller
                 'success' => false,
                 'message' => 'Failed to update quantities',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

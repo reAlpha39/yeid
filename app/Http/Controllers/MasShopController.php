@@ -47,7 +47,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -78,7 +78,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -124,7 +124,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -164,7 +164,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -197,7 +197,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'An error occurred',
                 'error' => $e->getMessage() // You can remove this line in production for security reasons
-            ], 500); // Internal server error
+            ], 400); // Internal server error
         }
     }
 
@@ -220,7 +220,7 @@ class MasShopController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }

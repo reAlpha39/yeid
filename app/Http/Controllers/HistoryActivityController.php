@@ -88,7 +88,7 @@ class HistoryActivityController extends Controller
                 'success' => false,
                 'message' => 'Error fetch data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -137,7 +137,7 @@ class HistoryActivityController extends Controller
                 'success' => false,
                 'message' => 'Error fetch data',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -169,7 +169,7 @@ class HistoryActivityController extends Controller
                 'success' => false,
                 'message' => 'Export failed',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 }
