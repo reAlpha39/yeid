@@ -369,7 +369,7 @@ class MasterPartController extends Controller
                 'note' => 'nullable|string',
                 'order_part_code' => 'nullable|string',
                 'no_order_flag' => 'required|in:true,false,0,1',  // Accept string representations of boolean
-                'last_stock_number' => 'nullable|numeric|regex:/^\d*\.?\d*$/',
+                'last_stock_number' => 'nullable|numeric',
                 'machines' => 'nullable|string',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'is_remove_image' => 'nullable|in:true,false'
