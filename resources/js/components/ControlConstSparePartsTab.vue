@@ -76,7 +76,7 @@ async function handleExport() {
 
 function formatNumber(value) {
   if (!value) return "-";
-  return value.toString().replace(".", ",");
+  return value.toString();
 }
 
 onMounted(() => {
