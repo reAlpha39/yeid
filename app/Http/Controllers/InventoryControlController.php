@@ -493,7 +493,7 @@ class InventoryControlController extends Controller
                 }
 
                 // If the jobdate of the record is earlier than the laststockdate of the part
-                if ((int)$record->jobdate < (int)$recordPart->laststockdate) {
+                if ((int)$record->jobdate <= (int)$recordPart->laststockdate) {
                     // newstock is calculated as the laststocknumber + previous quantity + new quantity
                     $newStock = (int)$recordPart->laststocknumber + (int)$record->quantity - (int)$validated['quantity'];
 
