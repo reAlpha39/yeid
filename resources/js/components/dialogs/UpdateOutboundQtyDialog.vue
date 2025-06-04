@@ -55,7 +55,7 @@ async function saveUpdatedQty() {
       },
 
       onResponseError({ response }) {
-        errors.value = response._data.message;
+        toast.error(response._data.message);
       },
     });
 
