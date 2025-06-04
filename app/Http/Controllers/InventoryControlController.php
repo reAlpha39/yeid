@@ -448,8 +448,6 @@ class InventoryControlController extends Controller
 
     public function updateInventoryOutBound(Request $request)
     {
-        DB::beginTransaction();
-
         try {
             if (!$this->checkAccess(['invControlOutbound'], 'update')) {
                 return $this->unauthorizedResponse();
@@ -462,50 +460,67 @@ class InventoryControlController extends Controller
                 'quantity' => 'required|numeric|min:1'
             ]);
 
-            $record = DB::table('tbl_invrecord')
-                ->where('recordid', $validated['record_id'])
-                ->first();
+            $result = DB::transaction(function () use ($validated) {
+                $record = DB::table('tbl_invrecord')
+                    ->where('recordid', $validated['record_id'])
+                    ->first();
 
-            if (!$record) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Record not found'
-                ], 404);
-            }
+                if (!$record) {
+                    throw new \Exception('Record not found');
+                }
 
-            $updated = DB::table('tbl_invrecord')
-                ->where('recordid', $validated['record_id'])
-                ->update([
-                    'machineno' => explode('|', $validated['machine_no'])[0],
-                    'machinename' => $validated['machine_name'],
-                    'quantity' => $validated['quantity'],
-                    'total' => DB::raw('unitprice * ' . $validated['quantity']),
-                    'updatetime' => now()
-                ]);
+                // Step 1: Update the main record
+                $updated = DB::table('tbl_invrecord')
+                    ->where('recordid', $validated['record_id'])
+                    ->update([
+                        'machineno' => explode('|', $validated['machine_no'])[0],
+                        'machinename' => $validated['machine_name'],
+                        'quantity' => $validated['quantity'],
+                        'total' => DB::raw('unitprice * ' . $validated['quantity']),
+                        'updatetime' => now()
+                    ]);
 
-            if (!$updated) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to update record'
-                ], 400);
-            }
+                // If record update fails, rollback everything
+                if (!$updated) {
+                    throw new \Exception('Failed to update record');
+                }
 
-            $updatedRecord = DB::table('tbl_invrecord')
-                ->where('recordid', $validated['record_id'])
-                ->first();
+                // Step 2: Check and update inventory if needed
+                $recordPart = DB::table('mas_inventory')->where('partcode', $record->partcode)->first();
 
-            DB::commit();
+                if (!$recordPart) {
+                    throw new \Exception('Inventory part not found');
+                }
+
+                // If the jobdate of the record is earlier than the laststockdate of the part
+                if ((int)$record->jobdate < (int)$recordPart->laststockdate) {
+                    // newstock is calculated as the laststocknumber + previous quantity + new quantity
+                    $newStock = (int)$recordPart->laststocknumber + (int)$record->quantity - (int)$validated['quantity'];
+
+                    $updatedPart = DB::table('mas_inventory')
+                        ->where('partcode', $record->partcode)
+                        ->update([
+                            'laststocknumber' => $newStock,
+                        ]);
+
+                    // If inventory update fails, rollback everything
+                    if (!$updatedPart) {
+                        throw new \Exception('Failed to update inventory stock');
+                    }
+                }
+
+                // Return the updated record
+                return DB::table('tbl_invrecord')
+                    ->where('recordid', $validated['record_id'])
+                    ->first();
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Record updated successfully',
-                'data' => $updatedRecord
+                'data' => $result
             ], 200);
-        } catch (Exception $e) {
-            DB::rollBack();
-
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while updating the record',
