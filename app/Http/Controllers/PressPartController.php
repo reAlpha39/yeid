@@ -174,6 +174,8 @@ class PressPartController extends Controller
             if ($sortBy) {
                 // Handle special cases for computed columns
                 switch ($sortBy) {
+                    case 'exchangedatetime':
+                        $query->orderBy('m.exchangedatetime', $sortDirection);
                     case 'counter':
                         $query->orderBy(DB::raw('COALESCE((
                         SELECT sum(shotcount)
@@ -222,7 +224,10 @@ class PressPartController extends Controller
                 }
             } else {
                 // Default sorting
-                $query->orderBy('m.partcode');
+                $query->orderBy('m.partcode')
+                    ->orderBy('m.machineno')
+                    ->orderBy('m.model')
+                    ->orderBy('m.dieno');
             }
 
             // Execute pagination
@@ -396,10 +401,10 @@ class PressPartController extends Controller
                 }
             } else {
                 // Default sorting
-                $query->orderBy('m.machineno')
+                $query->orderBy('m.partcode')
+                    ->orderBy('m.machineno')
                     ->orderBy('m.model')
-                    ->orderBy('m.dieno')
-                    ->orderBy('m.partcode');
+                    ->orderBy('m.dieno');
             }
 
             // Execute pagination

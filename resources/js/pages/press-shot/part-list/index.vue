@@ -28,8 +28,9 @@ const itemsPerPage = ref(10);
 const page = ref(1);
 const data = ref([]);
 const searchQuery = ref("");
-const sortBy = ref([{ key: "exchangedatetime", order: "desc" }]);
+const sortBy = ref([{ key: "partcode", order: "asc" }]);
 const sortDesc = ref([]);
+const options = ref({});
 
 const date = ref(moment().format("YYYY-MM"));
 
@@ -82,17 +83,23 @@ async function fetchData(options = {}) {
   }
 }
 
-function handleOptionsUpdate(options) {
+function handleOptionsUpdate(data) {
   // Update the sorting values
-  sortBy.value = options.sortBy || [];
-  sortDesc.value = options.sortDesc || [];
+  sortBy.value = data.sortBy || [];
+  sortDesc.value = data.sortDesc || [];
 
   // Update the pagination values
-  page.value = options.page;
-  itemsPerPage.value = options.itemsPerPage;
+  page.value = data.page;
+  itemsPerPage.value = data.itemsPerPage;
+
+  options.value = data;
 
   // Fetch the data with new options
-  fetchData(options);
+  fetchData(data);
+}
+
+async function refreshTable() {
+  await fetchData(options.value);
 }
 
 const loadingExport = ref(false);
@@ -500,7 +507,9 @@ onMounted(() => {
           Log
         </VBtn>
 
-        <VBtn prepend-icon="tabler-refresh" @click="fetchData"> Refresh </VBtn>
+        <VBtn prepend-icon="tabler-refresh" @click="refreshTable">
+          Refresh
+        </VBtn>
 
         <!-- <VBtn prepend-icon="tabler-edit" to="part-list/exchange-part">
           Exchange Part
