@@ -230,10 +230,13 @@ function openDetailPage(id) {
 }
 
 async function openEditPage(id) {
-  await router.push({
+  const route = {
     path: "/press-shot/part-list/exchange-part",
     query: { exchangeid: id },
-  });
+  };
+
+  const url = router.resolve(route).href;
+  window.open(url, "_blank");
 }
 
 function getStatusDescription(item) {
@@ -496,6 +499,8 @@ onMounted(() => {
         >
           Log
         </VBtn>
+
+        <VBtn prepend-icon="tabler-refresh" @click="fetchData"> Refresh </VBtn>
 
         <!-- <VBtn prepend-icon="tabler-edit" to="part-list/exchange-part">
           Exchange Part
