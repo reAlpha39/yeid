@@ -108,8 +108,12 @@ class PressPartController extends Controller
             END as origin'),
                     'i.address'
                 ])
-                ->where('m.status', '<>', 'D')
-                ->where('m.exchangedatetime', 'LIKE', $year . '%');
+                ->where('m.status', '<>', 'D');
+
+            if ($year) {
+                $query->where('m.exchangedatetime', 'LIKE', $year . '%');
+            }
+
 
             // Apply filters
             if ($machineNo) {
