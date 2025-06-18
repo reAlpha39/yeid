@@ -14,6 +14,8 @@ const formatters = {
     JPY: new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "JPY",
+        minimumFractionDigits: 2, // Force 2 decimal places
+        maximumFractionDigits: 2,
     }),
 };
 
