@@ -461,12 +461,18 @@ class PressPartController extends Controller
     }
 
 
-    public function show($exchangeid)
+    public function show(Request $request)
     {
         try {
             if (!$this->checkAccess(['pressShotPartList'], 'view')) {
                 return $this->unauthorizedResponse();
             }
+
+            $machineNo = $request->input('machineno');
+            $model = $request->input('model');
+            $dieNo = $request->input('dieno');
+            $processName = $request->input('processname');
+            $partCode = $request->input('partcode');
 
             $query = DB::table('mas_presspart as m')
                 ->leftJoin('mas_inventory as i', function ($join) {
@@ -527,7 +533,11 @@ class PressPartController extends Controller
                     'i.address'
                 ])
                 ->where('m.status', '<>', 'D')
-                ->where('m.exchangedatetime',  $exchangeid);
+                ->where('m.machineno',  $machineNo)
+                ->where('m.model', $model)
+                ->where('m.dieno', $dieNo)
+                ->where('m.processname', $processName)
+                ->where('m.partcode', $partCode);
 
 
             $result = $query->first();

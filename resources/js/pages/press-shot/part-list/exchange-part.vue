@@ -28,14 +28,22 @@ const exchangeDate = ref(formatDateTime(now));
 const exchangeQty = ref("0");
 const reason = ref(null);
 
-async function initEditData(id) {
-  await fetchData(id);
-  await fetchDataMachine(data.value?.machineno);
+async function initEditData(machineno, model, dieno, processname, partcode) {
+  await fetchData(machineno, model, dieno, processname, partcode);
+  await fetchDataMachine(machineno);
 }
 
-async function fetchData(id) {
+async function fetchData(machineno, model, dieno, processname, partcode) {
   try {
-    const response = await $api("/press-shot/parts/" + encodeURIComponent(id));
+    const response = await $api("/press-shot/parts/detail", {
+      params: {
+        machineno: encodeURIComponent(machineno),
+        model: encodeURIComponent(model),
+        dieno: encodeURIComponent(dieno),
+        processname: encodeURIComponent(processname),
+        partcode: encodeURIComponent(partcode),
+      },
+    });
 
     data.value = response.data;
   } catch (err) {
@@ -124,7 +132,13 @@ function isNumber(evt) {
 }
 
 onMounted(() => {
-  initEditData(route.query.exchangeid);
+  initEditData(
+    route.query.machineno,
+    route.query.model,
+    route.query.dieno,
+    route.query.processname,
+    route.query.partcode
+  );
   fetchUserData();
 });
 </script>

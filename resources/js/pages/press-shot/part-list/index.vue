@@ -236,10 +236,16 @@ function openDetailPage(id) {
   isDetailDialogVisible.value = true;
 }
 
-async function openEditPage(id) {
+async function openEditPage(machineno, model, dieno, processname, partcode) {
   const route = {
     path: "/press-shot/part-list/exchange-part",
-    query: { exchangeid: id },
+    query: {
+      machineno: machineno,
+      model: model,
+      dieno: dieno,
+      processname: processname,
+      partcode: partcode,
+    },
   };
 
   const url = router.resolve(route).href;
@@ -621,7 +627,15 @@ onMounted(() => {
           </IconBtn> -->
             <IconBtn
               v-if="$can('update', 'pressShotPartList')"
-              @click="openEditPage(item.exchangedatetime)"
+              @click="
+                openEditPage(
+                  item.machineno,
+                  item.model,
+                  item.dieno,
+                  item.processname,
+                  item.partcode
+                )
+              "
             >
               <VIcon icon="tabler-exchange" />
             </IconBtn>

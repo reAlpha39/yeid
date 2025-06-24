@@ -248,7 +248,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::put('/press-shot/master-parts', [PressPartController::class, 'update']);
     Route::delete('/press-shot/master-parts', [PressPartController::class, 'destroy']);
     Route::get('/press-shot/master-part', [PressPartController::class, 'showMaster']);
-    Route::get('/press-shot/parts/{id}', [PressPartController::class, 'show']);
+    Route::get('/press-shot/parts/detail', [PressPartController::class, 'show']);
 
     // Exchange Data
     Route::get('/press-shot/exchanges', [ExchangeDataController::class, 'index']);
