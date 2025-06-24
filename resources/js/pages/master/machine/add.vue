@@ -1,5 +1,4 @@
 <script setup>
-import { watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -66,7 +65,7 @@ async function addData() {
             plantcode: plantNo.value,
             shopcode: selectedShop.value.shopcode,
             shopname: selectedShop.value.shopname,
-            linecode: selectedLine.value.linecode,
+            linecode: selectedLine.value,
             modelname: modelName.value,
             makercode: selectedMaker.value.makercode,
             makername: selectedMaker.value.makername,
@@ -98,7 +97,7 @@ async function addData() {
           plantcode: plantNo.value,
           shopcode: selectedShop.value.shopcode,
           shopname: selectedShop.value.shopname,
-          linecode: selectedLine.value.linecode,
+          linecode: selectedLine.value,
           modelname: modelName.value,
           makercode: selectedMaker.value.makercode,
           makername: selectedMaker.value.makername,
@@ -294,8 +293,8 @@ async function applyData() {
   const data = prevData.value;
 
   await fetchDataShop(data.shopcode);
-  await fetchDataLine({ shopcode: data.shopcode });
-  await fetchDataLine({ id: data.linecode, shopcode: data.shopcode });
+  // await fetchDataLine({ shopcode: data.shopcode });
+  // await fetchDataLine({ id: data.linecode, shopcode: data.shopcode });
   await fetchDataMaker(data.makercode);
 
   machineNo.value = data.machineno;
@@ -312,12 +311,12 @@ async function applyData() {
   rank.value = data.rank;
 }
 
-watch(selectedShop, (newValue) => {
-  if (newValue) {
-    selectedLine.value = null;
-    fetchDataLine({ shopcode: newValue.shopcode });
-  }
-});
+// watch(selectedShop, (newValue) => {
+//   if (newValue) {
+//     selectedLine.value = null;
+//     fetchDataLine({ shopcode: newValue.shopcode });
+//   }
+// });
 
 onMounted(() => {
   // fetchData();
@@ -420,7 +419,7 @@ onMounted(() => {
             />
           </VCol>
           <VCol cols="12" sm="3">
-            <AppSelect
+            <!-- <AppSelect
               v-model="selectedLine"
               label="Line No"
               :rules="[requiredValidator]"
@@ -429,6 +428,14 @@ onMounted(() => {
               :items="lines"
               return-object
               outlined
+            /> -->
+            <AppTextField
+              v-model="selectedLine"
+              label="Line No"
+              placeholder="Input line"
+              :rules="[requiredValidator]"
+              outlined
+              maxlength="2"
             />
           </VCol>
           <VCol cols="12" sm="3">
