@@ -1,4 +1,5 @@
 <script setup>
+import { watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "vue-toastification";
 
@@ -198,17 +199,20 @@ async function fetchDataShop(id) {
   }
 }
 
-async function fetchDataLine(id) {
+async function fetchDataLine({ id = null, shopcode = null } = {}) {
   try {
     if (id) {
-      const response = await $api("/master/lines", {
-        params: {
-          search: id,
-        },
-        onResponseError({ response }) {
-          toast.error(response._data.message ?? "Failed to fetch data");
-        },
-      });
+      const response = await $api(
+        "/master/lines/" +
+          encodeURIComponent(id) +
+          "/" +
+          encodeURIComponent(shopcode),
+        {
+          onResponseError({ response }) {
+            // toast.error(response._data.message ?? "Failed to fetch data");
+          },
+        }
+      );
 
       let data = response.data[0];
 
@@ -216,6 +220,9 @@ async function fetchDataLine(id) {
       selectedLine.value.title = data.linecode + " | " + data.linename;
     } else {
       const response = await $api("/master/lines", {
+        params: {
+          shop_code: shopcode,
+        },
         onResponseError({ response }) {
           toast.error(response._data.message ?? "Failed to fetch data");
         },
@@ -287,7 +294,8 @@ async function applyData() {
   const data = prevData.value;
 
   await fetchDataShop(data.shopcode);
-  await fetchDataLine(data.linecode);
+  await fetchDataLine({ shopcode: data.shopcode });
+  await fetchDataLine({ id: data.linecode, shopcode: data.shopcode });
   await fetchDataMaker(data.makercode);
 
   machineNo.value = data.machineno;
@@ -304,11 +312,18 @@ async function applyData() {
   rank.value = data.rank;
 }
 
+watch(selectedShop, (newValue) => {
+  if (newValue) {
+    selectedLine.value = null;
+    fetchDataLine({ shopcode: newValue.shopcode });
+  }
+});
+
 onMounted(() => {
   // fetchData();
   fetchDataMaker();
   fetchDataShop();
-  fetchDataLine();
+  // fetchDataLine();
 
   const id = route.query.machine_no;
   console.log("Fetching data for machine_no:", id);
