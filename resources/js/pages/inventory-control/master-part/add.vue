@@ -87,6 +87,12 @@ function handleFileRemoval() {
   isImageDeleted.value = true;
 }
 
+function appendIfNotEmpty(formData, key, value) {
+  if (value && value.toString().trim() !== '') {
+    formData.append(key, value);
+  }
+}
+
 async function addMasterPart() {
   const { valid, errors } = await form.value?.validate();
   if (valid === false) {
@@ -106,7 +112,7 @@ async function addMasterPart() {
     formData.append("part_name", partNameTF.value);
     formData.append("category", convertCategory(categoryTF.value));
     formData.append("specification", specificationTF.value);
-    formData.append("ean_code", barcodeTF.value);
+    appendIfNotEmpty(formData, "ean_code", barcodeTF.value);
     formData.append("brand", brandTF.value);
     formData.append("used_flag", convertSwitch(usedPartSwitch.value));
     formData.append("address", addressTF.value);
@@ -115,9 +121,9 @@ async function addMasterPart() {
     formData.append("currency", currencyTF.value);
     formData.append("min_stock", minStockTF.value);
     formData.append("min_order", minOrderTF.value);
-    formData.append("note", noteTF.value);
+    appendIfNotEmpty(formData, "note", noteTF.value);
     formData.append("last_stock_number", initialStockTF.value);
-    formData.append("order_part_code", orderPartCodeTF.value);
+    appendIfNotEmpty(formData, "order_part_code", orderPartCodeTF.value);
     formData.append("no_order_flag", convertSwitch(orderSwitch.value));
     formData.append("machines", JSON.stringify(machineData));
 
