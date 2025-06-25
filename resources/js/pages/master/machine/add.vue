@@ -305,6 +305,7 @@ async function applyData() {
   currency.value = data.currency;
   price.value = data.machineprice;
   purchaseRoot.value = data.purchaseroot;
+  selectedLine.value = data.linecode;
   installDate.value = data.installdate?.trim();
   note.value = data.note;
   status.value = statusType(data.status);
