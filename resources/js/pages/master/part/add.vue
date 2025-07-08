@@ -278,7 +278,7 @@ function applyData() {
   barcodeTF.value = data.eancode;
   addressTF.value = data.address;
   vendorTF.value = data.vendorcode;
-  unitPriceTF.value = parseInt(data?.unitprice ?? 0);
+  unitPriceTF.value = parseFloat(data?.unitprice ?? 0);
   currencyTF.value = data.currency;
   orderPartCodeTF.value = data.orderpartcode;
   initialStockTF.value = parseInt(data?.laststocknumber ?? 0);
