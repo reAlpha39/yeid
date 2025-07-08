@@ -237,7 +237,7 @@ function categoryType(category) {
     case "P":
       return "Process Parts";
     case "M":
-      return "aker Standard Parts";
+      return "Maker Standard Parts";
     case "F":
       return "Finger";
     case "S":
