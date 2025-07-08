@@ -287,11 +287,13 @@ class ExchangeDataController extends Controller
                 return $this->unauthorizedResponse();
             }
 
+            $jsonData = json_decode($request->getContent(), true);
+
             $exchangeDateTime = $request->input('exchange_date_time'); // Format: 'YYYYMMDDHHMMSS'
             $machineNo = $request->input('machine_no');
             $model = $request->input('model');
             $dieNo = $request->input('die_no');
-            $processName = $request->input('process_name');
+            $processName = $jsonData['process_name'] ?? null;
             $partCode = $request->input('part_code');
             $partName = $request->input('part_name');
             $exchangeShotNo = $request->input('exchange_shot_no');
