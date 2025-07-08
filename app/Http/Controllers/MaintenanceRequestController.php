@@ -1077,7 +1077,7 @@ class MaintenanceRequestController extends Controller
                     'specification' => $part['specification'],
                     'brand' => $part['brand'],
                     'qtty' => $part['qtty'],
-                    'price' => $part['price'],
+                    'price' => (int)$part['price'],
                     'currency' => $part['currency'],
                     'isstock' => $part['isstock']
                 ]);
