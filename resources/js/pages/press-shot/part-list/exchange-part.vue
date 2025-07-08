@@ -37,11 +37,11 @@ async function fetchData(machineno, model, dieno, processname, partcode) {
   try {
     const response = await $api("/press-shot/parts/detail", {
       params: {
-        machineno: encodeURIComponent(machineno),
-        model: encodeURIComponent(model),
-        dieno: encodeURIComponent(dieno),
-        processname: encodeURIComponent(processname),
-        partcode: encodeURIComponent(partcode),
+        machineno: machineno,
+        model: model,
+        dieno: dieno,
+        processname: processname,
+        partcode: partcode,
       },
     });
 
