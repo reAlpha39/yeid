@@ -6,8 +6,9 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class PressPartExport implements FromCollection, WithHeadings, WithMapping
+class PressPartExport implements FromCollection, WithHeadings, WithMapping, WithChunkReading
 {
     protected $year;
     protected $machineNo;
@@ -28,6 +29,9 @@ class PressPartExport implements FromCollection, WithHeadings, WithMapping
         $sortBy = null,
         $sortDirection = 'asc'
     ) {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '512M');
+
         $this->year = $year;
         $this->machineNo = $machineNo;
         $this->model = $model;
@@ -36,6 +40,16 @@ class PressPartExport implements FromCollection, WithHeadings, WithMapping
         $this->status = $status;
         $this->sortBy = $sortBy;
         $this->sortDirection = $sortDirection;
+    }
+
+    public function batchSize(): int
+    {
+        return 1000;
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 
     public function collection()
