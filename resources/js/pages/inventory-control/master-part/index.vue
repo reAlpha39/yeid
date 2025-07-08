@@ -174,6 +174,21 @@ async function fetchData(options = {}) {
   }
 }
 
+async function fetchDataVendor() {
+  try {
+    const response = await $api("/master/vendors");
+
+    vendors.value = response.data;
+
+    vendors.value.forEach((data) => {
+      data.title = data.vendorcode + " | " + data.vendorname;
+    });
+  } catch (err) {
+    toast.error("Failed to fetch vendor data");
+    console.log(err);
+  }
+}
+
 async function deletePart() {
   try {
     const result = await $api("/master/delete-part", {
@@ -461,6 +476,7 @@ watch(
 
 onMounted(() => {
   fetchData();
+  fetchDataVendor();
 });
 </script>
 
