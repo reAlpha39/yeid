@@ -36,7 +36,8 @@ async function initEditData(machineno, model, dieno, processname, partcode) {
 async function fetchData(machineno, model, dieno, processname, partcode) {
   try {
     const response = await $api("/press-shot/parts/detail", {
-      params: {
+      method: "POST",
+      body: {
         machineno: machineno,
         model: model,
         dieno: dieno,

@@ -468,10 +468,12 @@ class PressPartController extends Controller
                 return $this->unauthorizedResponse();
             }
 
+            $jsonData = json_decode($request->getContent(), true);
+
             $machineNo = $request->input('machineno');
             $model = $request->input('model');
             $dieNo = $request->input('dieno');
-            $processName = $request->input('processname');
+            $processName = $jsonData['processname'] ?? null;
             $partCode = $request->input('partcode');
 
             $query = DB::table('mas_presspart as m')
