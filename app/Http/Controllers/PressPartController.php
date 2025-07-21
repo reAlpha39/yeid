@@ -670,6 +670,7 @@ class PressPartController extends Controller
                 'exchangedatetime' => Carbon::parse($exchangeDateTime)->format('YmdHis'),
                 'minstock' => $minStock,
                 'status' => 'R',
+                'reason' => $reason,
                 'employeecode' => $loginUserCode,
                 'employeename' => $loginUserName,
                 'updatetime' => $currentDateTime
@@ -788,6 +789,7 @@ class PressPartController extends Controller
                     'minstock' => $minStock,
                     'employeecode' => $loginUserCode,
                     'employeename' => $loginUserName,
+                    'reason' => $reason,
                     'updatetime' => $currentDateTime
                 ]);
 
