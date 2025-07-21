@@ -42,7 +42,7 @@ const isEdit = ref(false);
 
 const machine = ref(null);
 const modelDie = ref(null);
-const dieNo = ref(null);
+const dieUnitNo = ref(null);
 const processName = ref(null);
 const partCode = ref(null);
 const partName = ref(null);
@@ -68,7 +68,7 @@ async function submitData() {
       machine_no: machine.value,
       model: modelDie.value.model,
       die_no: modelDie.value.dieno,
-      die_unit_no: dieNo.value,
+      die_unit_no: dieUnitNo.value,
       process_name: processName.value?.processname,
       part_code: partCode.value,
       part_name: partName.value,
@@ -198,7 +198,7 @@ function applyData() {
     dieno: data.dieno,
     title: data.model + " | " + data.dieno,
   };
-  dieNo.value = data.dieno;
+  dieUnitNo.value = data.dieunitno;
   processName.value = { processname: data.processname };
   partCode.value = data.partcode;
   partName.value = data.partname;
@@ -334,10 +334,9 @@ onMounted(async () => {
         </VCol>
         <VCol>
           <AppTextField
-            v-model="dieNo"
-            label="Die No."
+            v-model="dieUnitNo"
+            label="Die Unit No."
             :rules="[requiredValidator]"
-            :disabled="isEdit"
             placeholder="Input die no"
             outlined
             maxlength="8"
@@ -499,7 +498,9 @@ onMounted(async () => {
     </VCard>
 
     <div class="d-flex justify-start">
-      <VBtn type="submit" color="success" class="mr-4"> Add </VBtn>
+      <VBtn type="submit" color="success" class="mr-4">
+        {{ isEdit ? "Update" : "Add" }}
+      </VBtn>
       <VBtn variant="outlined" color="error" to="/press-shot/master-part"
         >Cancel</VBtn
       >
